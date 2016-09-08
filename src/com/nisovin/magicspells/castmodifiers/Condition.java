@@ -122,6 +122,11 @@ public abstract class Condition {
 		conditions.put("playercountabove", PlayerCountAbove.class);
 		conditions.put("targetmaxhealthgreaterthan", TargetMaxHealthGreaterThanCondition.class);
 		conditions.put("targetmaxhealthlessthan", TargetMaxHealthLessThanCondition.class);
+		conditions.put("oxygenabove", OxygenAboveCondition.class);
+		conditions.put("oxygenbelow", OxygenBelowCondition.class);
+		conditions.put("oxygenequals", OxygenEqualsCondition.class);
+		conditions.put("yawabove", YawAboveCondition.class);
+		conditions.put("yawbelow", YawBelowCondition.class);
 	}
 	
 }
