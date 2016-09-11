@@ -15,6 +15,7 @@ import com.nisovin.magicspells.events.SpellCastedEvent;
 import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
+import com.nisovin.magicspells.util.RegexUtil;
 import com.nisovin.magicspells.util.Util;
 
 public class Subspell {
@@ -82,7 +83,7 @@ public class Subspell {
 					mode = CastMode.PARTIAL;
 				} else if (arg.equalsIgnoreCase("direct")) {
 					mode = CastMode.DIRECT;
-				} else if (arg.matches("^[0-9]+$")) {  //TODO include this part in the comments
+				} else if (RegexUtil.matches(RegexUtil.SIMPLE_INT_PATTERN, arg)) {  //TODO include this part in the comments
 					delay = Integer.parseInt(arg);
 				} else if (arg.matches("^[0-9]+\\.[0-9]+$")) { //TODO include this part in the comments
 					subPower = Float.parseFloat(arg);

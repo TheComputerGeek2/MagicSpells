@@ -7,7 +7,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.AnimalColor;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
@@ -313,6 +312,8 @@ public class DisguiseManagerLibsDisguises implements Listener, IDisguiseManager 
 			w.setCustomName(dis.getNameplateText());
 			w.setCustomNameVisible(dis.alwaysShowNameplate());
 		}
+		
+		ret.setViewSelfDisguise(dis.disguiseSelf());
 		
 		/*
 		 * EntityType entityType = disguise.getEntityType();

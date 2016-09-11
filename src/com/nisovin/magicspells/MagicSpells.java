@@ -55,6 +55,7 @@ import com.nisovin.magicspells.util.BossBarManager_V1_9;
 import com.nisovin.magicspells.util.ExperienceBarManager;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.MoneyHandler;
+import com.nisovin.magicspells.util.RegexUtil;
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.variables.VariableManager;
 import com.nisovin.magicspells.volatilecode.VolatileCodeDisabled;
@@ -515,7 +516,7 @@ public class MagicSpells extends JavaPlugin {
 				manaPotions = new LinkedHashMap<ItemStack,Integer>();
 				for (int i = 0; i < manaPots.size(); i++) {
 					String[] data = manaPots.get(i).split(" ");
-					if (data.length == 2 && data[1].matches("^[0-9]+$")) {
+					if (data.length == 2 && RegexUtil.matches(RegexUtil.SIMPLE_INT_PATTERN, data[1])) {
 						ItemStack item = Util.getItemStackFromString(data[0]);
 						if (item != null) {
 							manaPotions.put(item, Integer.parseInt(data[1]));

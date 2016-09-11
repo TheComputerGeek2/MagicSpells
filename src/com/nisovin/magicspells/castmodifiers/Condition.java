@@ -123,15 +123,28 @@ public abstract class Condition {
 		conditions.put("targetmaxhealthgreaterthan", TargetMaxHealthGreaterThanCondition.class);
 		conditions.put("targetmaxhealthlessthan", TargetMaxHealthLessThanCondition.class);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+		conditions.put("worldguardmembership", WorldGuardRegionMembershipCondition.class);
+		conditions.put("worldguardbooleanflag", WorldGuardBooleanFlagCondition.class);
+		conditions.put("worldguardstateflag", WorldGuardStateFlagCondition.class);
+>>>>>>> refs/remotes/TheComputerGeek2/master
 		conditions.put("oxygenabove", OxygenAboveCondition.class);
 		conditions.put("oxygenbelow", OxygenBelowCondition.class);
 		conditions.put("oxygenequals", OxygenEqualsCondition.class);
 		conditions.put("yawabove", YawAboveCondition.class);
 		conditions.put("yawbelow", YawBelowCondition.class);
+<<<<<<< HEAD
 =======
 		conditions.put("worldguardmembership", WorldGuardRegionMembershipCondition.class);
 		conditions.put("worldguardbooleanflag", WorldGuardBooleanFlagCondition.class);
 		conditions.put("worldguardstateflag", WorldGuardStateFlagCondition.class);
+>>>>>>> refs/remotes/TheComputerGeek2/master
+=======
+		conditions.put("saturationabove", SaturationAboveCondition.class);
+		conditions.put("saturationbelow", SaturationBelowCondition.class);
+		conditions.put("moneymorethan", MoneyMoreThanCondition.class);
+		conditions.put("moneylessthan", MoneyLessThanCondition.class);
 >>>>>>> refs/remotes/TheComputerGeek2/master
 	}
 	

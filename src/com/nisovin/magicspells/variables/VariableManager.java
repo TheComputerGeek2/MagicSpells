@@ -140,6 +140,14 @@ public class VariableManager implements Listener {
 		}
 	}
 	
+	public void multiplyBy(String variable, Player player, double amount) {
+		set(variable, player, getValue(variable, player) * amount);
+	}
+	
+	public void divideBy(String variable, Player player, double val) {
+		set(variable, player, getValue(variable, player)/val);
+	}
+	
 	public void set(String variable, Player player, double amount) {
 		set(variable, player.getName(), amount);
 	}
