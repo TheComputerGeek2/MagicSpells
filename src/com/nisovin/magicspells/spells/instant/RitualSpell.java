@@ -28,6 +28,7 @@ public class RitualSpell extends InstantSpell {
 	boolean chargeReagentsImmediately;
 	boolean setCooldownImmediately;
 	boolean setCooldownForAll;
+	boolean cancelOnMovement;
 	private Spell spell;
 	private String theSpellName;
 	int tickInterval;
@@ -42,6 +43,7 @@ public class RitualSpell extends InstantSpell {
 	public RitualSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
+		cancelOnMovement = getConfigBoolean("cancel-on-movement", true);
 		ritualDuration = getConfigInt("ritual-duration", 200);
 		reqParticipants = getConfigInt("req-participants", 3);
 		needSpellToParticipate = getConfigBoolean("need-spell-to-participate", false);
@@ -172,18 +174,32 @@ public class RitualSpell extends InstantSpell {
 			while (iter.hasNext()) {
 				Player player = iter.next().getKey();
 				
+				if(cancelOnMovement){
 				// check for movement/death/offline
-				Location oldloc = channelers.get(player);
-				Location newloc = player.getLocation();
-				if (!player.isOnline() || player.isDead() || Math.abs(oldloc.getX() - newloc.getX()) > .2 || Math.abs(oldloc.getY() - newloc.getY()) > .2 || Math.abs(oldloc.getZ() - newloc.getZ()) > .2) {
-					if (player.getName().equals(caster.getName())) {
-						interrupted = true;
-						break;
-					} else {
-						iter.remove();
-						count--;
-						resetManaBar(player);
-						continue;
+					Location oldloc = channelers.get(player);
+					Location newloc = player.getLocation();
+					if (!player.isOnline() || player.isDead() || Math.abs(oldloc.getX() - newloc.getX()) > .2 || Math.abs(oldloc.getY() - newloc.getY()) > .2 || Math.abs(oldloc.getZ() - newloc.getZ()) > .2) {
+						if (player.getName().equals(caster.getName())) {
+							interrupted = true;
+							break;
+						} else {
+							iter.remove();
+							count--;
+							resetManaBar(player);
+							continue;
+						}
+					}
+				}else{
+					if (!player.isOnline() || player.isDead()) {
+						if (player.getName().equals(caster.getName())) {
+							interrupted = true;
+							break;
+						} else {
+							iter.remove();
+							count--;
+							resetManaBar(player);
+							continue;
+						}
 					}
 				}
 				// send exp bar update
