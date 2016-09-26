@@ -40,6 +40,7 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 	private boolean noTarget;
 	boolean powerAffectsArrowCount;
 	boolean powerAffectsSpeed;
+	boolean arrowsHaveGravity;
 	
 	public VolleySpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -55,6 +56,7 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 		noTarget = getConfigBoolean("no-target", false);
 		powerAffectsArrowCount = getConfigBoolean("power-affects-arrow-count", true);
 		powerAffectsSpeed = getConfigBoolean("power-affects-speed", false);
+		arrowsHaveGravity = getConfigBoolean("gravity", true);
 	}
 	
 	@Override
@@ -98,6 +100,7 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 				if (powerAffectsSpeed) speed *= power;
 				Arrow a = from.getWorld().spawnArrow(spawn, v, speed, (spread/10.0F));
 				a.setVelocity(a.getVelocity());
+				a.setGravity(arrowsHaveGravity);
 				if (player != null) {
 					a.setShooter(player);
 				}
@@ -233,6 +236,7 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 			// fire an arrow
 			if (count < arrowsShooter) {
 				Arrow a = spawn.getWorld().spawnArrow(spawn, dir, speedShooter, (spread/10.0F));
+				a.setGravity(arrowsHaveGravity);
 				playSpellEffects(EffectPosition.PROJECTILE, a);
 				playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, player.getLocation(), a.getLocation(), player, a);
 				a.setVelocity(a.getVelocity());

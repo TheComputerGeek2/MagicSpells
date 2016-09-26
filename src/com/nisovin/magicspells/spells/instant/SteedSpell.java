@@ -27,7 +27,7 @@ import com.nisovin.magicspells.util.Util;
 public class SteedSpell extends InstantSpell {
 
 	Random random = new Random();
-	
+	boolean gravity;
 	Map<String, Integer> mounted = new HashMap<String, Integer>();
 	
 	EntityType type;
@@ -41,7 +41,7 @@ public class SteedSpell extends InstantSpell {
 	
 	public SteedSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
+		gravity = getConfigBoolean("gravity", true);
 		type = Util.getEntityType(getConfigString("type", "horse"));
 		if (type == EntityType.HORSE) {
 			String c = getConfigString("color", null);
@@ -97,6 +97,7 @@ public class SteedSpell extends InstantSpell {
 				return PostCastAction.ALREADY_HANDLED;
 			}
 			Entity entity = player.getWorld().spawnEntity(player.getLocation(), type);
+			entity.setGravity(gravity);
 			if (type == EntityType.HORSE) {
 				((Horse)entity).setTamed(true);
 				((Horse)entity).setOwner(player);

@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spells.TargetedSpell;
@@ -43,6 +44,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell {
 	Color particleColor = null;
 	ParticleEffect effect;
 	ParticleData data;
+	Subspell spell;
 	
 	public OrbitSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -71,6 +73,14 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell {
 		EffectPackage pkg = ParticleNameUtil.findEffectPackage(particleName);
 		effect = pkg.effect;
 		data = pkg.data;
+		
+		spell = new Subspell(getConfigString("spell", ""));
+		if (!spell.process()) {
+			spell = null;
+		}
+		if (!spell.isTargetedLocationSpell()) {
+			spell = null;
+		}
 	}
 
 	@Override
@@ -80,7 +90,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell {
 			if (target == null) {
 				return noTarget(player);
 			}			
-			new ParticleTracker(player, target.getTarget(), target.getPower());
+			new ParticleTracker(player, target.getTarget(), target.getPower(), spell);
 			playSpellEffects(player, target.getTarget());
 			sendMessages(player, target.getTarget());
 			return PostCastAction.NO_MESSAGES;
@@ -90,7 +100,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	@Override
 	public boolean castAtEntity(Player caster, LivingEntity target, float power) {
-		new ParticleTracker(caster, target, power);
+		new ParticleTracker(caster, target, power, spell);
 		playSpellEffects(caster, target);
 		return true;
 	}
@@ -109,15 +119,18 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell {
 		Vector currentPosition;
 		int taskId;
 		
+		Subspell orbitingSpell = null;
+		
 		int counter = 0;
 		
-		public ParticleTracker(Player caster, LivingEntity target, float power) {
+		public ParticleTracker(Player caster, LivingEntity target, float power, Subspell spell) {
 			this.caster = caster;
 			this.target = target;
 			this.power = power;
 			this.startTime = System.currentTimeMillis();
 			this.currentPosition = target.getLocation().getDirection().setY(0);
 			this.taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
+			this.orbitingSpell = spell;
 		}
 		
 		@Override
@@ -141,6 +154,11 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell {
 			//MagicSpells.getVolatileCodeHandler().playParticleEffect(loc, particleName, particleHorizontalSpread, particleVerticalSpread, particleSpeed, particleCount, renderDistance, 0F);
 			
 			effect.display(data, loc, particleColor, renderDistance, particleHorizontalSpread, particleVerticalSpread, particleHorizontalSpread, particleSpeed, particleCount);
+			
+			//cast the spell at the location if it isn't null
+			if (orbitingSpell != null) {
+				orbitingSpell.castAtLocation(caster, loc, power);
+			}
 			//ParticleData data, Location center, Color color, double range, float offsetX, float offsetY, float offsetZ, float speed, int amount
 			
 		}

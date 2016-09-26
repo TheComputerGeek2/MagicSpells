@@ -24,6 +24,7 @@ public class ItemProjectileSpell extends InstantSpell {
 	float hitRadius;
 	float vertSpeed;
 	float yOffset;
+	boolean projectileHasGravity;
 	ItemStack item;
 	Subspell spellOnHitEntity;
 	Subspell spellOnHitGround;
@@ -36,6 +37,8 @@ public class ItemProjectileSpell extends InstantSpell {
 		vertSpeed = getConfigFloat("vert-speed", 0);
 		hitRadius = getConfigFloat("hit-radius", 1);
 		yOffset = getConfigFloat("y-offset", 0);
+		projectileHasGravity = getConfigBoolean("gravity", true);
+		
 		if (configKeyExists("spell-on-hit-entity")) {
 			spellOnHitEntity = new Subspell(getConfigString("spell-on-hit-entity", ""));
 		}
@@ -88,6 +91,7 @@ public class ItemProjectileSpell extends InstantSpell {
 				vel = caster.getLocation().getDirection().multiply(speed);
 			}
 			entity = caster.getWorld().dropItem(location, item.clone());
+			entity.setGravity(projectileHasGravity);
 			playSpellEffects(EffectPosition.PROJECTILE, entity);
 			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, caster.getLocation(), entity.getLocation(), caster, entity);
 			entity.teleport(location);

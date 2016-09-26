@@ -30,6 +30,7 @@ public class MinionSpell extends BuffSpell {
 	private int[] chances;
 	private boolean preventCombust;
 	private boolean targetPlayers;
+	private boolean gravity;
 	
 	private HashMap<String,LivingEntity> minions;
 	private HashMap<String,LivingEntity> targets;
@@ -37,6 +38,8 @@ public class MinionSpell extends BuffSpell {
 	
 	public MinionSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
+		
+		gravity = getConfigBoolean("gravity", true);
 		
 		// formatted as <entity type> <chance>
 		List<String> c = getConfigStringList("mob-chances", null);
@@ -91,6 +94,7 @@ public class MinionSpell extends BuffSpell {
 			
 			// spawn creature
 			LivingEntity minion = (LivingEntity)player.getWorld().spawnEntity(loc, creatureType);
+			minion.setGravity(gravity);
 			if (minion instanceof Creature) {
 				minions.put(player.getName(), minion);
 				targets.put(player.getName(), null);

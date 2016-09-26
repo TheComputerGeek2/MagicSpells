@@ -78,10 +78,14 @@ public class SpawnMonsterSpell extends TargetedSpell implements TargetedLocation
 	private int targetInterval;
 	private int targetRange;
 	
+	private boolean gravity;
+	
 	private Random random = new Random();
 	
 	public SpawnMonsterSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
+		
+		gravity = getConfigBoolean("gravity", true);
 		
 		location = getConfigString("location", "target");
 		entityData = new EntityData(getConfigString("entity-type", "wolf"));
@@ -341,6 +345,8 @@ public class SpawnMonsterSpell extends TargetedSpell implements TargetedLocation
 	}
 	
 	void prepMob(Player player, Entity entity) {
+		entity.setGravity(gravity);
+		
 		// set as tamed
 		if (tamed && entity instanceof Tameable && player != null) {
 			((Tameable)entity).setTamed(true);

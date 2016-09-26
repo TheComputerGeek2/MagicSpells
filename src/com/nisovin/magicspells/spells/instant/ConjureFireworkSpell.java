@@ -24,12 +24,13 @@ public class ConjureFireworkSpell extends InstantSpell implements TargetedLocati
 
 	boolean addToInventory;
 	ItemStack firework;
+	private boolean itemHasGravity;
 	
 	public ConjureFireworkSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
 		addToInventory = getConfigBoolean("add-to-inventory", true);
-		
+		itemHasGravity = getConfigBoolean("gravity", true);
 		firework = new ItemStack(Material.FIREWORK, getConfigInt("count", 1));
 		FireworkMeta meta = (FireworkMeta)firework.getItemMeta();
 		
@@ -111,6 +112,7 @@ public class ConjureFireworkSpell extends InstantSpell implements TargetedLocati
 			if (!added) {
 				Item dropped = player.getWorld().dropItem(player.getLocation(), item);
 				dropped.setItemStack(item);
+				dropped.setGravity(itemHasGravity);
 				playSpellEffects(EffectPosition.SPECIAL, dropped);
 				//player.getWorld().dropItem(player.getLocation(), item).setItemStack(item);
 			}
@@ -130,6 +132,7 @@ public class ConjureFireworkSpell extends InstantSpell implements TargetedLocati
 		ItemStack item = firework.clone();
 		Item dropped = target.getWorld().dropItem(target, item);
 		dropped.setItemStack(item);
+		dropped.setGravity(itemHasGravity);
 		playSpellEffects(EffectPosition.SPECIAL, dropped);
 		//target.getWorld().dropItem(target, item).setItemStack(item);
 		return true;

@@ -137,6 +137,7 @@ public abstract class Condition {
 		conditions.put("saturationbelow", SaturationBelowCondition.class);
 		conditions.put("moneymorethan", MoneyMoreThanCondition.class);
 		conditions.put("moneylessthan", MoneyLessThanCondition.class);
+		conditions.put("collection", MultiCondition.class);
 	}
 	
 }

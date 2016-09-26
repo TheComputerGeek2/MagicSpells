@@ -51,6 +51,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 	boolean checkPlugins;
 	boolean ensureSpellCast;
 	boolean stickyBlocks;
+	boolean projectileHasGravity;
 	String spellOnLand;
 	TargetedLocationSpell spell;
 	
@@ -84,6 +85,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 		ensureSpellCast = getConfigBoolean("ensure-spell-cast", true);
 		stickyBlocks = getConfigBoolean("sticky-blocks", false);
 		spellOnLand = getConfigString("spell-on-land", null);
+		projectileHasGravity = getConfigBoolean("gravity", true);
 	}	
 	
 	@Override
@@ -142,6 +144,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 		FallingBlockInfo info = new FallingBlockInfo(player, power);
 		if (material != null) {
 			FallingBlock block = material.spawnFallingBlock(location);
+			block.setGravity(projectileHasGravity);
 			playSpellEffects(EffectPosition.PROJECTILE, block);
 			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, player.getLocation(), block.getLocation(), player, block);
 			block.setVelocity(velocity);
@@ -155,6 +158,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 			entity = block;
 		} else if (tntFuse > 0) {
 			TNTPrimed tnt = location.getWorld().spawn(location, TNTPrimed.class);
+			tnt.setGravity(projectileHasGravity);
 			playSpellEffects(EffectPosition.PROJECTILE, tnt);
 			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, player.getLocation(), tnt.getLocation(), player, tnt);
 			tnt.setFuseTicks(tntFuse);

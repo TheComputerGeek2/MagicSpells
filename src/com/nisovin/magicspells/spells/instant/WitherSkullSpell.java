@@ -15,12 +15,14 @@ public class WitherSkullSpell extends InstantSpell implements TargetedEntityFrom
 
 	boolean charged;
 	double velocity;
+	private boolean projectileHasGravity;
 	
 	public WitherSkullSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
 		charged = getConfigBoolean("charged", false);
 		velocity = getConfigFloat("velocity", 2);
+		projectileHasGravity = getConfigBoolean("gravity", false);
 	}
 
 	@Override
@@ -28,6 +30,7 @@ public class WitherSkullSpell extends InstantSpell implements TargetedEntityFrom
 		if (state == SpellCastState.NORMAL) {
 			WitherSkull skull = player.launchProjectile(WitherSkull.class, player.getLocation().getDirection().multiply(velocity * power));
 			skull.setCharged(charged);
+			skull.setGravity(projectileHasGravity);
 			playSpellEffects(EffectPosition.PROJECTILE, skull);
 			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, player.getLocation(), skull.getLocation(), player, skull);
 		}
@@ -42,6 +45,7 @@ public class WitherSkullSpell extends InstantSpell implements TargetedEntityFrom
 		skull.setCharged(charged);
 		skull.setVelocity(v);
 		skull.setDirection(v);
+		skull.setGravity(projectileHasGravity);
 		if (caster != null) {
 			playSpellEffects(EffectPosition.CASTER, caster);
 		} else {

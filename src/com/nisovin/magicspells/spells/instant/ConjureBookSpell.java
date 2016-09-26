@@ -25,7 +25,8 @@ public class ConjureBookSpell extends InstantSpell implements TargetedLocationSp
 
 	boolean addToInventory;
 	ItemStack book;
-
+	private boolean projectileHasGravity;
+	
 	public ConjureBookSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
@@ -35,6 +36,7 @@ public class ConjureBookSpell extends InstantSpell implements TargetedLocationSp
 		String author = getConfigString("author", "Steve");
 		List<String> pages = getConfigStringList("pages", null);
 		List<String> lore = getConfigStringList("lore", null);
+		projectileHasGravity = getConfigBoolean("gravity", true);
 		
 		book = new ItemStack(Material.WRITTEN_BOOK);
 		BookMeta meta = (BookMeta)book.getItemMeta();
@@ -116,6 +118,7 @@ public class ConjureBookSpell extends InstantSpell implements TargetedLocationSp
 			if (!added) {
 				Item dropped = player.getWorld().dropItem(player.getLocation(), item);
 				dropped.setItemStack(item);
+				dropped.setGravity(projectileHasGravity);
 				playSpellEffects(EffectPosition.SPECIAL, dropped);
 				//player.getWorld().dropItem(player.getLocation(), item).setItemStack(item);
 			}
@@ -133,6 +136,7 @@ public class ConjureBookSpell extends InstantSpell implements TargetedLocationSp
 		ItemStack item = book.clone();
 		Item dropped = target.getWorld().dropItem(target, item);
 		dropped.setItemStack(item);
+		dropped.setGravity(projectileHasGravity);
 		playSpellEffects(EffectPosition.SPECIAL, dropped);
 		//target.getWorld().dropItem(target, item).setItemStack(item);
 		return true;

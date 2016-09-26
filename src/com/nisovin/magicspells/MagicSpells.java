@@ -159,6 +159,8 @@ public class MagicSpells extends JavaPlugin {
 	MagicLogger magicLogger;
 	LifeLengthTracker lifeLengthTracker;
 	
+	MagicConfig config;
+	
 	// profiling
 	HashMap<String, Long> profilingTotalTime;
 	HashMap<String, Integer> profilingRuns;
@@ -197,7 +199,7 @@ public class MagicSpells extends JavaPlugin {
 			if (!(new File(getDataFolder(), "spells-regular.yml")).exists()) saveResource("spells-regular.yml", false);
 			if (!(new File(getDataFolder(), "zones.yml")).exists()) saveResource("zones.yml", false);
 		}
-		MagicConfig config = new MagicConfig(this);
+		config = new MagicConfig(this);
 		if (!config.isLoaded()) {
 			MagicSpells.log(Level.SEVERE, "Error in config file, stopping config load");
 			return;
@@ -1233,6 +1235,8 @@ public class MagicSpells extends JavaPlugin {
 		strCantBind = null;
 		strConsoleName = null;
 		
+		config = null;
+		
 		// remove star permissions (to allow new spells to be added to them)
 		getServer().getPluginManager().removePermission("magicspells.grant.*");
 		getServer().getPluginManager().removePermission("magicspells.cast.*");
@@ -1257,6 +1261,10 @@ public class MagicSpells extends JavaPlugin {
 	
 	public ClassLoader getPluginClassLoader() {
 		return getClassLoader();
+	}
+	
+	public MagicConfig getMagicConfig() {
+		return config;
 	}
 	
 }

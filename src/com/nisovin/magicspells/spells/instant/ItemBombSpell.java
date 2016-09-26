@@ -26,6 +26,7 @@ public class ItemBombSpell extends InstantSpell implements TargetedLocationSpell
 	int itemNameDelay;
 	int delay;
 	Subspell spell;
+	boolean itemHasGravity;
 	
 	public ItemBombSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -38,6 +39,7 @@ public class ItemBombSpell extends InstantSpell implements TargetedLocationSpell
 		itemName = getConfigString("item-name", null);
 		itemNameDelay = getConfigInt("item-name-delay", 1);
 		delay = getConfigInt("delay", 100);
+		itemHasGravity = getConfigBoolean("gravity", true);
 		spell = new Subspell(getConfigString("spell", ""));
 		
 		if (item == null) {
@@ -70,6 +72,7 @@ public class ItemBombSpell extends InstantSpell implements TargetedLocationSpell
 		final Item i = l.getWorld().dropItem(l, item);
 		i.teleport(l);
 		i.setVelocity(v);
+		i.setGravity(itemHasGravity);
 		i.setPickupDelay(delay * 2);
 		if (itemName != null) {
 			MagicSpells.scheduleDelayedTask(new Runnable() {

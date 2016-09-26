@@ -27,6 +27,7 @@ public class FirenovaSpell extends InstantSpell implements TargetedLocationSpell
 	MagicMaterial mat;
 	boolean burnTallGrass;
 	private boolean checkPlugins;
+	int expandRate = 1;
 	
 	HashSet<Player> fireImmunity;
 	
@@ -39,6 +40,9 @@ public class FirenovaSpell extends InstantSpell implements TargetedLocationSpell
 		checkPlugins = getConfigBoolean("check-plugins", true);
 		
 		mat = MagicSpells.getItemNameResolver().resolveBlock(getConfigString("block-type", "51:15"));
+		
+		expandRate = getConfigInt("expanding-radius-change", expandRate);
+		if (expandRate < 1) expandRate = 1;
 		
 		if (mat.getMaterial() == Material.FIRE) {
 			fireImmunity = new HashSet<Player>();
@@ -124,7 +128,7 @@ public class FirenovaSpell extends InstantSpell implements TargetedLocationSpell
 			}
 			fireBlocks.clear();
 						
-			i += 1;
+			i += expandRate;
 			if (i <= range) {
 				// set next ring on fire
 				int bx = center.getX();

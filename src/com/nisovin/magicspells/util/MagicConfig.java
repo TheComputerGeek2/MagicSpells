@@ -84,6 +84,7 @@ public class MagicConfig {
 	 *     
 	 *     predefined-items:
 	 *     variables:
+	 *     modifiers:
 	 * mana:
 	 *     enable-mana-system: false
 	 *     mana-potion-cooldown: 30
@@ -182,6 +183,14 @@ public class MagicConfig {
 							}
 							for (String itemKey : spellConfig.getConfigurationSection("variables").getKeys(false)) {
 								sec.set(itemKey, spellConfig.get("variables." + itemKey));
+							}
+						} else if (key.equals("modifiers")) {
+							ConfigurationSection sec = mainConfig.getConfigurationSection("general.modifiers");
+							if (sec == null) {
+								sec = mainConfig.createSection("general.modifiers");
+							}
+							for (String modifierKey : spellConfig.getConfigurationSection("modifiers").getKeys(false)) {
+								sec.set(modifierKey, spellConfig.get("modifiers." + modifierKey));
 							}
 						} else {
 							mainConfig.set("spells." + key, spellConfig.get(key));

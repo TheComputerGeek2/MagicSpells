@@ -53,6 +53,7 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 	private Vector absoluteCastLocationOffset;
 	boolean useAbsoluteCastLocationOffset = false;
 	boolean doOffsetTargetingCorrections = true;
+	boolean fireballGravity;
 	
 	public FireballSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -72,6 +73,7 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 		absoluteCastLocationOffset = getConfigVector("absolute-cast-position-offset", "0,0,0");
 		useAbsoluteCastLocationOffset = getConfigBoolean("use-absolute-cast-location-offset", false);
 		doOffsetTargetingCorrections = getConfigBoolean("do-offset-targeting-corrections", true);
+		fireballGravity = getConfigBoolean("gravity", false);
 		
 		
 		fireballs = new HashMap<Fireball, Float>();
@@ -136,6 +138,7 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 				player.getWorld().playEffect(player.getLocation(), Effect.GHAST_SHOOT, 0);
 				fireballs.put(fireball, power);
 			}
+			fireball.setGravity(fireballGravity);
 			fireball.setShooter(player);
 			
 			playSpellEffects(EffectPosition.CASTER, player);
@@ -160,6 +163,7 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 		loc.add(facing.multiply(2));
 		
 		Fireball fireball = from.getWorld().spawn(loc, Fireball.class);
+		fireball.setGravity(fireballGravity);
 		if (caster != null) {
 			fireball.setShooter(caster);
 		}

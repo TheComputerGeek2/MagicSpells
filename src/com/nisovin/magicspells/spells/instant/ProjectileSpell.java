@@ -61,6 +61,7 @@ public class ProjectileSpell extends InstantSpell {
 	private boolean allowTargetChange;
 	private String strHitCaster;
 	private String strHitTarget;
+	private boolean projectileHasGravity;
 	
 	HashMap<Projectile, ProjectileInfo> projectiles;
 	HashMap<Item, ProjectileInfo> itemProjectiles;
@@ -107,6 +108,7 @@ public class ProjectileSpell extends InstantSpell {
 		aoeRadius = getConfigInt("aoe-radius", 0);
 		targetPlayers = getConfigBoolean("target-players", false);
 		allowTargetChange = getConfigBoolean("allow-target-change", true);
+		projectileHasGravity = getConfigBoolean("gravity", true);
 		strHitCaster = getConfigString("str-hit-caster", "");
 		strHitTarget = getConfigString("str-hit-target", "");
 		
@@ -157,6 +159,7 @@ public class ProjectileSpell extends InstantSpell {
 				playSpellEffects(EffectPosition.PROJECTILE, projectile);
 				playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, player.getLocation(), projectile.getLocation(), player, projectile);
 				projectile.setBounce(false);
+				projectile.setGravity(projectileHasGravity);
 				if (velocity > 0) {
 					projectile.setVelocity(player.getLocation().getDirection().multiply(velocity));
 				}
@@ -173,6 +176,7 @@ public class ProjectileSpell extends InstantSpell {
 				playSpellEffects(EffectPosition.CASTER, projectile);
 			} else if (projectileItem != null) {
 				Item item = player.getWorld().dropItem(player.getEyeLocation(), projectileItem.clone());
+				item.setGravity(projectileHasGravity);
 				Vector v = player.getLocation().getDirection().multiply(velocity > 0 ? velocity : 1);
 				if (horizSpread > 0 || vertSpread > 0) {
 					v.add(new Vector((random.nextDouble()-.5) * horizSpread, (random.nextDouble()-.5) * vertSpread, (random.nextDouble()-.5) * horizSpread));

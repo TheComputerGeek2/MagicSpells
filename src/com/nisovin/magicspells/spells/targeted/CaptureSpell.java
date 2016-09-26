@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -22,12 +23,14 @@ public class CaptureSpell extends TargetedSpell implements TargetedEntitySpell {
 	boolean addToInventory;
 	String itemName;
 	List<String> itemLore;
+	private boolean gravity;
 	
 	public CaptureSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
 		powerAffectsQuantity = getConfigBoolean("power-affects-quantity", true);
 		addToInventory = getConfigBoolean("add-to-inventory", false);
+		gravity = getConfigBoolean("gravity", true);
 		itemName = getConfigString("item-name", null);
 		itemLore = getConfigStringList("item-lore", null);
 		
@@ -99,7 +102,10 @@ public class CaptureSpell extends TargetedSpell implements TargetedEntitySpell {
 				added = Util.addToInventory(caster.getInventory(), item, true, false);
 			}
 			if (!added) {
-				target.getWorld().dropItem(target.getLocation().add(0, 1, 0), item).setItemStack(item);
+				Item dropped = target.getWorld().dropItem(target.getLocation().add(0, 1, 0), item);
+				dropped.setItemStack(item);
+				dropped.setGravity(gravity);
+				
 			}
 			if (caster != null) {
 				playSpellEffects(caster, target.getLocation());

@@ -28,6 +28,7 @@ public class FreezeSpell extends InstantSpell implements SpellDamageSpell {
 	private String spellDamageType;
 	private int slowAmount;
 	private int slowDuration;
+	private boolean snowballGravity;
 	
 	private float identifier;
 	
@@ -41,6 +42,7 @@ public class FreezeSpell extends InstantSpell implements SpellDamageSpell {
 		spellDamageType = getConfigString("spell-damage-type", "");
 		slowAmount = getConfigInt("slow-amount", 3);
 		slowDuration = getConfigInt("slow-duration", 40);
+		snowballGravity = getConfigBoolean("gravity", true);
 		
 		identifier = (float)Math.random() * 20F;
 	}
@@ -52,6 +54,7 @@ public class FreezeSpell extends InstantSpell implements SpellDamageSpell {
 			Vector mod;
 			for (int i = 0; i < snowballs; i++) {
 				Snowball snowball = player.launchProjectile(Snowball.class);
+				snowball.setGravity(snowballGravity);
 				playSpellEffects(EffectPosition.PROJECTILE, snowball);
 				playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, player.getLocation(), snowball.getLocation(), player, snowball);
 				snowball.setFallDistance(identifier); // tag the snowballs

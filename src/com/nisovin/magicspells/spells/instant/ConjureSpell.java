@@ -65,6 +65,7 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 	private double[] itemChances;
 	private float randomVelocity;
 	private int delay;
+	private boolean itemHasGravity;
 	
 	public ConjureSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -86,6 +87,7 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 		offhand = getConfigBoolean("offhand", false);
 		itemList = getConfigStringList("items", null);
 		randomVelocity = getConfigFloat("random-velocity", 0);
+		itemHasGravity = getConfigBoolean("gravity", true);
 		delay = getConfigInt("delay", -1);
 	}
 	
@@ -231,6 +233,7 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 				if (!added && (dropIfInventoryFull || !addToInventory)) {
 					Item i = player.getWorld().dropItem(loc, item);
 					i.setItemStack(item);
+					i.setGravity(itemHasGravity);
 					playSpellEffects(EffectPosition.SPECIAL, i);
 					//player.getWorld().dropItem(loc, item).setItemStack(item);
 				}
@@ -314,6 +317,7 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 				v.normalize().multiply(randomVelocity);
 				dropped.setVelocity(v);
 			}
+			dropped.setGravity(itemHasGravity);
 			playSpellEffects(EffectPosition.SPECIAL, dropped);
 		}
 		return true;

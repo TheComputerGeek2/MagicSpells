@@ -79,6 +79,7 @@ public class NovaEffect extends SpellEffect {
 	int radius = 3;
 	
 	int novaTickInterval = 5;
+	int expandingRadiusChange = 1;
 
 	@Override
 	public void loadFromString(String string) {
@@ -123,6 +124,8 @@ public class NovaEffect extends SpellEffect {
 		mat = MagicSpells.getItemNameResolver().resolveBlock(config.getString("type", "fire"));
 		radius = config.getInt("radius", radius);
 		novaTickInterval = config.getInt("expand-interval", novaTickInterval);
+		expandingRadiusChange = config.getInt("expanding-radius-change", expandingRadiusChange);
+		if (expandingRadiusChange < 1) expandingRadiusChange = 1;
 	}
 
 	@Override
@@ -145,7 +148,7 @@ public class NovaEffect extends SpellEffect {
 		if (!BlockUtils.isPathable(b)) {
 			b = b.getRelative(BlockFace.UP);
 		}
-		new NovaAnimation(nearby, location.getBlock(), mat, radius, novaTickInterval);
+		new NovaAnimation(nearby, location.getBlock(), mat, radius, novaTickInterval, expandingRadiusChange);
 		return null;
 	}
 	
@@ -156,19 +159,22 @@ public class NovaEffect extends SpellEffect {
 		MagicMaterial matNova;
 		int radiusNova;
 		Set<Block> blocks;
+		int radiusChange;
 		
-		public NovaAnimation(List<Player> nearby, Block center, MagicMaterial mat, int radius, int tickInterval) {
+		public NovaAnimation(List<Player> nearby, Block center, MagicMaterial mat, int radius, int tickInterval, int activeRadiusChange) {
 			super(tickInterval, true);
 			this.nearby = nearby;
 			this.center = center;
 			this.matNova = mat;
 			this.radiusNova = radius;
 			blocks = new HashSet<Block>();
+			radiusChange = activeRadiusChange;
 		}
 
 		@Override
 		protected void onTick(int tick) {
 			// remove old fire blocks
+			tick*= radiusChange;
 			for (Block block : blocks) {
 				for (Player p : nearby) {
 					Util.restoreFakeBlockChange(p, block);

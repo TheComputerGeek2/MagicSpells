@@ -17,7 +17,7 @@ import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.util.Util;
 
-public class Modifier {
+public class Modifier implements IModifier {
 
 	boolean negated = false;
 	Condition condition;
@@ -27,6 +27,9 @@ public class Modifier {
 	int modifierVarInt;
 	String modifierVarString;
 	String strModifierFailed = null;
+	
+	//is this a condition that will want to access the events directly?
+	boolean alertCondition = false;
 	
 	public static Modifier factory(String s) {
 		Modifier m = new Modifier();
@@ -75,13 +78,24 @@ public class Modifier {
 			m.strModifierFailed = s1[1].trim();
 		}
 		
+		//check for the alert condition
+		if (m.condition instanceof IModifier) {
+			m.alertCondition = true;
+		}
+		
 		// done
 		return m;
 	}
 	
+	@Override
 	public boolean apply(SpellCastEvent event) {
 		Player player = event.getCaster();
-		boolean check = condition.check(player);
+		boolean check;
+		if (alertCondition) {
+			check = ((IModifier)condition).apply(event);
+		} else {
+			check = condition.check(player);
+		}
 		if (negated) check = !check;
 		if (!check && type == ModifierType.REQUIRED) {
 			event.setCancelled(true);
@@ -120,9 +134,15 @@ public class Modifier {
 		return true;
 	}
 	
+	@Override
 	public boolean apply(ManaChangeEvent event) {
 		Player player = event.getPlayer();
-		boolean check = condition.check(player);
+		boolean check;
+		if (alertCondition) {
+			check = ((IModifier)condition).apply(event);
+		} else {
+			check = condition.check(player);
+		}
 		if (negated) check = !check;
 		if (!check && type == ModifierType.REQUIRED) {
 			event.setNewAmount(event.getOldAmount());
@@ -154,9 +174,17 @@ public class Modifier {
 		return true;
 	}
 	
+	@Override
 	public boolean apply(SpellTargetEvent event) {
 		Player player = event.getCaster();
-		boolean check = condition.check(player, event.getTarget());
+		
+		boolean check;
+		if (alertCondition) {
+			check = ((IModifier)condition).apply(event);
+		} else {
+			check = condition.check(player, event.getTarget());
+		}
+		
 		if (negated) check = !check;
 		if (!check && type == ModifierType.REQUIRED) {
 			event.setCancelled(true);
@@ -190,9 +218,15 @@ public class Modifier {
 		return true;
 	}
 	
+	@Override
 	public boolean apply(SpellTargetLocationEvent event) {
 		Player player = event.getCaster();
-		boolean check = condition.check(player, event.getTargetLocation());
+		boolean check;
+		if (alertCondition) {
+			check = ((IModifier)condition).apply(event);
+		} else {
+			check = condition.check(player, event.getTargetLocation());
+		}
 		if (negated) check = !check;
 		if (!check && type == ModifierType.REQUIRED) {
 			event.setCancelled(true);
@@ -216,8 +250,14 @@ public class Modifier {
 		return true;
 	}
 	
+	@Override
 	public boolean apply(MagicSpellsGenericPlayerEvent event) {
-		boolean check = condition.check(event.getPlayer());
+		boolean check;
+		if (alertCondition) {
+			check = ((IModifier)condition).check(event.getPlayer());
+		} else {
+			check = condition.check(event.getPlayer());
+		}
 		if (negated) check = !check;
 		if (!check && type == ModifierType.REQUIRED) {
 			event.setCancelled(true);
@@ -243,6 +283,7 @@ public class Modifier {
 		return true;
 	}
 	
+	@Override
 	public boolean check(Player player) {
 		boolean check = condition.check(player);
 		if (negated) check = !check;
