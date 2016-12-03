@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.targeted;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.nisovin.magicspells.util.expression.NullOperation;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -121,7 +122,7 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell, Spel
 			SpellApplyDamageEvent event = new SpellApplyDamageEvent(DotSpell.this, caster, target, dam, DamageCause.MAGIC, spellDamageType);
 			Bukkit.getPluginManager().callEvent(event);
 			dam = event.getFinalDamage();
-			if (preventKnockback) {
+			if (preventKnockback && target != null && caster != null) {
 				// bukkit doesn't call a damage event here, so we'll do it ourselves
 				MagicSpellsEntityDamageByEntityEvent devent = new MagicSpellsEntityDamageByEntityEvent(caster, target, DamageCause.ENTITY_ATTACK, damage);
 				Bukkit.getPluginManager().callEvent(devent);
@@ -129,7 +130,11 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell, Spel
 					target.damage(devent.getDamage());
 				}
 			} else {
-				target.damage(dam, caster);
+				if (target != null) {
+					target.damage(dam, caster);
+				}else{
+					target.damage(dam);
+				}
 			}
 			target.setNoDamageTicks(0);
 			playSpellEffects(EffectPosition.DELAYED, target);

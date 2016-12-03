@@ -1005,6 +1005,9 @@ public class MagicSpells extends JavaPlugin {
                         if (!eventClass.isAssignableFrom(event.getClass())) {
                             return;
                         }
+                        if (listener == null) {
+							return;
+						}
                         long start = System.nanoTime();
                         method.invoke(listener, event);
                         if (plugin.enableProfiling) {
