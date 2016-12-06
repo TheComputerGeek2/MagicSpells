@@ -61,6 +61,8 @@ import com.nisovin.magicspells.variables.VariableManager;
 
 import de.slikey.effectlib.Effect;
 
+import javax.annotation.Nullable;
+
 
 /**
  * Spell<br>
@@ -1298,6 +1300,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	protected void postCast(SpellCastEvent spellCast, PostCastAction action) {
 		debug(3, "    Post-cast action: " + action);
 		Player player = spellCast.getCaster();
+
 		SpellCastState state = spellCast.getSpellCastState();
 		if (action != null && action != PostCastAction.ALREADY_HANDLED) {
 			if (state == SpellCastState.NORMAL) {
@@ -1310,7 +1313,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 				if (action == PostCastAction.HANDLE_NORMALLY || action == PostCastAction.MESSAGES_ONLY || action == PostCastAction.NO_COOLDOWN || action == PostCastAction.NO_REAGENTS) {
 					sendMessages(player, spellCast.getSpellArgs());
 				}
-				if (experience > 0) {
+				if (experience > 0 && player != null) {
 					player.giveExp(experience);
 				}
 			} else if (state == SpellCastState.ON_COOLDOWN) {
@@ -2374,6 +2377,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	}
 	
 	public class DelayedSpellCast implements Runnable, Listener {
+		@Nullable
 		private Player player;
 		private Location prevLoc;
 		private Spell spell;
@@ -2396,7 +2400,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		
 		@Override
 		public void run() {
-			if (!cancelled && player.isOnline() && !player.isDead()) {
+			if (player != null && !cancelled && player.isOnline() && !player.isDead()) {
 				Location currLoc = player.getLocation();
 				if (!interruptOnMove || (Math.abs(currLoc.getX() - prevLoc.getX()) < motionToleranceX && Math.abs(currLoc.getY() - prevLoc.getY()) < motionToleranceY && Math.abs(currLoc.getZ() - prevLoc.getZ()) < motionToleranceZ)) {
 					if (!spell.hasReagents(player, reagents)) {
@@ -2446,6 +2450,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	}
 	
 	public class DelayedSpellCastWithBar implements Runnable, Listener {
+		@Nullable
 		private Player player;
 		private Location prevLoc;
 		private Spell spell;
@@ -2476,23 +2481,25 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		
 		@Override
 		public void run() {
-			if (!cancelled && player.isOnline() && !player.isDead()) {
-				elapsed += interval;
-				Location currLoc = player.getLocation();
-				if (!interruptOnMove || (Math.abs(currLoc.getX() - prevLoc.getX()) < motionToleranceX && Math.abs(currLoc.getY() - prevLoc.getY()) < motionToleranceY && Math.abs(currLoc.getZ() - prevLoc.getZ()) < motionToleranceZ)) {
-					if (elapsed >= castTime) {
-						if (!spell.hasReagents(player, reagents)) {
-							spellCast.setSpellCastState(SpellCastState.MISSING_REAGENTS);
-						}
-						spell.handleCast(spellCast);
-						cancelled = true;
-					}
-					MagicSpells.getExpBarManager().update(player, 0, ((float)elapsed / (float)castTime), this);
-				} else {
-					interrupt();
-				}
-			} else {
-				end();
+			if (player != null) {
+				if (!cancelled && player.isOnline() && !player.isDead()) {
+                    elapsed += interval;
+                    Location currLoc = player.getLocation();
+                    if (!interruptOnMove || (Math.abs(currLoc.getX() - prevLoc.getX()) < motionToleranceX && Math.abs(currLoc.getY() - prevLoc.getY()) < motionToleranceY && Math.abs(currLoc.getZ() - prevLoc.getZ()) < motionToleranceZ)) {
+                        if (elapsed >= castTime) {
+                            if (!spell.hasReagents(player, reagents)) {
+                                spellCast.setSpellCastState(SpellCastState.MISSING_REAGENTS);
+                            }
+                            spell.handleCast(spellCast);
+                            cancelled = true;
+                        }
+                        MagicSpells.getExpBarManager().update(player, 0, ((float)elapsed / (float)castTime), this);
+                    } else {
+                        interrupt();
+                    }
+                } else {
+                    end();
+                }
 			}
 		}
 		
@@ -2533,7 +2540,9 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 			Bukkit.getScheduler().cancelTask(taskId);
 			unregisterEvents(this);
 			MagicSpells.getExpBarManager().unlock(player, this);
-			MagicSpells.getExpBarManager().update(player, player.getLevel(), player.getExp());
+			if (player != null) {
+				MagicSpells.getExpBarManager().update(player, player.getLevel(), player.getExp());
+			}
 			ManaHandler mana = MagicSpells.getManaHandler();
 			if (mana != null) {
 				mana.showMana(player);

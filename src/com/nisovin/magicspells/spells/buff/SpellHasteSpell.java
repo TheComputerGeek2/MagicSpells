@@ -82,6 +82,9 @@ public class SpellHasteSpell extends BuffSpell {
     
     @EventHandler (priority=EventPriority.MONITOR)
     public void onSpellSpeedCast(SpellCastEvent event) {
+        if (event.getCaster() == null) {
+            return;
+        }
     	if (!filter.check(event.getSpell())) return;
     	
     	Float power = spellTimersModified.get(event.getCaster().getName());

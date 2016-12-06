@@ -35,6 +35,9 @@ import com.nisovin.magicspells.util.IDisguiseManager;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.PlayerNameUtils;
 import com.nisovin.magicspells.util.TargetInfo;
+
+import javax.annotation.Nullable;
+
 public class DisguiseSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	static IDisguiseManager manager;
@@ -181,7 +184,7 @@ public class DisguiseSpell extends TargetedSpell implements TargetedEntitySpell 
 	}
 	
 	@Override
-	public boolean castAtEntity(Player player, LivingEntity target, float power) {
+	public boolean castAtEntity(@Nullable Player player, LivingEntity target, float power) {
 		if (target instanceof Player) {
 			disguise((Player)target);
 			return true;
@@ -229,6 +232,9 @@ public class DisguiseSpell extends TargetedSpell implements TargetedEntitySpell 
 	class CastListener implements Listener {
 		@EventHandler
 		void onSpellCast(SpellCastedEvent event) {
+			if (event.getCaster() == null) {
+				return;
+			}
 			if (event.getSpell() != thisSpell && disguised.containsKey(event.getCaster().getName().toLowerCase())) {
 				manager.removeDisguise(event.getCaster());
 			}

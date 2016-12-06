@@ -14,6 +14,7 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -444,6 +445,9 @@ public class VariableManager implements Listener {
 			Map<String, VariableMod> varMods = event.getSpell().getVariableModsCast();
 			if (varMods != null && varMods.size() > 0) {
 				Player player = event.getCaster();
+				if (player == null) {
+					return;
+				}
 				for (String var : varMods.keySet()) {
 					VariableMod mod = varMods.get(var);
 					//double val = varMods.get(var);

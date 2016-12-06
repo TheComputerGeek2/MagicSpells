@@ -39,6 +39,9 @@ public class ClaritySpell extends BuffSpell {
 	
 	@EventHandler(ignoreCancelled = true)
 	public void onSpellCast(SpellCastEvent event) {
+		if (event.getCaster() == null) {
+			return;
+		}
 		if (buffed.containsKey(event.getCaster().getName()) && filter.check(event.getSpell())) {
 			float power = buffed.get(event.getCaster().getName());
 			float mod = multiplier;

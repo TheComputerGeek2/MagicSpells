@@ -71,9 +71,10 @@ public class MagicLogger implements Listener {
 	
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onSpellCast(SpellCastEvent event) {
-		log("BEGIN CAST" + 
+
+		log("BEGIN CAST" +
 				"; spell=" + event.getSpell().getInternalName() + 
-				"; caster=" + event.getCaster().getName() + 
+				"; caster=" + event.getCaster() +
 				"; loc=" + formatLoc(event.getCaster().getLocation()) +
 				"; state=" + event.getSpellCastState().name() +
 				"; power=" + event.getPower() +

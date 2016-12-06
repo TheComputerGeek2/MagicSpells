@@ -427,7 +427,7 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 				public void run() {
 					Player p = PlayerNameUtils.getPlayerExact(name);
 					if (p == null) p = player;
-					if (p != null && isExpired(p)) {
+					if (isExpired(p)) {
 						turnOff(p);
 					}
 				}
@@ -625,6 +625,9 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 	public class SpellCastListener implements Listener {
 		@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 		public void onChangeWorld(SpellCastEvent event) {
+			if (event.getCaster() == null) {
+				return;
+			}
 			if (thisSpell != event.getSpell() && event.getSpellCastState() == SpellCastState.NORMAL && isActive(event.getCaster())) {
 				turnOff(event.getCaster());
 			}

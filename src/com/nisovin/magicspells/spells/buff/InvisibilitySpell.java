@@ -210,7 +210,7 @@ public class InvisibilitySpell extends BuffSpell {
 
 	@Override
 	public boolean isActive(Player player) {
-		return invisibles.containsKey(player.getName());
+		return player != null && invisibles.containsKey(player.getName());
 	}
 
 }

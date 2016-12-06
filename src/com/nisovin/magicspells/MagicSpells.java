@@ -1009,7 +1009,13 @@ public class MagicSpells extends JavaPlugin {
 							return;
 						}
                         long start = System.nanoTime();
-                        method.invoke(listener, event);
+						try {
+							method.invoke(listener, event);
+						}catch (Exception e) {
+							System.out.println("Error executing method on " + listener + " with " + event);
+							e.printStackTrace();
+							return;
+						}
                         if (plugin.enableProfiling) {
                         	Long total = plugin.profilingTotalTime.get(eventKey);
                         	if (total == null) total = (long)0;

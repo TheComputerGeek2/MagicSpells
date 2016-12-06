@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.events;
 
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
@@ -27,6 +28,7 @@ public abstract class SpellEvent extends Event implements IMagicSpellsCompatEven
 	 * Gets the player casting the spell.
 	 * @return the casting player
 	 */
+	@Nullable
 	public Player getCaster() {
 		return caster;
 	}

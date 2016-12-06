@@ -2,6 +2,7 @@ package com.nisovin.magicspells.spells.targeted;
 
 import org.bukkit.Bukkit;
 import org.bukkit.EntityEffect;
+import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -97,7 +98,14 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell, Spe
 	private boolean causePain(Player player, LivingEntity target, float power) {
 		if (target.isDead()) return false;
 		// TODO: This is a pretty crappy fix for http://prnt.sc/d9q6cv, but honestly idk
-		double resolvedValue = damageExpression.resolveValue(null, player, player.getLocation(), (target != null ? target : player).getLocation()).doubleValue();
+		Location playerLoc;
+		if (player != null) {
+			playerLoc = player.getLocation();
+		}else {
+			playerLoc = target.getLocation();
+		}
+
+		double resolvedValue = damageExpression.resolveValue(null, player, playerLoc, target.getLocation()).doubleValue();
 		MagicSpells.log(MagicSpells.DEVELOPER_DEBUG_LEVEL, "Damage resolver resolved value of " + resolvedValue);
 		double localDamage = resolvedValue * power;
 		//double dam = damage * power;
