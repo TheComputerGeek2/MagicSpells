@@ -14,6 +14,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.EquipmentSlot;
 
 import com.nisovin.magicspells.mana.ManaChangeReason;
 
@@ -61,12 +62,12 @@ public class CastListener implements Listener {
 		if (noInteract) {
 			// special block -- don't do normal interactions
 			noCastUntil.put(event.getPlayer().getName(), System.currentTimeMillis() + 150);
-		} else if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
+		} else if (event.getHand() == EquipmentSlot.HAND && (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK)) {
 			// left click - cast
 			if (!plugin.castOnAnimate) {
 				castSpell(event.getPlayer());
 			}
-		} else if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+		} else if (event.getHand() == EquipmentSlot.HAND && (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
 			// right click -- cycle spell and/or process mana pots
 			ItemStack inHand = MagicSpells.getVolatileCodeHandler().getItemInMainHand(player);
 			

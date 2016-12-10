@@ -99,7 +99,8 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell, Spe
 	
 	private boolean causePain(Player player, LivingEntity target, float power) {
 		if (target.isDead()) return false;
-		double resolvedValue = damageExpression.resolveValue(null, player, player.getLocation(), target.getLocation()).doubleValue();
+		// TODO: This is a pretty crappy fix for http://prnt.sc/d9q6cv, but honestly idk
+		double resolvedValue = damageExpression.resolveValue(null, player, player.getLocation(), (target != null ? target : player).getLocation()).doubleValue();
 		MagicSpells.log(MagicSpells.DEVELOPER_DEBUG_LEVEL, "Damage resolver resolved value of " + resolvedValue);
 		double localDamage = resolvedValue * power;
 		//double dam = damage * power;
