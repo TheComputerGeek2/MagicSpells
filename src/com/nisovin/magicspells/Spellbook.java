@@ -646,22 +646,19 @@ public class Spellbook {
 		try {
 			File file;
 			if (plugin.separatePlayerSpellsPerWorld) {
-				File folder = new File(plugin.getDataFolder(),
-						"spellbooks" + File.separator + player.getWorld().getName());
+				File folder = new File(spellbookDir, player.getWorld().getName());
 				if (!folder.exists()) {
 					folder.mkdirs();
 				}
-				File oldfile = new File(plugin.getDataFolder(), "spellbooks" + File.separator
-						+ player.getWorld().getName() + File.separator + playerName + ".txt");
+				File oldfile = new File(folder, playerName + ".txt");
 				if (oldfile.exists())
 					oldfile.delete();
-				file = new File(plugin.getDataFolder(), "spellbooks" + File.separator + player.getWorld().getName()
-						+ File.separator + uniqueId + ".txt");
+				file = new File(folder, uniqueId + ".txt");
 			} else {
-				File oldfile = new File(plugin.getDataFolder(), "spellbooks" + File.separator + playerName + ".txt");
+				File oldfile = new File(spellbookDir, playerName + ".txt");
 				if (oldfile.exists())
 					oldfile.delete();
-				file = new File(plugin.getDataFolder(), "spellbooks" + File.separator + uniqueId + ".txt");
+				file = new File(spellbookDir, uniqueId + ".txt");
 			}
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file, false));
 			for (Spell spell : allSpells) {
