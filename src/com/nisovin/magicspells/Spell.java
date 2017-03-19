@@ -639,23 +639,24 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	}
 	
 	protected void loadConfigData(MagicConfig config, String spellName, String section) {
-		this.debug = config.getBoolean(section + "." + spellName + ".debug", false);
+		String str = section+"."+spellName;
+		this.debug = config.getBoolean(str + ".debug", false);
 		this.profilingKey = "Spell:" + this.getClass().getName().replace("com.nisovin.magicspells.spells.", "") + "-" + spellName;
-		this.name = config.getString(section + "." + spellName + ".name", spellName);
-		List<String> temp = config.getStringList(section + "." + spellName + ".aliases", null);
+		this.name = config.getString(str + ".name", spellName);
+		List<String> temp = config.getStringList(str + ".aliases", null);
 		if (temp != null) {
 			aliases = new String[temp.size()];
 			aliases = temp.toArray(aliases);
 		}
-		this.helperSpell = config.getBoolean(section + "." + spellName + ".helper-spell", false);
-		this.alwaysGranted = config.getBoolean(section + "." + spellName + ".always-granted", false);
-		this.permName = config.getString(section + "." + spellName + ".permission-name", spellName);
-		this.incantations = config.getStringList(section + "." + spellName + ".incantations", null);
+		this.helperSpell = config.getBoolean(str + ".helper-spell", false);
+		this.alwaysGranted = config.getBoolean(str + ".always-granted", false);
+		this.permName = config.getString(str + ".permission-name", spellName);
+		this.incantations = config.getStringList(str + ".incantations", null);
 		
 		// general options
-		this.description = config.getString(section + "." + spellName + ".description", "");
-		if (config.contains(section + "." + spellName + ".cast-item")) {
-			String[] sItems = config.getString(section + "." + spellName + ".cast-item", "-5").trim().replace(" ", "").split(",");
+		this.description = config.getString(str + ".description", "");
+		if (config.contains(str + ".cast-item")) {
+			String[] sItems = config.getString(str + ".cast-item", "-5").trim().replace(" ", "").split(",");
 			this.castItems = new CastItem[sItems.length];
 			for (int i = 0; i < sItems.length; i++) {
 				ItemStack is = Util.getItemStackFromString(sItems[i]);
@@ -663,8 +664,8 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 					this.castItems[i] = new CastItem(is);
 				}
 			}
-		} else if (config.contains(section + "." + spellName + ".cast-items")) {
-			List<String> sItems = config.getStringList(section + "." + spellName + ".cast-items", null);
+		} else if (config.contains(str + ".cast-items")) {
+			List<String> sItems = config.getStringList(str + ".cast-items", null);
 			if (sItems == null) sItems = new ArrayList<String>();
 			this.castItems = new CastItem[sItems.size()];
 			for (int i = 0; i < castItems.length; i++) {
@@ -676,8 +677,8 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		} else {
 			this.castItems = new CastItem[0];
 		}
-		if (config.contains(section + "." + spellName + ".right-click-cast-item")) {
-			String[] sItems = config.getString(section + "." + spellName + ".right-click-cast-item", "-5").trim().replace(" ", "").split(",");
+		if (config.contains(str + ".right-click-cast-item")) {
+			String[] sItems = config.getString(str + ".right-click-cast-item", "-5").trim().replace(" ", "").split(",");
 			this.rightClickCastItems = new CastItem[sItems.length];
 			for (int i = 0; i < sItems.length; i++) {
 				ItemStack is = Util.getItemStackFromString(sItems[i]);
@@ -685,8 +686,8 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 					this.rightClickCastItems[i] = new CastItem(is);
 				}
 			}
-		} else if (config.contains(section + "." + spellName + ".right-click-cast-items")) {
-			List<String> sItems = config.getStringList(section + "." + spellName + ".right-click-cast-items", null);
+		} else if (config.contains(str + ".right-click-cast-items")) {
+			List<String> sItems = config.getStringList(str + ".right-click-cast-items", null);
 			if (sItems == null) sItems = new ArrayList<String>();
 			this.rightClickCastItems = new CastItem[sItems.size()];
 			for (int i = 0; i < rightClickCastItems.length; i++) {
@@ -698,8 +699,8 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		} else {
 			this.rightClickCastItems = new CastItem[0];
 		}
-		if (config.contains(section + "." + spellName + ".consume-cast-item")) {
-			String[] sItems = config.getString(section + "." + spellName + ".consume-cast-item", "-5").trim().replace(" ", "").split(",");
+		if (config.contains(str + ".consume-cast-item")) {
+			String[] sItems = config.getString(str + ".consume-cast-item", "-5").trim().replace(" ", "").split(",");
 			this.consumeCastItems = new CastItem[sItems.length];
 			for (int i = 0; i < sItems.length; i++) {
 				ItemStack is = Util.getItemStackFromString(sItems[i]);
@@ -707,8 +708,8 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 					this.consumeCastItems[i] = new CastItem(is);
 				}
 			}
-		} else if (config.contains(section + "." + spellName + ".consume-cast-items")) {
-			List<String> sItems = config.getStringList(section + "." + spellName + ".consume-cast-items", null);
+		} else if (config.contains(str + ".consume-cast-items")) {
+			List<String> sItems = config.getStringList(str + ".consume-cast-items", null);
 			if (sItems == null) sItems = new ArrayList<String>();
 			this.consumeCastItems = new CastItem[sItems.size()];
 			for (int i = 0; i < consumeCastItems.length; i++) {
@@ -720,12 +721,12 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		} else {
 			this.consumeCastItems = new CastItem[0];
 		}
-		this.castWithLeftClick = config.getBoolean(section + "." + spellName + ".cast-with-left-click", MagicSpells.plugin.castWithLeftClick);
-		this.castWithRightClick = config.getBoolean(section + "." + spellName + ".cast-with-right-click", MagicSpells.plugin.castWithRightClick);
-		this.danceCastSequence = config.getString(section + "." + spellName + ".dance-cast-sequence", null);
-		this.requireCastItemOnCommand = config.getBoolean(section + "." + spellName + ".require-cast-item-on-command", false);
-		this.bindable = config.getBoolean(section + "." + spellName + ".bindable", true);
-		List<String> bindables = config.getStringList(section + "." + spellName + ".bindable-items", null);
+		this.castWithLeftClick = config.getBoolean(str + ".cast-with-left-click", MagicSpells.plugin.castWithLeftClick);
+		this.castWithRightClick = config.getBoolean(str + ".cast-with-right-click", MagicSpells.plugin.castWithRightClick);
+		this.danceCastSequence = config.getString(str + ".dance-cast-sequence", null);
+		this.requireCastItemOnCommand = config.getBoolean(str + ".require-cast-item-on-command", false);
+		this.bindable = config.getBoolean(str + ".bindable", true);
+		List<String> bindables = config.getStringList(str + ".bindable-items", null);
 		if (bindables != null) {
 			bindableItems = new HashSet<CastItem>();
 			for (String s : bindables) {
@@ -735,7 +736,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 				}
 			}
 		}
-		String icontemp = config.getString(section + "." + spellName + ".spell-icon", null);
+		String icontemp = config.getString(str + ".spell-icon", null);
 		if (icontemp == null) {
 			spellIcon = null;
 		} else {
@@ -749,36 +750,36 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 				}
 			}
 		}
-		this.broadcastRange = config.getInt(section + "." + spellName + ".broadcast-range", MagicSpells.plugin.broadcastRange);
-		this.experience = config.getInt(section + "." + spellName + ".experience", 0);
+		this.broadcastRange = config.getInt(str + ".broadcast-range", MagicSpells.plugin.broadcastRange);
+		this.experience = config.getInt(str + ".experience", 0);
 
 		// cast time
-		this.castTime = config.getInt(section + "." + spellName + ".cast-time", 0);
-		this.interruptOnMove = config.getBoolean(section + "." + spellName + ".interrupt-on-move", true);
-		this.interruptOnTeleport = config.getBoolean(section + "." + spellName + ".interrupt-on-teleport", true);
-		this.interruptOnDamage = config.getBoolean(section + "." + spellName + ".interrupt-on-damage", false);
-		this.interruptOnCast = config.getBoolean(section + "." + spellName + ".interrupt-on-cast", true);
-		this.spellNameOnInterrupt = config.getString(section + "." + spellName + ".spell-on-interrupt", null);
+		this.castTime = config.getInt(str + ".cast-time", 0);
+		this.interruptOnMove = config.getBoolean(str + ".interrupt-on-move", true);
+		this.interruptOnTeleport = config.getBoolean(str + ".interrupt-on-teleport", true);
+		this.interruptOnDamage = config.getBoolean(str + ".interrupt-on-damage", false);
+		this.interruptOnCast = config.getBoolean(str + ".interrupt-on-cast", true);
+		this.spellNameOnInterrupt = config.getString(str + ".spell-on-interrupt", null);
 		
 		// targeting
-		this.minRange = config.getInt(section + "." + spellName + ".min-range", 0);
-		this.range = config.getInt(section + "." + spellName + ".range", 20);
-		this.spellPowerAffectsRange = config.getBoolean(section + "." + spellName + ".spell-power-affects-range", false);
-		this.obeyLos = config.getBoolean(section + "." + spellName + ".obey-los", true);
-		if (config.contains(section + "." + spellName + ".can-target")) {
-			if (config.isList(section + "." + spellName + ".can-target")) {
-				validTargetList = new ValidTargetList(this, config.getStringList(section + "." + spellName + ".can-target", null));
+		this.minRange = config.getInt(str + ".min-range", 0);
+		this.range = config.getInt(str + ".range", 20);
+		this.spellPowerAffectsRange = config.getBoolean(str + ".spell-power-affects-range", false);
+		this.obeyLos = config.getBoolean(str + ".obey-los", true);
+		if (config.contains(str + ".can-target")) {
+			if (config.isList(str + ".can-target")) {
+				validTargetList = new ValidTargetList(this, config.getStringList(str + ".can-target", null));
 			} else {
-				validTargetList = new ValidTargetList(this, config.getString(section + "." + spellName + ".can-target", ""));
+				validTargetList = new ValidTargetList(this, config.getString(str + ".can-target", ""));
 			}
 		} else {
-			boolean targetPlayers = config.getBoolean(section + "." + spellName + ".target-players", true);
-			boolean targetNonPlayers = config.getBoolean(section + "." + spellName + ".target-non-players", true);
+			boolean targetPlayers = config.getBoolean(str + ".target-players", true);
+			boolean targetNonPlayers = config.getBoolean(str + ".target-non-players", true);
 			validTargetList = new ValidTargetList(targetPlayers, targetNonPlayers);
 		}
-		this.beneficial = config.getBoolean(section + "." + spellName + ".beneficial", isBeneficialDefault());
+		this.beneficial = config.getBoolean(str + ".beneficial", isBeneficialDefault());
 		this.targetDamageCause = null;
-		String causeStr = config.getString(section + "." + spellName + ".target-damage-cause", null);
+		String causeStr = config.getString(str + ".target-damage-cause", null);
 		if (causeStr != null) {
 			for (DamageCause cause : DamageCause.values()) {
 				if (cause.name().equalsIgnoreCase(causeStr)) {
@@ -787,18 +788,18 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 				}
 			}
 		}
-		this.targetDamageAmount = config.getDouble(section + "." + spellName + ".target-damage-amount", 0);
+		this.targetDamageAmount = config.getDouble(str + ".target-damage-amount", 0);
 		this.losTransparentBlocks = MagicSpells.getTransparentBlocks();
-		if (config.contains(section + "." + spellName + ".los-transparent-blocks")) {
-			this.losTransparentBlocks = new HashSet<Byte>(config.getByteList(section + "." + spellName + ".los-transparent-blocks", null));
+		if (config.contains(str + ".los-transparent-blocks")) {
+			this.losTransparentBlocks = new HashSet<Byte>(config.getByteList(str + ".los-transparent-blocks", null));
 			this.losTransparentBlocks.add((byte)0);
 		}
 		
 		// graphical effects
-		if (config.contains(section + "." + spellName + ".effects")) {
+		if (config.contains(str + ".effects")) {
 			this.effects = new EnumMap<EffectPosition, List<SpellEffect>>(EffectPosition.class);
-			if (config.isList(section + "." + spellName + ".effects")) {
-				List<String> effectsList = config.getStringList(section + "." + spellName + ".effects", null);
+			if (config.isList(str + ".effects")) {
+				List<String> effectsList = config.getStringList(str + ".effects", null);
 				if (effectsList != null) {
 					for (Object obj : effectsList) {
 						if (obj instanceof String) {
@@ -820,9 +821,9 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 						}
 					}
 				}
-			} else if (config.isSection(section + "." + spellName + ".effects")) {
-				for (String key : config.getKeys(section + "." + spellName + ".effects")) {
-					ConfigurationSection effConf = config.getSection(section + "." + spellName + ".effects." + key);
+			} else if (config.isSection(str + ".effects")) {
+				for (String key : config.getKeys(str + ".effects")) {
+					ConfigurationSection effConf = config.getSection(str + ".effects." + key);
 					EffectPosition pos = EffectPosition.getPositionFromString(effConf.getString("position", ""));
 					if (pos != null) {
 						SpellEffect effect = SpellEffect.createNewEffectByName(effConf.getString("effect", ""));
@@ -847,27 +848,27 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		if (reagents == null) reagents = new SpellReagents();
 		
 		// cooldowns
-		this.cooldown = (float)config.getDouble(section + "." + spellName + ".cooldown", 0);
-		this.serverCooldown = (float)config.getDouble(section + "." + spellName + ".server-cooldown", 0);
-		this.rawSharedCooldowns = config.getStringList(section + "." + spellName + ".shared-cooldowns", null);
-		this.ignoreGlobalCooldown = config.getBoolean(section + "." + spellName + ".ignore-global-cooldown", false);
-		this.charges = config.getInt(section + "." + spellName + ".charges", 0);
-		this.rechargeSound = config.getString(section + "." + spellName + ".recharge-sound", "");
+		this.cooldown = (float)config.getDouble(str + ".cooldown", 0);
+		this.serverCooldown = (float)config.getDouble(str + ".server-cooldown", 0);
+		this.rawSharedCooldowns = config.getStringList(str + ".shared-cooldowns", null);
+		this.ignoreGlobalCooldown = config.getBoolean(str + ".ignore-global-cooldown", false);
+		this.charges = config.getInt(str + ".charges", 0);
+		this.rechargeSound = config.getString(str + ".recharge-sound", "");
 		this.nextCast = new HashMap<String, Long>();
 		this.chargesConsumed = new IntMap<String>();
 		this.nextCastServer = 0;
 
 		// modifiers
-		this.modifierStrings = config.getStringList(section + "." + spellName + ".modifiers", null);
-		this.targetModifierStrings = config.getStringList(section + "." + spellName + ".target-modifiers", null);
+		this.modifierStrings = config.getStringList(str + ".modifiers", null);
+		this.targetModifierStrings = config.getStringList(str + ".target-modifiers", null);
 		
 		// hierarchy options
-		this.prerequisites = config.getStringList(section + "." + spellName + ".prerequisites", null);
-		this.replaces = config.getStringList(section + "." + spellName + ".replaces", null);
-		this.precludes = config.getStringList(section + "." + spellName + ".precludes", null);
-		this.worldRestrictions = config.getStringList(section + "." + spellName + ".restrict-to-worlds", null);
-		List<String> sXpGranted = config.getStringList(section + "." + spellName + ".xp-granted", null);
-		List<String> sXpRequired = config.getStringList(section + "." + spellName + ".xp-required", null);
+		this.prerequisites = config.getStringList(str + ".prerequisites", null);
+		this.replaces = config.getStringList(str + ".replaces", null);
+		this.precludes = config.getStringList(str + ".precludes", null);
+		this.worldRestrictions = config.getStringList(str + ".restrict-to-worlds", null);
+		List<String> sXpGranted = config.getStringList(str + ".xp-granted", null);
+		List<String> sXpRequired = config.getStringList(str + ".xp-required", null);
 		if (sXpGranted != null) {
 			xpGranted = new LinkedHashMap<String, Integer>();
 			for (String s : sXpGranted) {
@@ -894,7 +895,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		}
 		
 		// variable options
-		List<String> varModsCast = config.getStringList(section + "." + spellName + ".variable-mods-cast", null);
+		List<String> varModsCast = config.getStringList(str + ".variable-mods-cast", null);
 		if (varModsCast != null && varModsCast.size() > 0) {
 			variableModsCast = new HashMap<String, VariableMod>();
 			for (String s : varModsCast) {
@@ -908,7 +909,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 				}
 			}
 		}
-		List<String> varModsCasted = config.getStringList(section + "." + spellName + ".variable-mods-casted", null);
+		List<String> varModsCasted = config.getStringList(str + ".variable-mods-casted", null);
 		if (varModsCasted != null && varModsCasted.size() > 0) {
 			variableModsCasted = new HashMap<String, VariableMod>();
 			for (String s : varModsCasted) {
@@ -922,7 +923,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 				}
 			}
 		}
-		List<String> varModsTarget = config.getStringList(section + "." + spellName + ".variable-mods-target", null);
+		List<String> varModsTarget = config.getStringList(str + ".variable-mods-target", null);
 		if (varModsTarget != null && varModsTarget.size() > 0) {
 			variableModsTarget = new HashMap<String, VariableMod>();
 			for (String s : varModsTarget) {
@@ -937,34 +938,34 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 			}
 		}
 
-		this.soundOnCooldown = config.getString(section + "." + spellName + ".sound-on-cooldown", MagicSpells.plugin.soundFailOnCooldown);
+		this.soundOnCooldown = config.getString(str + ".sound-on-cooldown", MagicSpells.plugin.soundFailOnCooldown);
 		if (this.soundOnCooldown != null && this.soundOnCooldown.isEmpty()) {
 			this.soundOnCooldown = null;
 		}
-		this.soundMissingReagents = config.getString(section + "." + spellName + ".sound-missing-reagents", MagicSpells.plugin.soundFailMissingReagents);
+		this.soundMissingReagents = config.getString(str + ".sound-missing-reagents", MagicSpells.plugin.soundFailMissingReagents);
 		if (this.soundMissingReagents != null && this.soundMissingReagents.isEmpty()) {
 			this.soundMissingReagents = null;
 		}
 		
 		// strings
-		this.strCost = config.getString(section + "." + spellName + ".str-cost", null);
-		this.strCastSelf = config.getString(section + "." + spellName + ".str-cast-self", null);
-		this.strCastOthers = config.getString(section + "." + spellName + ".str-cast-others", null);
-		this.strOnCooldown = config.getString(section + "." + spellName + ".str-on-cooldown", MagicSpells.plugin.strOnCooldown);
-		this.strMissingReagents = config.getString(section + "." + spellName + ".str-missing-reagents", MagicSpells.plugin.strMissingReagents);
-		this.strCantCast = config.getString(section + "." + spellName + ".str-cant-cast", MagicSpells.plugin.strCantCast);
-		this.strCantBind = config.getString(section + "." + spellName + ".str-cant-bind", null);
-		this.strWrongWorld = config.getString(section + "." + spellName + ".str-wrong-world", MagicSpells.plugin.strWrongWorld);
-		this.strWrongCastItem = config.getString(section + "." + spellName + ".str-wrong-cast-item", strCantCast);
-		this.strCastStart = config.getString(section + "." + spellName + ".str-cast-start", null);
-		this.strInterrupted = config.getString(section + "." + spellName + ".str-interrupted", null);
-		this.strModifierFailed = config.getString(section + "." + spellName + ".str-modifier-failed", null);
-		this.strXpAutoLearned = config.getString(section + "." + spellName + ".str-xp-auto-learned", MagicSpells.plugin.strXpAutoLearned);
+		this.strCost = config.getString(str + ".str-cost", null);
+		this.strCastSelf = config.getString(str + ".str-cast-self", null);
+		this.strCastOthers = config.getString(str + ".str-cast-others", null);
+		this.strOnCooldown = config.getString(str + ".str-on-cooldown", MagicSpells.plugin.strOnCooldown);
+		this.strMissingReagents = config.getString(str + ".str-missing-reagents", MagicSpells.plugin.strMissingReagents);
+		this.strCantCast = config.getString(str + ".str-cant-cast", MagicSpells.plugin.strCantCast);
+		this.strCantBind = config.getString(str + ".str-cant-bind", null);
+		this.strWrongWorld = config.getString(str + ".str-wrong-world", MagicSpells.plugin.strWrongWorld);
+		this.strWrongCastItem = config.getString(str + ".str-wrong-cast-item", strCantCast);
+		this.strCastStart = config.getString(str + ".str-cast-start", null);
+		this.strInterrupted = config.getString(str + ".str-interrupted", null);
+		this.strModifierFailed = config.getString(str + ".str-modifier-failed", null);
+		this.strXpAutoLearned = config.getString(str + ".str-xp-auto-learned", MagicSpells.plugin.strXpAutoLearned);
 		if (this.strXpAutoLearned != null) {
 			strXpAutoLearned = strXpAutoLearned.replace("%s", this.name);
 		}
 		
-		this.tags = new HashSet<String>(config.getStringList(section + "." + spellName + ".tags", new ArrayList<String>()));
+		this.tags = new HashSet<String>(config.getStringList(str + ".tags", new ArrayList<String>()));
 	}
 	
 	public Set<String> getTags() {

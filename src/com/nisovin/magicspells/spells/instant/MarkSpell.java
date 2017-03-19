@@ -112,7 +112,10 @@ public class MarkSpell extends InstantSpell {
 	
 	private void loadMarks() {
 		try {
-			Scanner scanner = new Scanner(new File(MagicSpells.plugin.getDataFolder(), "marks-" + internalName + ".txt"));
+			File file = new File(MagicSpells.plugin.getDataFolder(), "marks-" + internalName + ".txt");
+			if(!file.exists())
+				file.createNewFile();
+			Scanner scanner = new Scanner(file);
 			while (scanner.hasNext()) {
 				String line = scanner.nextLine();
 				if (!line.equals("")) {
