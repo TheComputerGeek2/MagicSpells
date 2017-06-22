@@ -10,4 +10,5 @@ bin_factions/
 dist/
 src/missing_api.txt
 .settings/org.eclipse.jdt.core.prefs
-lib/bukkit-1.9-R0.1-SNAPSHOT.jar
+lib/bukkit-1.9-R0.1-SNAPSHOT.jar.idea
+.idea
