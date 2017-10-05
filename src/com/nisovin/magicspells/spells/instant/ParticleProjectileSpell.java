@@ -101,7 +101,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		
 		this.tickInterval = getConfigInt("tick-interval", 2);
 		this.ticksPerSecond = 20F / (float)this.tickInterval;
-		this.specialEffectInterval = getConfigInt("special-effect-interval", 0);
+		this.specialEffectInterval = getConfigInt("special-effect-interval", 1);
 		this.spellInterval = getConfigInt("spell-interval", 20);
 		
 		this.particleName = getConfigString("particle-name", "reddust");
