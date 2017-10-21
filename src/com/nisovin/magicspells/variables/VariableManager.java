@@ -514,16 +514,16 @@ public class VariableManager implements Listener {
 						VariableMod.Operation op = mod.getOperation();
 						switch (op) {
 						case ADD:
-							modify(var, player, amount);
+							modify(var, target, amount);
 							break;
 						case DIVIDE:
-							divideBy(var, player, amount);
+							divideBy(var, target, amount);
 							break;
 						case MULTIPLY:
-							multiplyBy(var, player, amount);
+							multiplyBy(var, target, amount);
 							break;
 						case SET:
-							set(var, player, amount);
+							set(var, target, amount);
 							break;
 						}
 					}
