@@ -158,7 +158,7 @@ public abstract class Condition {
 		conditions.put("holdingprecise", HoldingPreciseCondition.class);
 		conditions.put("receivingredstonestrongerthan", ReceivingRSStrongerThanCondition.class);
 		conditions.put("receivingredstoneweakerthan", ReceivingRSWeakerThanCondition.class);
-+		conditions.put("behindtarget", BehindTargetCondition.class);
+		conditions.put("behindtarget", BehindTargetCondition.class);
 	}
 	
 }
