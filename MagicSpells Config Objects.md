@@ -10,6 +10,25 @@ TargetBooleanState
 --------
 The TargetBooleanState format is just a string which represents a 3 outcome type boolean state, `on`, `off`, and `toggle`.
 
+SpellFilter
+--------
+The SpellFilter format is a configuration section which may contain any of the following:
+- `spells` accepts a list of the internal spell names to explicitly allow.
+- `denied-spells` accepts a list of the internal spell names to explicitly deny.
+- `spell-tags` accepts a list of strings to indicate spell tags to look for and allow.
+- `denied-spell-tags` accepts a list of strings to indicate which spell tags to look for and deny.
+
+Spells are checked against the options in this order.
+- If none of the options are defined, it allows all spells to pass through it.
+- If `spells` is defined and contains the spell being checked, the spell is allowed through the filter.
+- If `denied-spells` is defined and contains the spell being checked, the spell is not allowed through the filter.
+- If `denied-spell-tags` is defined and the spell being checked contains a tag that is denied, the spell is not allowed through the filter.
+- If `spell-tags` is defined and the spell being checked contains a tag in this collection, the spell is allowed through the filter.
+- If none of these have applied, a default handling is applied. The default handling is determined as follows:
+  - If `spells` or `spell-tags` are defined, the default action is to block the spell when being checked.
+  - If the previous has not applied, then if `denied-spells` or `denied-spell-tags` is defined, the default action is to allow the checked spell through the filter.
+  - If a default result has not been determined from the 2 above rules, the filter has no fields defined and is treated as being an open filter, meaning that it allows all spells to pass through it.
+
 Prompt
 --------
 - `prompt-type` accepts a `string` and will fail if not set. Current valid values are

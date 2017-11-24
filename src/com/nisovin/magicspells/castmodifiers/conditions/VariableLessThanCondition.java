@@ -23,6 +23,9 @@ public class VariableLessThanCondition extends Condition {
 		} catch (NumberFormatException e) {
 			DebugHandler.debugNumberFormat(e);
 			return false;
+		} catch (ArrayIndexOutOfBoundsException missingColon) {
+			MagicSpells.error("You likely forgot to add a colon in this modifier var.");
+			return false;
 		}
 	}
 

@@ -1,5 +1,5 @@
 name: MagicSpellsFactions
-version: VERSION_STRING
+version: $project.ext.magicspellsData.stringVersionFactions
 main: com.nisovin.magicspells.factions.MagicSpellsFactions
 depend: [ MagicSpells, Factions ]
 authors: [nisovin, TheComputerGeek2]

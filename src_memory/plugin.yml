@@ -1,5 +1,5 @@
 name: MagicSpellsMemory
-version: VERSION_STRING
+version: $project.ext.magicspellsData.stringVersionMemory
 main: com.nisovin.magicspells.memory.MagicSpellsMemory
 depend: [MagicSpells]
 commands:

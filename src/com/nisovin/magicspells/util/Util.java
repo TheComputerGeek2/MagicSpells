@@ -16,8 +16,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import com.nisovin.magicspells.util.itemreader.alternative.AlternativeReaderManager;
+import org.apache.commons.math3.util.FastMath;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -49,8 +51,6 @@ import com.nisovin.magicspells.util.itemreader.PotionHandler;
 import com.nisovin.magicspells.util.itemreader.RepairableHandler;
 import com.nisovin.magicspells.util.itemreader.SkullHandler;
 import com.nisovin.magicspells.util.itemreader.WrittenBookHandler;
-
-import de.slikey.effectlib.util.VectorUtils;
 
 public class Util {
 
@@ -504,13 +504,13 @@ public class Util {
 	
 	public static void setLocationFacingFromVector(Location location, Vector vector) {
 		double yaw = getYawOfVector(vector);
-		double pitch = Math.toDegrees(-Math.asin(vector.getY()));				
+		double pitch = FastMath.toDegrees(-FastMath.asin(vector.getY()));
 		location.setYaw((float)yaw);
 		location.setPitch((float)pitch);
 	}
 	
 	public static double getYawOfVector(Vector vector) {
-		return Math.toDegrees(Math.atan2(-vector.getX(), vector.getZ()));
+		return FastMath.toDegrees(FastMath.atan2(-vector.getX(), vector.getZ()));
 	}
 	
 	public static boolean arrayContains(int[] array, int value) {
@@ -678,9 +678,9 @@ public class Util {
 	}
 	
 	public static void rotateVector(Vector v, float degrees) {
-		double rad = Math.toRadians(degrees);
-		double sin = Math.sin(rad);
-		double cos = Math.cos(rad);
+		double rad = FastMath.toRadians(degrees);
+		double sin = FastMath.sin(rad);
+		double cos = FastMath.cos(rad);
 		double x = (v.getX() * cos) - (v.getZ() * sin);
 		double z = (v.getX() * sin) + (v.getZ() * cos);
 		v.setX(x);
@@ -688,7 +688,28 @@ public class Util {
 	}
 	
 	public static Location applyRelativeOffset(Location loc, Vector relativeOffset) {
-		return loc.add(VectorUtils.rotateVector(relativeOffset, loc));
+		return loc.add(rotateVector(relativeOffset, loc));
+	}
+	
+	public static Vector rotateVector(Vector v, Location location) {
+		return rotateVector(v, location.getYaw(), location.getPitch());
+	}
+	
+	public static Vector rotateVector(Vector v, float yawDegrees, float pitchDegrees) {
+		double yaw = FastMath.toRadians((double)(-1.0F * (yawDegrees + 90.0F)));
+		double pitch = FastMath.toRadians((double)(-pitchDegrees));
+		double cosYaw = FastMath.cos(yaw);
+		double cosPitch = FastMath.cos(pitch);
+		double sinYaw = FastMath.sin(yaw);
+		double sinPitch = FastMath.sin(pitch);
+		double initialX = v.getX();
+		double initialY = v.getY();
+		double x = initialX * cosPitch - initialY * sinPitch;
+		double y = initialX * sinPitch + initialY * cosPitch;
+		double initialZ = v.getZ();
+		double z = initialZ * cosYaw - x * sinYaw;
+		x = initialZ * sinYaw + x * cosYaw;
+		return new Vector(x, y, z);
 	}
 	
 	public static Location applyAbsoluteOffset(Location loc, Vector offset) {
@@ -781,5 +802,20 @@ public class Util {
 		return value;
 	}
 	
+	public static <C extends Collection<Material>> C getMaterialList(List<String> strings, Supplier<C> supplier) {
+		C ret = supplier.get();
+		strings.forEach(string -> {
+			ret.add(Material.matchMaterial(string));
+		});
+		return ret;
+	}
+	
+	public static <E extends Enum<E>> E enumValueSafe(Class<E> clazz, String name) {
+		try {
+			return Enum.valueOf(clazz, name);
+		} catch (Exception e) {
+			return null;
+		}
+	}
 	
 }

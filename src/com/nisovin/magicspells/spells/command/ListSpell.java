@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.command;
 import java.util.Collection;
 import java.util.List;
 
+import com.nisovin.magicspells.util.SpellFilter;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -16,22 +17,24 @@ import com.nisovin.magicspells.util.PlayerNameUtils;
 
 // Advanced perm is for listing other player's spells
 public class ListSpell extends CommandSpell {
-	
+
 	private int lineLength = 60;
 	private boolean onlyShowCastableSpells;
 	private boolean reloadGrantedSpells;
 	private List<String> spellsToHide;
 	private String strNoSpells;
 	private String strPrefix;
+	private SpellFilter spellFilter;
 
 	public ListSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
+
 		this.onlyShowCastableSpells = getConfigBoolean("only-show-castable-spells", false);
 		this.reloadGrantedSpells = getConfigBoolean("reload-granted-spells", true);
 		this.spellsToHide = getConfigStringList("spells-to-hide", null);
 		this.strNoSpells = getConfigString("str-no-spells", "You do not know any spells.");
 		this.strPrefix = getConfigString("str-prefix", "Known spells:");
+		this.spellFilter = SpellFilter.fromConfig(config, "spells." + this.getInternalName() + ".filter");
 	}
 
 	@Override
@@ -73,10 +76,10 @@ public class ListSpell extends CommandSpell {
 					sendMessage(s, player, args);
 				}
 			}
-		}		
+		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
-	
+
 	@Override
 	public List<String> tabComplete(CommandSender sender, String partial) {
 		if (sender instanceof ConsoleCommandSender) {
@@ -90,7 +93,7 @@ public class ListSpell extends CommandSpell {
 	@Override
 	public boolean castFromConsole(CommandSender sender, String[] args) {
 		StringBuilder s = new StringBuilder();
-		
+
 		// Get spell list
 		Collection<Spell> spells = MagicSpells.spells();
 		if (args != null && args.length > 0) {
@@ -105,23 +108,24 @@ public class ListSpell extends CommandSpell {
 		} else {
 			s.append("All spells: ");
 		}
-		
+
 		// Create string of spells
 		for (Spell spell : spells) {
 			s.append(spell.getName());
 			s.append(' ');
 		}
-		
+
 		// Send message
 		sender.sendMessage(s.toString());
-		
+
 		return true;
 	}
-	
+
 	private boolean shouldListSpell(Spell spell, Spellbook spellbook) {
 		if (spell.isHelperSpell()) return false;
 		if (this.onlyShowCastableSpells && !spellbook.canCast(spell)) return false;
-		return !(this.spellsToHide != null && this.spellsToHide.contains(spell.getInternalName()));
+		if (this.spellsToHide != null && this.spellsToHide.contains(spell.getInternalName())) return false;
+		return this.spellFilter.check(spell);
 	}
 
 }

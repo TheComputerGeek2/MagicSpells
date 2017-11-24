@@ -66,8 +66,14 @@ public class MultiCondition extends Condition implements IModifier {
 		if (modifierStrings == null) return false;
 		
 		String passConditionString = config.getString(configPrefix + ".pass-condition", "ALL").toUpperCase();
-		PassCondition configPassCondition = PassCondition.valueOf(passConditionString);
-		if (configPassCondition != null) passCondition = configPassCondition;
+		try {
+			passCondition = PassCondition.valueOf(passConditionString);
+		} catch (IllegalArgumentException badPassCondition) {
+			MagicSpells.error("Invalid value for \"pass-condition\" of \"" + passConditionString + "\".");
+			// To preserve old behavior, just default it to "ALL"
+			MagicSpells.error("Defaulting pass-condition to \"ALL\"");
+			passCondition = PassCondition.ALL;
+		}
 		
 		modifiers = new ArrayList<>();
 		for (String modString: modifierStrings) {

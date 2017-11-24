@@ -3,6 +3,7 @@ package com.nisovin.magicspells.util;
 import java.util.function.BinaryOperator;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math3.util.FastMath;
 import org.bukkit.entity.Player;
 
 import com.nisovin.magicspells.MagicSpells;
@@ -21,7 +22,8 @@ public class VariableMod {
 		SET((a, b) -> b),
 		ADD((a, b) -> a + b),
 		MULTIPLY((a, b) -> a * b),
-		DIVIDE((a, b) -> a/b)
+		DIVIDE((a, b) -> a/b),
+		POWER((a, b) -> FastMath.pow(a, b))
 		
 		;
 		
@@ -46,6 +48,8 @@ public class VariableMod {
 				return MULTIPLY;
 			case '/':
 				return DIVIDE;
+			case '^':
+				return POWER;
 			default:
 				return ADD;
 			}
@@ -57,7 +61,7 @@ public class VariableMod {
 	private String modifyingVariableName = null;
 	private Operation op = null;
 	private double constantModifier;
-	private static final Pattern operationMatcher = Pattern.compile("^(=|\\+|\\*|\\/)");
+	private static final Pattern operationMatcher = Pattern.compile("^(=|\\+|\\*|\\/|^)");
 	
 	private boolean negate = false;
 	

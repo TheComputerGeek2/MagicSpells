@@ -29,13 +29,13 @@ public class TelekinesisSpell extends TargetedSpell implements TargetedLocationS
 		checkPlugins = getConfigBoolean("check-plugins", true);
 		
 		losTransparentBlocks = new HashSet<>(losTransparentBlocks);
-		losTransparentBlocks.remove((byte)Material.LEVER.getId());
-		losTransparentBlocks.remove((byte)Material.STONE_PLATE.getId());
-		losTransparentBlocks.remove((byte)Material.WOOD_PLATE.getId());
-		losTransparentBlocks.remove((byte)Material.IRON_PLATE.getId());
-		losTransparentBlocks.remove((byte)Material.GOLD_PLATE.getId());
-		losTransparentBlocks.remove((byte)Material.STONE_BUTTON.getId());
-		losTransparentBlocks.remove((byte)Material.WOOD_BUTTON.getId());
+		losTransparentBlocks.remove(Material.LEVER);
+		losTransparentBlocks.remove(Material.STONE_PLATE);
+		losTransparentBlocks.remove(Material.WOOD_PLATE);
+		losTransparentBlocks.remove(Material.IRON_PLATE);
+		losTransparentBlocks.remove(Material.GOLD_PLATE);
+		losTransparentBlocks.remove(Material.STONE_BUTTON);
+		losTransparentBlocks.remove(Material.WOOD_BUTTON);
 	}
 	
 	@Override

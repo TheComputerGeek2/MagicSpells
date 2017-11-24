@@ -543,7 +543,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	
 	private double targetDamageAmount;
 	
-	protected HashSet<Byte> losTransparentBlocks;
+	protected HashSet<Material> losTransparentBlocks;
 
 	protected int castTime;
 	
@@ -785,8 +785,8 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		this.targetDamageAmount = config.getDouble(section + '.' + spellName + ".target-damage-amount", 0);
 		this.losTransparentBlocks = MagicSpells.getTransparentBlocks();
 		if (config.contains(section + '.' + spellName + ".los-transparent-blocks")) {
-			this.losTransparentBlocks = new HashSet<>(config.getByteList(section + '.' + spellName + ".los-transparent-blocks", null));
-			this.losTransparentBlocks.add((byte)0);
+			this.losTransparentBlocks = Util.getMaterialList(config.getStringList(section + '.' + spellName + ".los-transparent-blocks", Collections.emptyList()), HashSet::new);
+			this.losTransparentBlocks.add(Material.AIR);
 		}
 		
 		// Graphical effects
@@ -946,6 +946,8 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		if (this.strXpAutoLearned != null) this.strXpAutoLearned = this.strXpAutoLearned.replace("%s", this.name);
 		
 		this.tags = new HashSet<>(config.getStringList(section + '.' + spellName + ".tags", new ArrayList<>()));
+		this.tags.add("spell-class:" + this.getClass().getCanonicalName());
+		this.tags.add("spell-package:" + this.getClass().getPackage().getName());
 	}
 	
 	public Set<String> getTags() {
@@ -1904,12 +1906,12 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		return BlockUtils.getLastTwoTargetBlock(this, entity, this.spellPowerAffectsRange ? Math.round(this.range * power) : this.range);
 	}
 	
-	public HashSet<Byte> getLosTransparentBlocks() {
+	public HashSet<Material> getLosTransparentBlocks() {
 		return this.losTransparentBlocks;
 	}
 	
 	public boolean isTransparent(Block block) {
-		return this.losTransparentBlocks.contains((byte)block.getTypeId());
+		return this.losTransparentBlocks.contains(block.getType());
 	}
 	
 	protected void playSpellEffects(Entity pos1, Entity pos2) {
@@ -1945,7 +1947,11 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 					if (canceler == null) continue;
 					if (!(entity instanceof Player)) continue;
 					Player p = (Player)entity;
-					this.callbacks.get(p.getUniqueId().toString()).get(pos).add(canceler);
+					Map<EffectPosition, List<Runnable>> runnablesMap = this.callbacks.get(p.getUniqueId().toString());
+					if (runnablesMap == null) continue;
+					List<Runnable> runnables = runnablesMap.get(pos);
+					if (runnables == null) continue;
+					runnables.add(canceler);
 				}
 			}
 		}

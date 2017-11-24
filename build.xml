@@ -42,6 +42,7 @@
 	<!-- Resource retrieving -->
 	<property name="resource.residence.url" value="http://nexus.hc.to/content/repositories/pub_releases/com/bekvon/bukkit/residence/Residence/4.5.3.0/Residence-4.5.3.0.jar"/>
 	<property name="resource.ncp.url" value="https://ci.md-5.net/job/NoCheatPlus/lastSuccessfulBuild/artifact/target/NoCheatPlus.jar"/>
+	<property name="resource.placeholderapi.url" value="http://repo.extendedclip.com/content/repositories/placeholderapi/me/clip/placeholderapi/2.8.2/placeholderapi-2.8.2.jar"/>
 
 	<target name="build" depends="build-version, clean, core-jar, teams-jar, memory-jar, shop-jar, towny-jar, factions-jar, zip"/>
 	<target name="build-version">
@@ -78,6 +79,9 @@
 		<get src="${resource.ncp.url}"
 			dest="${lib.dir}/NoCheatPlus.jar"
 			skipexisting="true"/>
+		<get src="${resource.placeholderapi.url}"
+			 dest="${lib.dir}/PlaceholderAPI.jar"
+			 skipexisting="true"/>
 		<echo>
 			Finished running the get resources phase
 		</echo>

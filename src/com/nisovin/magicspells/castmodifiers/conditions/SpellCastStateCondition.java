@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.castmodifiers.conditions;
 
+import com.nisovin.magicspells.MagicSpells;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -59,8 +60,13 @@ public class SpellCastStateCondition extends Condition implements IModifier {
 	@Override
 	public boolean setVar(String var) {
 		if (var == null) return false;
-		this.state = SpellCastState.valueOf(var.trim().toUpperCase());
-		return this.state != null;
+		try {
+			this.state = SpellCastState.valueOf(var.trim().toUpperCase());
+			return true;
+		} catch (IllegalArgumentException badValueString) {
+			MagicSpells.error("Invalid SpellCastState of \"" + var.trim() + "\" on this modifier var");
+			return false;
+		}
 	}
 
 	@Override

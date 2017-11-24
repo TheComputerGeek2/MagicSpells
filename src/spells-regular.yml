@@ -1539,6 +1539,7 @@ fire-volley:
         heavy-tracers:
             position: casterprojectileline
             effect: effectlibline
+            static-origin-location: true
             effectlib:
                 class: ArcEffect
                 particles: 20
@@ -1546,7 +1547,6 @@ fire-volley:
                 period: 1
                 iterations: 50
                 disappearWithOriginEntity: false
-                static-origin-location: true
                 disappearWithTargetEntity: true
                 
 

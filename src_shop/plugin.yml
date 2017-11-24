@@ -1,5 +1,5 @@
 name: MagicSpellsShop
-version: VERSION_STRING
+version: $project.ext.magicspellsData.stringVersionShop
 main: com.nisovin.magicspells.shop.MagicSpellsShop
 author: nisovin
 depend: [MagicSpells]

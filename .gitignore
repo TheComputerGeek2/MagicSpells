@@ -16,3 +16,6 @@ lib/bukkit-1.9-R0.1-SNAPSHOT.jar
 out/
 lib/Residence.jar
 lib/NoCheatPlus.jar
+lib/PlaceholderAPI.jar
+Build/
+.gradle/

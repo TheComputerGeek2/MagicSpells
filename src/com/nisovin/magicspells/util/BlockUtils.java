@@ -34,7 +34,7 @@ public class BlockUtils {
 	}
 	
 	public static boolean isTransparent(Spell spell, Block block) {
-		return spell.getLosTransparentBlocks().contains((byte)block.getTypeId());
+		return spell.getLosTransparentBlocks().contains(block.getType());
 	}
 	
 	public static Block getTargetBlock(Spell spell, LivingEntity entity, int range) {
