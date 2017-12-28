@@ -139,7 +139,7 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 			if (e instanceof LivingEntity && box.contains(e)) {
 				if (pointBlank && cone > 0) {
 					Vector dir = e.getLocation().toVector().subtract(vLoc);
-					if (Math.toDegrees(Math.abs(dir.angle(facing))) > cone) continue;
+					if (FastMath.toDegrees(FastMath.abs(dir.angle(facing))) > cone) continue;
 				}
 				LivingEntity target = (LivingEntity)e;
 				float power = basePower;
