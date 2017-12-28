@@ -16,11 +16,13 @@ import com.nisovin.magicspells.util.TargetInfo;
 public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private String strNoLandingSpot;
+	private double distance;
 	
 	public ShadowstepSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
 		strNoLandingSpot = getConfigString("str-no-landing-spot", "Cannot shadowstep there.");
+		distance = getConfigDouble("distance", -1);
 	}
 
 	@Override
@@ -43,7 +45,7 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 	private boolean shadowstep(Player player, LivingEntity target) {
 		// Get landing location
 		Location targetLoc = target.getLocation();
-		Vector facing = targetLoc.getDirection().setY(0).multiply(-1);
+		Vector facing = targetLoc.getDirection().setY(0).multiply(distance);
 		Location loc = targetLoc.toVector().add(facing).toLocation(targetLoc.getWorld());
 		loc.setPitch(0);
 		loc.setYaw(targetLoc.getYaw());
