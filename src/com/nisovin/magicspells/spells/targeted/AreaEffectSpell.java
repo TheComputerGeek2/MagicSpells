@@ -24,6 +24,8 @@ import com.nisovin.magicspells.util.BoundingBox;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.MagicConfig;
 
+import org.apache.commons.math3.util.FastMath;
+
 public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSpell {
 
 	private double radius;
