@@ -29,7 +29,7 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 	private double radius;
 	private double verticalRadius;
 	private boolean pointBlank;
-	private int cone;
+	private float cone;
 	private boolean failIfNoTargets;
 	private int maxTargets;
 	private List<String> spellNames;
@@ -45,7 +45,7 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 		radius = getConfigDouble("horizontal-radius", 10);
 		verticalRadius = getConfigDouble("vertical-radius", 5);
 		pointBlank = getConfigBoolean("point-blank", true);
-		cone = getConfigInt("cone", 0);
+		cone = getConfigFloat("cone", 0);
 		failIfNoTargets = getConfigBoolean("fail-if-no-targets", true);
 		maxTargets = getConfigInt("max-targets", 0);
 		spellSourceInCenter = getConfigBoolean("spell-source-in-center", false);
@@ -139,7 +139,7 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 			if (e instanceof LivingEntity && box.contains(e)) {
 				if (pointBlank && cone > 0) {
 					Vector dir = e.getLocation().toVector().subtract(vLoc);
-					if (Math.abs(dir.angle(facing)) > cone) continue;
+					if (Math.toDegrees(Math.abs(dir.angle(facing))) > cone) continue;
 				}
 				LivingEntity target = (LivingEntity)e;
 				float power = basePower;
