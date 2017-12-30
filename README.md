@@ -5,13 +5,13 @@ MagicSpells is a Bukkit plugin that allows you to set up a magic system, and muc
 This plugin has nearly endless possibilities.
 
 ### Version Independent Resources
-- **Forums**: http://nisovin.com/forums/index.php?forums/magicspells/  
+- **Forums**: magicspells.site.nfoservers.com/forums/
 
 
 ### This version of MagicSpells
-> Discord link in [Community Information Thread](http://nisovin.com/forums/index.php?threads/update-for-the-community-versions-discord-version-1-12-x.3683/)
-- **Main information thread**: http://nisovin.com/forums/index.php?threads/magicspells-1-10-1-9-1-8-updated-fork-with-effectslib-support-colordust-support.1319/
-- **Community information thread**: http://nisovin.com/forums/index.php?threads/update-for-the-community-versions-discord-version-1-12-x.3683/
+> [Discord Link](https://discord.gg/FJXfDPZ)
+- **Plugin Guides**: http://magicspells.site.nfoservers.com/forums/categories/guides
+- **Community information thread**: http://magicspells.site.nfoservers.com/forums/discussion/13/community-update#latest
 
 
 ### Classical MagicSpells
@@ -22,10 +22,10 @@ This plugin has nearly endless possibilities.
 - **Dev Builds**: http://nisovin.com/magicspells/dev/  
 
 ### Building
-- First, you will need to download the required dependencies and place them in the lib folder. You can see a list of download links
-in lib/library_urls.txt. You can then use the ant build file (build.xml) to build the plugin. It places the compiled jar file
-in the dist folder.
+- The move to gradle has made building much easier. The only step is running the command `./gradlew assemble`. Simple right?
 
 ### Demonstrations of MagicSpells in Action
 > More coming soon
-- https://www.youtube.com/watch?v=ytb62SzjNhs
+- https://youtu.be/ytb62SzjNhs
+- https://youtu.be/L1vKdE-Tomo
+- https://youtu.be/UdvCsnMkd_o
