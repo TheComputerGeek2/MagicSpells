@@ -5,7 +5,7 @@ MagicSpells is a Bukkit plugin that allows you to set up a magic system, and muc
 This plugin has nearly endless possibilities.
 
 ### Version Independent Resources
-- **Forums**: magicspells.site.nfoservers.com/forums/
+- **Forums**: http://magicspells.site.nfoservers.com/forums/
 
 
 ### This version of MagicSpells
