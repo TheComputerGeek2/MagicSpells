@@ -11,7 +11,7 @@ This plugin has nearly endless possibilities.
 ### This version of MagicSpells
 > [Discord Link](https://discord.gg/FJXfDPZ)
 - **Plugin Guides**: http://magicspells.site.nfoservers.com/forums/categories/guides
-- **Community information thread**: http://magicspells.site.nfoservers.com/forums/discussion/13/community-update#latest
+- **Community information thread**: magicspells.site.nfoservers.com/forums/discussion/17/community-update
 
 
 ### Classical MagicSpells
