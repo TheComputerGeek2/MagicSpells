@@ -165,3 +165,4 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 		}
 	}
 }
+
