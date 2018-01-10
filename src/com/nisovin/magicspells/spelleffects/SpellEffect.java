@@ -1,18 +1,19 @@
 package com.nisovin.magicspells.spelleffects;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.HashMap;
 
-import com.nisovin.magicspells.util.TimeUtil;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
+import org.bukkit.entity.Entity;
+import org.bukkit.configuration.ConfigurationSection;
 
-import com.nisovin.magicspells.DebugHandler;
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.castmodifiers.ModifierSet;
+import com.nisovin.magicspells.DebugHandler;
+import com.nisovin.magicspells.util.TimeUtil;
 import com.nisovin.magicspells.util.ConfigData;
+import com.nisovin.magicspells.castmodifiers.ModifierSet;
 import com.nisovin.magicspells.util.expression.Expression;
 
 /**
@@ -54,7 +55,22 @@ public abstract class SpellEffect {
 	
 	@ConfigData(field="orbit-tick-interval", dataType="int", defaultValue="2")
 	int tickInterval = 2;
-	
+
+	@ConfigData(field="orbit-horiz-offset", dataType="double", defaultValue="0")
+	float horizOffset = 0;
+
+	@ConfigData(field="orbit-horiz-expand-radius", dataType="double", defaultValue="0")
+	float horizExpandRadius = 0;
+
+	@ConfigData(field="orbit-vert-expand-radius", dataType="double", defaultValue="0")
+	float vertExpandRadius = 0;
+
+	@ConfigData(field="orbit-horiz-expand-delay", dataType="double", defaultValue="0")
+	int horizExpandDelay = 0;
+
+	@ConfigData(field="orbit-vert-expand-delay", dataType="double", defaultValue="0")
+	int vertExpandDelay = 0;
+
 	float ticksPerSecond;
 	float distancePerTick;
 	int ticksPerRevolution;
@@ -89,6 +105,11 @@ public abstract class SpellEffect {
 		distanceBetween = config.getDouble("distance-between", distanceBetween);
 		effectInterval = config.getInt("effect-interval", effectInterval);
 
+		horizExpandRadius = (float)config.getDouble("orbit-horiz-expand-radius", horizExpandRadius);
+		horizExpandDelay = config.getInt("orbit-horiz-expand-delay", horizExpandDelay);
+		vertExpandRadius = (float)config.getDouble("orbit-vert-expand-radius", vertExpandRadius);
+		vertExpandDelay = config.getInt("orbit-vert-expand-delay", vertExpandDelay);
+		horizOffset = (float)config.getDouble("orbit-horiz-offset", horizOffset);
 		orbitRadius = (float)config.getDouble("orbit-radius", orbitRadius);
 		secondsPerRevolution = (float)config.getDouble("orbit-seconds-per-revolution", secondsPerRevolution);
 		counterClockwise = config.getBoolean("orbit-counter-clockwise", counterClockwise);
@@ -200,6 +221,10 @@ public abstract class SpellEffect {
 		SpellEffectActiveChecker checker;
 		Vector currentPosition;
 		int orbitTrackerTaskId;
+		int repeatingHorizTaskId;
+		int repeatingVertTaskId;
+		float orbRadius;
+		float orbHeight;
 		
 		int counter = 0;
 		
@@ -207,7 +232,16 @@ public abstract class SpellEffect {
 			this.entity = entity;
 			this.checker = checker;
 			this.currentPosition = entity.getLocation().getDirection().setY(0);
+			Util.rotateVector(this.currentPosition, horizOffset);
+			this.orbRadius = orbitRadius;
+			this.orbHeight = orbitYOffset;
 			this.orbitTrackerTaskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
+			if (horizExpandDelay > 0 && horizExpandRadius != 0) {
+				this.repeatingHorizTaskId = MagicSpells.scheduleRepeatingTask(() -> this.orbRadius += horizExpandRadius, horizExpandDelay, horizExpandDelay);
+			}
+			if (vertExpandDelay > 0 && vertExpandRadius != 0) {
+				this.repeatingVertTaskId = MagicSpells.scheduleRepeatingTask(() -> this.orbHeight += vertExpandRadius, vertExpandDelay, vertExpandDelay);
+			}
 		}
 		
 		@Override
@@ -240,11 +274,13 @@ public abstract class SpellEffect {
 				perp = new Vector(-currentPosition.getZ(), 0, currentPosition.getX());
 			}
 			currentPosition.add(perp.multiply(distancePerTick)).normalize();
-			return entity.getLocation().add(0, orbitYOffset, 0).add(currentPosition.clone().multiply(orbitRadius));
+			return entity.getLocation().add(0, orbHeight, 0).add(currentPosition.clone().multiply(orbRadius));
 		}
 		
 		public void stop() {
 			MagicSpells.cancelTask(orbitTrackerTaskId);
+			MagicSpells.cancelTask(repeatingHorizTaskId);
+			MagicSpells.cancelTask(repeatingVertTaskId);
 			entity = null;
 			currentPosition = null;
 		}
