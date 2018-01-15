@@ -159,6 +159,8 @@ public abstract class Condition {
 		conditions.put("receivingredstonestrongerthan", ReceivingRSStrongerThanCondition.class);
 		conditions.put("receivingredstoneweakerthan", ReceivingRSWeakerThanCondition.class);
 		conditions.put("behindtarget", BehindTargetCondition.class);
+		conditions.put("thundering", ThunderingCondition.class);
+		conditions.put("raining", RainingCondition.class);
 	}
 	
 }
