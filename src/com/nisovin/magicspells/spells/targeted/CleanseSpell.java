@@ -1,23 +1,23 @@
 package com.nisovin.magicspells.spells.targeted;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
 
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.Spell;
-import com.nisovin.magicspells.spelleffects.EffectPosition;
-import com.nisovin.magicspells.spells.BuffSpell;
-import com.nisovin.magicspells.spells.TargetedEntitySpell;
-import com.nisovin.magicspells.spells.TargetedSpell;
-import com.nisovin.magicspells.util.MagicConfig;
-import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.Util;
+import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.TargetInfo;
+import com.nisovin.magicspells.util.MagicConfig;
+import com.nisovin.magicspells.spells.BuffSpell;
+import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.spells.TargetedEntitySpell;
+import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 
@@ -26,6 +26,7 @@ public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 	
 	List<PotionEffectType> potionEffectTypes;
 	List<BuffSpell> buffSpells;
+	List<String> toCleanse;
 	boolean fire;
 	
 	private ValidTargetChecker checker;
@@ -39,13 +40,19 @@ public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 		potionEffectTypes = new ArrayList<>();
 		buffSpells = new ArrayList<>();
 		fire = false;
-		List<String> toCleanse = getConfigStringList("remove", Arrays.asList("fire", "17", "19", "20"));
+		toCleanse = getConfigStringList("remove", Arrays.asList("fire", "17", "19", "20"));
+
+	}
+
+	@Override
+	public void initialize() {
+		super.initialize();
 		for (String s : toCleanse) {
 			if (s.equalsIgnoreCase("fire")) {
 				fire = true;
 				continue;
 			}
-			
+
 			if (s.startsWith("buff:")) {
 				Spell spell = MagicSpells.getSpellByInternalName(s.replace("buff:", ""));
 				if (spell instanceof BuffSpell) {
@@ -53,31 +60,27 @@ public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 				}
 				continue;
 			}
-			
+
 			PotionEffectType type = Util.getPotionEffectType(s);
 			if (type != null) potionEffectTypes.add(type);
 		}
-		
-		checker = new ValidTargetChecker() {
-			
-			@Override
-			public boolean isValidTarget(LivingEntity entity) {
-				if (fire && entity.getFireTicks() > 0) return true;
-				
-				for (PotionEffectType type : potionEffectTypes) {
-					if (entity.hasPotionEffect(type)) return true;
-				}
-				
-				if (entity instanceof Player) {
-					for (BuffSpell spell : buffSpells) {
-						if (spell.isActive((Player)entity)) return true;
-					}
-				}
-				
-				return false;
+
+		checker = entity -> {
+			if (fire && entity.getFireTicks() > 0) return true;
+
+			for (PotionEffectType type : potionEffectTypes) {
+				if (entity.hasPotionEffect(type)) return true;
 			}
-			
+
+			if (entity instanceof Player) {
+				for (BuffSpell spell : buffSpells) {
+					if (spell.isActive((Player)entity)) return true;
+				}
+			}
+
+			return false;
 		};
+
 	}
 
 	@Override
