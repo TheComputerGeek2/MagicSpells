@@ -26,6 +26,7 @@ import com.nisovin.magicspells.variables.meta.FlySpeedVariable;
 import com.nisovin.magicspells.variables.meta.FoodLevelVariable;
 import com.nisovin.magicspells.variables.meta.HealthScaleVariable;
 import com.nisovin.magicspells.variables.meta.LastDamageVariable;
+import com.nisovin.magicspells.variables.meta.RemainingHealthVariable;
 import com.nisovin.magicspells.variables.meta.MaxHealthVariable;
 import com.nisovin.magicspells.variables.meta.MaximumAirVariable;
 import com.nisovin.magicspells.variables.meta.MaximumNoDamageTicksVariable;
@@ -44,7 +45,7 @@ import com.nisovin.magicspells.variables.meta.WalkSpeedVariable;
 public class SpecialVariables {
 
 	private static Map<String, Variable> specialVariables;
-	
+
 	static {
 		specialVariables = new HashMap<>();
 		specialVariables.put("meta_location_x", new CoordXVariable());
@@ -64,6 +65,7 @@ public class SpecialVariables {
 		specialVariables.put("meta_fire_ticks", new FireTicksVariable());
 		specialVariables.put("meta_fall_distance", new FallDistanceVariable());
 		specialVariables.put("meta_players_online", new PlayersOnlineVariable());
+		specialVariables.put("meta_remaining_health", new RemainingHealthVariable());
 		specialVariables.put("meta_max_health", new MaxHealthVariable());
 		specialVariables.put("meta_health_scale", new HealthScaleVariable());
 		specialVariables.put("meta_compass_target_x", new CompassTargetXVariable());
@@ -89,9 +91,9 @@ public class SpecialVariables {
 			specialVariables.put("meta_attribute_generic_max_health_base", new AttributeBaseValueVariable("GENERIC_MAX_HEALTH"));
 		}
 	}
-	
+
 	public static Map<String, Variable> getSpecialVariables() {
 		return Collections.unmodifiableMap(specialVariables);
 	}
-	
+
 }
