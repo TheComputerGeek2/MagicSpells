@@ -21,13 +21,13 @@ public class VarStringEqualsCondition extends Condition {
 			
 			//Checks if there is a colon to begin with.
 			if (colonposition == -1) {
-				MagicSpells.error("Improper VarString comparison. Use : to compare the string of a variable.");
-				return false;
+				MagicSpells.error("Improper varstring comparison. Use : to compare the string of a variable.");
+				throw new Exception("Invalid modifier format!");
 			}
 			
 			if (colonposition == 0) {
 				MagicSpells.error("No variable stated in this modifier!");
-				return false;
+				throw new Exception("Comparative variable missing!");
 			}
 			    
 			variable = var.substring(0,colonposition);
@@ -36,12 +36,16 @@ public class VarStringEqualsCondition extends Condition {
 			//If there is no value to compare, close immediately.
 			if (value.equals("")) {
 				MagicSpells.error("You forgot to add a string to compare the variable to in this modifier.");
-				return false;
+				throw new Exception("Nothing to compare the variable to!");
 			}
 			
 			//If everything checks out, will continue.
 			return true;
 		} 
+		catch (Exception e) {
+			//If any exceptions are thrown, will return false.
+			return false;
+		}
 	}
 
 	@Override
