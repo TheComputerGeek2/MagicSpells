@@ -11,7 +11,7 @@ public class OnLeashCondition extends Condition {
 
 	@Override
 	public boolean setVar(String var) {
-    return true;
+    		return true;
 	}
 
 	@Override
