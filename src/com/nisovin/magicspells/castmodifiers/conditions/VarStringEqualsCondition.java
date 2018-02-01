@@ -16,19 +16,37 @@ public class VarStringEqualsCondition extends Condition {
 	@Override
 	public boolean setVar(String var) {
 		try {
-			String[] s = var.split(":");
-			variable = s[0];
-			value = s[1];
+			String s = var;
+			int colonposition = var.indexOf(":");
+			
+			//Checks if there is a colon to begin with.
+			if (colonposition == -1) {
+				MagicSpells.error("Improper VarString comparison. Use : to compare the string of a variable.");
+				return false;
+			}
+			
+			if (colonposition == 0 {
+				MagicSpells.error("No variable stated in this modifier!");
+				return false;
+			}
+			    
+			variable = var.substring(0,colonposition);
+			value = var.substring(colonposition);
+			
+			//If there is no value to compare, close immediately.
+			if (value.equals("")) {
+				MagicSpells.error("You forgot to add a string to compare the variable to in this modifier.");
+				return false;
+			}
+			
+			//If everything checks out, will continue.
 			return true;
-		} catch (ArrayIndexOutOfBoundsException missingColon) {
-			MagicSpells.error("You likely forgot to add a colon in this modifier var.");
-			return false;
-		}
+		} 
 	}
 
 	@Override
 	public boolean check(Player player) {
-		return MagicSpells.getVariableManager().getStringValue(variable, player) == value;
+		return MagicSpells.getVariableManager().getStringValue(variable, player).equals(value);
 	}
 
 	@Override
