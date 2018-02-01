@@ -25,7 +25,7 @@ public class VarStringEqualsCondition extends Condition {
 				return false;
 			}
 			
-			if (colonposition == 0 {
+			if (colonposition == 0) {
 				MagicSpells.error("No variable stated in this modifier!");
 				return false;
 			}
