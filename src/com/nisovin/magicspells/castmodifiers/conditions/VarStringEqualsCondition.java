@@ -28,7 +28,7 @@ public class VarStringEqualsCondition extends Condition {
 
 	@Override
 	public boolean check(Player player) {
-		return MagicSpells.getVariableManager().getStringValue(variable, player) = value;
+		return MagicSpells.getVariableManager().getStringValue(variable, player) == value;
 	}
 
 	@Override
