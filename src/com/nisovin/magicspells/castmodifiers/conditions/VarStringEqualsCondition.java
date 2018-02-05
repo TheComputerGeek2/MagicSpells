@@ -20,12 +20,12 @@ public class VarStringEqualsCondition extends Condition {
 		value = string[1]; //The string that the variable is being checked for
 
 		//Is there a variable to be checked? Required!
-		if (vartocheck.equals("")) {
+		if (variable.equals("")) {
 			MagicSpells.error("No variable stated for comparison within this modifier!");
 			return false;
 		}
 		//Is there something to compare the variable to? " " should still work.
-		if (strcompare.equals("")) {
+		if (value.equals("")) {
 			MagicSpells.error("The stated variable in this modifier isn't being compared to anything!");
 			return false;
 		}
