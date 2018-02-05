@@ -16,8 +16,8 @@ public class VarStringEqualsCondition extends Condition {
 	@Override
 	public boolean setVar(String var) {
 		String[] string = var.split(":",2);
-		variable = string[0] //The variable that is being checked
-		value = string[1] //The string that the variable is being checked for
+		variable = string[0]; //The variable that is being checked
+		value = string[1]; //The string that the variable is being checked for
 
 		//Is there a variable to be checked? Required!
 		if (vartocheck.equals("")) {
