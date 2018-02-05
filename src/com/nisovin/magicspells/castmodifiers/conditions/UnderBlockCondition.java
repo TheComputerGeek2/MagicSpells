@@ -46,7 +46,7 @@ public class UnderBlockCondition extends Condition {
 			}
 			return true;
 		}
-		mat = MagicSpells.getItemNameResolver().resolveBlock(var);
+		mat = MagicSpells.getItemNameResolver().resolveBlock(blocks);
 		return mat != null;
 	}
 
