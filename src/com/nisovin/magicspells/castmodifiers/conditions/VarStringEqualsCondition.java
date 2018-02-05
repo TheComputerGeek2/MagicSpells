@@ -15,37 +15,23 @@ public class VarStringEqualsCondition extends Condition {
 	
 	@Override
 	public boolean setVar(String var) {
-		try {
-			String s = var;
-			int colonposition = var.indexOf(":");
-			
-			//Checks if there is a colon to begin with.
-			if (colonposition == -1) {
-				MagicSpells.error("Improper varstring comparison. Use : to compare the string of a variable.");
-				throw new Exception("Invalid modifier format!");
-			}
-			
-			if (colonposition == 0) {
-				MagicSpells.error("No variable stated in this modifier!");
-				throw new Exception("Comparative variable missing!");
-			}
-			    
-			variable = var.substring(0,colonposition);
-			value = var.substring(colonposition);
-			
-			//If there is no value to compare, close immediately.
-			if (value.equals("")) {
-				MagicSpells.error("You forgot to add a string to compare the variable to in this modifier.");
-				throw new Exception("Nothing to compare the variable to!");
-			}
-			
-			//If everything checks out, will continue.
-			return true;
-		} 
-		catch (Exception e) {
-			//If any exceptions are thrown, will return false.
+		String[] string = var.split(":",2);
+		variable = string[0] //The variable that is being checked
+		value = string[1] //The string that the variable is being checked for
+
+		//Is there a variable to be checked? Required!
+		if (vartocheck.equals("")) {
+			MagicSpells.error("No variable stated for comparison within this modifier!");
 			return false;
 		}
+		//Is there something to compare the variable to? " " should still work.
+		if (strcompare.equals("")) {
+			MagicSpells.error("The stated variable in this modifier isn't being compared to anything!");
+			return false;
+		}
+
+		//If everything checks out, will continue.
+		return true;
 	}
 
 	@Override
