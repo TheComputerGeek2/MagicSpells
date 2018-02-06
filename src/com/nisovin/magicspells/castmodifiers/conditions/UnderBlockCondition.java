@@ -14,6 +14,10 @@ public class UnderBlockCondition extends Condition {
 
 	int height;
 	String blocks;
+	Set<Material> types;
+	List<MagicMaterial> mats;
+	MagicMaterial mat;
+
 
 	@Override
 	public boolean setVar(String var) {
