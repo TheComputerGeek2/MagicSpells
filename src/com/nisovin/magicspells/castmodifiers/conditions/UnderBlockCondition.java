@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import com.nisovin.magicspells.materials.MagicMaterial;
 import com.nisovin.magicspells.util.RegexUtil;
 import com.nisovin.magicspells.DebugHandler;
+import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.castmodifiers.Condition;
 
 public class UnderBlockCondition extends Condition {
@@ -37,7 +38,7 @@ public class UnderBlockCondition extends Condition {
 			height = 10;
 		}
 		else {
-			height = Interger.parseInt(variable[1]);
+			height = Integer.parseInt(variable[1]);
 		}
 
 		//Checks if they put any blocks to compare with in the first place.
