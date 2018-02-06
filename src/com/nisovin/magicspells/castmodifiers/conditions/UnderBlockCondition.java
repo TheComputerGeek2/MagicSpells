@@ -1,6 +1,10 @@
 package com.nisovin.magicspells.castmodifiers.conditions;
 
-import com.nisovin.magicspells.util.RegexUtil;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -8,6 +12,9 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
+import com.nisovin.magicspells.materials.MagicMaterial;
+import com.nisovin.magicspells.util.RegexUtil;
+import com.nisovin.magicspells.DebugHandler;
 import com.nisovin.magicspells.castmodifiers.Condition;
 
 public class UnderBlockCondition extends Condition {
