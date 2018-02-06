@@ -18,7 +18,7 @@ public class UnderBlockCondition extends Condition {
 	@Override
 	public boolean setVar(String var) {
 
-		String[] variable = var.split(";",2)
+		String[] variable = var.split(";",2);
 		blocks = variable[0];
 
 		//Checks if a height was inserted. Defaults to 10.
@@ -31,7 +31,7 @@ public class UnderBlockCondition extends Condition {
 
 		//Checks if they put any blocks to compare with in the first place.
 		if (blocks.equals("")) {
-			MagicSpells.error("Didn't specify any blocks to compare with.")
+			MagicSpells.error("Didn't specify any blocks to compare with.");
 		}
 
 		//We need to parse a list of the blocks required and check if they are valid.
@@ -66,7 +66,7 @@ public class UnderBlockCondition extends Condition {
 		//The first time around, we look at the block above a 2m tall player.
 		Block block = location.clone().add(0, 2, 0).getBlock();
 
-		for (int = 0; i < height; i++)
+		for (int i = 0; i < height; i++)
 			{
 				//Compares the material of the block to the list of blocks.
 				if (mat != null) return mat.equals(block);
