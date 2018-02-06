@@ -34,6 +34,7 @@ public class UnderBlockCondition extends Condition {
 			MagicSpells.error("Didn't specify any blocks to compare with.")
 		}
 
+		//We need to parse a list of the blocks required and check if they are valid.
 		if (blocks.contains(",")) {
 			types = new HashSet<>();
 			mats = new ArrayList<>();
@@ -46,7 +47,7 @@ public class UnderBlockCondition extends Condition {
 			}
 			return true;
 		}
-		mat = MagicSpells.getItemNameResolver().resolveBlock(blocks);
+		mat = MagicSpells.getItemNameResolver().resolveBlock(var);
 		return mat != null;
 	}
 
@@ -62,11 +63,20 @@ public class UnderBlockCondition extends Condition {
 
 	@Override
 	public boolean check(Player player, Location location) {
+		//The first time around, we look at the block above a 2m tall player.
 		Block block = location.clone().add(0, 2, 0).getBlock();
-		if (mat != null) return mat.equals(block);
-		if (types.contains(block.getType())) {
-			for (MagicMaterial m : mats) {
-				if (m.equals(block)) return true;
+
+		for (int = 0; i < height; i++)
+			{
+				//Compares the material of the block to the list of blocks.
+				if (mat != null) return mat.equals(block);
+				if (types.contains(block.getType())) {
+					for (MagicMaterial m : mats) {
+						if (m.equals(block)) return true;
+					}
+
+				//Gets position of the next block up
+				block = block.getRelative(BlockFace.UP);
 			}
 		}
 		return false;
