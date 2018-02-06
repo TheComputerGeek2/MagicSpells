@@ -59,7 +59,7 @@ public class UnderBlockCondition extends Condition {
 			}
 			return true;
 		}
-		mat = MagicSpells.getItemNameResolver().resolveBlock(var);
+		mat = MagicSpells.getItemNameResolver().resolveBlock(blocks);
 		return mat != null;
 	}
 
@@ -84,6 +84,7 @@ public class UnderBlockCondition extends Condition {
 				if (mat != null) return mat.equals(block);
 				if (types.contains(block.getType())) {
 					for (MagicMaterial m : mats) {
+						//If it is true, instantly returns true;
 						if (m.equals(block)) return true;
 					}
 
