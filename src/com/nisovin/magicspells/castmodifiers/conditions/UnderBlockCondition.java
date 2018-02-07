@@ -52,7 +52,7 @@ public class UnderBlockCondition extends Condition {
 		if (height > 256) {
 			//Makes sure than the height will never go above 256.
 			height = 256;
-			MagicSpells.error("Entered a height value >256; Set to 256);
+			MagicSpells.error("Entered a height value >256; Set to 256");
 		}
 
 		//We need to parse a list of the blocks required and check if they are valid.
