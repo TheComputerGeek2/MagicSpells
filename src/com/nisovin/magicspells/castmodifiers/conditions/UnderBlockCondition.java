@@ -36,6 +36,7 @@ public class UnderBlockCondition extends Condition {
 		//Checks if a height was inserted. Defaults to 10.
 		if (variable[1].equals("")) {
 			height = 10;
+			MagicSpells.error("No value was stated; Defaulting to 10");
 		}
 		else {
 			height = Integer.parseInt(variable[1]);
@@ -44,6 +45,14 @@ public class UnderBlockCondition extends Condition {
 		//Checks if they put any blocks to compare with in the first place.
 		if (blocks.equals("")) {
 			MagicSpells.error("Didn't specify any blocks to compare with.");
+			return false;
+		}
+		
+		//Technically there can only be 256 blocks above a player. Why would you want to cast spells in the void though?
+		if (height > 256) {
+			//Makes sure than the height will never go above 256.
+			height = 256;
+			MagicSpells.error("Entered a height value >256; Set to 256);
 		}
 
 		//We need to parse a list of the blocks required and check if they are valid.
@@ -84,11 +93,11 @@ public class UnderBlockCondition extends Condition {
 				if (mat != null) return mat.equals(block);
 				if (types.contains(block.getType())) {
 					for (MagicMaterial m : mats) {
-						//If it is true, instantly returns true;
+						//If it is true, stops the loop and returns true;
 						if (m.equals(block)) return true;
 					}
 
-				//Gets position of the next block up
+				//Uses position of the next block up
 				block = block.getRelative(BlockFace.UP);
 			}
 		}
