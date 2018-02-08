@@ -22,37 +22,30 @@ public class UnderBlockCondition extends Condition {
 
 	int height;
 	String blocks;
+	
+	//Block Data
 	Set<Material> types;
 	List<MagicMaterial> mats;
-	MagicMaterial mat;
-
 
 	@Override
 	public boolean setVar(String var) {
-
-		String[] variable = var.split(";",2);
-		blocks = variable[0];
-
-		//Checks if a height was inserted. Defaults to 10.
-		if (variable[1].equals("")) {
-			height = 10;
-			MagicSpells.error("No value was stated; Defaulting to 10");
-		}
-		else {
+		//Lets TRY and catch some formatting mistakes for this modifier.
+		try {
+			String[] variable = var.split(";",2);
+			blocks = variable[0];
 			height = Integer.parseInt(variable[1]);
+		} catch (NumberFormatException e) { //Oh no, that variable[1] is somehow not a string? give them an Error!
+			DebugHandler.debugNumberFormat(e);
+			return false;
+		} catch (ArrayIndexOutOfBoundsException missingSemiColon) { //No ; in modifier? Just great, give them an Error!
+			MagicSpells.error("No ; seperator for height was found!");
+			return false;
 		}
 
 		//Checks if they put any blocks to compare with in the first place.
 		if (blocks.equals("")) {
 			MagicSpells.error("Didn't specify any blocks to compare with.");
 			return false;
-		}
-		
-		//Technically there can only be 256 blocks above a player. Why would you want to cast spells in the void though?
-		if (height > 256) {
-			//Makes sure than the height will never go above 256.
-			height = 256;
-			MagicSpells.error("Entered a height value >256; Set to 256");
 		}
 
 		//We need to parse a list of the blocks required and check if they are valid.
@@ -68,8 +61,6 @@ public class UnderBlockCondition extends Condition {
 			}
 			return true;
 		}
-		mat = MagicSpells.getItemNameResolver().resolveBlock(blocks);
-		return mat != null;
 	}
 
 	@Override
@@ -77,6 +68,7 @@ public class UnderBlockCondition extends Condition {
 		return check(player, player.getLocation());
 	}
 
+	//If target-modifiers are use, lets check based on the target's location.
 	@Override
 	public boolean check(Player player, LivingEntity target) {
 		return check(player, target.getLocation());
@@ -86,9 +78,10 @@ public class UnderBlockCondition extends Condition {
 	public boolean check(Player player, Location location) {
 		//The first time around, we look at the block above a 2m tall player.
 		Block block = location.clone().add(0, 2, 0).getBlock();
-
-		for (int i = 0; i < height; i++)
-			{
+	
+		//Alright, lets loop until we reach out height value.
+		//If at any point the block we detect is one of the blocks from our list, we are good to go.
+		for (int i = 0; i < height; i++) {
 				//Compares the material of the block to the list of blocks.
 				if (mat != null) return mat.equals(block);
 				if (types.contains(block.getType())) {
