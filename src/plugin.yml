@@ -1,7 +1,7 @@
 name: MagicSpells
 main: com.nisovin.magicspells.MagicSpells
 version: $project.ext.magicspellsData.stringVersionCore
-authors: [nisovin, TheComputerGeek2]
+authors: [nisovin, TheComputerGeek2,Chronoken]
 softdepend: [Vault,ProtocolLib,WorldGuard,Residence,PowerNBT,LibsDisguises,NoCheatPlus,PlaceholderAPI]
 depend: [EffectLib]
 commands:

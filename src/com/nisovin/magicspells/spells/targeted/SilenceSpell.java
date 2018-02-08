@@ -1,12 +1,11 @@
 package com.nisovin.magicspells.spells.targeted;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.nisovin.magicspells.util.SpellFilter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -16,7 +15,6 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.events.SpellCastEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
@@ -32,10 +30,10 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 	private boolean preventCommands;
 	private int duration;
 	private List<String> allowedSpellNames;
-	private Set<Spell> allowedSpells;
 	private List<String> disallowedSpellNames;
-	private Set<Spell> disallowedSpells;
 	private String strSilenced;
+	
+	private SpellFilter shouldAllow = null;
 	
 	Map<String,Unsilencer> silenced;
 	
@@ -48,6 +46,8 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 		duration = getConfigInt("duration", 200);
 		allowedSpellNames = getConfigStringList("allowed-spells", null);
 		disallowedSpellNames = getConfigStringList("disallowed-spells", null);
+		List<String> tagList = getConfigStringList("allowed-spell-tags", null);
+		List<String> deniedTagList = getConfigStringList("disallowed-spell-tags", null);
 		strSilenced = getConfigString("str-silenced", "You are silenced!");
 		
 		if (preventChat) {
@@ -57,39 +57,13 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 		
 		validTargetList = new ValidTargetList(true, false);
+		
+		this.shouldAllow = new SpellFilter(allowedSpellNames, disallowedSpellNames, tagList, deniedTagList);
 	}
 	
 	@Override
 	public void initialize() {
 		super.initialize();
-		
-		if (allowedSpellNames != null && !allowedSpellNames.isEmpty()) {
-			allowedSpells = new HashSet<>();
-			for (String spellName : allowedSpellNames) {
-				Spell spell = MagicSpells.getSpellByInternalName(spellName);
-				if (spell != null) {
-					allowedSpells.add(spell);
-				} else {
-					MagicSpells.error("Invalid allowed spell specified on silence spell '" + this.internalName + "': '" + spellName + '\'');
-				}
-			}
-			allowedSpellNames.clear();
-		}
-		allowedSpellNames = null;
-
-		if (disallowedSpellNames != null && !disallowedSpellNames.isEmpty()) {
-			disallowedSpells = new HashSet<>();
-			for (String spellName : disallowedSpellNames) {
-				Spell spell = MagicSpells.getSpellByInternalName(spellName);
-				if (spell != null) {
-					disallowedSpells.add(spell);
-				} else {
-					MagicSpells.error("Invalid disallowed spell specified on silence spell '" + this.internalName + "': '" + spellName + '\'');
-				}
-			}
-			disallowedSpellNames.clear();
-		}
-		disallowedSpellNames = null;
 		
 		if (preventCast) registerEvents(new CastListener());
 		if (preventChat) registerEvents(new ChatListener());
@@ -144,8 +118,7 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 		public void onSpellCast(final SpellCastEvent event) {
 			if (event.getCaster() == null) return;
 			if (!silenced.containsKey(event.getCaster().getName())) return;
-			if (!(allowedSpells == null || !allowedSpells.contains(event.getSpell()))) return;
-			if (!(disallowedSpells == null || disallowedSpells.contains(event.getSpell()))) return;
+			if (shouldAllow.check(event.getSpell())) return;
 			event.setCancelled(true);
 			
 			Bukkit.getScheduler().scheduleSyncDelayedTask(MagicSpells.plugin, () -> sendMessage(strSilenced, event.getCaster(), event.getSpellArgs()));

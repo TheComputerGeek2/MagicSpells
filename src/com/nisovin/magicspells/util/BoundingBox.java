@@ -1,11 +1,12 @@
 package com.nisovin.magicspells.util;
 
+import com.nisovin.magicspells.util.bounds.Space;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 
-public class BoundingBox {
+public class BoundingBox implements Space {
 
 	World world;
 	double lowX;
@@ -64,6 +65,7 @@ public class BoundingBox {
 		this.highZ += amount;
 	}
 	
+	@Override
 	public boolean contains(Location location) {
 		if (!location.getWorld().equals(this.world)) return false;
 		double x = location.getX();
@@ -72,10 +74,12 @@ public class BoundingBox {
 		return this.lowX <= x && x <= this.highX && this.lowY <= y && y <= this.highY && this.lowZ <= z && z <= this.highZ;
 	}
 	
+	@Override
 	public boolean contains(Entity entity) {
 		return contains(entity.getLocation());
 	}
 	
+	@Override
 	public boolean contains(Block block) {
 		return contains(block.getLocation().add(0.5, 0, 0.5));
 	}

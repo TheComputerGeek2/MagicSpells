@@ -1,33 +1,52 @@
 package com.nisovin.magicspells.spells.targeted;
 
-import com.nisovin.magicspells.util.TimeUtil;
 import org.bukkit.Location;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.LivingEntity;
 
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.Subspell;
+import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.events.SpellPreImpactEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
-import com.nisovin.magicspells.spells.TargetedEntitySpell;
-import com.nisovin.magicspells.spells.TargetedSpell;
-import com.nisovin.magicspells.util.BoundingBox;
-import com.nisovin.magicspells.util.EffectPackage;
-import com.nisovin.magicspells.util.compat.EventUtil;
-import com.nisovin.magicspells.util.MagicConfig;
-import com.nisovin.magicspells.util.ParticleNameUtil;
-import com.nisovin.magicspells.util.TargetInfo;
 
 import de.slikey.effectlib.util.ParticleEffect;
 import de.slikey.effectlib.util.ParticleEffect.ParticleData;
 
+import com.nisovin.magicspells.util.TimeUtil;
+import com.nisovin.magicspells.util.TargetInfo;
+import com.nisovin.magicspells.util.BlockUtils;
+import com.nisovin.magicspells.util.MagicConfig;
+import com.nisovin.magicspells.util.BoundingBox;
+import com.nisovin.magicspells.util.EffectPackage;
+import com.nisovin.magicspells.util.ParticleNameUtil;
+
 public class HomingMissileSpell extends TargetedSpell implements TargetedEntitySpell, TargetedEntityFromLocationSpell {
+
+	Vector relativeOffset;
+
+	boolean stopOnHitGround;
+	boolean hitGround;
+	boolean hitAirDuring;
+	boolean hitAirAfterDuration;
+
+	String durationSpellName;
+	String airSpellName;
+	String hitSpellName;
+	String groundSpellName;
+	Subspell durationSpell;
+	Subspell groundSpell;
+	Subspell airSpell;
+	Subspell spell;
 
 	float projectileVelocity;
 	float projectileInertia;
 
+	int airSpellInterval;
 	int tickInterval;
 	float ticksPerSecond;
 	float velocityPerTick;
@@ -44,22 +63,37 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 	float yOffset;
 	int renderDistance;
 
-	String hitSpellName;
-	Subspell spell;
 	boolean changeCasterOnReflect = true;
 
 	HomingMissileSpell thisSpell;
 
 	ParticleEffect effect;
 	ParticleData data;
-	
+
 	boolean useParticles = false;
-	
+
 	int intermediateSpecialEffects = 0;
 
 	public HomingMissileSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
+
 		thisSpell = this;
+
+		relativeOffset = getConfigVector("relative-offset", "0,0.6,0");
+		yOffset = getConfigFloat("y-offset", 0.6F);
+		if (yOffset != 0.6F) relativeOffset.setY(yOffset);
+
+		hitAirAfterDuration = getConfigBoolean("hit-air-after-duration", false);
+		durationSpellName = getConfigString("spell-after-duration", "");
+
+		hitGround = getConfigBoolean("hit-ground", false);
+		stopOnHitGround = getConfigBoolean("stop-on-hit-ground", false);
+		groundSpellName = getConfigString("spell-on-hit-ground", "");
+
+		airSpellInterval = getConfigInt("spell-interval", 20);
+		hitAirDuring = getConfigBoolean("hit-air-during", false);
+		airSpellName = getConfigString("spell-on-hit-air", "");
+		if (airSpellInterval <= 0) hitAirDuring = false;
 
 		projectileVelocity = getConfigFloat("projectile-velocity", 5F);
 		projectileInertia = getConfigFloat("projectile-inertia", 1.5F);
@@ -74,15 +108,14 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 		particleVerticalSpread = getConfigFloat("particle-vertical-spread", 0.3F);
 		maxDuration = getConfigInt("max-duration", 20) * (int)TimeUtil.MILLISECONDS_PER_SECOND;
 		hitRadius = getConfigFloat("hit-radius", 1.5F);
-		yOffset = getConfigFloat("y-offset", 0.6F);
 		renderDistance = getConfigInt("render-distance", 32);
 		hitSpellName = getConfigString("spell", "");
 		useParticles = getConfigBoolean("use-particles", false);
 		changeCasterOnReflect = getConfigBoolean("change-caster-on-reflect", true);
-		
+
 		intermediateSpecialEffects = getConfigInt("intermediate-special-effect-locations", 0);
 		if (intermediateSpecialEffects < 0) intermediateSpecialEffects = 0;
-		
+
 		EffectPackage pkg = ParticleNameUtil.findEffectPackage(particleName);
 		effect = pkg.effect;
 		data = pkg.data;
@@ -96,7 +129,28 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 		if (s.process()) {
 			spell = s;
 		} else {
-			MagicSpells.error("ParticleProjectileSpell " + internalName + " has an invalid spell defined!");
+			MagicSpells.error("HomingMissileSpell " + internalName + " has an invalid spell defined!");
+		}
+
+		Subspell s2 = new Subspell(groundSpellName);
+		if (s2.process()) {
+			groundSpell = s2;
+		} else {
+			MagicSpells.error("HomingMissileSpell " + internalName + " has an invalid spell-on-hit-ground defined!");
+		}
+
+		Subspell s3 = new Subspell(airSpellName);
+		if (s3.process()) {
+			airSpell = s3;
+		} else {
+			MagicSpells.error("HomingMissileSpell " + internalName + " has an invalid spell-on-hit-air defined!");
+		}
+
+		Subspell s4 = new Subspell(durationSpellName);
+		if (s4.process()) {
+			durationSpell = s4;
+		} else {
+			MagicSpells.error("HomingMissileSpell " + internalName + " has an invalid spell-after-duration defined!");
 		}
 	}
 
@@ -152,16 +206,16 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 		int taskId;
 
 		int counter = 0;
-		
+
 		public MissileTracker(Player caster, LivingEntity target, float power) {
-			this.currentLocation = caster.getLocation().add(0, yOffset, 0);
+			this.currentLocation = caster.getLocation();
 			this.currentVelocity = currentLocation.getDirection();
 			init(caster, target, power);
 			playSpellEffects(EffectPosition.CASTER, caster);
 		}
-		
+
 		public MissileTracker(Player caster, Location startLocation, LivingEntity target, float power) {
-			this.currentLocation = startLocation.clone().add(0, yOffset, 0);
+			this.currentLocation = startLocation.clone();
 			this.currentVelocity = target.getLocation().toVector().subtract(currentLocation.toVector()).normalize();
 			init(caster, target, power);
 			if (caster != null) {
@@ -170,7 +224,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 				playSpellEffects(EffectPosition.CASTER, startLocation);
 			}
 		}
-		
+
 		private void init(Player caster, LivingEntity target, float power) {
 			this.currentVelocity.multiply(velocityPerTick);
 			this.caster = caster;
@@ -178,6 +232,13 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			this.power = power;
 			this.startTime = System.currentTimeMillis();
 			this.taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
+
+			//apply relativeOffset
+			Vector startDir = caster.getLocation().clone().getDirection().normalize();
+			Vector horizOffset = new Vector(-startDir.getZ(), 0.0, startDir.getX()).normalize();
+			this.currentLocation.add(horizOffset.multiply(relativeOffset.getZ())).getBlock().getLocation();
+			this.currentLocation.add(this.currentLocation.getDirection().multiply(relativeOffset.getX()));
+			this.currentLocation.setY(this.currentLocation.getY() + relativeOffset.getY());
 		}
 
 		@Override
@@ -196,11 +257,14 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 
 			// Check if duration is up
 			if (maxDuration > 0 && startTime + maxDuration < System.currentTimeMillis()) {
+				if (hitAirAfterDuration && durationSpell != null && durationSpell.isTargetedLocationSpell()) {
+					durationSpell.castAtLocation(caster, currentLocation, power);
+				}
 				stop();
 				return;
 			}
 			Location oldLocation = currentLocation.clone();
-			
+
 			// Move projectile and calculate new vector
 			currentLocation.add(currentVelocity);
 			Vector oldVelocity = new Vector(currentVelocity.getX(), currentVelocity.getY(), currentVelocity.getZ());
@@ -208,18 +272,32 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			currentVelocity.add(target.getLocation().add(0, yOffset, 0).subtract(currentLocation).toVector().normalize());
 			currentVelocity.normalize().multiply(velocityPerTick);
 
+			if (stopOnHitGround && !BlockUtils.isPathable(currentLocation.getBlock())) {
+				if (hitGround && groundSpell != null && groundSpell.isTargetedLocationSpell()) {
+					groundSpell.castAtLocation(caster, currentLocation, power);
+				}
+				stop();
+				return;
+			}
+
+			if (hitAirDuring && counter % airSpellInterval == 0 && airSpell != null && airSpell.isTargetedLocationSpell()) {
+				airSpell.castAtLocation(caster, currentLocation, power);
+			}
+
 			if (intermediateSpecialEffects > 0) {
 				// Time to put extra effects in between
 				playIntermediateEffectLocations(oldLocation, oldVelocity);
 			}
-			
-			// Show particle
+
+			// Update the location direction and play the effect
+			currentLocation.setDirection(currentVelocity);
 			playMissileEffect(currentLocation);
 
 			// Play effects
 			if (specialEffectInterval > 0 && counter % specialEffectInterval == 0) {
 				playSpellEffects(EffectPosition.SPECIAL, currentLocation);
 			}
+
 			counter++;
 
 			// Check for hit
@@ -243,12 +321,12 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 						// If it got redirected, redirect it!
 						redirect();
 						power = preImpact.getPower();
-						
+
 					}
 				}
 			}
 		}
-		
+
 		private void playIntermediateEffectLocations(Location old, Vector movement) {
 			int divideFactor = intermediateSpecialEffects + 1;
 			movement.setX(movement.getX()/divideFactor);
@@ -259,19 +337,19 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 				playMissileEffect(old);
 			}
 		}
-		
+
 		private void playMissileEffect(Location loc) {
 			// Show particle
 			if (useParticles) {
 				//MagicSpells.getVolatileCodeHandler().playParticleEffect(currentLocation, particleName, particleHorizontalSpread, particleVerticalSpread, particleSpeed, particleCount, renderDistance, 0F);
-				
+
 				effect.display(data, loc, null, renderDistance, particleHorizontalSpread, particleVerticalSpread, particleHorizontalSpread, particleSpeed, particleCount);
 				//ParticleData data, Location center, Color color, double range, float offsetX, float offsetY, float offsetZ, float speed, int amount
 			} else {
 				playSpellEffects(EffectPosition.SPECIAL, loc);
 			}
 		}
-		
+
 		private void redirect() {
 			Player c = caster;
 			Player t = (Player) target;

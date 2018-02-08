@@ -55,7 +55,7 @@ public class NoCheatPlusExemptionAid implements ExemptionAssistant{
 	private void setupCheckNodes() {
 		checkNodes = new HashMap<>();
 		Arrays.stream(CheckType.values())
-			.forEachOrdered(check -> checkNodes.put(check.getPermission(), check));
+			.forEachOrdered(check -> checkNodes.put(check.getPermission().toString(), check));
 	}
 	
 	private boolean doesntHaveYet(Player player, CheckType checkType) {

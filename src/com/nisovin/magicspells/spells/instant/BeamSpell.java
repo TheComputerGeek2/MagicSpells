@@ -97,7 +97,6 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 			this.caster = caster;
 			this.startLoc = from.clone();
 			this.power = power;
-			BoundingBox box;
 
 			playSpellEffects(EffectPosition.CASTER, this.caster);
 
@@ -119,6 +118,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 			this.currentLoc = this.startLoc.clone();
 
 			Vector dir = this.startLoc.getDirection().multiply(BeamSpell.this.interval);
+			BoundingBox box = new BoundingBox(this.currentLoc, BeamSpell.this.hitRadius, BeamSpell.this.verticalHitRadius);
 
 			float d = 0;
 			mainLoop:
@@ -140,8 +140,8 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 				}
 
 				playSpellEffects(EffectPosition.SPECIAL, this.currentLoc);
-
-				box = new BoundingBox(this.currentLoc, BeamSpell.this.hitRadius, BeamSpell.this.verticalHitRadius);
+				
+				box.setCenter(this.currentLoc);
 
 				//check entities in the beam range
 				for (LivingEntity e : this.caster.getWorld().getLivingEntities()) {
