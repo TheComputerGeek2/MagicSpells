@@ -49,16 +49,15 @@ public class UnderBlockCondition extends Condition {
 		}
 		
 		//We need to parse a list of the blocks required and check if they are valid.
-		if (blocks.contains(",")) {
-			types = new HashSet<>();
-			mats = new ArrayList<>();
-			String[] split = blocks.split(",");
-			for (String s : split) {
-				MagicMaterial mat = MagicSpells.getItemNameResolver().resolveBlock(s);
-				if (mat == null) return false;
-				types.add(mat.getMaterial());
-				mats.add(mat);
-			}
+		types = new HashSet<>();
+		mats = new ArrayList<>();
+		String[] split = blocks.split(",");
+		
+		for (String s : split) {
+			MagicMaterial mat = MagicSpells.getItemNameResolver().resolveBlock(s);
+			if (mat == null) return false;
+			types.add(mat.getMaterial());
+			mats.add(mat);
 		}
 		return true;
 	}
