@@ -25,8 +25,7 @@ public class UnderBlockCondition extends Condition {
 	
 	//Block Data
 	Set<Material> types;
-	List<MagicMaterial> mats;
-	MagicMaterial mat;
+	List<MagicMaterial> mats
 
 	@Override
 	public boolean setVar(String var) {
@@ -60,7 +59,6 @@ public class UnderBlockCondition extends Condition {
 				types.add(mat.getMaterial());
 				mats.add(mat);
 			}
-			return true;
 		}
 		return true;
 	}
@@ -85,7 +83,6 @@ public class UnderBlockCondition extends Condition {
 		//If at any point the block we detect is one of the blocks from our list, we are good to go.
 		for (int i = 0; i < height; i++) {
 				//Compares the material of the block to the list of blocks.
-				if (mat != null) return mat.equals(block);
 				if (types.contains(block.getType())) {
 					for (MagicMaterial m : mats) {
 						//If it is true, stops the loop and returns true;
