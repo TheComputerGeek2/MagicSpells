@@ -48,7 +48,7 @@ public class UnderBlockCondition extends Condition {
 			MagicSpells.error("Didn't specify any blocks to compare with.");
 			return false;
 		}
-
+		
 		//We need to parse a list of the blocks required and check if they are valid.
 		if (blocks.contains(",")) {
 			types = new HashSet<>();
@@ -62,6 +62,7 @@ public class UnderBlockCondition extends Condition {
 			}
 			return true;
 		}
+		return true;
 	}
 
 	@Override
