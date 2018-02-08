@@ -26,6 +26,7 @@ public class UnderBlockCondition extends Condition {
 	//Block Data
 	Set<Material> types;
 	List<MagicMaterial> mats;
+	MagicMaterial mat;
 
 	@Override
 	public boolean setVar(String var) {
