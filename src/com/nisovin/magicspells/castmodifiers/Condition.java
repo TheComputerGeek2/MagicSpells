@@ -10,21 +10,21 @@ import com.nisovin.magicspells.DebugHandler;
 import com.nisovin.magicspells.castmodifiers.conditions.*;
 
 public abstract class Condition {
-	
+
 	public abstract boolean setVar(String var);
 
 	public abstract boolean check(Player player);
-	
+
 	public abstract boolean check(Player player, LivingEntity target);
-	
+
 	public abstract boolean check(Player player, Location location);
-	
+
 	private static HashMap<String, Class<? extends Condition>> conditions = new HashMap<>();
-	
+
 	public static void addCondition(String name, Class<? extends Condition> condition) {
 		conditions.put(name.toLowerCase(), condition);
 	}
-	
+
 	static Condition getConditionByName(String name) {
 		Class<? extends Condition> clazz = conditions.get(name.toLowerCase());
 		if (clazz == null) {
@@ -41,7 +41,7 @@ public abstract class Condition {
 			return null;
 		}
 	}
-	
+
 	static {
 		conditions.put("disguised", DisguisedCondition.class);
 		conditions.put("day", DayCondition.class);
@@ -161,6 +161,8 @@ public abstract class Condition {
 		conditions.put("behindtarget", BehindTargetCondition.class);
 		conditions.put("thundering", ThunderingCondition.class);
 		conditions.put("raining", RainingCondition.class);
+		conditions.put("underblock", UnderBlockCondition.class);
+		conditions.put("onleash", OnLeashCondition.class)
 	}
-	
+
 }
