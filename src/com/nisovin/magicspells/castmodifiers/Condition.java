@@ -162,7 +162,7 @@ public abstract class Condition {
 		conditions.put("thundering", ThunderingCondition.class);
 		conditions.put("raining", RainingCondition.class);
 		conditions.put("underblock", UnderBlockCondition.class);
-		conditions.put("onleash", OnLeashCondition.class)
+		conditions.put("onleash", OnLeashCondition.class);
 	}
 
 }
