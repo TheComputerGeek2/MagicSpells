@@ -48,7 +48,6 @@ import com.nisovin.magicspells.MagicSpells;
  * </table>
  */
 public class ActionBarTextEffect extends SpellEffect {
-
 	String message = "";
 	
 	boolean broadcast = false;
@@ -75,7 +74,7 @@ public class ActionBarTextEffect extends SpellEffect {
 	}
 	
 	private void send(Player player) {
-		MagicSpells.getVolatileCodeHandler().sendActionBarMessage(player, message);
+		MagicSpells.getVolatileCodeHandler().sendActionBarMessage(player, MagicSpells.plugin.doArgumentAndVariableSubstitution(message, player, null));
 	}
 	
 }

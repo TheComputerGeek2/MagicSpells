@@ -108,7 +108,6 @@ import com.nisovin.magicspells.MagicSpells;
  * </table>
  */
 public class TitleEffect extends SpellEffect {
-
 	String title = null;
 	
 	String subtitle = null;
@@ -149,7 +148,7 @@ public class TitleEffect extends SpellEffect {
 	}
 	
 	private void send(Player player) {
-		MagicSpells.getVolatileCodeHandler().sendTitleToPlayer(player, title, subtitle, fadeIn, stay, fadeOut);
+		MagicSpells.getVolatileCodeHandler().sendTitleToPlayer(player, MagicSpells.plugin.doArgumentAndVariableSubstitution(title, player, null), MagicSpells.plugin.doArgumentAndVariableSubstitution(subtitle, player, null), fadeIn, stay, fadeOut);
 	}
 
 }
