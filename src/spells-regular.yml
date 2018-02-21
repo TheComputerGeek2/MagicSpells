@@ -1,3 +1,15 @@
+#####################################################################################
+# Support and guides for the plugin can be found on the discord or the forum        #
+#                                                                                   #
+# Forum Link: https://goo.gl/RzWA8B                                                 #
+# Guide Link: https://goo.gl/qQhkag                                                 #
+# Discord Link: https://discord.gg/FJXfDPZ                                          #
+# Example Spells: https://github.com/niblexis/ms-examples                           #
+#                                                                                   #
+# Original Author: Nisovin     Current Maintainers: TheComputerGeek2, ChronoKeeper  #
+# Contributors: VolcanoMan3705, Niblexis, RifleDLuffy, DragonsAscent                #
+#####################################################################################
+
 anvil:
     spell-class: ".instant.ThrowBlockSpell"
     name: anvil
