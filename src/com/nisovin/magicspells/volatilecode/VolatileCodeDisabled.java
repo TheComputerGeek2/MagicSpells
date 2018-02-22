@@ -43,6 +43,11 @@ public class VolatileCodeDisabled implements VolatileCodeHandle {
 	}
 
 	@Override
+	public void creaturePathToLoc(Creature creature, Location loc, float speed) {
+		// Need the volatile code for this
+	}
+
+	@Override
 	public void sendFakeSlotUpdate(Player player, int slot, ItemStack item) {
 		// Need the volatile code for this
 	}

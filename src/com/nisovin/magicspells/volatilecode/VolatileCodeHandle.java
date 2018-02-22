@@ -8,6 +8,7 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Creature;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.util.Vector;
@@ -20,6 +21,8 @@ public interface VolatileCodeHandle {
 	void addPotionGraphicalEffect(LivingEntity entity, int color, int duration);
 	
 	void entityPathTo(LivingEntity entity, LivingEntity target);
+
+	void creaturePathToLoc(Creature creature, Location loc, float speed);
 	
 	void sendFakeSlotUpdate(Player player, int slot, ItemStack item);
 	

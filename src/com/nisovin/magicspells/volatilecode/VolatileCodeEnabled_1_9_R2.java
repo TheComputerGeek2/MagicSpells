@@ -38,6 +38,8 @@ import net.minecraft.server.v1_9_R2.PathfinderGoalFloat;
 import net.minecraft.server.v1_9_R2.PathfinderGoalLookAtPlayer;
 import net.minecraft.server.v1_9_R2.PathfinderGoalSelector;
 import net.minecraft.server.v1_9_R2.PlayerConnection;
+import net.minecraft.server.v1_9_R2.EntityCreature;
+import net.minecraft.server.v1_9_R2.PathEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -46,6 +48,7 @@ import org.bukkit.attribute.AttributeModifier.Operation;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_9_R2.CraftServer;
 import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftCreature;
 import org.bukkit.craftbukkit.v1_9_R2.entity.CraftFallingSand;
 import org.bukkit.craftbukkit.v1_9_R2.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
@@ -200,6 +203,13 @@ public class VolatileCodeEnabled_1_9_R2 implements VolatileCodeHandle {
 	public void entityPathTo(LivingEntity creature, LivingEntity target) {
 		//EntityCreature entity = ((CraftCreature)creature).getHandle();
 		//entity.pathEntity = entity.world.findPath(entity, ((CraftLivingEntity)target).getHandle(), 16.0F, true, false, false, false);
+	}
+
+	@Override
+	public void creaturePathToLoc(Creature creature, Location loc, float speed) {
+		EntityCreature entity = ((CraftCreature)creature).getHandle();
+		PathEntity pathEntity = entity.getNavigation().a(loc.getX(), loc.getY(), loc.getZ());
+		entity.getNavigation().a(pathEntity, speed);
 	}
 
 	@Override
