@@ -116,6 +116,7 @@ public abstract class Condition {
 		conditions.put("variableequals", VariableEqualsCondition.class);
 		conditions.put("variablecompare", VariableCompareCondition.class);
 		conditions.put("variablematches", VariableMatchesCondition.class);
+		conditions.put("variablestringis", VariableStringIsCondition.class);
 		conditions.put("alivelessthan", AliveLessThan.class);
 		conditions.put("alivemorethan", AliveMoreThan.class);
 		conditions.put("lastlifelongerthan", LastLifeLongerThan.class);
@@ -162,6 +163,11 @@ public abstract class Condition {
 		conditions.put("behindtarget", BehindTargetCondition.class);
 		conditions.put("thundering", ThunderingCondition.class);
 		conditions.put("raining", RainingCondition.class);
+		conditions.put("underblock", UnderBlockCondition.class);
+		conditions.put("overblock", OverBlockCondition.class);
+		conditions.put("onleash", OnLeashCondition.class);
+		conditions.put("exhaustionbelow", ExhaustionAboveCondition.class);
+		conditions.put("exhaustionabove", ExhaustionBelowCondition.class);
 	}
 	
 }
