@@ -47,6 +47,7 @@ public class PassiveTrigger {
 	public static Set<PassiveTrigger> SPELL_CASTED = addTriggers("spellcasted", SpellCastedListener.class);
 	public static Set<PassiveTrigger> SPELL_TARGET = addTriggers("spelltarget", SpellTargetListener.class);
 	public static Set<PassiveTrigger> SPELL_TARGETED = addTriggers("spelltargeted", SpellTargetedListener.class);
+	public static Set<PassiveTrigger> MOVE = addTriggers("move", MoveListener.class);
 	public static Set<PassiveTrigger> SPRINT = addTriggers("sprint", SprintListener.class);
 	public static Set<PassiveTrigger> STOP_SPRINT = addTriggers("stopsprint", SprintListener.class);
 	public static Set<PassiveTrigger> SNEAK = addTriggers("sneak", SneakListener.class);
@@ -63,7 +64,6 @@ public class PassiveTrigger {
 	public static Set<PassiveTrigger> TELEPORT = addTriggers("teleport", TeleportListener.class);
 	public static Set<PassiveTrigger> BUFF = addTriggers("buff", BuffListener.class);
 	public static Set<PassiveTrigger> TICKS = addTriggers("ticks", TicksListener.class);
-	
 	// can't do priorities here
 	public static PassiveTrigger RESOURCE_PACK = addTrigger("resourcepack", ResourcePackListener.class);
 	
