@@ -17,6 +17,7 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 
 	private String strNoLandingSpot;
 	private double distance;
+	private double height;
 
 	private float yaw;
 	private float pitch;
@@ -26,6 +27,7 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 		
 		strNoLandingSpot = getConfigString("str-no-landing-spot", "Cannot shadowstep there.");
 		distance = getConfigDouble("distance", -1);
+		height = getConfigDouble("height", 0);
 
 		pitch = getConfigFloat("pitch", 0);
 		yaw = getConfigFloat("yaw", 0);
@@ -51,7 +53,7 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 	private boolean shadowstep(Player player, LivingEntity target) {
 		// Get landing location
 		Location targetLoc = target.getLocation();
-		Vector facing = targetLoc.getDirection().setY(0).multiply(distance);
+		Vector facing = targetLoc.getDirection().setY(height).multiply(distance);
 		Location loc = targetLoc.toVector().add(facing).toLocation(targetLoc.getWorld());
 		loc.setPitch(pitch);
 		loc.setYaw(targetLoc.getYaw() + yaw);
