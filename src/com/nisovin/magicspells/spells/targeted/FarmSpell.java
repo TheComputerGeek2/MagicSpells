@@ -39,7 +39,7 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 		growWheat = getConfigBoolean("grow-wheat", true);
 		growCarrots = getConfigBoolean("grow-carrots", true);
 		growPotatoes = getConfigBoolean("grow-potatoes", true);
-		growWart = getConfigBoolean("grow-beetroot", true);
+		growBeetroot = getConfigBoolean("grow-beetroot", false);
 		growWart = getConfigBoolean("grow-wart", false);
 	}
 
