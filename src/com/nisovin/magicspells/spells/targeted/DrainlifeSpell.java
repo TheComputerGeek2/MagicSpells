@@ -223,6 +223,7 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 			tempVector.subtract(casterLocation.toVector()).normalize();
 			current.subtract(tempVector);
 			Location playAt = current.toLocation(world);
+			playAt.setDirection(tempVector);
 			if (useSmoke) world.playEffect(playAt, Effect.SMOKE, 4);
 			playSpellEffects(EffectPosition.SPECIAL, playAt);
 			if (current.distanceSquared(targetVector) < 4 || tick > range * 1.5) {
