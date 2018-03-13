@@ -155,13 +155,10 @@ public abstract class SpellEffect {
 	
 	private Runnable playEffectLocationReal(Location location) {
 		if (location == null) return playEffectLocation(null);
-		if (heightOffset != 0 || forwardOffset != 0) {
-			Location loc = location.clone();
-			if (heightOffset != 0) loc.setY(loc.getY() + heightOffset);
-			if (forwardOffset != 0) loc.add(loc.getDirection().setY(0).normalize().multiply(forwardOffset));
-			return playEffectLocation(loc);
-		}
-		return playEffectLocation(location.clone());
+		Location loc = location.clone();
+		if (heightOffset != 0) loc.setY(loc.getY() + heightOffset);
+		if (forwardOffset != 0) loc.add(loc.getDirection().setY(0).normalize().multiply(forwardOffset));
+		return playEffectLocation(loc);
 	}
 	
 	protected Runnable playEffectLocation(Location location) {
@@ -194,14 +191,7 @@ public abstract class SpellEffect {
 	}
 	
 	public void playEffectWhileActiveOnEntity(final Entity entity, final SpellEffectActiveChecker checker) {
-		taskId = MagicSpells.scheduleRepeatingTask(new Runnable() {
-			
-			@Override
-			public void run() {
-				if (checker.isActive(entity)) playEffect(entity);
-			}
-			
-		}, 0, effectInterval);
+		new EffectTracker(entity, checker);
 	}
 	
 	public OrbitTracker playEffectWhileActiveOrbit(final Entity entity, final SpellEffectActiveChecker checker) {
@@ -214,7 +204,38 @@ public abstract class SpellEffect {
 		boolean isActive(Entity entity);
 		
 	}
-	
+
+	class EffectTracker implements Runnable {
+
+		Entity entity;
+		SpellEffectActiveChecker checker;
+		int effectTrackerTaskId;
+
+		public EffectTracker(Entity entity, SpellEffectActiveChecker checker) {
+			this.entity = entity;
+			this.checker = checker;
+			this.effectTrackerTaskId = MagicSpells.scheduleRepeatingTask(this, 0, effectInterval);
+		}
+
+		@Override
+		public void run() {
+			// check for valid and alive caster
+			if (!entity.isValid() || !checker.isActive(entity)) {
+				stop();
+				return;
+			}
+
+			playEffect(entity);
+
+		}
+
+		public void stop() {
+			MagicSpells.cancelTask(effectTrackerTaskId);
+			entity = null;
+		}
+
+	}
+
 	class OrbitTracker implements Runnable {
 		
 		Entity entity;
@@ -296,15 +317,13 @@ public abstract class SpellEffect {
 	 */
 	public static SpellEffect createNewEffectByName(String name) {
 		Class<? extends SpellEffect> clazz = effects.get(name.toLowerCase());
-		if (clazz != null) {
-			try {
-				return clazz.newInstance();
-			} catch (Exception e) {
-				DebugHandler.debugGeneral(e);
-				return null;
-			}
+		if (clazz == null) return null;
+		try {
+			return clazz.newInstance();
+		} catch (Exception e) {
+			DebugHandler.debugGeneral(e);
+			return null;
 		}
-		return null;
 	}
 	
 	public void playTrackingLinePatterns(Location origin, Location target, Entity originEntity, Entity targetEntity) {
