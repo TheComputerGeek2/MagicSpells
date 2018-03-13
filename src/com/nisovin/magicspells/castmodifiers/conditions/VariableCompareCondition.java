@@ -53,8 +53,8 @@ public class VariableCompareCondition extends Condition {
 		// Get variable values
 		String value = MagicSpells.getVariableManager().getStringValue(firstVariable, player);
 		String valueSecond = MagicSpells.getVariableManager().getStringValue(secondVariable, player);
-		double valueDouble;
-		double valueDoubleSecond;
+		double valueDouble = 0;
+		double valueDoubleSecond = 0;
 
 		// Will it require the string to be a double?
 		if(op == 2 || op == 3) {
