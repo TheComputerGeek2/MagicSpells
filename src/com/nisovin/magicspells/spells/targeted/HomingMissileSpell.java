@@ -126,30 +126,26 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 		super.initialize();
 
 		Subspell s = new Subspell(hitSpellName);
-		if (s.process()) {
+		if (!s.process() && !hitSpellName.isEmpty()) {
 			spell = s;
-		} else {
 			MagicSpells.error("HomingMissileSpell " + internalName + " has an invalid spell defined!");
 		}
 
 		Subspell s2 = new Subspell(groundSpellName);
-		if (s2.process()) {
+		if (!s2.process() && !groundSpellName.isEmpty()) {
 			groundSpell = s2;
-		} else {
 			MagicSpells.error("HomingMissileSpell " + internalName + " has an invalid spell-on-hit-ground defined!");
 		}
 
 		Subspell s3 = new Subspell(airSpellName);
-		if (s3.process()) {
+		if (!s3.process() && !airSpellName.isEmpty()) {
 			airSpell = s3;
-		} else {
 			MagicSpells.error("HomingMissileSpell " + internalName + " has an invalid spell-on-hit-air defined!");
 		}
 
 		Subspell s4 = new Subspell(durationSpellName);
-		if (s4.process()) {
+		if (!s4.process() && !durationSpellName.isEmpty()) {
 			durationSpell = s4;
-		} else {
 			MagicSpells.error("HomingMissileSpell " + internalName + " has an invalid spell-after-duration defined!");
 		}
 	}

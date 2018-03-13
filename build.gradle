@@ -76,6 +76,7 @@ public class MSConfig {
   def resourceResidenceUrl = 'http://nexus.hc.to/content/repositories/pub_releases/com/bekvon/bukkit/residence/Residence/4.5.3.0/Residence-4.5.3.0.jar'
   def resourceNcpUrl = 'https://ci.md-5.net/job/NoCheatPlus/lastSuccessfulBuild/artifact/target/NoCheatPlus.jar'
   def resourcePlaceholderapiUrl = 'http://repo.extendedclip.com/content/repositories/placeholderapi/me/clip/placeholderapi/2.8.2/placeholderapi-2.8.2.jar'
+  def resourceGriefPreventionUrl = 'https://github.com/TechFortress/GriefPrevention/releases/download/16.8/GriefPrevention.jar'
 
   def versionSuffix
 
@@ -109,6 +110,9 @@ def magicspellsGetResources() {
 
   // Get PlaceholderAPI
   downloadFile(new File(libFolder, 'PlaceholderAPI.jar'), new URL(project.ext.magicspellsData.resourcePlaceholderapiUrl))
+
+  // Get GriefPrevention
+  downloadFile(new File(libFolder, 'GriefPrevention.jar'), new URL(project.ext.magicspellsData.resourceGriefPreventionUrl))
 
   println 'Finished running the get resources phase'
 }
@@ -150,6 +154,7 @@ def magicspellsClasspathBase() {
     .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}Residence.jar"))
     .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}PlaceholderAPI.jar"))
     .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}Vault.jar"))
+	.plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}GriefPrevention.jar"))
 }
 
 def magicspellsClasspathMSJar() {
