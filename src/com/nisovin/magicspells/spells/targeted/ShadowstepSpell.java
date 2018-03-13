@@ -2,16 +2,16 @@ package com.nisovin.magicspells.spells.targeted;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.util.Vector;
+import org.bukkit.entity.Player;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
-import com.nisovin.magicspells.spells.TargetedEntitySpell;
-import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.BlockUtils;
-import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.TargetInfo;
+import com.nisovin.magicspells.util.MagicConfig;
+import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
 public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpell {
 
@@ -20,6 +20,7 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 
 	private float yaw;
 	private float pitch;
+	Vector relativeOffset;
 	
 	public ShadowstepSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -29,6 +30,8 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 
 		pitch = getConfigFloat("pitch", 0);
 		yaw = getConfigFloat("yaw", 0);
+		relativeOffset = getConfigVector("relative-offset", "-1,0,0");
+		if (distance != -1) relativeOffset.setX(distance);
 	}
 
 	@Override
@@ -50,23 +53,30 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 	
 	private boolean shadowstep(Player player, LivingEntity target) {
 		// Get landing location
-		Location targetLoc = target.getLocation();
-		Vector facing = targetLoc.getDirection().setY(0).multiply(distance);
-		Location loc = targetLoc.toVector().add(facing).toLocation(targetLoc.getWorld());
-		loc.setPitch(pitch);
-		loc.setYaw(targetLoc.getYaw() + yaw);
-		
+		Location targetLoc = target.getLocation().clone();
+		targetLoc.setPitch(0);
+
+		Vector startDir = targetLoc.getDirection().setY(0).normalize();
+		Vector horizOffset = new Vector(-startDir.getZ(), 0, startDir.getX()).normalize();
+
+		targetLoc.add(horizOffset.multiply(relativeOffset.getZ())).getBlock().getLocation();
+		targetLoc.add(targetLoc.getDirection().setY(0).multiply(relativeOffset.getX()));
+		targetLoc.setY(targetLoc.getY() + relativeOffset.getY());
+
+		targetLoc.setPitch(pitch);
+		targetLoc.setYaw(targetLoc.getYaw() + yaw);
+
 		// Check if clear
-		Block b = loc.getBlock();
+		Block b = targetLoc.getBlock();
 		if (!BlockUtils.isPathable(b.getType()) || !BlockUtils.isPathable(b.getRelative(BlockFace.UP))) {
 			// Fail - no landing spot
 			return false;
 		}
-		
+
 		// Ok
-		playSpellEffects(player.getLocation(), loc);
-		player.teleport(loc);
-		
+		playSpellEffects(player.getLocation(), targetLoc);
+		player.teleport(targetLoc);
+
 		return true;
 	}
 
