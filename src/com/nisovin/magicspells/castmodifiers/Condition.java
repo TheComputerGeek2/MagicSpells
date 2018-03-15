@@ -75,6 +75,7 @@ public abstract class Condition {
 		conditions.put("holding", HoldingCondition.class);
 		conditions.put("offhand", OffhandCondition.class);
 		conditions.put("durabilitylessthan", DurabilityLessThanCondition.class);
+		conditions.put("itemhaslore", ItemHasLoreCondition.class);
 		conditions.put("hasitem", HasItemCondition.class);
 		conditions.put("hasitemlessthan", HasItemLessThanCondition.class);
 		conditions.put("hasitemmorethan", HasItemMoreThanCondition.class);
