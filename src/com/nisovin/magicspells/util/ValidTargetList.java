@@ -1,21 +1,21 @@
 package com.nisovin.magicspells.util;
 
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.List;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.ArrayList;
 
 import org.bukkit.GameMode;
-import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Monster;
+import org.bukkit.entity.Animals;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Monster;
-import org.bukkit.entity.Player;
 
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.Spell;
+import com.nisovin.magicspells.MagicSpells;
 
 public class ValidTargetList {
 	
@@ -178,7 +178,31 @@ public class ValidTargetList {
 	public boolean canTargetPlayers() {
 		return this.targetPlayers;
 	}
-	
+
+	public boolean canTargetAnimals() {
+		return this.targetAnimals;
+	}
+
+	public boolean canTargetMonsters() {
+		return this.targetMonsters;
+	}
+
+	public boolean canTargetNonPlayers() {
+		return this.targetNonPlayers;
+	}
+
+	public boolean canTargetInvisibles() {
+		return this.targetInvisibles;
+	}
+
+	public boolean canTargetSelf() {
+		return this.targetSelf;
+	}
+
+	public boolean canTargetLivingEntities() {
+		return this.targetNonPlayers || this.targetMonsters || this.targetAnimals;
+	}
+
 	public boolean canTargetNonLivingEntities() {
 		return this.targetNonLivingEntities;
 	}
