@@ -193,6 +193,66 @@ public enum ModifierType {
 		
 	},
 	
+	ADD_COOLDOWN(false, true, false, false, "addcooldown", "addcd", "+cd") {
+
+		@Override
+		public boolean apply(SpellCastEvent event, boolean check, String modifierVar, float modifierVarFloat, int modifierVarInt, Object customData) {
+			if (check) event.setCooldown(event.getCooldown() + modifierVarFloat);
+			return true;
+		}
+
+		@Override
+		public boolean apply(ManaChangeEvent event, boolean check, String modifierVar, float modifierVarFloat, int modifierVarInt, Object customData) {
+			return true;
+		}
+
+		@Override
+		public boolean apply(SpellTargetEvent event, boolean check, String modifierVar, float modifierVarFloat, int modifierVarInt, Object customData) {
+			return true;
+		}
+
+		@Override
+		public boolean apply(SpellTargetLocationEvent event, boolean check, String modifierVar, float modifierVarFloat, int modifierVarInt, Object customData) {
+			return true;
+		}
+
+		@Override
+		public boolean apply(MagicSpellsGenericPlayerEvent event, boolean check, String modifierVar, float modifierVarFloat, int modifierVarInt, Object customData) {
+			return true;
+		}
+
+	},
+
+	MINUS_COOLDOWN(false, true, false, false, "minuscooldown", "minuscd", "-cd") {
+
+		@Override
+		public boolean apply(SpellCastEvent event, boolean check, String modifierVar, float modifierVarFloat, int modifierVarInt, Object customData) {
+			if (check) event.setCooldown(event.getCooldown() - modifierVarFloat);
+			return true;
+		}
+
+		@Override
+		public boolean apply(ManaChangeEvent event, boolean check, String modifierVar, float modifierVarFloat, int modifierVarInt, Object customData) {
+			return true;
+		}
+
+		@Override
+		public boolean apply(SpellTargetEvent event, boolean check, String modifierVar, float modifierVarFloat, int modifierVarInt, Object customData) {
+			return true;
+		}
+
+		@Override
+		public boolean apply(SpellTargetLocationEvent event, boolean check, String modifierVar, float modifierVarFloat, int modifierVarInt, Object customData) {
+			return true;
+		}
+
+		@Override
+		public boolean apply(MagicSpellsGenericPlayerEvent event, boolean check, String modifierVar, float modifierVarFloat, int modifierVarInt, Object customData) {
+			return true;
+		}
+
+	},
+
 	REAGENTS(false, true, false, false, "reagents") {
 		
 		@Override
