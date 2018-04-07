@@ -22,36 +22,48 @@ import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
 public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 
-	boolean stopOnHitEntity;
-	boolean stopOnHitGround;
 	double hitRadius;
 	double verticalHitRadius;
 	float rotation;
+	float gravity;
 	float beamHorizOffset;
 	float beamVertOffset;
 	float maxDistance;
 	float interval;
 	float yOffset;
-	String spellNameToCast;
-	Subspell spell;
+	boolean stopOnHitEntity;
+	boolean stopOnHitGround;
 	Vector relativeOffset;
+
+	Subspell spell;
+	Subspell endSpell;
+	Subspell groundSpell;
+	String endSpellName;
+	String groundSpellName;
+	String spellNameToCast;
 
 	public BeamSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
 		yOffset = getConfigFloat("y-offset", 0);
 		relativeOffset = getConfigVector("relative-offset", "0,0,0");
-		relativeOffset.setY(yOffset);
+		if (yOffset != 0) relativeOffset.setY(yOffset);
+
 		hitRadius = getConfigDouble("hit-radius", 2);
 		verticalHitRadius = getConfigDouble("vertical-hit-radius", 2);
+		gravity = getConfigFloat("gravity", 0);
+		gravity *= -1;
 		rotation = getConfigFloat("rotation", 0);
 		beamHorizOffset = getConfigFloat("beam-horiz-offset", 0);
 		beamVertOffset = getConfigFloat("beam-vert-offset", 0);
 		maxDistance = getConfigFloat("max-distance", 50);
 		interval = getConfigFloat("interval", 0.25F);
-		spellNameToCast = getConfigString("spell", "");
 		stopOnHitEntity = getConfigBoolean("stop-on-hit-entity", false);
 		stopOnHitGround = getConfigBoolean("stop-on-hit-ground", false);
+
+		endSpellName = getConfigString("spell-on-end", "");
+		groundSpellName = getConfigString("spell-on-hit-ground", "");
+		spellNameToCast = getConfigString("spell", "");
 
 		if (interval < 0.01) interval = 0.01F;
 	}
@@ -59,8 +71,24 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 	@Override
 	public void initialize() {
 		super.initialize();
+
 		spell = new Subspell(spellNameToCast);
-		if (!spell.process()) MagicSpells.error("Beam Spell '" + internalName + "' has invalid spell defined");
+		if (!spell.process()) {
+			MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell defined");
+			spell = null;
+		}
+
+		endSpell = new Subspell(endSpellName);
+		if (!endSpell.process()) {
+			if (!endSpellName.isEmpty()) MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-end defined");
+			endSpell = null;
+		}
+
+		groundSpell = new Subspell(groundSpellName);
+		if (!groundSpell.process()) {
+			if (!groundSpellName.isEmpty()) MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-hit-ground defined");
+			groundSpell = null;
+		}
 	}
 
 	@Override
@@ -94,53 +122,48 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 
 		public Beam(Player caster, Location from, float power) {
 			this.immune = new HashSet<>();
-			this.caster = caster;
 			this.startLoc = from.clone();
+			this.caster = caster;
 			this.power = power;
 
 			playSpellEffects(EffectPosition.CASTER, this.caster);
 
-			if (BeamSpell.this.beamVertOffset != 0)
-				this.startLoc.setPitch(this.startLoc.getPitch() - BeamSpell.this.beamVertOffset);
-			if (BeamSpell.this.beamHorizOffset != 0)
-				this.startLoc.setYaw(this.startLoc.getYaw() + BeamSpell.this.beamHorizOffset);
-
-			Vector startDir;
-			Vector horizOffset;
+			if (beamVertOffset != 0) this.startLoc.setPitch(this.startLoc.getPitch() - beamVertOffset);
+			if (beamHorizOffset != 0) this.startLoc.setYaw(this.startLoc.getYaw() + beamHorizOffset);
 
 			//apply relative offset
-			startDir = from.clone().getDirection().normalize();
-			horizOffset = new Vector(-startDir.getZ(), 0, startDir.getX()).normalize();
-			this.startLoc.add(horizOffset.multiply(BeamSpell.this.relativeOffset.getZ())).getBlock().getLocation();
-			this.startLoc.add(this.startLoc.getDirection().clone().multiply(BeamSpell.this.relativeOffset.getX()));
-			this.startLoc.setY(this.startLoc.getY() + BeamSpell.this.relativeOffset.getY());
+			Vector startDir = this.startLoc.getDirection().normalize();
+			Vector horizOffset = new Vector(-startDir.getZ(), 0, startDir.getX()).normalize();
+			this.startLoc.add(horizOffset.multiply(relativeOffset.getZ())).getBlock().getLocation();
+			this.startLoc.add(this.startLoc.getDirection().clone().multiply(relativeOffset.getX()));
+			this.startLoc.setY(this.startLoc.getY() + relativeOffset.getY());
 
 			this.currentLoc = this.startLoc.clone();
 
-			Vector dir = this.startLoc.getDirection().multiply(BeamSpell.this.interval);
-			BoundingBox box = new BoundingBox(this.currentLoc, BeamSpell.this.hitRadius, BeamSpell.this.verticalHitRadius);
+			Vector dir = this.startLoc.getDirection().multiply(interval);
+			BoundingBox box = new BoundingBox(this.currentLoc, hitRadius, verticalHitRadius);
 
 			float d = 0;
 			mainLoop:
-			while (d < BeamSpell.this.maxDistance) {
+			while (d < maxDistance) {
 
-				d += BeamSpell.this.interval;
+				d += interval;
 				this.currentLoc.add(dir);
 
-				if (BeamSpell.this.rotation != 0) {
-					Util.rotateVector(dir, BeamSpell.this.rotation);
-					this.currentLoc.setYaw(this.currentLoc.getYaw() + BeamSpell.this.rotation);
-				}
+				if (rotation != 0) Util.rotateVector(dir, rotation);
+				if (gravity != 0) dir.add(new Vector(0, gravity,0));
+				if (rotation != 0 || gravity != 0) this.currentLoc.setDirection(dir);
 
 				//check block collision
 				if (!isTransparent(this.currentLoc.getBlock())) {
 					//play effects when beam hits a block
 					playSpellEffects(EffectPosition.DISABLED, this.currentLoc);
-					if (BeamSpell.this.stopOnHitGround) break;
+					if (groundSpell != null && groundSpell.isTargetedLocationSpell()) groundSpell.castAtLocation(this.caster, this.currentLoc, this.power);
+					if (stopOnHitGround) break;
 				}
 
 				playSpellEffects(EffectPosition.SPECIAL, this.currentLoc);
-				
+
 				box.setCenter(this.currentLoc);
 
 				//check entities in the beam range
@@ -149,17 +172,23 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 					if (e.isDead()) continue;
 					if (this.immune.contains(e)) continue;
 					if (!box.contains(e)) continue;
-					if (BeamSpell.this.validTargetList != null && !BeamSpell.this.validTargetList.canTarget(e)) continue;
+					if (validTargetList != null && !validTargetList.canTarget(e)) continue;
 
 					SpellTargetEvent event = new SpellTargetEvent(BeamSpell.this, this.caster, e, power);
 					EventUtil.call(event);
 					if (event.isCancelled()) continue;
 
-					BeamSpell.this.spell.castAtEntity(this.caster, event.getTarget(), event.getPower());
+					if (spell != null && spell.isTargetedEntitySpell()) spell.castAtEntity(this.caster, event.getTarget(), event.getPower());
 					playSpellEffects(EffectPosition.TARGET, event.getTarget());
 					this.immune.add(e);
-					if (BeamSpell.this.stopOnHitEntity) break mainLoop;
+					if (stopOnHitEntity) break mainLoop;
 				}
+			}
+
+			//end of the beam
+			if (d >= maxDistance) {
+				playSpellEffects(EffectPosition.DELAYED, this.currentLoc);
+				if (endSpell != null && endSpell.isTargetedLocationSpell()) endSpell.castAtLocation(this.caster, this.currentLoc, this.power);
 			}
 
 		}
