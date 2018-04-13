@@ -37,6 +37,7 @@ public class PassiveTrigger {
 	public static Set<PassiveTrigger> RIGHT_CLICK = addTriggers("rightclick", RightClickItemListener.class);
 	public static Set<PassiveTrigger> RIGHT_CLICK_OFFHAND = addTriggers("rightclickoffhand", RightClickItemListener.class);
 	public static Set<PassiveTrigger> RIGHT_CLICK_BLOCK_TYPE = addTriggers("rightclickblocktype", RightClickBlockTypeListener.class);
+	public static Set<PassiveTrigger> RIGHT_CLICK_BLOCK_TYPE_INSPECT_ITEM = addTriggers("rightclickblocktypeinspectitem", RightClickBlockTypeInspectItemListener.class);
 	public static Set<PassiveTrigger> RIGHT_CLICK_BLOCK_COORD = addTriggers("rightclickblockcoord", RightClickBlockCoordListener.class);
 	public static Set<PassiveTrigger> RIGHT_CLICK_BLOCK_COORD_OFFHAND = addTriggers("rightclickblockcoordoffhand", RightClickBlockCoordListener.class);
 	public static Set<PassiveTrigger> LEFT_CLICK_BLOCK_TYPE = addTriggers("leftclickblocktype", LeftClickBlockTypeListener.class);
