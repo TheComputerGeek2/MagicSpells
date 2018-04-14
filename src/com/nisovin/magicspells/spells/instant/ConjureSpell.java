@@ -319,7 +319,10 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		if (!(target instanceof Player)) return false;
+		if (!(target instanceof Player)) {
+			castAtLocation(target.getLocation(), power);
+			return true;
+		}
 		conjureItems((Player)target, power);
 		return true;
 	}
