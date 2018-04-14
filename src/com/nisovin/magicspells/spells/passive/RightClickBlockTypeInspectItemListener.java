@@ -19,13 +19,14 @@ import org.bukkit.material.MaterialData;
 import java.util.*;
 
 // blockType,blockType2;OffsetRange;matchItem:count,matchItem2:count
+// when range == -1, offset position y will add one, and range is 0.1d.
 public class RightClickBlockTypeInspectItemListener extends PassiveListener {
 
     Set<Material> materials = new HashSet<>();
     Map<MagicMaterial, List<PassiveSpell>> types = new HashMap<>();
-    List<Material> matchMaterials = new ArrayList<>();
-    List<Integer> matchMaterialsCount = new ArrayList<>();
-    Integer range = 5;
+    List<List<Material>> matchMaterials = new ArrayList<>();
+    List<List<Integer>> matchMaterialsCount = new ArrayList<>();
+    Double range = 5.0d;
 
     @Override
     public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
@@ -45,23 +46,26 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
             }
         }
         if (all.length > 1) {
-            range = Integer.parseInt(all[1]);
+            range = Double.parseDouble(all[1]);
         }
         if (all.length > 2) {
             String[] split = all[2].split(",");
+            List<Material> tempMaterialList = new ArrayList<>();
+            List<Integer> tempCountList = new ArrayList<>();
             for (String s : split) {
                 String[] temp = s.split(":");
                 s = s.trim();
-                MagicMaterial m = MagicSpells.getItemNameResolver().resolveBlock(s);
+                MagicMaterial m = MagicSpells.getItemNameResolver().resolveItem(s);
+                if (m == null) { m = MagicSpells.getItemNameResolver().resolveBlock(s); }
                 if (m != null) {
-                    List<PassiveSpell> list = types.computeIfAbsent(m, material -> new ArrayList<>());
-                    list.add(spell);
-                    matchMaterials.add(m.getMaterial());
-                    if (temp.length > 1) matchMaterialsCount.add(Integer.parseInt(temp[1])); else matchMaterialsCount.add(1);
+                    tempMaterialList.add(m.getMaterial());
+                    if (temp.length > 1) tempCountList.add(Integer.parseInt(temp[1])); else tempCountList.add(1);
                 } else {
                     MagicSpells.error("Invalid type on rightclickblocktypeinspectitem trigger '" + var + "' on passive spell '" + spell.getInternalName() + '\'');
                 }
             }
+            matchMaterials.add(tempMaterialList);
+            matchMaterialsCount.add(tempCountList);
         }
     }
 
@@ -91,39 +95,58 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
                 List<Item> items = new ArrayList<>();
                 for (Entity entity : entities) {
                     if (entity instanceof Item) {
-                        int ix = Math.abs((int) entity.getLocation().getX());
-                        int iy = Math.abs((int) entity.getLocation().getY());
-                        int iz = Math.abs((int) entity.getLocation().getZ()) + 1;
-                        int nx = Math.abs((int) location.getX());
-                        int ny = Math.abs((int) location.getY());
-                        int nz = Math.abs((int) location.getZ());
-                        if ((nx + range > ix && nx - range < ix) ||
-                                (ny + range > iy && ny - range < iy) ||
-                                (nz + range > iz && nz - range < iz)) {
-                            items.add((Item)entity);
+                        if (Math.floor(range) >= 0) {
+                            if (range == 0) range = 0.1d;
+//                        MagicSpells.error("range:" + range + ",ix:" + Math.floor(entity.getLocation().getX()) + ",iy:" + Math.floor(entity.getLocation().getY()) + ",iz:" + Math.floor(entity.getLocation().getZ()) + ",nx:" + location.getX() + ",ny:" + location.getY() + ",nz:" + location.getZ());
+//                        MagicSpells.error("check1:" + (location.getX() + range > Math.floor(entity.getLocation().getX())));
+//                        MagicSpells.error("check2:" + (location.getX() - range < Math.floor(entity.getLocation().getX())));
+//                        MagicSpells.error("check3:" + (location.getY() + range > Math.floor(entity.getLocation().getY())));
+//                        MagicSpells.error("check4:" + (location.getY() - range < Math.floor(entity.getLocation().getY())));
+//                        MagicSpells.error("check5:" + (location.getZ() + range > Math.floor(entity.getLocation().getZ())));
+//                        MagicSpells.error("check6:" + (location.getZ() - range < Math.floor(entity.getLocation().getZ())));
+                            if (location.getX() + range >= Math.floor(entity.getLocation().getX()) && location.getX() - range <= Math.floor(entity.getLocation().getX()) &&
+                                    location.getY() + range >= Math.floor(entity.getLocation().getY()) && location.getY() - range <= Math.floor(entity.getLocation().getY()) &&
+                                    location.getZ() + range >= Math.floor(entity.getLocation().getZ()) && location.getZ() - range <= Math.floor(entity.getLocation().getZ())) {
+                                items.add((Item)entity);
+                            }
+                        } else if (Math.floor(range) == -1) {
+                            if (location.getX() + 0.1d >= Math.floor(entity.getLocation().getX()) && location.getX() - 0.1d <= Math.floor(entity.getLocation().getX()) &&
+                                    location.getY() + 1.1d >= Math.floor(entity.getLocation().getY()) && location.getY() + 0.9d <= Math.floor(entity.getLocation().getY()) &&
+                                    location.getZ() + 0.1d >= Math.floor(entity.getLocation().getZ()) && location.getZ() - 0.1d <= Math.floor(entity.getLocation().getZ())) {
+                                items.add((Item)entity);
+                            }
                         }
                     }
                 }
                 if (items.size() == 0) return null;
                 int counter = 0;
+                int index = -1;
                 List<Item> needRemove = new ArrayList<>();
                 List<Integer> needRemoveCount = new ArrayList<>();
-                for (int j = 0; j < matchMaterials.size(); j++) {
-                    for (Item i : items) {
-                        if (i.getItemStack().getType().equals(matchMaterials.get(j))) {
-                            if (i.getItemStack().getAmount() == matchMaterialsCount.get(j)) {
-                                needRemove.add(i);
-                                needRemoveCount.add(0);
-                                counter++;
-                            } else if (i.getItemStack().getAmount() > matchMaterialsCount.get(j)) {
-                                needRemove.add(i);
-                                needRemoveCount.add(matchMaterialsCount.get(j));
-                                counter++;
+                for (int h = 0; h < matchMaterials.size(); h++) {
+                    counter = 0;
+                    for (int j = 0; j < matchMaterials.get(h).size(); j++) {
+                        for (Item i : items) {
+                            if (i.getItemStack().getType().equals(matchMaterials.get(h).get(j))) {
+                                if (i.getItemStack().getAmount() == matchMaterialsCount.get(h).get(j)) {
+                                    needRemove.add(i);
+                                    needRemoveCount.add(0);
+                                    counter++;
+                                } else if (i.getItemStack().getAmount() > matchMaterialsCount.get(h).get(j)) {
+                                    needRemove.add(i);
+                                    needRemoveCount.add(matchMaterialsCount.get(h).get(j));
+                                    counter++;
+                                }
                             }
                         }
                     }
+                    if (counter == matchMaterials.get(h).size()) {
+                        index = h;
+                        break;
+                    }
                 }
-                if (counter == matchMaterials.size()) {
+//                MagicSpells.error("counter:" + counter + ",index:" + index);
+                if (index != -1) {
                     for (int i = 0; i < needRemove.size(); i++) {
                         if (needRemoveCount.get(i) == 0) {
                             needRemove.get(i).remove();
