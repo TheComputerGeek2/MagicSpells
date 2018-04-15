@@ -23,7 +23,7 @@ public class PassiveTrigger {
 		triggerPrioritySuffix.put(EventPriority.HIGHEST, "_highestpriority");
 		triggerPrioritySuffix.put(EventPriority.MONITOR, "_monitorpriority");
 	}
-	
+
 	public static Set<PassiveTrigger> TAKE_DAMAGE = addTriggers("takedamage", TakeDamageListener.class);
 	public static Set<PassiveTrigger> GIVE_DAMAGE = addTriggers("givedamage", GiveDamageListener.class);
 	public static Set<PassiveTrigger> FATAL_DAMAGE = addTriggers("fataldamage", FatalDamageListener.class);

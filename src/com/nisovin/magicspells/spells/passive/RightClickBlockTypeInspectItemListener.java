@@ -30,13 +30,13 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
     List<List<Material>> matchMaterials = new ArrayList<>();
     List<List<Integer>> matchMaterialsCount = new ArrayList<>();
     List<Double> range = new ArrayList<>();
-    Boolean tempDebug = false;
+    List<Boolean> tempDebug = new ArrayList<>();
 
     @Override
     public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
         String[] all = var.split(";");
         if (all.length > 0) {
-            tempDebug = Boolean.parseBoolean(all[0]);
+            tempDebug.add(Boolean.parseBoolean(all[0]));
         }
         if (all.length > 1) {
             String[] split = all[1].split(",");
@@ -67,7 +67,7 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
                 if (temp[0].contains("PRE|")) {
                     String preName = temp[0].replace("PRE|", "");
                     ItemStack isa = Util.getItemStackFromString(preName);
-                    if (temp.length > 1) {
+                    if (temp.length > 1 && Integer.parseInt(temp[1]) >= 0) {
                         tempCountList.add(Integer.parseInt(temp[1]));
                         isa.setAmount(Integer.parseInt(temp[1]));
                     } else {
@@ -96,13 +96,10 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
             matchMaterialsCount.add(tempCountList);
             isPredefineItem.add(tempIsPredefineList);
         }
-        if (tempDebug) {
+        if (tempDebug.contains(true)) {
             // DEBUG OUTPUT START
-            MagicSpells.error("============================= Icy Debug Output Start =============================");
-            MagicSpells.error("matchItemStacks size: " + matchItemStacks.size());
-            MagicSpells.error("matchMaterials size: " + matchMaterials.size());
-            MagicSpells.error("matchMaterialsCount size: " + matchMaterialsCount.size());
-            MagicSpells.error("==================================================================================");
+            MagicSpells.error("========== Icy Debug Output Start ==========");
+            MagicSpells.error("read skills size: " + matchMaterialsCount.size());
             for (int i = 0; i < matchMaterials.size(); i++) {
                 List<String> temp = new ArrayList<>();
                 for (int j = 0; j < matchMaterials.get(i).size(); j++) {
@@ -114,7 +111,7 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
                 }
                 MagicSpells.error("Range: " + range.get(i) + ", Items:" + String.join(" ", temp));
             }
-            MagicSpells.error("============================= Icy Debug Output End   =============================");
+            MagicSpells.error("========== Icy Debug Output End   ==========");
             // DEBUG OUTPUT END
         }
     }
@@ -147,7 +144,7 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
                     List<Material> sMaterials = matchMaterials.get(h);
                     List<Integer> sCounts = matchMaterialsCount.get(h);
                     List<Boolean> sIsPredefine = isPredefineItem.get(h);
-                    if (tempDebug) {
+                    if (tempDebug.get(h)) {
                         MagicSpells.error("[" + h + "]sPredefine size: " + sPredefine.size());
                         MagicSpells.error("[" + h + "]sMaterials size: " + sMaterials.size());
                         MagicSpells.error("[" + h + "]sCounts size: " + sCounts.size());
@@ -167,7 +164,7 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
                         if (entity instanceof Item) {
                             if (Math.floor(sRange) >= 0) {
                                 if (sRange == 0) range.set(h, 0.1d);
-                                if (tempDebug) {
+                                if (tempDebug.get(h)) {
                                     String name = ((Item)entity).getItemStack().getType().name();
                                     MagicSpells.error("[" + h + "," + name + "]range:" + sRange + ",ix:" + Math.floor(entity.getLocation().getX()) + ",iy:" + Math.floor(entity.getLocation().getY()) + ",iz:" + Math.floor(entity.getLocation().getZ()) + ",nx:" + location.getX() + ",ny:" + location.getY() + ",nz:" + location.getZ());
                                     MagicSpells.error("[" + h + "," + name + "]check1:" + (location.getX() + sRange > Math.floor(entity.getLocation().getX())));
@@ -192,7 +189,7 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
                         }
                     }
                     if (itemsMatchRange.size() > 0) {
-                        if (tempDebug) {
+                        if (tempDebug.get(h)) {
                             List<String> debugMaterials2 = new ArrayList<>();
                             for (int i = 0; i < itemsMatchRange.size(); i++) {
                                 debugMaterials2.add(itemsMatchRange.get(i).getItemStack().getType().name() + "x" + itemsMatchRange.get(i).getItemStack().getAmount());
@@ -208,10 +205,14 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
                         List<Integer> bCounts = new ArrayList<>(sCounts);
                         for (Item item : itemsMatchRange) {
                             for (int j = 0; j < bMaterials.size(); j++) {
-                                MagicSpells.error("[" + h + "]if predefine: " + bIsPredefine.get(j));
+                                if (tempDebug.get(h)) {
+                                    MagicSpells.error("[" + h + "]if predefine: " + bIsPredefine.get(j));
+                                }
                                 boolean matchItemWithoutCount = false;
                                 if (bIsPredefine.get(j)) {
-                                    MagicSpells.error("[" + h + "]predefine match: " + item.getItemStack().isSimilar(bPredefine.get(j)));
+                                    if (tempDebug.get(h)) {
+                                        MagicSpells.error("[" + h + "]predefine match: " + item.getItemStack().isSimilar(bPredefine.get(j)));
+                                    }
                                     if (item.getItemStack().isSimilar(bPredefine.get(j))) {
                                         matchItemWithoutCount = true;
                                     }
@@ -221,9 +222,12 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
                                     }
                                 }
                                 if (matchItemWithoutCount) {
+                                    if (tempDebug.get(h)) {
+                                        MagicSpells.error("[" + h + "]count: ITEMx" + item.getItemStack().getAmount() + " vs REQUIREx" + bCounts.get(j));
+                                    }
                                     if (item.getItemStack().getAmount() == bCounts.get(j)) {
                                         needRemove.add(item);
-                                        needRemoveCount.add(0);
+                                        needRemoveCount.add(-1);
                                         counter++;
                                         bIsPredefine.remove(j);
                                         bPredefine.remove(j);
@@ -242,7 +246,7 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
                             }
                         }
                         if (counter == sMaterials.size()) {
-                            if (tempDebug) {
+                            if (tempDebug.get(h)) {
                                 List<String> debugMaterials3 = new ArrayList<>();
                                 for (int i = 0; i < sMaterials.size(); i++) {
                                     if (sIsPredefine.get(i)) {
@@ -254,7 +258,7 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
                                 MagicSpells.error("[" + h + "]remove: " + String.join(",", debugMaterials3));
                             }
                             for (int i = 0; i < needRemove.size(); i++) {
-                                if (needRemoveCount.get(i) == 0) {
+                                if (needRemoveCount.get(i) == -1) {
                                     needRemove.get(i).remove();
                                 } else {
                                     ItemStack item = needRemove.get(i).getItemStack();
