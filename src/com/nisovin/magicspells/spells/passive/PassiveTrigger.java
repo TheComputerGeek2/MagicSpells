@@ -23,7 +23,7 @@ public class PassiveTrigger {
 		triggerPrioritySuffix.put(EventPriority.HIGHEST, "_highestpriority");
 		triggerPrioritySuffix.put(EventPriority.MONITOR, "_monitorpriority");
 	}
-	
+
 	public static Set<PassiveTrigger> TAKE_DAMAGE = addTriggers("takedamage", TakeDamageListener.class);
 	public static Set<PassiveTrigger> GIVE_DAMAGE = addTriggers("givedamage", GiveDamageListener.class);
 	public static Set<PassiveTrigger> FATAL_DAMAGE = addTriggers("fataldamage", FatalDamageListener.class);
@@ -37,6 +37,7 @@ public class PassiveTrigger {
 	public static Set<PassiveTrigger> RIGHT_CLICK = addTriggers("rightclick", RightClickItemListener.class);
 	public static Set<PassiveTrigger> RIGHT_CLICK_OFFHAND = addTriggers("rightclickoffhand", RightClickItemListener.class);
 	public static Set<PassiveTrigger> RIGHT_CLICK_BLOCK_TYPE = addTriggers("rightclickblocktype", RightClickBlockTypeListener.class);
+	public static Set<PassiveTrigger> RIGHT_CLICK_BLOCK_TYPE_INSPECT_ITEM = addTriggers("rightclickblocktypeinspectitem", RightClickBlockTypeInspectItemListener.class);
 	public static Set<PassiveTrigger> RIGHT_CLICK_BLOCK_COORD = addTriggers("rightclickblockcoord", RightClickBlockCoordListener.class);
 	public static Set<PassiveTrigger> RIGHT_CLICK_BLOCK_COORD_OFFHAND = addTriggers("rightclickblockcoordoffhand", RightClickBlockCoordListener.class);
 	public static Set<PassiveTrigger> LEFT_CLICK_BLOCK_TYPE = addTriggers("leftclickblocktype", LeftClickBlockTypeListener.class);
