@@ -21,9 +21,10 @@ import java.util.*;
 
 // debug;blockType,blockType2;offsetRange;matchItem:count,matchItem2:count
 // when range == -1, offset position y will add one, and range is 0.1d.
+// debug sample: [skill index, block type, other for() function index]
 public class RightClickBlockTypeInspectItemListener extends PassiveListener {
 
-    Set<Material> materials = new HashSet<>();
+    List<Material> materials = new ArrayList<>();
     Map<MagicMaterial, List<PassiveSpell>> types = new HashMap<>();
     List<List<Boolean>> isPredefineItem = new ArrayList<>();
     List<List<ItemStack>> matchItemStacks = new ArrayList<>();
@@ -97,22 +98,16 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
             isPredefineItem.add(tempIsPredefineList);
         }
         if (tempDebug.contains(true)) {
-            // DEBUG OUTPUT START
-            MagicSpells.error("========== Icy Debug Output Start ==========");
-            MagicSpells.error("read skills size: " + matchMaterialsCount.size());
-            for (int i = 0; i < matchMaterials.size(); i++) {
-                List<String> temp = new ArrayList<>();
-                for (int j = 0; j < matchMaterials.get(i).size(); j++) {
-                    if (isPredefineItem.get(i).get(j)) {
-                        temp.add(matchMaterials.get(i).get(j) + "x" + matchMaterialsCount.get(i).get(j));
-                    } else {
-                        temp.add(matchMaterials.get(i).get(j) + "x" + matchMaterialsCount.get(i).get(j));
-                    }
+            List<String> temp = new ArrayList<>();
+            int index = matchMaterials.size() - 1;
+            for (int j = 0; j < matchMaterials.get(index).size(); j++) {
+                if (isPredefineItem.get(index).get(j)) {
+                    temp.add("PRE|" + matchItemStacks.get(index).get(j).getType().name() + "x" + matchMaterialsCount.get(index).get(j));
+                } else {
+                    temp.add(matchMaterials.get(index).get(j) + "x" + matchMaterialsCount.get(index).get(j));
                 }
-                MagicSpells.error("Range: " + range.get(i) + ", Items:" + String.join(" ", temp));
             }
-            MagicSpells.error("========== Icy Debug Output End   ==========");
-            // DEBUG OUTPUT END
+            MagicSpells.error("Spell[RCBTIIL] Debug: " + (tempDebug.get(index) ? "1" : "0") + ", Range: " + range.get(index) + ", Items:" + String.join(" ", temp));
         }
     }
 
@@ -137,136 +132,145 @@ public class RightClickBlockTypeInspectItemListener extends PassiveListener {
         MaterialData data = block.getState().getData();
         for (Map.Entry<MagicMaterial, List<PassiveSpell>> entry : types.entrySet()) {
             if (entry.getKey().equals(data)) {
-                if (!materials.contains(block.getType())) return null;
+                //if (!materials.contains(block.getType())) return null;
                 for (int h = 0; h < range.size(); h++) {
-                    double sRange = range.get(h);
-                    List<ItemStack> sPredefine = matchItemStacks.get(h);
-                    List<Material> sMaterials = matchMaterials.get(h);
-                    List<Integer> sCounts = matchMaterialsCount.get(h);
-                    List<Boolean> sIsPredefine = isPredefineItem.get(h);
                     if (tempDebug.get(h)) {
-                        MagicSpells.error("[" + h + "]sPredefine size: " + sPredefine.size());
-                        MagicSpells.error("[" + h + "]sMaterials size: " + sMaterials.size());
-                        MagicSpells.error("[" + h + "]sCounts size: " + sCounts.size());
-                        List<String> debugMaterials1 = new ArrayList<>();
-                        for (int i = 0; i < sMaterials.size(); i++) {
-                            if (sIsPredefine.get(i)) {
-                                debugMaterials1.add(sPredefine.get(i).getType().name() + "x" + sCounts.get(i));
-                            } else {
-                                debugMaterials1.add(sMaterials.get(i).name() + "x" + sCounts.get(i));
-                            }
-                        }
-                        MagicSpells.error("[" + h + "]ready: r:" + sRange + " I:" + String.join(",", debugMaterials1));
+                        MagicSpells.error("[" + h + "] player block: " + block.getType() + ", require block: " + materials.get(h));
                     }
-                    Entity[] entities = location.getChunk().getEntities();
-                    List<Item> itemsMatchRange = new ArrayList<>();
-                    for (Entity entity : entities) {
-                        if (entity instanceof Item) {
-                            if (Math.floor(sRange) >= 0) {
-                                if (sRange == 0) range.set(h, 0.1d);
-                                if (tempDebug.get(h)) {
-                                    String name = ((Item)entity).getItemStack().getType().name();
-                                    MagicSpells.error("[" + h + "," + name + "]range:" + sRange + ",ix:" + Math.floor(entity.getLocation().getX()) + ",iy:" + Math.floor(entity.getLocation().getY()) + ",iz:" + Math.floor(entity.getLocation().getZ()) + ",nx:" + location.getX() + ",ny:" + location.getY() + ",nz:" + location.getZ());
-                                    MagicSpells.error("[" + h + "," + name + "]check1:" + (location.getX() + sRange > Math.floor(entity.getLocation().getX())));
-                                    MagicSpells.error("[" + h + "," + name + "]check2:" + (location.getX() - sRange < Math.floor(entity.getLocation().getX())));
-                                    MagicSpells.error("[" + h + "," + name + "]check3:" + (location.getY() + sRange > Math.floor(entity.getLocation().getY())));
-                                    MagicSpells.error("[" + h + "," + name + "]check4:" + (location.getY() - sRange < Math.floor(entity.getLocation().getY())));
-                                    MagicSpells.error("[" + h + "," + name + "]check5:" + (location.getZ() + sRange > Math.floor(entity.getLocation().getZ())));
-                                    MagicSpells.error("[" + h + "," + name + "]check6:" + (location.getZ() - sRange < Math.floor(entity.getLocation().getZ())));
-                                }
-                                if (location.getX() + sRange >= Math.floor(entity.getLocation().getX()) && location.getX() - sRange <= Math.floor(entity.getLocation().getX()) &&
-                                        location.getY() + sRange >= Math.floor(entity.getLocation().getY()) && location.getY() - sRange <= Math.floor(entity.getLocation().getY()) &&
-                                        location.getZ() + sRange >= Math.floor(entity.getLocation().getZ()) && location.getZ() - sRange <= Math.floor(entity.getLocation().getZ())) {
-                                    itemsMatchRange.add((Item)entity);
-                                }
-                            } else if (Math.floor(sRange) == -1) {
-                                if (location.getX() + 0.1d >= Math.floor(entity.getLocation().getX()) && location.getX() - 0.1d <= Math.floor(entity.getLocation().getX()) &&
-                                        location.getY() + 1.1d >= Math.floor(entity.getLocation().getY()) && location.getY() + 0.9d <= Math.floor(entity.getLocation().getY()) &&
-                                        location.getZ() + 0.1d >= Math.floor(entity.getLocation().getZ()) && location.getZ() - 0.1d <= Math.floor(entity.getLocation().getZ())) {
-                                    itemsMatchRange.add((Item)entity);
-                                }
-                            }
-                        }
-                    }
-                    if (itemsMatchRange.size() > 0) {
+                    if (materials.get(h).equals(block.getType())) {
+                        double sRange = range.get(h);
+                        List<Boolean> sIsPredefine = isPredefineItem.get(h);
+                        List<ItemStack> sPredefine = matchItemStacks.get(h);
+                        List<Material> sMaterials = matchMaterials.get(h);
+                        List<Integer> sCounts = matchMaterialsCount.get(h);
                         if (tempDebug.get(h)) {
-                            List<String> debugMaterials2 = new ArrayList<>();
-                            for (int i = 0; i < itemsMatchRange.size(); i++) {
-                                debugMaterials2.add(itemsMatchRange.get(i).getItemStack().getType().name() + "x" + itemsMatchRange.get(i).getItemStack().getAmount());
-                            }
-                            MagicSpells.error("[" + h + "]filter: " + String.join(",", debugMaterials2));
-                        }
-                        int counter = 0;
-                        List<Item> needRemove = new ArrayList<>();
-                        List<Integer> needRemoveCount = new ArrayList<>();
-                        List<Boolean> bIsPredefine = new ArrayList<>(sIsPredefine);
-                        List<ItemStack> bPredefine = new ArrayList<>(sPredefine);
-                        List<Material> bMaterials = new ArrayList<>(sMaterials);
-                        List<Integer> bCounts = new ArrayList<>(sCounts);
-                        for (Item item : itemsMatchRange) {
-                            for (int j = 0; j < bMaterials.size(); j++) {
-                                if (tempDebug.get(h)) {
-                                    MagicSpells.error("[" + h + "]if predefine: " + bIsPredefine.get(j));
-                                }
-                                boolean matchItemWithoutCount = false;
-                                if (bIsPredefine.get(j)) {
-                                    if (tempDebug.get(h)) {
-                                        MagicSpells.error("[" + h + "]predefine match: " + item.getItemStack().isSimilar(bPredefine.get(j)));
-                                    }
-                                    if (item.getItemStack().isSimilar(bPredefine.get(j))) {
-                                        matchItemWithoutCount = true;
-                                    }
+                            MagicSpells.error("[" + h + "]sList size: b" + sIsPredefine.size() + " | p" + sPredefine.size() + " | m" + sMaterials.size() + " | c" + sCounts.size());
+                            List<String> debugMaterials1 = new ArrayList<>();
+                            for (int i = 0; i < sMaterials.size(); i++) {
+                                if (sIsPredefine.get(i)) {
+                                    debugMaterials1.add("PRE|" + sPredefine.get(i).getType().name() + "x" + sCounts.get(i));
                                 } else {
-                                    if (item.getItemStack().getType().equals(bMaterials.get(j))) {
-                                        matchItemWithoutCount = true;
-                                    }
+                                    debugMaterials1.add(sMaterials.get(i).name() + "x" + sCounts.get(i));
                                 }
-                                if (matchItemWithoutCount) {
+                            }
+                            MagicSpells.error("[" + h + "]ready: r:" + sRange + " I:" + String.join(",", debugMaterials1));
+                        }
+                        Entity[] entities = location.getChunk().getEntities();
+                        List<Item> itemsMatchRange = new ArrayList<>();
+                        for (Entity entity : entities) {
+                            if (entity instanceof Item) {
+                                if (Math.floor(sRange) >= 0) {
+                                    if (sRange == 0) range.set(h, 0.1d);
                                     if (tempDebug.get(h)) {
-                                        MagicSpells.error("[" + h + "]count: ITEMx" + item.getItemStack().getAmount() + " vs REQUIREx" + bCounts.get(j));
+                                        String name = ((Item)entity).getItemStack().getType().name();
+                                        MagicSpells.error("[" + h + "," + name + "]range:" + sRange + ",ix:" + Math.floor(entity.getLocation().getX()) + ",iy:" + Math.floor(entity.getLocation().getY()) + ",iz:" + Math.floor(entity.getLocation().getZ()) + ",nx:" + location.getX() + ",ny:" + location.getY() + ",nz:" + location.getZ());
+                                        MagicSpells.error("[" + h + "," + name + "]check x:" + (location.getX() + sRange >= Math.floor(entity.getLocation().getX())) + " " + (location.getX() - sRange <= Math.floor(entity.getLocation().getX())));
+                                        MagicSpells.error("[" + h + "," + name + "]check y:" + (location.getY() + sRange >= Math.floor(entity.getLocation().getY())) + " " + (location.getY() - sRange <= Math.floor(entity.getLocation().getY())));
+                                        MagicSpells.error("[" + h + "," + name + "]check z:" + (location.getZ() + sRange >= Math.floor(entity.getLocation().getZ())) + " " + (location.getZ() - sRange <= Math.floor(entity.getLocation().getZ())));
                                     }
-                                    if (item.getItemStack().getAmount() == bCounts.get(j)) {
-                                        needRemove.add(item);
-                                        needRemoveCount.add(-1);
-                                        counter++;
-                                        bIsPredefine.remove(j);
-                                        bPredefine.remove(j);
-                                        bMaterials.remove(j);
-                                        bCounts.remove(j);
-                                    } else if (item.getItemStack().getAmount() > bCounts.get(j)) {
-                                        needRemove.add(item);
-                                        needRemoveCount.add(bCounts.get(j));
-                                        counter++;
-                                        bIsPredefine.remove(j);
-                                        bPredefine.remove(j);
-                                        bMaterials.remove(j);
-                                        bCounts.remove(j);
+                                    if (location.getX() + sRange >= Math.floor(entity.getLocation().getX()) && location.getX() - sRange <= Math.floor(entity.getLocation().getX()) &&
+                                            location.getY() + sRange >= Math.floor(entity.getLocation().getY()) && location.getY() - sRange <= Math.floor(entity.getLocation().getY()) &&
+                                            location.getZ() + sRange >= Math.floor(entity.getLocation().getZ()) && location.getZ() - sRange <= Math.floor(entity.getLocation().getZ())) {
+                                        itemsMatchRange.add((Item)entity);
+                                    }
+                                } else if (Math.floor(sRange) == -1) {
+                                    if (location.getX() + 0.1d >= Math.floor(entity.getLocation().getX()) && location.getX() - 0.1d <= Math.floor(entity.getLocation().getX()) &&
+                                            location.getY() + 1.1d >= Math.floor(entity.getLocation().getY()) && location.getY() + 0.9d <= Math.floor(entity.getLocation().getY()) &&
+                                            location.getZ() + 0.1d >= Math.floor(entity.getLocation().getZ()) && location.getZ() - 0.1d <= Math.floor(entity.getLocation().getZ())) {
+                                        itemsMatchRange.add((Item)entity);
                                     }
                                 }
                             }
                         }
-                        if (counter == sMaterials.size()) {
+                        if (itemsMatchRange.size() > 0) {
                             if (tempDebug.get(h)) {
-                                List<String> debugMaterials3 = new ArrayList<>();
-                                for (int i = 0; i < sMaterials.size(); i++) {
-                                    if (sIsPredefine.get(i)) {
-                                        debugMaterials3.add("PRE|" + sPredefine.get(i).getType().name() + "x" + sCounts.get(i));
+                                List<String> debugMaterials2 = new ArrayList<>();
+                                for (int i = 0; i < itemsMatchRange.size(); i++) {
+                                    debugMaterials2.add(itemsMatchRange.get(i).getItemStack().getType().name() + "x" + itemsMatchRange.get(i).getItemStack().getAmount());
+                                }
+                                MagicSpells.error("[" + h + "]range filter: " + String.join(",", debugMaterials2));
+                            }
+                            int counter = 0;
+                            List<Item> needRemove = new ArrayList<>();
+                            List<Integer> needRemoveCount = new ArrayList<>();
+                            List<Boolean> bIsPredefine = new ArrayList<>(sIsPredefine);
+                            List<ItemStack> bPredefine = new ArrayList<>(sPredefine);
+                            List<Material> bMaterials = new ArrayList<>(sMaterials);
+                            List<Integer> bCounts = new ArrayList<>(sCounts);
+                            for (Item item : itemsMatchRange) {
+                                if (tempDebug.get(h)) {
+                                    MagicSpells.error("[" + h + "," + item.getItemStack().getType().name() + "]bList size: b" + bIsPredefine.size() + " | p" + bPredefine.size() + " | m" + bMaterials.size() + " | c" + bCounts.size());
+                                    MagicSpells.error("[" + h + "," + item.getItemStack().getType().name() + "]needRemoveList size: i" + needRemove.size() + " | c" + needRemoveCount.size());
+                                }
+                                for (int j = 0; j < bMaterials.size(); j++) {
+                                    if (tempDebug.get(h)) {
+                                        MagicSpells.error("[" + h + "," + item.getItemStack().getType().name() + "," + j + "]if predefine: " + bIsPredefine.get(j));
+                                    }
+                                    boolean matchItemWithoutCount = false;
+                                    if (bIsPredefine.get(j)) {
+                                        if (tempDebug.get(h)) {
+                                            MagicSpells.error("[" + h + "," + item.getItemStack().getType().name() + "," + j  + "]predefine match: " + item.getItemStack().isSimilar(bPredefine.get(j)));
+                                        }
+                                        if (item.getItemStack().isSimilar(bPredefine.get(j))) {
+                                            matchItemWithoutCount = true;
+                                        }
                                     } else {
-                                        debugMaterials3.add(sMaterials.get(i).name() + "x" + sCounts.get(i));
+                                        if (tempDebug.get(h)) {
+                                            MagicSpells.error("[" + h + "," + item.getItemStack().getType().name() + "," + j  + "]normal match: " + item.getItemStack().getType().equals(bMaterials.get(j)));
+                                        }
+                                        if (item.getItemStack().getType().equals(bMaterials.get(j))) {
+                                            matchItemWithoutCount = true;
+                                        }
+                                    }
+                                    if (matchItemWithoutCount) {
+                                        if (tempDebug.get(h)) {
+                                            MagicSpells.error("[" + h + "," + item.getItemStack().getType().name() + "," + j  + "]count: ITEMx" + item.getItemStack().getAmount() + " vs REQUIREx" + bCounts.get(j));
+                                        }
+                                        if (item.getItemStack().getAmount() == bCounts.get(j)) {
+                                            needRemove.add(item);
+                                            needRemoveCount.add(-1);
+                                            counter++;
+                                            bIsPredefine.remove(j);
+                                            bPredefine.remove(j);
+                                            bMaterials.remove(j);
+                                            bCounts.remove(j);
+                                            break;
+                                        } else if (item.getItemStack().getAmount() > bCounts.get(j)) {
+                                            needRemove.add(item);
+                                            needRemoveCount.add(bCounts.get(j));
+                                            counter++;
+                                            bIsPredefine.remove(j);
+                                            bPredefine.remove(j);
+                                            bMaterials.remove(j);
+                                            bCounts.remove(j);
+                                            break;
+                                        }
                                     }
                                 }
-                                MagicSpells.error("[" + h + "]remove: " + String.join(",", debugMaterials3));
                             }
-                            for (int i = 0; i < needRemove.size(); i++) {
-                                if (needRemoveCount.get(i) == -1) {
-                                    needRemove.get(i).remove();
-                                } else {
-                                    ItemStack item = needRemove.get(i).getItemStack();
-                                    item.setAmount(item.getAmount() - needRemoveCount.get(i));
-                                    needRemove.get(i).setItemStack(item);
+                            if (counter == sMaterials.size()) {
+                                if (tempDebug.get(h)) {
+                                    List<String> debugMaterials3 = new ArrayList<>();
+                                    for (int i = 0; i < sMaterials.size(); i++) {
+                                        if (sIsPredefine.get(i)) {
+                                            debugMaterials3.add("PRE|" + sPredefine.get(i).getType().name() + "x" + sCounts.get(i));
+                                        } else {
+                                            debugMaterials3.add(sMaterials.get(i).name() + "x" + sCounts.get(i));
+                                        }
+                                    }
+                                    MagicSpells.error("[" + h + "]remove: " + String.join(",", debugMaterials3));
                                 }
+                                for (int i = 0; i < needRemove.size(); i++) {
+                                    if (needRemoveCount.get(i) == -1) {
+                                        needRemove.get(i).remove();
+                                    } else {
+                                        ItemStack item = needRemove.get(i).getItemStack();
+                                        item.setAmount(item.getAmount() - needRemoveCount.get(i));
+                                        needRemove.get(i).setItemStack(item);
+                                    }
+                                }
+                                return entry.getValue();
                             }
-                            return entry.getValue();
                         }
                     }
                 }
