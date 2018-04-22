@@ -8,8 +8,8 @@ import com.nisovin.magicspells.DebugHandler;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.castmodifiers.Condition;
 
-public class AliveLessThan extends Condition {
 	
+public class LastLifeLongerThanCondition extends Condition {
 	int time;
 	
 	@Override
@@ -25,7 +25,7 @@ public class AliveLessThan extends Condition {
 
 	@Override
 	public boolean check(Player player) {
-		return MagicSpells.getLifeLengthTracker().getCurrentLifeLength(player) < time;
+		return MagicSpells.getLifeLengthTracker().getLastLifeLength(player) > time;
 	}
 
 	@Override

@@ -5,17 +5,17 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import com.nisovin.magicspells.DebugHandler;
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.castmodifiers.Condition;
 
-public class AliveMoreThan extends Condition {
-	
-	int time;
+public class DistanceLessThanCondition extends Condition {
+
+	private double distanceSq;
 	
 	@Override
 	public boolean setVar(String var) {
 		try {
-			time = Integer.parseInt(var);
+			distanceSq = Double.parseDouble(var);
+			distanceSq = distanceSq * distanceSq;
 			return true;
 		} catch (NumberFormatException e) {
 			DebugHandler.debugNumberFormat(e);
@@ -25,17 +25,17 @@ public class AliveMoreThan extends Condition {
 
 	@Override
 	public boolean check(Player player) {
-		return MagicSpells.getLifeLengthTracker().getCurrentLifeLength(player) > time;
+		return false;
 	}
 
 	@Override
 	public boolean check(Player player, LivingEntity target) {
-		return target instanceof Player && check((Player)target);
+		return player.getLocation().distanceSquared(target.getLocation()) < distanceSq;
 	}
-
+	
 	@Override
 	public boolean check(Player player, Location location) {
-		return false;
+		return player.getLocation().distanceSquared(location) < distanceSq;
 	}
 
 }

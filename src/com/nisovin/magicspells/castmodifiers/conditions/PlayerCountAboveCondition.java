@@ -1,41 +1,44 @@
 package com.nisovin.magicspells.castmodifiers.conditions;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
-import com.nisovin.magicspells.DebugHandler;
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.castmodifiers.Condition;
 
-public class LastLifeLongerThan extends Condition {
-	
-	int time;
+public class PlayerCountAboveCondition extends Condition {
+
+	int count;
 	
 	@Override
 	public boolean setVar(String var) {
 		try {
-			time = Integer.parseInt(var);
+			count = Integer.parseInt(var);
 			return true;
 		} catch (NumberFormatException e) {
-			DebugHandler.debugNumberFormat(e);
-			return false;
+			e.printStackTrace();
 		}
+		return false;
 	}
 
 	@Override
 	public boolean check(Player player) {
-		return MagicSpells.getLifeLengthTracker().getLastLifeLength(player) > time;
+		return check();
 	}
 
 	@Override
 	public boolean check(Player player, LivingEntity target) {
-		return target instanceof Player && check((Player)target);
+		return check();
 	}
 
 	@Override
 	public boolean check(Player player, Location location) {
-		return false;
+		return check();
+	}
+	
+	private boolean check() {
+		return Bukkit.getServer().getOnlinePlayers().size() > count;
 	}
 
 }
