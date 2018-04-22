@@ -108,8 +108,8 @@ public abstract class Condition {
 		conditions.put("playeronline", PlayerOnlineCondition.class);
 		conditions.put("chance", ChanceCondition.class);
 		conditions.put("entitytype", EntityTypeCondition.class);
-		conditions.put("distancemorethan", DistanceMoreThan.class);
-		conditions.put("distancelessthan", DistanceLessThan.class);
+		conditions.put("distancemorethan", DistanceMoreThanCondition.class);
+		conditions.put("distancelessthan", DistanceLessThanCondition.class);
 		conditions.put("name", NameCondition.class);
 		conditions.put("namepattern", NamePatternCondition.class);
 		conditions.put("uptime", UpTimeCondition.class);
