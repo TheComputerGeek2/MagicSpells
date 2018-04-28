@@ -23,7 +23,8 @@ import com.nisovin.magicspells.util.SpellReagents;
 
 public class PortalSpell extends InstantSpell {
 
-	private String markSpellName;
+	private String firstMarkSpellName;
+	private String secondMarkSpellName;
 	int duration;
 	int teleportCooldown;
 	private int minDistanceSq;
@@ -44,6 +45,9 @@ public class PortalSpell extends InstantSpell {
 	boolean tpOtherPlayers;
 
 	private MarkSpell mark;
+	private MarkSpell markSecond;
+
+	private boolean usingSecondMarkSpell = false;
 
 	public PortalSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -51,7 +55,8 @@ public class PortalSpell extends InstantSpell {
 		this.horizRadius = getConfigFloat("horiz-radius", 1F);
 		this.vertRadius = getConfigFloat("vert-radius", 1F);
 
-		this.markSpellName = getConfigString("mark-spell", "mark");
+		this.firstMarkSpellName = getConfigString("mark-spell", "mark");
+		this.secondMarkSpellName = getConfigString("second-mark-spell", null);
 		this.duration = getConfigInt("duration", 400);
 		this.teleportCooldown = getConfigInt("teleport-cooldown", 5) * 1000;
 		this.minDistanceSq = getConfigInt("min-distance", 10);
@@ -74,52 +79,81 @@ public class PortalSpell extends InstantSpell {
 	@Override
 	public void initialize() {
 		super.initialize();
-		Spell spell = MagicSpells.getSpellByInternalName(this.markSpellName);
+
+		//Parse the first mark spell.
+		Spell spell = MagicSpells.getSpellByInternalName(this.firstMarkSpellName);
 		if (spell instanceof MarkSpell) {
 			this.mark = (MarkSpell)spell;
 		} else {
 			MagicSpells.error("Failed to get marks list for '" + this.internalName + "' spell");
+		}
+
+		//Parse the second if it is there.
+		if (secondMarkSpellName != null) {
+			spell = MagicSpells.getSpellByInternalName(this.secondMarkSpellName);
+			if (spell instanceof MarkSpell) {
+				this.markSecond = (MarkSpell)spell;
+				usingSecondMarkSpell = true;
+			} else {
+				MagicSpells.error("Failed to get marks list for '" + this.internalName + "' spell");
+			}
 		}
 	}
 
 	@Override
 	public PostCastAction castSpell(Player player, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
+
+			//Declaring two location used to set up the portal link
 			Location loc = this.mark.getEffectiveMark(player);
+			Location locSecond;
+
+			//The first one being the markspell must always be right.
 			if (loc == null) {
 				// No mark
 				sendMessage(this.strNoMark, player, args);
 				return PostCastAction.ALREADY_HANDLED;
-			} else {
+			}
 
-				Location playerLoc = player.getLocation();
+			/*The second one can either be a player or a markspell.
+			If we are using a second mark spell checked by the initialize function
+			We are going to parse it, if incorrect we are not going to use the player's
+			location.*/
+			if (usingSecondMarkSpell) {
+				locSecond = this.markSecond.getEffectiveMark(player);
+				if (locSecond == null) {
+					sendMessage(this.strNoMark, player, args);
+					return PostCastAction.ALREADY_HANDLED;
+				}
+			}
+			else locSecond = player.getLocation();
 
-				double distanceSq = 0;
-				if (this.maxDistanceSq > 0) {
-					if (!loc.getWorld().equals(playerLoc.getWorld())) {
+			double distanceSq = 0;
+			if (this.maxDistanceSq > 0) {
+				if (!loc.getWorld().equals(locSecond.getWorld())) {
+					sendMessage(this.strTooFar, player, args);
+					return PostCastAction.ALREADY_HANDLED;
+				} else {
+					distanceSq = locSecond.distanceSquared(loc);
+					if (distanceSq > this.maxDistanceSq) {
 						sendMessage(this.strTooFar, player, args);
 						return PostCastAction.ALREADY_HANDLED;
-					} else {
-						distanceSq = playerLoc.distanceSquared(loc);
-						if (distanceSq > this.maxDistanceSq) {
-							sendMessage(this.strTooFar, player, args);
-							return PostCastAction.ALREADY_HANDLED;
-						}
 					}
 				}
-				if (this.minDistanceSq > 0) {
-					if (loc.getWorld().equals(playerLoc.getWorld())) {
-						if (distanceSq == 0) distanceSq = playerLoc.distanceSquared(loc);
-						if (distanceSq < this.minDistanceSq) {
-							sendMessage(this.strTooClose, player, args);
-							return PostCastAction.ALREADY_HANDLED;
-						}
-					}
-				}
-
-				new PortalLink(this, player, playerLoc, loc);
-				playSpellEffects(EffectPosition.CASTER, player);
 			}
+			if (this.minDistanceSq > 0) {
+				if (loc.getWorld().equals(locSecond.getWorld())) {
+					if (distanceSq == 0) distanceSq = locSecond.distanceSquared(loc);
+					if (distanceSq < this.minDistanceSq) {
+						sendMessage(this.strTooClose, player, args);
+						return PostCastAction.ALREADY_HANDLED;
+					}
+				}
+			}
+
+			new PortalLink(this, player, loc, locSecond);
+			playSpellEffects(EffectPosition.CASTER, player);
+
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
