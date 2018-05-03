@@ -23,7 +23,7 @@ public enum EffectPosition {
 	 *      - ExternalCommandSpell
 	 *      - BuffSpell (and all sub classes)
 	 *      - DisguiseSpell
-	 *			- TotemSpell
+	 *	- TotemSpell
 	 **/
 	DISABLED(4, "disabled"),
 	
@@ -64,23 +64,23 @@ public enum EffectPosition {
 	 *  Used in:
 	 *      - BuffSpell (and all subclasses)
 	 *      - StunSpell
-	 *  		- BeamSpell
-	 *  		- ConjureSpell
-	 *  		- ConjureBookSpell
-	 *  		- ConjureFireworkSpell
-	 *  		- FirenovaSpell
-	 *  		- FlightPathSpell
-	 *  		- ParticleProjectileSpell
-	 *  		- MenuSpell
-	 *  		- AreaEffectSpell
-	 *  		- DrainlifeSpell
-	 *  		- EntombSpell
-	 *  		- ForcebombSpell
-	 *  		- HomingArrowSpell
-	 *  		- HomingMissileSpell
-	 *  		- OrbitSpell
-	 *  		- RewindSpell
-	 *  		- TotemSpell
+	 *  	- BeamSpell
+	 *  	- ConjureSpell
+	 *  	- ConjureBookSpell
+	 *  	- ConjureFireworkSpell
+	 *  	- FirenovaSpell
+	 *  	- FlightPathSpell
+	 *  	- ParticleProjectileSpell
+	 *  	- MenuSpell
+	 *  	- AreaEffectSpell
+	 *  	- DrainlifeSpell
+	 *  	- EntombSpell
+	 *  	- ForcebombSpell
+	 *  	- HomingArrowSpell
+	 *  	- HomingMissileSpell
+	 *  	- OrbitSpell
+	 *  	- RewindSpell
+	 *  	- TotemSpell
 	 **/
 	ORBIT(8, "orbit"),
 	
