@@ -41,6 +41,8 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 	float startZOffset;
 	Vector relativeOffset;
 
+	float acceleration;
+	int accelerationDelay;
 	float projectileVelocity;
 	float projectileVertOffset;
 	float projectileHorizOffset;
@@ -124,6 +126,9 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		if (this.relativeOffset.getY() != 1F) this.startYOffset = (float) this.relativeOffset.getY();
 		if (this.relativeOffset.getZ() != 0F) this.startZOffset = (float) this.relativeOffset.getZ();
 
+		this.acceleration = getConfigFloat("projectile-acceleration", 0F);
+		this.accelerationDelay = getConfigInt("projectile-acceleration-delay", 0);
+
 		this.projectileVelocity = getConfigFloat("projectile-velocity", 10F);
 		this.projectileVertOffset = getConfigFloat("projectile-vert-offset", 0F);
 		this.projectileHorizOffset = getConfigFloat("projectile-horiz-offset", 0F);
@@ -166,8 +171,9 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		this.hitAirDuring = getConfigBoolean("hit-air-during", false);
 		this.hitNonPlayers = getConfigBoolean("hit-non-players", true);
 		this.hitAirAfterDuration = getConfigBoolean("hit-air-after-duration", false);
-		this.stopOnHitEntity = getConfigBoolean("stop-on-hit-entity", true);
 		this.stopOnHitGround = getConfigBoolean("stop-on-hit-ground", true);
+		this.stopOnHitEntity = getConfigBoolean("stop-on-hit-entity", true);
+		if (this.stopOnHitEntity) this.maxEntitiesHit = 1;
 
 		// Target List
 		this.targetList = new ValidTargetList(this, getConfigStringList("can-target", null));
@@ -374,6 +380,9 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 			// Play effects
 			if (specialEffectInterval > 0 && this.counter % specialEffectInterval == 0) playSpellEffects(EffectPosition.SPECIAL, this.currentLocation);
 
+			// Acceleration
+			if (acceleration != 0 && accelerationDelay > 0 && this.counter % accelerationDelay == 0) this.currentVelocity.multiply(acceleration);
+
 			counter++;
 
 			// Cast spell mid air
@@ -422,14 +431,13 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 						entitySpell.castAtLocation(this.caster, this.currentLocation.clone(), this.power);
 						playSpellEffects(EffectPosition.TARGET, this.currentLocation);
 					}
-					if (stopOnHitEntity) {
-						stop();
-					} else {
-						this.inRange.remove(i);
-						this.maxHitLimit.add(e);
-						this.immune.put(e, System.currentTimeMillis());
-						if (this.maxHitLimit.size() >= maxEntitiesHit) stop();
-					}
+
+					this.inRange.remove(i);
+					this.maxHitLimit.add(e);
+					this.immune.put(e, System.currentTimeMillis());
+
+					if (maxEntitiesHit > 0 && this.maxHitLimit.size() >= maxEntitiesHit) stop();
+
 					break;
 				}
 
