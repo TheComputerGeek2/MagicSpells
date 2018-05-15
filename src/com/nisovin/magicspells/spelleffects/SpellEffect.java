@@ -31,6 +31,9 @@ public abstract class SpellEffect {
 	double forwardOffset = 0;
 	
 	Expression forwardOffsetExpression = null;
+
+	@ConfigData(field="z-offset", dataType="double", defaultValue="0")
+	double zOffset = 0;
 	
 	@ConfigData(field="delay", dataType="int", defaultValue="0")
 	int delay = 0;
@@ -100,6 +103,9 @@ public abstract class SpellEffect {
 		} else {
 			forwardOffsetExpression = new Expression(forwardOffsetExpressionString);
 		}
+
+		zOffset = config.getDouble("z-offset", zOffset);
+
 		delay = config.getInt("delay", delay);
 		
 		distanceBetween = config.getDouble("distance-between", distanceBetween);
@@ -156,6 +162,11 @@ public abstract class SpellEffect {
 	private Runnable playEffectLocationReal(Location location) {
 		if (location == null) return playEffectLocation(null);
 		Location loc = location.clone();
+		if (zOffset != 0) {
+			Vector locDirection = loc.getDirection().normalize();
+			Vector horizOffset = new Vector(-locDirection.getZ(), 0.0, locDirection.getX()).normalize();
+			loc.add(horizOffset.multiply(zOffset)).getBlock().getLocation();
+		}
 		if (heightOffset != 0) loc.setY(loc.getY() + heightOffset);
 		if (forwardOffset != 0) loc.add(loc.getDirection().setY(0).normalize().multiply(forwardOffset));
 		return playEffectLocation(loc);
