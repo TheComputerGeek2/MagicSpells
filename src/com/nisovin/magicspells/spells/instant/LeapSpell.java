@@ -3,8 +3,10 @@ package com.nisovin.magicspells.spells.instant;
 import java.util.Set;
 import java.util.HashSet;
 
+import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.util.Util;
@@ -13,9 +15,11 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.spells.TargetedLocationSpell;
+import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
-public class LeapSpell extends InstantSpell {
+public class LeapSpell extends InstantSpell implements TargetedLocationSpell, TargetedEntitySpell {
 
 	private float rotation;
 	private double forwardVelocity;
@@ -24,6 +28,7 @@ public class LeapSpell extends InstantSpell {
 	private boolean clientOnly;
 	private Subspell landSpell;
 	private String landSpellName;
+	private boolean allowTargeting;
 
 	private Set<Player> jumping;
 
@@ -38,6 +43,7 @@ public class LeapSpell extends InstantSpell {
 		this.cancelDamage = getConfigBoolean("cancel-damage", true);
 		this.clientOnly = getConfigBoolean("client-only", false);
 		this.landSpellName = getConfigString("land-spell", "");
+		this.allowTargeting = getConfigBoolean("allow-targeting", false);
 	}
 
 	@Override
@@ -55,22 +61,66 @@ public class LeapSpell extends InstantSpell {
 		return jumping.contains(pl);
 	}
 
+	//When we don't have a target to refer to.
+	private void jump(Player caster, float power) {
+		propelPlayer(caster, caster.getLocation().getDirection(), power);
+	}
+
+	//When we have a target to refer to.
+	private void jump(Player caster, Location target, float power) {
+		/*This is so that legacy spells are supported, we wouldn't want spell systems to break
+		just because one guy decided to make them targetable*/
+		if (!allowTargeting) {
+			jump(caster, power);
+			return;
+		}
+		propelPlayer(caster, getVectorDir(caster.getLocation(), target), power);
+	}
+
+	private Vector getVectorDir(Location caster, Location target) {
+		return target.clone().subtract(caster.toVector()).toVector();
+	}
+
+	//The main function that propels the caster in the direction of the target.
+	private void propelPlayer(Player player, Vector v, float power) {
+		v.setY(0).normalize().multiply(forwardVelocity * power).setY(upwardVelocity * power);
+		if (rotation != 0) Util.rotateVector(v, rotation);
+		if (clientOnly) {
+			MagicSpells.getVolatileCodeHandler().setClientVelocity(player, v);
+		} else {
+			player.setVelocity(v);
+		}
+		jumping.add(player);
+	}
+
+
 	@Override
 	public PostCastAction castSpell(Player player, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			Vector v = player.getLocation().getDirection();
-			v.setY(0).normalize().multiply(forwardVelocity * power).setY(upwardVelocity * power);
-			if (rotation != 0) Util.rotateVector(v, rotation);
-			if (clientOnly) {
-				MagicSpells.getVolatileCodeHandler().setClientVelocity(player, v);
-			} else {
-				player.setVelocity(v);
-			}
-			jumping.add(player);
+			jump(player, power);
 			playSpellEffects(EffectPosition.CASTER, player);
 		}
-
 		return PostCastAction.HANDLE_NORMALLY;
+	}
+
+	//For any of the cast methods to work, I need a caster and a target (either entity or location)
+	public boolean castAtLocation(Player caster, Location target, float power) {
+		jump(caster, target, power);
+		playSpellEffects(EffectPosition.TARGET, target);
+		return true;
+	}
+
+	public boolean castAtLocation(Location target, float power) {
+		return false;
+	}
+
+	public boolean castAtEntity(Player caster, LivingEntity target, float power) {
+		jump(caster, target.getLocation(), power);
+		return true;
+	}
+
+	public boolean castAtEntity(LivingEntity target, float power) {
+		return false;
 	}
 
     @EventHandler
