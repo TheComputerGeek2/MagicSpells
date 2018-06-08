@@ -1,11 +1,13 @@
 package com.nisovin.magicspells.spelleffects;
 
 import java.util.List;
+import java.util.Random;
 import java.util.HashMap;
 
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.Util;
@@ -35,6 +37,9 @@ public abstract class SpellEffect {
 	@ConfigData(field="z-offset", dataType="double", defaultValue="0")
 	double zOffset = 0;
 	
+	@ConfigData(field="chance", dataType="double", defaultValue="-1")
+	double chance = -1;
+	
 	@ConfigData(field="delay", dataType="int", defaultValue="0")
 	int delay = 0;
 	
@@ -49,6 +54,9 @@ public abstract class SpellEffect {
 	// for orbit
 	@ConfigData(field="orbit-radius", dataType="double", defaultValue="1")
 	float orbitRadius = 1;
+	
+	@ConfigData(field="orbit-y-offset", dataType="double", defaultValue="0")
+	float orbitYOffset = 0;
 	
 	@ConfigData(field="orbit-seconds-per-revolution", dataType="double", defaultValue="3")
 	float secondsPerRevolution = 3;
@@ -78,10 +86,9 @@ public abstract class SpellEffect {
 	float distancePerTick;
 	int ticksPerRevolution;
 	
-	@ConfigData(field="orbit-y-offset", dataType="double", defaultValue="0")
-	float orbitYOffset = 0;
-	
 	ModifierSet modifiers = null;
+	
+	Random random = new Random();
 	
 	int taskId = -1;
 	
@@ -105,7 +112,9 @@ public abstract class SpellEffect {
 		}
 
 		zOffset = config.getDouble("z-offset", zOffset);
-
+		
+		chance = config.getDouble("chance", chance) / 100;
+		
 		delay = config.getInt("delay", delay);
 		
 		distanceBetween = config.getDouble("distance-between", distanceBetween);
@@ -139,6 +148,7 @@ public abstract class SpellEffect {
 	 * @param param the parameter specified in the spell config (can be ignored)
 	 */
 	public Runnable playEffect(final Entity entity) {
+		if (chance > 0 && chance < 1 && random.nextDouble() > chance) return null;
 		if (delay <= 0) return playEffectEntity(entity);
 		MagicSpells.scheduleDelayedTask(() -> playEffectEntity(entity), delay);
 		return null;
@@ -154,6 +164,7 @@ public abstract class SpellEffect {
 	 * @param param the parameter specified in the spell config (can be ignored)
 	 */
 	public final Runnable playEffect(final Location location) {
+		if (chance > 0 && chance < 1 && random.nextDouble() > chance) return null;
 		if (delay <= 0) return playEffectLocationReal(location);
 		MagicSpells.scheduleDelayedTask(() -> playEffectLocationReal(location), delay);
 		return null;
@@ -211,9 +222,7 @@ public abstract class SpellEffect {
 	
 	@FunctionalInterface
 	public interface SpellEffectActiveChecker {
-		
 		boolean isActive(Entity entity);
-		
 	}
 
 	class EffectTracker implements Runnable {
@@ -235,7 +244,10 @@ public abstract class SpellEffect {
 				stop();
 				return;
 			}
-
+			
+			// check modifiers
+			if (entity instanceof Player && !modifiers.check((Player) entity)) return;
+			
 			playEffect(entity);
 
 		}
@@ -292,6 +304,9 @@ public abstract class SpellEffect {
 			
 			// move projectile and calculate new vector
 			Location loc = getLocation();
+			
+			// check modifiers
+			if (entity instanceof Player && !modifiers.check((Player) entity)) return;
 			
 			// show effect
 			playEffect(loc);
