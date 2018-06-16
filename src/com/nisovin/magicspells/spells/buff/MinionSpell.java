@@ -365,9 +365,8 @@ public class MinionSpell extends BuffSpell {
 		if (entity.isDead() || !entity.isValid()) return;
 		if (!(entity instanceof LivingEntity)) return;
 		// Check if the damaged entity is a player
-		if (entity instanceof Player) {
-			Player pl = (Player) e.getEntity();
-			if (!isActive(pl)) return;
+		if (entity instanceof Player && isActive((Player) entity)) {
+			Player pl = (Player) entity;
 			// If a Minion tries to attack his owner, cancel the damage and stop the minion
 			if (minions.get(pl.getUniqueId()).equals(damager)) {
 				targets.remove(pl.getUniqueId());
