@@ -151,80 +151,85 @@ public class MaterializeSpell extends TargetedSpell implements TargetedLocationS
 				if (event.isCancelled()) return noTarget(player, strFailed);
 				block = event.getTargetLocation().getBlock();
 
-				if (hasMiddle) {
-					//Unfortunately, shape array placement is world relative, will fix later.
-					//This is the top-left edge of the shape array
-					Location patternStart = against.getLocation();
+				boolean done = doMaterialize(player, against);
+				if (!done) return noTarget(player, strFailed);
 
-					patternStart.setX(against.getX() - Math.ceil(rowSize/2));
-					patternStart.setZ(against.getZ() - Math.ceil(columnSize/2));
-
-					//spawnBlock is the current position in the loop where it will spawn the block
-					Location spawnBlock = patternStart;
-
-					Block air;
-					Block ground;
-
-					/*The row position dictates which block within a row pattern will be used
-					when placing the new block.*/
-					int rowPosition = 0;
-
-					//Lets start at the bottom floor then work our way up; or down if height is less than 0.
-					for (int y = 0; y < height; y++) {
-						/*The pattern position is the pattern being read for a specific row
-						This should always reset when it goes over into a new height.*/
-						int patternPosition = 0;
-
-						//The block placement loop will start finish a row of coloumns then move down a row..
-						for (int z = 0; z < columnSize; z++) {
-							//Everytime a shape row is finished, we need to start at the topleft and move down 1 row.
-							spawnBlock = patternStart.clone().add(0, y, z);
-
-							//Lets parse the list of patterns for that row.
-							if (patternPosition >= patterns.size()) patternPosition = 0;
-
-							int rowLength =	getRowLength(patternPosition);
-
-							//If they want the pattern to restart on each row, reset rowpositon to 0.
-							if (restartPatternEachRow) rowPosition = 0;
-
-							//Lets spawn a block on each column before we move down a row.
-							for (int x = 0; x < rowSize; x++) {
-								ground = spawnBlock.getBlock();
-								air = ground.getRelative(BlockFace.UP);
-
-								/*Now if we are looking for a block outside of the rowlist range.
-								We need to go back to the start and repeat that row pattern*/
-								if (rowPosition >= rowLength) rowPosition = 0;
-
-								//Doesn't really become a pattern if you randomize it but ok!
-								if (!stretchPattern || y < 1) material = blockGenerator(randomizePattern, patternPosition, rowPosition);
-								else material = MagicMaterial.fromBlock(ground);
-
-								//Add one to the row position so that it will move to the next block.
-								rowPosition++;
-
-								//As soon as a block can't be spawned, it will return an error.
-								boolean done = materialize(player, air, ground);
-								if (!done) return noTarget(player, strFailed);
-
-								//Done with placing that one block? Move on to the next one.
-								spawnBlock.setX((ground.getX() + 1));
-							}
-							//If multiple patterns were requested, lets move to the next line.
-							patternPosition++;
-						}
-					}
-				} else {
-					boolean done = materialize(player, block, against);
-					if (!done) return noTarget(player, strFailed);
-				}
 			} else {
 				// Fail no target
 				return noTarget(player);
 			}
 		}
 		return PostCastAction.HANDLE_NORMALLY;
+	}
+
+	private boolean doMaterialize(Player player, Block target) {
+		//The target block is ALWAYS the block on top of the ground block
+		if (hasMiddle && patterns != null && usePattern) {
+			//Unfortunately, shape array placement is world relative, will fix later.
+			//This is the top-left edge of the shape array
+			Location patternStart = target.getLocation();
+
+			patternStart.setX(patternStart.getX() - Math.ceil(rowSize / 2));
+			patternStart.setZ(patternStart.getZ() - Math.ceil(columnSize / 2));
+
+			Block air;
+			Block ground;
+
+			/*The row position dictates which block within a row pattern will be used
+			when placing the new block.*/
+			int rowPosition = 0;
+
+			//Lets start at the bottom floor then work our way up; or down if height is less than 0.
+			for (int y = 0; y < height; y++) {
+				/*The pattern position is the pattern being read for a specific row
+				This should always reset when it goes over into a new height.*/
+				int patternPosition = 0;
+
+				//The block placement loop will start finish a row of coloumns then move down a row..
+				for (int z = 0; z < columnSize; z++) {
+					//Everytime a shape row is finished, we need to start at the topleft and move down 1 row.
+					Location spawnBlock = patternStart.clone().add(0, y, z);
+
+					//Lets parse the list of patterns for that row.
+					if (patternPosition >= patterns.size()) patternPosition = 0;
+
+					int rowLength =	getRowLength(patternPosition);
+
+					//If they want the pattern to restart on each row, reset rowpositon to 0.
+					if (restartPatternEachRow) rowPosition = 0;
+
+					//Lets spawn a block on each column before we move down a row.
+					for (int x = 0; x < rowSize; x++) {
+						ground = spawnBlock.getBlock();
+						air = ground.getRelative(BlockFace.UP);
+
+						/*Now if we are looking for a block outside of the rowlist range.
+						We need to go back to the start and repeat that row pattern*/
+						if (rowPosition >= rowLength) rowPosition = 0;
+
+						//Doesn't really become a pattern if you randomize it but ok!
+						if (!stretchPattern || y < 1) material = blockGenerator(randomizePattern, patternPosition, rowPosition);
+						else material = MagicMaterial.fromBlock(ground);
+
+						//Add one to the row position so that it will move to the next block.
+						rowPosition++;
+
+						//As soon as a block can't be spawned, it will return an error.
+						boolean done = materialize(player, air, ground);
+						if (!done) return false;
+
+						//Done with placing that one block? Move on to the next one.
+						spawnBlock.setX((ground.getX() + 1));
+					}
+					//If multiple patterns were requested, lets move to the next line.
+					patternPosition++;
+				}
+			}
+		} else {
+			boolean done = materialize(player, target.getRelative(BlockFace.UP), target);
+			if (!done) return false;
+		}
+		return true;
 	}
 
 	private int getRowLength(int patternPosition) {
@@ -324,18 +329,18 @@ public class MaterializeSpell extends TargetedSpell implements TargetedLocationS
 		Block block = target.getBlock();
 		Block against = target.clone().add(target.getDirection()).getBlock();
 		if (block.equals(against)) against = block.getRelative(BlockFace.DOWN);
-		if (block.getType() == Material.AIR) return materialize(caster, block, against);
+		if (block.getType() == Material.AIR) return doMaterialize(caster, against);
 		Block block2 = block.getRelative(BlockFace.UP);
-		if (block2.getType() == Material.AIR) return materialize(null, block2, block);
+		if (block2.getType() == Material.AIR) return doMaterialize(null, block);
 		return false;
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
 		Block block = target.getBlock();
-		if (block.getType() == Material.AIR) return materialize(null, block, block);
+		if (block.getType() == Material.AIR) return doMaterialize(null, block);
 		Block block2 = block.getRelative(BlockFace.UP);
-		if (block2.getType() == Material.AIR) return materialize(null, block2, block);
+		if (block2.getType() == Material.AIR) return doMaterialize(null, block2);
 		return false;
 	}
 
