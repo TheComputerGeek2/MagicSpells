@@ -25,6 +25,7 @@ This plugin has nearly endless possibilities.
 
 ### Building
 - The move to gradle has made building much easier. The only step is running the command `./gradlew assemble`. Simple right?
+- To use the `./gradlew runServerWithMagicspells`, create a folder called `server` and put a psigot jar named `spigot-1.12.2.jar` in it. The rest will be done for you.
 
 ### Demonstrations of MagicSpells in Action
 > More coming soon
