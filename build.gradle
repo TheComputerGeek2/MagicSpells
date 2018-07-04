@@ -582,7 +582,7 @@ task magicspellsRelease() {
 task copyServerJars(type: Copy) {
 	dependsOn = ["magicspellsCoreJar"]
 	mustRunAfter = ["magicspellsCoreJar"]
-	delete "server/plugins"
+	delete fileTree(dir: 'server/plugins', include: 'MagicSpells*')
 	file("server/plugins").mkdir()
 	from file("${-> project.ext.magicspellsData.libDir}${File.separator}EffectLib-4.0.jar")
 	into file("server/plugins")
