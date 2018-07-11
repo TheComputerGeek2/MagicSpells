@@ -5,39 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.nisovin.magicspells.util.compat.CompatBasics;
-import com.nisovin.magicspells.variables.meta.AttributeBaseValueVariable;
-import com.nisovin.magicspells.variables.meta.BedCoordXVariable;
-import com.nisovin.magicspells.variables.meta.BedCoordYVariable;
-import com.nisovin.magicspells.variables.meta.BedCoordZVariable;
-import com.nisovin.magicspells.variables.meta.CompassTargetXVariable;
-import com.nisovin.magicspells.variables.meta.CompassTargetYVariable;
-import com.nisovin.magicspells.variables.meta.CompassTargetZVariable;
-import com.nisovin.magicspells.variables.meta.CoordPitchVariable;
-import com.nisovin.magicspells.variables.meta.CoordXVariable;
-import com.nisovin.magicspells.variables.meta.CoordYVariable;
-import com.nisovin.magicspells.variables.meta.CoordYawVariable;
-import com.nisovin.magicspells.variables.meta.CoordZVariable;
-import com.nisovin.magicspells.variables.meta.EntityIDVariable;
-import com.nisovin.magicspells.variables.meta.ExperienceLevelVariable;
-import com.nisovin.magicspells.variables.meta.ExperienceVariable;
-import com.nisovin.magicspells.variables.meta.FallDistanceVariable;
-import com.nisovin.magicspells.variables.meta.FireTicksVariable;
-import com.nisovin.magicspells.variables.meta.FlySpeedVariable;
-import com.nisovin.magicspells.variables.meta.FoodLevelVariable;
-import com.nisovin.magicspells.variables.meta.HealthScaleVariable;
-import com.nisovin.magicspells.variables.meta.LastDamageVariable;
-import com.nisovin.magicspells.variables.meta.MaxHealthVariable;
-import com.nisovin.magicspells.variables.meta.MaximumAirVariable;
-import com.nisovin.magicspells.variables.meta.MaximumNoDamageTicksVariable;
-import com.nisovin.magicspells.variables.meta.NoDamageTicksVariable;
-import com.nisovin.magicspells.variables.meta.PlayersOnlineVariable;
-import com.nisovin.magicspells.variables.meta.RemainingAirVariable;
-import com.nisovin.magicspells.variables.meta.SaturationVariable;
-import com.nisovin.magicspells.variables.meta.SleepTicksVariable;
-import com.nisovin.magicspells.variables.meta.VelocityXVariable;
-import com.nisovin.magicspells.variables.meta.VelocityYVariable;
-import com.nisovin.magicspells.variables.meta.VelocityZVariable;
-import com.nisovin.magicspells.variables.meta.WalkSpeedVariable;
+import com.nisovin.magicspells.variables.meta.*;
 
 // TODO look into GENERIC_FLYING_SPEED attribute
 // TODO look into GENERIC_MOVEMENT_SPEED attribute
@@ -64,6 +32,7 @@ public class SpecialVariables {
 		specialVariables.put("meta_fire_ticks", new FireTicksVariable());
 		specialVariables.put("meta_fall_distance", new FallDistanceVariable());
 		specialVariables.put("meta_players_online", new PlayersOnlineVariable());
+		specialVariables.put("meta_remaining_health", new RemainingHealthVariable());
 		specialVariables.put("meta_max_health", new MaxHealthVariable());
 		specialVariables.put("meta_health_scale", new HealthScaleVariable());
 		specialVariables.put("meta_compass_target_x", new CompassTargetXVariable());
