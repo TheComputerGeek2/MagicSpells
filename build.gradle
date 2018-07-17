@@ -579,6 +579,28 @@ task magicspellsRelease() {
   ]
 }
 
+task copyServerJars(type: Copy) {
+	dependsOn = ["magicspellsCoreJar"]
+	mustRunAfter = ["magicspellsCoreJar"]
+	delete fileTree(dir: 'server/plugins', include: 'MagicSpells*')
+	file("server/plugins").mkdir()
+	from file("${-> project.ext.magicspellsData.libDir}${File.separator}EffectLib-4.0.jar")
+	into file("server/plugins")
+	from file("${-> project.ext.magicspellsData.distDir}${File.separator}MagicSpells-${msconfig.stringVersionCore}.jar")
+	into file("server/plugins")
+}
+
+
+task runServerWithMagicspells(type: JavaExec) {
+	description = 'Create the main MagicSpells jar and run a server with it'
+	dependsOn = [
+		'copyServerJars'
+	]
+	workingDir="server"
+	main = "-jar"
+	args "spigot-1.12.2.jar"
+}
+
 artifacts {
   mscore magicspellsCoreJar
   teams magicspellsTeamsJar
