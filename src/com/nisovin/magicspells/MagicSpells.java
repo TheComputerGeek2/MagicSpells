@@ -459,6 +459,24 @@ public class MagicSpells extends JavaPlugin {
 		addPermission(pm, "advanced.list", PermissionDefault.FALSE);
 		addPermission(pm, "advanced.forget", PermissionDefault.FALSE);
 		addPermission(pm, "advanced.scroll", PermissionDefault.FALSE);
+
+		//Misc/Op Perms
+        addPermission(pm, "mana.modify", PermissionDefault.FALSE);
+        addPermission(pm, "mana.setmax", PermissionDefault.FALSE);
+        addPermission(pm, "mana.set", PermissionDefault.FALSE);
+        addPermission(pm, "mana.reset", PermissionDefault.FALSE);
+        addPermission(pm, "mana.setrank", PermissionDefault.FALSE);
+        addPermission(pm, "magicitem", PermissionDefault.FALSE);
+        addPermission(pm, "download", PermissionDefault.FALSE);
+        addPermission(pm, "update", PermissionDefault.FALSE);
+        addPermission(pm, "saveskin", PermissionDefault.FALSE);
+        addPermission(pm, "profile", PermissionDefault.FALSE);
+        addPermission(pm, "debug", PermissionDefault.FALSE);
+        addPermission(pm, "forcecast", PermissionDefault.FALSE);
+        addPermission(pm, "reload", PermissionDefault.FALSE);
+        addPermission(pm, "reset_cooldown", PermissionDefault.FALSE);
+        addPermission(pm, "castat", PermissionDefault.FALSE);
+
 		HashMap<String, Boolean> advancedPermChildren = new HashMap<>();
 		advancedPermChildren.put(Perm.ADVANCED_LIST.getNode(), true);
 		advancedPermChildren.put(Perm.ADVANCED_FORGET.getNode(), true);
