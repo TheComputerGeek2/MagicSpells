@@ -28,6 +28,7 @@ import com.nisovin.magicspells.util.Metrics;
 import com.nisovin.magicspells.util.TxtUtil;
 import com.nisovin.magicspells.util.compat.CompatBasics;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.volatilecode.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -70,8 +71,6 @@ import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.prompt.PromptType;
 import com.nisovin.magicspells.variables.VariableManager;
 import com.nisovin.magicspells.volatilecode.VolatileCodeDisabled;
-import com.nisovin.magicspells.volatilecode.VolatileCodeHandle;
-import com.nisovin.magicspells.volatilecode.VolatileCodeProtocolLib;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 
 import de.slikey.effectlib.EffectManager;
@@ -226,10 +225,11 @@ public class MagicSpells extends JavaPlugin {
         boolean v1_9 = false;
         if (config.getBoolean("general.enable-volatile-features", true)) {
             // Try and get the right volatile loader via reflection
+            String version = getServer().getClass().getPackage().getName().replace("org.bukkit.craftbukkit.", "").replaceFirst("v", "");
             try {
-                String version = getServer().getClass().getPackage().getName().replace("org.bukkit.craftbukkit.", "");
+
                 Class<?> handlerClass = Class.forName(
-                        "com.nisovin.magicspells.volatilecode.VolatileCodeEnabled_" + version.replaceFirst("v", ""));
+                        "com.nisovin.magicspells.volatilecode.VolatileCodeEnabled_" + version);
                 Constructor<?> constructor = handlerClass.getConstructors()[0];
                 volatileCodeHandle = (VolatileCodeHandle) (constructor.getParameterCount() == 0
                         ? constructor.newInstance()
@@ -245,7 +245,7 @@ public class MagicSpells extends JavaPlugin {
                     error("ProtocolLib found: some compatibility re-enabled");
                     volatileCodeHandle = new VolatileCodeProtocolLib();
                 } else {
-                    volatileCodeHandle = new VolatileCodeDisabled();
+                    volatileCodeHandle = new VolatileCodeUnknown(config, version);
                 }
             }
         } else {
