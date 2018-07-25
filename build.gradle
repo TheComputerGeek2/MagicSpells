@@ -598,7 +598,7 @@ task runServerWithMagicspells(type: JavaExec) {
 	]
 	workingDir="server"
 	main = "-jar"
-	args "spigot-1.12.2.jar"
+	args "spigot-1.13.jar"
 }
 
 artifacts {
