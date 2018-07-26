@@ -94,15 +94,15 @@ public class SpawnMonsterSpell extends TargetedSpell implements TargetedLocation
 		allowSpawnInMidair = getConfigBoolean("allow-spawn-in-midair", false);
 		baby = getConfigBoolean("baby", false);
 		tamed = getConfigBoolean("tamed", false);
-		holding = Util.getItemStackFromString(getConfigString("holding", "0"));
+		holding = Util.getItemStackFromString(getConfigString("holding", "air"));
 		if (holding != null && holding.getType() != Material.AIR) holding.setAmount(1);
-		helmet = Util.getItemStackFromString(getConfigString("helmet", "0"));
+		helmet = Util.getItemStackFromString(getConfigString("helmet", "air"));
 		if (helmet != null && helmet.getType() != Material.AIR) helmet.setAmount(1);
-		chestplate = Util.getItemStackFromString(getConfigString("chestplate", "0"));
+		chestplate = Util.getItemStackFromString(getConfigString("chestplate", "air"));
 		if (chestplate != null && chestplate.getType() != Material.AIR) chestplate.setAmount(1);
-		leggings = Util.getItemStackFromString(getConfigString("leggings", "0"));
+		leggings = Util.getItemStackFromString(getConfigString("leggings", "air"));
 		if (leggings != null && leggings.getType() != Material.AIR) leggings.setAmount(1);
-		boots = Util.getItemStackFromString(getConfigString("boots", "0"));
+		boots = Util.getItemStackFromString(getConfigString("boots", "air"));
 		if (boots != null && boots.getType() != Material.AIR) boots.setAmount(1);
 		holdingDropChance = getConfigFloat("holding-drop-chance", 0) / 100F;
 		helmetDropChance = getConfigFloat("helmet-drop-chance", 0) / 100F;
@@ -245,7 +245,7 @@ public class SpawnMonsterSpell extends TargetedSpell implements TargetedLocation
 			z = location.getBlockZ() + random.nextInt(range << 1) - range;
 			
 			block = world.getBlockAt(x, y, z);
-			if (block.getType() == Material.STATIONARY_WATER || block.getType() == Material.WATER) return block.getLocation();
+			if (block.getType() == Material.WATER) return block.getLocation();
 			if (BlockUtils.isPathable(block)) {
 				if (allowSpawnInMidair) return block.getLocation();
 				int c = 0;

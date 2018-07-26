@@ -13,16 +13,14 @@ public abstract class MagicMaterial {
 	
 	public abstract Material getMaterial();
 	
-	public abstract MaterialData getMaterialData();
-	
 	public final void setBlock(Block block) {
 		setBlock(block, true);
 	}
 	
 	public void setBlock(Block block, boolean applyPhysics) { /* NO OP */}
-	
+
 	public FallingBlock spawnFallingBlock(Location location) { return null; }
-	
+
 	public final ItemStack toItemStack() {
 		return toItemStack(1);
 	}
@@ -32,27 +30,17 @@ public abstract class MagicMaterial {
 	public final boolean equals(Block block) {
 		return equals(block.getState().getData());
 	}
-	
-	public boolean equals(MaterialData matData) {
-		MaterialData d = getMaterialData();
-		return Objects.equals(d, matData);
-	}
-	
+
 	public boolean equals(ItemStack itemStack) {
-		MaterialData d = getMaterialData();
-		if (d != null) {
-			ItemStack i = d.toItemStack();
+			ItemStack i = new ItemStack(getMaterial());
 			return i.getType() == itemStack.getType() && i.getDurability() == itemStack.getDurability();
-		} else {
-			return false;
-		}
 	}
 	
 	@Override
 	public boolean equals(Object o) {
 		if (o instanceof MagicMaterial) {
 			MagicMaterial m = (MagicMaterial)o;
-			return m.getMaterial() == getMaterial() && m.getMaterialData().equals(getMaterialData());
+			return m.getMaterial() == getMaterial();
 		}
 		return false;
 	}
@@ -64,13 +52,13 @@ public abstract class MagicMaterial {
 	
 	public static MagicMaterial fromItemStack(ItemStack item) {
 		if (item.getType().isBlock()) {
-			return new MagicBlockMaterial(item.getData());
+			return new MagicBlockMaterial(item.getType());
 		}
-		return new MagicItemMaterial(item.getData());
+		return new MagicItemMaterial(item.getType(), (short) 0);
 	}
 	
 	public static MagicMaterial fromBlock(Block block) {
-		return new MagicBlockMaterial(block.getState().getData());
+		return new MagicBlockMaterial(block.getState().getType());
 	}
 	
 }

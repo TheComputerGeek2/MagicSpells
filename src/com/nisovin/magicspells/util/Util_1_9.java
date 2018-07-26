@@ -45,7 +45,6 @@ public class Util_1_9 {
 		particleMap.put("enchantmenttable", Particle.ENCHANTMENT_TABLE);
 		particleMap.put("flame", Particle.FLAME);
 		particleMap.put("lava", Particle.LAVA);
-		particleMap.put("footstep", Particle.FOOTSTEP);
 		particleMap.put("reddust", Particle.REDSTONE);
 		particleMap.put("snowballpoof", Particle.SNOWBALL);
 		particleMap.put("slime", Particle.SLIME);

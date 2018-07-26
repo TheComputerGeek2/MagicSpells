@@ -86,7 +86,7 @@ public class WallSpell extends InstantSpell {
 					this.wallMaterial.setBlock(target, false);
 					MagicSpellsBlockPlaceEvent event = new MagicSpellsBlockPlaceEvent(target, eventBlockState, target, HandHandler.getItemInMainHand(player), player, true);
 					EventUtil.call(event);
-					BlockUtils.setTypeAndData(target, Material.AIR, (byte)0, false);
+					BlockUtils.setTypeAndData(target, Material.AIR, false);
 					if (event.isCancelled()) {
 						sendMessage(this.strNoTarget, player, args);
 						return PostCastAction.ALREADY_HANDLED;

@@ -805,8 +805,8 @@ public class MagicSpells extends JavaPlugin {
 	 * @param type the type to check
 	 * @return whether to ignore durability
 	 */
-	public static boolean ignoreCastItemDurability(int type) {
-		return plugin.ignoreCastItemDurability != null && plugin.ignoreCastItemDurability.contains(type);
+	public static boolean ignoreCastItemDurability(Material type) {
+		return plugin.ignoreCastItemDurability != null && plugin.ignoreCastItemDurability.contains(type.getId());
 	}
 	
 	public static boolean ignoreCastItemEnchants() {

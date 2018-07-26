@@ -39,10 +39,10 @@ armor:
     cast-item: book
     duration: 30
     num-uses: 15
-    helmet: gold_helmet protection_explosions:1 oxygen:1
-    chestplate: gold_chestplate protection_projectile:1
-    leggings: gold_leggings protection_fire:1
-    boots: gold_boots protection_fall:1
+    helmet: golden_helmet protection_explosions:1 oxygen:1
+    chestplate: golden_chestplate protection_projectile:1
+    leggings: golden_leggings protection_fire:1
+    boots: golden_boots protection_fall:1
     cost:
         - mana 25
         - gold_nugget 1
@@ -53,7 +53,7 @@ armor:
 blind:
     spell-class: ".targeted.PotionEffectSpell"
     name: blind
-    spell-icon: ink_sack:0
+    spell-icon: ink_sac
     description: Blind your target.
     cast-item: blaze_rod
     cooldown: 15
@@ -103,7 +103,6 @@ build:
     effects:
         - target blockbreak
     check-plugins: true
-    allowed-types: 1,2,3,4,5,12,13,17,20,22,24,35,41,42,43,44,45,47,48,49,50,53,57,65,67,80,85,87,88,89,91,92
     cost:
         - mana 5
     str-cost: 5 mana
@@ -113,7 +112,7 @@ build:
 carpet:
     spell-class: ".buff.CarpetSpell"
     name: carpet
-    spell-icon: thin_glass
+    spell-icon: glass_pane
     description: Lets you walk on a platform of glass.
     cast-item: book
     cooldown: 30
@@ -188,7 +187,7 @@ combust:
 confusion:
     spell-class: ".instant.ConfusionSpell"
     name: confusion
-    spell-icon: eye_of_ender
+    spell-icon: ender_eye
     description: Cause nearby monsters to attack each other.
     cast-item: bone
     cooldown: 30
@@ -213,7 +212,7 @@ conjure:
     auto-equip: false
     items:
         - redstone 1-2 25%
-        - speckled_melon 1 25%
+        - glistering_melon_slice 1 25%
         - magma_cream 1-2 25%
         - spider_eye 1-2 25%
     add-to-inventory: false
@@ -223,7 +222,7 @@ conjure:
 cripple:
     spell-class: ".targeted.CrippleSpell"
     name: cripple
-    spell-icon: web
+    spell-icon: cobweb
     description: Slow down a targeted enemy.
     cast-item: blaze_rod
     cooldown: 15
@@ -250,7 +249,7 @@ disarm:
         - stick
         - book
         - bone
-        - wood_sword
+        - wooden_sword
         - stone_sword
         - iron_sword
         - diamond_sword
@@ -349,7 +348,7 @@ entomb:
     cooldown: 5
     range: 15
     can-target: players,monsters
-    tomb-block-type: 20
+    tomb-block-type: glass
     tomb-duration: 20
     cost:
         - mana 15
@@ -397,7 +396,7 @@ explode:
     ignore-canceled: false
     cost:
         - mana 40
-        - sulphur 1
+        - gunpowder 1
     str-cost: 40 mana and 1 gunpowder
     str-no-target: You cannot create an explosion there.
     str-cast-self: Boom!
@@ -419,7 +418,7 @@ explosivearrow:
     spells: [explode]
     cost:
         - mana 25
-        - sulphur 1
+        - gunpowder 1
         - arrow 1
     str-cost: 25 mana, 1 gunpowder, and 1 arrow
     str-cast-self: You fire an explosive arrow.
@@ -569,7 +568,7 @@ flamewalk:
     duration: 120
     cost:
         - mana 25
-        - 263 2
+        - coal 2
     use-cost:
         - mana 10
     use-cost-interval: 10
@@ -594,7 +593,7 @@ food:
 forcebomb:
     spell-class: ".targeted.ForcebombSpell"
     name: forcebomb
-    spell-icon: record_4
+    spell-icon: record_chirp
     description: Push back your enemies.
     cast-item: blaze_rod
     cooldown: 8
@@ -613,7 +612,7 @@ forcebomb:
 forcepush:
     spell-class: ".instant.ForcepushSpell"
     name: forcepush
-    spell-icon: record_3
+    spell-icon: record_chirp
     description: Push back your enemies.
     cast-item: bone
     cooldown: 8
@@ -631,7 +630,7 @@ forcepush:
 forcetoss:
     spell-class: ".targeted.ForcetossSpell"
     name: forcetoss
-    spell-icon: piston_base
+    spell-icon: piston
     description: Magically throw an enemy into the air.
     cast-item: blaze_rod
     cooldown: 5
@@ -742,7 +741,7 @@ geyser:
 gills:
     spell-class: ".buff.GillsSpell"
     name: gills
-    spell-icon: gold_helmet
+    spell-icon: golden_helmet
     description: Allows you to breath underwater.
     cast-item: book
     glass-head-effect: true
@@ -762,7 +761,7 @@ gills:
 haste:
     spell-class: ".buff.HasteSpell"
     name: haste
-    spell-icon: gold_boots
+    spell-icon: golden_boots
     description: Sprint faster for a time.
     cast-item: book
     effect-strength: 3
@@ -845,7 +844,7 @@ invisibility:
 invulnerability:
     spell-class: ".buff.InvulnerabilitySpell"
     name: invulnerability
-    spell-icon: gold_chestplate
+    spell-icon: golden_chestplate
     description: Makes you invulnerable to damage.
     cast-item: book
     damage-causes:
@@ -943,7 +942,7 @@ lifewalk:
 lightning:
     spell-class: ".targeted.LightningSpell"
     name: lightning
-    spell-icon: gold_sword
+    spell-icon: golden_sword
     description: Call down lightning.
     cast-item: blaze_rod
     cooldown: 15
@@ -964,7 +963,7 @@ lightwalk:
     name: lightwalk
     spell-icon: glowstone
     description: Light your path.
-    cast-item: 317
+    cast-item: golden_boots
     cost:
         - mana 25
         - torch 3
@@ -1134,8 +1133,8 @@ reach:
     range: 15
     consume-blocks: true
     drop-blocks: true
-    disallowed-break-blocks: [0,7]
-    disallowed-place-blocks: [0,7]
+    disallowed-break-blocks: [air,bedrock]
+    disallowed-place-blocks: [air,bedrock]
     cost:
         - mana 50
     str-cost: 50 mana
@@ -1197,8 +1196,8 @@ repair:
         - leggings
         - boots
     ignore-items:
-        - 259
-        - 346
+        - flint_and_steel
+        - fishing_rod
     cost:
         - mana 50
         - iron_ingot 2
@@ -1235,7 +1234,7 @@ safefall:
     cost:
         - mana 20
     use-cost:
-        - 288 1
+        - feather 1
     use-cost-interval: 1
     str-cost: 20 mana, plus 1 feather each time you fall
     str-cast-self: You feel lighter.
@@ -1282,7 +1281,7 @@ silence:
 spellhaste:
     spell-class: ".buff.SpellHasteSpell"
     name: spellhaste
-    spell-icon: ink_sack:4
+    spell-icon: lapis_lazuli
     description: Reduces the cast time and cooldown of your spells.
     cast-item: book
     cooldown: 60
@@ -1316,7 +1315,7 @@ stonevision:
     description: See through stone.
     cast-item: book
     range: 4
-    transparent-type: 1
+    transparent-type: stone
     unobfuscate: false
     cooldown: 60
     duration: 30
@@ -1331,7 +1330,7 @@ stonevision:
 storm:
     spell-class: ".targeted.AreaEffectSpell"
     name: storm
-    spell-icon: gold_sword
+    spell-icon: golden_sword
     description: Strike lightning upon all nearby enemies.
     cast-item: bone
     horizontal-radius: 10
@@ -1565,11 +1564,11 @@ fire-volley:
 walkway:
     spell-class: ".buff.WalkwaySpell"
     name: walkway
-    spell-icon: wood_stairs
+    spell-icon: wooden_stairs
     description: Summon a moving magical walkway to take you places.
     cast-item: book
     cooldown: 60
-    platform-type: 5
+    platform-type: wood
     size: 6
     cancel-on-logout: true
     cancel-on-teleport: true
@@ -1607,19 +1606,20 @@ water:
     name: water
     spell-icon: water_bucket
     description: Summons a water spring into existence.
+    block-type: water
     cast-item: stick
     cooldown: 120
     range: 8
-    block-type: water
     reset-delay: 200
     apply-physics: true
     check-plugins: true
     cost:
         - mana 10
     str-cost: 10 mana
-    str-no-target: No target found.
-    str-failed: ""
-
+    str-no-target: No target found
+    use-pattern: true
+    patterns:
+        - "water"
 waterwalk:
     spell-class: ".buff.WaterwalkSpell"
     name: waterwalk
@@ -1669,7 +1669,7 @@ windwalk:
 zap:
     spell-class: ".targeted.ZapSpell"
     name: zap
-    spell-icon: gold_pickaxe
+    spell-icon: golden_pickaxe
     description: Instantly destroys a block.
     cast-item: stick
     cooldown: 1
@@ -1736,7 +1736,7 @@ torcharrow:
 zeus:
     spell-class: ".MultiSpell"
     name: zeus
-    spell-icon: gold_axe
+    spell-icon: golden_axe
     cooldown: 30
     cast-item: blaze_rod
     check-individual-cooldowns: false

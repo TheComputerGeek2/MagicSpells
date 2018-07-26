@@ -33,7 +33,7 @@ general:
     ignore-cast-item-enchants: true
     ignore-cast-item-names: false
     ignore-cast-item-durability: [ 268, 269, 270, 271, 283, 284, 285, 286, 290, 294, 314, 315, 316, 317 ]
-    los-transparent-blocks: [ 0, 27, 28, 31, 32, 37, 38, 39, 40, 50, 51, 55, 63, 65, 66, 68, 69, 70, 72, 75, 76, 77, 78, 93, 94, 106, 111 ]
+    los-transparent-blocks: [ air, powered_rail, detector_rail, tallgrass, dead_bush, dandelion, poppy, brown_mushroom, red_mushroom, torch, fire, redstone_wire, standing_sign, ladder, rail, wall_sign, lever, stone_pressure_plate, oak_pressure_plate, unlit_redstone_torch, redstone_torch, stone_button, snow, powered_repeater, powered_repeater, vine, lily_pad ]
     global-cooldown: 500
     cast-on-animate: false
     use-exp-bar-as-cast-time-bar: true
