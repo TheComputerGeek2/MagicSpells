@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.nisovin.magicspells.materials.MagicBlockMaterial;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.util.Vector;
@@ -20,8 +21,6 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.DebugHandler;
 import com.nisovin.magicspells.util.SpellAnimation;
 import com.nisovin.magicspells.materials.MagicMaterial;
-import com.nisovin.magicspells.materials.MagicUnknownMaterial;
-
 public class NovaEffect extends SpellEffect {
 	
 	MagicMaterial mat;
@@ -42,28 +41,19 @@ public class NovaEffect extends SpellEffect {
 		if (string != null && !string.isEmpty()) {
 			
 			String[] params = string.split(" ");
-			int type = 51;
-			byte data = 0;
+			Material type = Material.FIRE;
 			
 			if (params.length >= 1) {
 				try {
-					type = Integer.parseInt(params[0]);
-				} catch (NumberFormatException e) {
+					type = Material.valueOf(params[0]);
+				} catch (Exception e) {
 					DebugHandler.debugNumberFormat(e);
 				}
 			}
+
+			mat = new MagicBlockMaterial(type);
 			
 			if (params.length >= 2) {
-				try {
-					data = Byte.parseByte(params[1]);
-				} catch (NumberFormatException e) {
-					DebugHandler.debugNumberFormat(e);
-				}
-			}
-			
-			mat = new MagicUnknownMaterial(type, data);
-			
-			if (params.length >= 3) {
 				try {
 					radius = Integer.parseInt(params[2]);
 				} catch (NumberFormatException e) {
@@ -71,7 +61,7 @@ public class NovaEffect extends SpellEffect {
 				}
 			}
 			
-			if (params.length >= 4) {
+			if (params.length >= 3) {
 				try {
 					novaTickInterval = Integer.parseInt(params[3]);
 				} catch (NumberFormatException e) {
@@ -164,14 +154,14 @@ public class NovaEffect extends SpellEffect {
 					if (Math.abs(x - bx) != tick && Math.abs(z - bz) != tick) continue;
 					
 					Block b = center.getWorld().getBlockAt(x, y, z);
-					if (b.getType() == Material.AIR || b.getType() == Material.LONG_GRASS) {
+					if (b.getType() == Material.AIR || b.getType() == Material.TALL_GRASS) {
 						Block under = b.getRelative(BlockFace.DOWN);
-						if (under.getType() == Material.AIR || under.getType() == Material.LONG_GRASS) b = under;
-					} else if (b.getRelative(BlockFace.UP).getType() == Material.AIR || b.getRelative(BlockFace.UP).getType() == Material.LONG_GRASS) {
+						if (under.getType() == Material.AIR || under.getType() == Material.TALL_GRASS) b = under;
+					} else if (b.getRelative(BlockFace.UP).getType() == Material.AIR || b.getRelative(BlockFace.UP).getType() == Material.TALL_GRASS) {
 						b = b.getRelative(BlockFace.UP);
 					}
 					
-					if (b.getType() != Material.AIR && b.getType() != Material.LONG_GRASS) continue;
+					if (b.getType() != Material.AIR && b.getType() != Material.TALL_GRASS) continue;
 					
 					if (blocks.contains(b)) continue;
 					for (Player p : nearby) Util.sendFakeBlockChange(p, b, matNova);
@@ -240,14 +230,14 @@ public class NovaEffect extends SpellEffect {
 			if (startRadius == 0 && tick == 0) {
 				b = centerLocation.getWorld().getBlockAt(centerLocation);
 				
-				if (b.getType() == Material.AIR || b.getType() == Material.LONG_GRASS) {
+				if (b.getType() == Material.AIR || b.getType() == Material.TALL_GRASS) {
 					Block under = b.getRelative(BlockFace.DOWN);
-					if (under.getType() == Material.AIR || under.getType() == Material.LONG_GRASS) b = under;
-				} else if (b.getRelative(BlockFace.UP).getType() == Material.AIR || b.getRelative(BlockFace.UP).getType() == Material.LONG_GRASS) {
+					if (under.getType() == Material.AIR || under.getType() == Material.TALL_GRASS) b = under;
+				} else if (b.getRelative(BlockFace.UP).getType() == Material.AIR || b.getRelative(BlockFace.UP).getType() == Material.TALL_GRASS) {
 					b = b.getRelative(BlockFace.UP);
 				}
 				
-				if (b.getType() != Material.AIR && b.getType() != Material.LONG_GRASS) return;
+				if (b.getType() != Material.AIR && b.getType() != Material.TALL_GRASS) return;
 				
 				if (blocks.contains(b)) return;
 				for (Player p : nearby) Util.sendFakeBlockChange(p, b, matNova);
@@ -267,14 +257,14 @@ public class NovaEffect extends SpellEffect {
 				b = center.getWorld().getBlockAt(centerLocation.add(v));
 				centerLocation.subtract(v);
 				
-				if (b.getType() == Material.AIR || b.getType() == Material.LONG_GRASS) {
+				if (b.getType() == Material.AIR || b.getType() == Material.TALL_GRASS) {
 					Block under = b.getRelative(BlockFace.DOWN);
-					if (under.getType() == Material.AIR || under.getType() == Material.LONG_GRASS) b = under;
-				} else if (b.getRelative(BlockFace.UP).getType() == Material.AIR || b.getRelative(BlockFace.UP).getType() == Material.LONG_GRASS) {
+					if (under.getType() == Material.AIR || under.getType() == Material.TALL_GRASS) b = under;
+				} else if (b.getRelative(BlockFace.UP).getType() == Material.AIR || b.getRelative(BlockFace.UP).getType() == Material.TALL_GRASS) {
 					b = b.getRelative(BlockFace.UP);
 				}
 				
-				if (b.getType() != Material.AIR && b.getType() != Material.LONG_GRASS) continue;
+				if (b.getType() != Material.AIR && b.getType() != Material.TALL_GRASS) continue;
 				
 				if (blocks.contains(b)) continue;
 				for (Player p : nearby) Util.sendFakeBlockChange(p, b, matNova);

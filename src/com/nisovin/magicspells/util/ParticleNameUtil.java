@@ -27,7 +27,7 @@ public class ParticleNameUtil {
 		if (splits.length > 1) {
 			Material mat = null;
 			try {
-				mat = Material.getMaterial(Integer.parseInt(splits[1]));
+				mat = Material.getMaterial(splits[1]);
 			} catch (Exception e) {
 				//no op
 			}

@@ -209,7 +209,7 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 		}
 		
 		private void setBlockStateFromWorldEditBlock(BlockState state, BaseBlock block) {
-			state.setTypeId(block.getId());
+			state.setType(Material.getMaterial(block.getId() + "", true));
 			state.setRawData((byte)block.getData());
 		}
 		

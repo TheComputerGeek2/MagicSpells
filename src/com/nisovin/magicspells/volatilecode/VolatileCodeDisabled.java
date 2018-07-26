@@ -23,6 +23,7 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.Button;
 import org.bukkit.material.Lever;
+import org.bukkit.material.PressurePlate;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -54,7 +55,7 @@ public class VolatileCodeDisabled implements VolatileCodeHandle {
 	
 	@Override
 	public void toggleLeverOrButton(Block block) {
-		if (block.getType() == Material.STONE_BUTTON || block.getType() == Material.WOOD_BUTTON) {
+		if (block.getType().name().endsWith("BUTTON")) {
 			BlockState state = block.getState();
 			Button button = (Button)state.getData();
 			button.setPowered(true);
@@ -69,7 +70,7 @@ public class VolatileCodeDisabled implements VolatileCodeHandle {
 
 	@Override
 	public void pressPressurePlate(Block block) {
-		block.setData((byte) (block.getData() ^ 0x1));
+		//Not implemented
 	}
 
 	@Override

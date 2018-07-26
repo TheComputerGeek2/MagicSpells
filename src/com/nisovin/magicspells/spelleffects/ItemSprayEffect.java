@@ -3,7 +3,9 @@ package com.nisovin.magicspells.spelleffects;
 import java.util.Arrays;
 import java.util.Random;
 
+import com.nisovin.magicspells.materials.MagicItemMaterial;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Item;
 import org.bukkit.util.Vector;
@@ -11,7 +13,6 @@ import org.bukkit.util.Vector;
 import com.nisovin.magicspells.DebugHandler;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.materials.MagicMaterial;
-import com.nisovin.magicspells.materials.MagicUnknownMaterial;
 
 /**
  * ItemSprayEffect<br>
@@ -87,26 +88,26 @@ public class ItemSprayEffect extends SpellEffect {
 	public void loadFromString(String string) {
 		if (string != null) {
 			String[] data = string.split(" ");
-			int type = 331;
+			Material type = Material.REDSTONE;
 			short dura = 0;
 			if (data.length >= 1) {
 				if (data[0].contains(":")) {
 					try {
 						String[] typeData = data[0].split(":");
-						type = Integer.parseInt(typeData[0]);
+						type = Material.valueOf(typeData[0]);
 						dura = Short.parseShort(typeData[1]);
 					} catch (NumberFormatException e) {
 						DebugHandler.debugNumberFormat(e);
 					}
 				} else {
 					try {
-						type = Integer.parseInt(data[0]);
+						type = Material.valueOf(data[0]);
 					} catch (NumberFormatException e) {
 						DebugHandler.debugNumberFormat(e);
 					}
 				}
 			}
-			mat = new MagicUnknownMaterial(type, dura);
+			mat = new MagicItemMaterial(type, dura);
 			if (data.length >= 2) {
 				try {
 					num = Integer.parseInt(data[1]);

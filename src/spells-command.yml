@@ -72,7 +72,7 @@ scroll:
     cast-for-free: true
     default-uses: 5
     max-uses: 10
-    item-id: 339
+    item-id: paper
     right-click-cast: true
     left-click-cast: false
     ignore-cast-perm: false
@@ -97,7 +97,7 @@ spellbook:
     description: Create a spellbook that teaches a spell.
     default-uses: -1
     destroy-when-used-up: false
-    spellbook-block: 47
+    spellbook-block: bookshelf
     str-use: "Usage: /cast spellbook <spell> [uses]"
     str-cast-self: You have created a spellbook with the %s spell.
     str-no-spell: You do not know a spell by that name.

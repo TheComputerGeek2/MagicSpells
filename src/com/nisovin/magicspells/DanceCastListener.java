@@ -67,7 +67,7 @@ public class DanceCastListener implements Listener {
 	public DanceCastListener(MagicSpells plugin, MagicConfig config) {
 		this.plugin = plugin;
 		
-		danceCastWand = new CastItem(Util.getItemStackFromString(config.getString("general.dance-cast-item", "2256")));
+		danceCastWand = new CastItem(Util.getItemStackFromString(config.getString("general.dance-cast-item", "music_disc_cat")));
 		duration = config.getInt("general.dance-cast-duration", 200);
 		dynamicCasting = config.getBoolean("general.dance-cast-dynamic", false);
 		

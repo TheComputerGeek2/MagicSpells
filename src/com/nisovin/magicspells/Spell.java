@@ -1389,7 +1389,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	
 	public boolean isValidItemForCastCommand(ItemStack item) {
 		if (!this.requireCastItemOnCommand || this.castItems == null) return true;
-		if (item == null && this.castItems.length == 1 && this.castItems[0].getItemTypeId() == 0) return true;
+		if (item == null && this.castItems.length == 1 && this.castItems[0].getItemType() == Material.AIR) return true;
 		for (CastItem castItem : this.castItems) {
 			if (castItem.equals(item)) return true;
 		}

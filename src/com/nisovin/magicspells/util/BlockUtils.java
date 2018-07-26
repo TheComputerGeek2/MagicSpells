@@ -3,6 +3,7 @@ package com.nisovin.magicspells.util;
 import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.CropState;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NetherWartsState;
@@ -10,6 +11,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.material.Crops;
 import org.bukkit.material.NetherWarts;
 
 import com.nisovin.magicspells.DebugHandler;
@@ -56,12 +58,12 @@ public class BlockUtils {
 		}
 	}
 	
-	public static void setTypeAndData(Block block, Material material, byte data, boolean physics) {
-		block.setTypeIdAndData(material.getId(), data, physics);
+	public static void setTypeAndData(Block block, Material material, boolean physics) {
+		block.setType(material, physics);
 	}
 	
 	public static void setBlockFromFallingBlock(Block block, FallingBlock fallingBlock, boolean physics) {
-		block.setTypeIdAndData(fallingBlock.getBlockId(), fallingBlock.getBlockData(), physics);
+		block.setBlockData(fallingBlock.getBlockData(), physics);
 	}
 	
 	public static int getWaterLevel(Block block) {
@@ -71,10 +73,7 @@ public class BlockUtils {
 	public static int getGrowthLevel(Block block) {
 		return block.getData();
 	}
-	
-	public static void setGrowthLevel(Block block, int level) {
-		block.setData((byte)level);
-	}
+
 	
 	public static boolean growWarts(NetherWarts wart, int stagesToGrow) {
 		if (wart.getState() == NetherWartsState.RIPE) return false;
@@ -83,6 +82,11 @@ public class BlockUtils {
 		wart.setState(intToWartState.get(state));
 		return true;
 		
+	}
+
+	public static void setGrowthLevel(Crops block, int amount){
+		if(block.getState() == CropState.RIPE)return;
+		block.setState(CropState.getByData((byte) Math.min(block.getState().getData(), 7 - amount)));
 	}
 	
 	public static int getWaterLevel(BlockState blockState) {
@@ -97,37 +101,35 @@ public class BlockUtils {
 	public static boolean isPathable(Material material) {
 		return
 				material == Material.AIR ||
-				material == Material.SAPLING ||
+				material.name().endsWith("SAPLING") ||
 				material == Material.WATER ||
-				material == Material.STATIONARY_WATER ||
 				material == Material.POWERED_RAIL ||
 				material == Material.DETECTOR_RAIL ||
-				material == Material.LONG_GRASS ||
+				material == Material.TALL_GRASS ||
 				material == Material.DEAD_BUSH ||
-				material == Material.YELLOW_FLOWER ||
-				material == Material.RED_ROSE ||
+				material == Material.DANDELION ||
+				material == Material.POPPY ||
 				material == Material.BROWN_MUSHROOM ||
 				material == Material.RED_MUSHROOM ||
 				material == Material.TORCH ||
 				material == Material.FIRE ||
 				material == Material.REDSTONE_WIRE ||
-				material == Material.CROPS ||
-				material == Material.SIGN_POST ||
+				material == Material.WHEAT ||
+				material == Material.SIGN ||
 				material == Material.LADDER ||
-				material == Material.RAILS ||
+				material == Material.RAIL ||
 				material == Material.WALL_SIGN ||
 				material == Material.LEVER ||
-				material == Material.STONE_PLATE ||
-				material == Material.WOOD_PLATE ||
-				material == Material.REDSTONE_TORCH_OFF ||
-				material == Material.REDSTONE_TORCH_ON ||
+				material.name().endsWith("PRESSURE_PLATE") ||
+				material == Material.REDSTONE_TORCH ||
+				material == Material.REDSTONE_WALL_TORCH ||
 				material == Material.STONE_BUTTON ||
 				material == Material.SNOW ||
-				material == Material.SUGAR_CANE_BLOCK ||
+				material == Material.SUGAR_CANE ||
 				material == Material.VINE ||
-				material == Material.WATER_LILY ||
-				material == Material.NETHER_STALK ||
-				material == Material.CARPET;
+				material == Material.LILY_PAD ||
+				material == Material.NETHER_WART_BLOCK ||
+				material.name().endsWith("CARPET");
 	}
 	
 	public static boolean isSafeToStand(Location location) {

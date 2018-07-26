@@ -106,32 +106,33 @@ public class LifewalkSpell extends BuffSpell {
 					}
 					Block feet = player.getLocation().getBlock();
 					Block ground = feet.getRelative(BlockFace.DOWN);
+					//TODO Don't let this devolve into The Story of Bob pt. 2
 					if (feet.getType() == Material.AIR && (ground.getType() == Material.DIRT || ground.getType() == Material.GRASS)) {
 						if (ground.getType() == Material.DIRT) {
 							ground.setType(Material.GRASS);
 						}
 						int rand = random.nextInt(100);
 						if (rand < redFlowerChance) {
-							feet.setType(Material.RED_ROSE);
+							feet.setType(Material.POPPY);
 							addUse(player);
 							chargeUseCost(player);
 						} else {
 							rand -= redFlowerChance;
 							if (rand < yellowFlowerChance) {
-								feet.setType(Material.YELLOW_FLOWER);
+								feet.setType(Material.DANDELION);
 								addUse(player);
 								chargeUseCost(player);
 							} else {
 								rand -= yellowFlowerChance;
 								if (rand < saplingChance) {
-									feet.setType(Material.SAPLING);
+									feet.setType(Material.OAK_SAPLING);
 									addUse(player);
 									chargeUseCost(player);
 								} else {
 									rand -= saplingChance;
 									if (rand < tallgrassChance) {
 										BlockState state = feet.getState();
-										state.setType(Material.LONG_GRASS);
+										state.setType(Material.TALL_GRASS);
 										state.setData(new LongGrass(GrassSpecies.NORMAL));
 										state.update(true);
 										addUse(player);
@@ -140,7 +141,7 @@ public class LifewalkSpell extends BuffSpell {
 										rand -= tallgrassChance;
 										if (rand < fernChance) {
 											BlockState state = feet.getState();
-											state.setType(Material.LONG_GRASS);
+											state.setType(Material.TALL_GRASS);
 											state.setData(new LongGrass(GrassSpecies.FERN_LIKE));
 											state.update(true);
 											addUse(player);

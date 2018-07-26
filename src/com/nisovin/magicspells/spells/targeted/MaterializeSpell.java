@@ -63,6 +63,8 @@ public class MaterializeSpell extends TargetedSpell implements TargetedLocationS
 	private int rowSize;
 	private int columnSize;
 
+	private int yoffset;
+
 	//Cuboid Checks;
 	private boolean hasMiddle;
 
@@ -87,6 +89,8 @@ public class MaterializeSpell extends TargetedSpell implements TargetedLocationS
 		restartPatternEachRow = getConfigBoolean("restart-pattern-each-row", false);
 		randomizePattern = getConfigBoolean("randomize-pattern", false);
 		stretchPattern = getConfigBoolean("stretch-pattern", false);
+
+		yoffset = getConfigInt("y-offset", 0);
 
 		area = getConfigString("area", "1x1");
 		height = getConfigInt("height", 1);
@@ -170,7 +174,7 @@ public class MaterializeSpell extends TargetedSpell implements TargetedLocationS
 					int rowPosition = 0;
 
 					//Lets start at the bottom floor then work our way up; or down if height is less than 0.
-					for (int y = 0; y < height; y++) {
+					for (int y = yoffset; y < height + yoffset; y++) {
 						/*The pattern position is the pattern being read for a specific row
 						This should always reset when it goes over into a new height.*/
 						int patternPosition = 0;

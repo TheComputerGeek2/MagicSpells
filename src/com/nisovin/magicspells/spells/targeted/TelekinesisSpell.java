@@ -30,12 +30,16 @@ public class TelekinesisSpell extends TargetedSpell implements TargetedLocationS
 		
 		losTransparentBlocks = new HashSet<>(losTransparentBlocks);
 		losTransparentBlocks.remove(Material.LEVER);
-		losTransparentBlocks.remove(Material.STONE_PLATE);
-		losTransparentBlocks.remove(Material.WOOD_PLATE);
-		losTransparentBlocks.remove(Material.IRON_PLATE);
-		losTransparentBlocks.remove(Material.GOLD_PLATE);
+		losTransparentBlocks.remove(Material.STONE_PRESSURE_PLATE);
+		losTransparentBlocks.remove(Material.ACACIA_PRESSURE_PLATE);
+		losTransparentBlocks.remove(Material.BIRCH_PRESSURE_PLATE);
+		losTransparentBlocks.remove(Material.SPRUCE_PRESSURE_PLATE);
+		losTransparentBlocks.remove(Material.JUNGLE_PRESSURE_PLATE);
+		losTransparentBlocks.remove(Material.DARK_OAK_PRESSURE_PLATE);
+		losTransparentBlocks.remove(Material.OAK_PRESSURE_PLATE);
+		losTransparentBlocks.remove(Material.HEAVY_WEIGHTED_PRESSURE_PLATE);
+		losTransparentBlocks.remove(Material.LIGHT_WEIGHTED_PRESSURE_PLATE);
 		losTransparentBlocks.remove(Material.STONE_BUTTON);
-		losTransparentBlocks.remove(Material.WOOD_BUTTON);
 	}
 	
 	@Override
@@ -65,12 +69,12 @@ public class TelekinesisSpell extends TargetedSpell implements TargetedLocationS
 	
 	private boolean activate(Player caster, Block target) {
 		Material targetType = target.getType();
-		if (targetType == Material.LEVER || targetType == Material.STONE_BUTTON || targetType == Material.WOOD_BUTTON) {
+		if (targetType == Material.LEVER || targetType.name().endsWith("BUTTON")) {
 			if (checkPlugins(caster, target)) {
 				MagicSpells.getVolatileCodeHandler().toggleLeverOrButton(target);
 				return true;
 			}
-		} else if (targetType == Material.WOOD_PLATE || targetType == Material.STONE_PLATE || targetType == Material.IRON_PLATE || targetType == Material.GOLD_PLATE) {
+		} else if (targetType.name().endsWith("_PLATE")) {
 			if (checkPlugins(caster, target)) {
 				MagicSpells.getVolatileCodeHandler().pressPressurePlate(target);
 				return true;

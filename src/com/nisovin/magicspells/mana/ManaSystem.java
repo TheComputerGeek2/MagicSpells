@@ -265,7 +265,7 @@ public class ManaSystem extends ManaHandler {
 		if (item == null) return;
 		
 		Material type = item.getType();
-		if (type == Material.WOOD_AXE || type == Material.WOOD_HOE || type == Material.WOOD_PICKAXE || type == Material.WOOD_SPADE || type == Material.WOOD_SWORD) {
+		if (type == Material.WOODEN_AXE || type == Material.WOODEN_HOE || type == Material.WOODEN_PICKAXE || type == Material.WOODEN_SHOVEL || type == Material.WOODEN_SWORD) {
 			int dur = 60 - (int)(((double)bar.getMana()/(double)bar.getMaxMana()) * 60);
 			if (dur == 60) {
 				dur = 59;

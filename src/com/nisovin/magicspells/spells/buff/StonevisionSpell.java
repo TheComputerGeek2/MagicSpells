@@ -31,7 +31,7 @@ public class StonevisionSpell extends BuffSpell {
 	private Set<Material> transparentTypes;
 	boolean unobfuscate;
 	
-	MagicMaterial glass = new MagicBlockMaterial(new MaterialData(Material.GLASS));
+	MagicMaterial glass = new MagicBlockMaterial(Material.GLASS);
 	
 	private HashMap<String, TransparentBlockSet> seers;
 
@@ -59,7 +59,7 @@ public class StonevisionSpell extends BuffSpell {
 		
 		String s = getConfigString("glass", "");
 		if (!s.isEmpty()) this.glass = MagicSpells.getItemNameResolver().resolveBlock(s);
-		if (this.glass == null) this.glass = new MagicBlockMaterial(new MaterialData(Material.GLASS));
+		if (this.glass == null) this.glass = new MagicBlockMaterial(Material.GLASS);
 		
 		this.seers = new HashMap<>();
 	}
