@@ -37,7 +37,7 @@ public class WalkwaySpell extends BuffSpell {
 	public WalkwaySpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
-		this.material = MagicSpells.getItemNameResolver().resolveBlock(getConfigString("platform-type", "wood")).getMaterial();
+		this.material = MagicSpells.getItemNameResolver().resolveBlock(getConfigString("platform-type", "oak_wood")).getMaterial();
 		this.size = getConfigInt("size", 6);
 		this.cancelOnTeleport = getConfigBoolean("cancel-on-teleport", true);
 		
@@ -201,7 +201,7 @@ public class WalkwaySpell extends BuffSpell {
 				if (origin.getType() == Material.AIR) {
 					// Check for weird stair positioning
 					Block up = origin.getRelative(0, 1, 0);
-					if (up != null && ((this.materialPlatform == Material.WOOD && up.getType() == Material.WOOD_STAIRS) || (this.materialPlatform == Material.COBBLESTONE && up.getType() == Material.COBBLESTONE_STAIRS))) {
+					if (up != null && ((this.materialPlatform.name().endsWith("WOOD")&& up.getType().name().endsWith("STAIRS")) || (this.materialPlatform == Material.COBBLESTONE && up.getType() == Material.COBBLESTONE_STAIRS))) {
 						origin = up;
 					} else {					
 						// Allow down movement when stepping out over an edge
@@ -237,7 +237,7 @@ public class WalkwaySpell extends BuffSpell {
 			// Determine block type and maybe stair direction
 			Material mat = this.materialPlatform;
 			byte data = 0;
-			if ((this.materialPlatform == Material.WOOD || this.materialPlatform == Material.COBBLESTONE) && dirY != 0) {
+			if ((this.materialPlatform.name().endsWith("WOOD") || this.materialPlatform == Material.COBBLESTONE) && dirY != 0) {
 				boolean changed = false;
 				if (dirY == -1) {
 					if (dirX == -1 && dirZ == 0) {
@@ -269,8 +269,8 @@ public class WalkwaySpell extends BuffSpell {
 					}
 				}
 				if (changed) {
-					if (this.materialPlatform == Material.WOOD) {
-						mat = Material.WOOD_STAIRS;
+					if (this.materialPlatform == Material.OAK_WOOD) {
+						mat = Material.OAK_STAIRS;
 					} else if (this.materialPlatform == Material.COBBLESTONE) {
 						mat = Material.COBBLESTONE_STAIRS;
 					}
@@ -299,7 +299,7 @@ public class WalkwaySpell extends BuffSpell {
 			// Set new blocks
 			for (Block b : blocks) {
 				if (this.platform.contains(b) || b.getType() == Material.AIR) {
-					BlockUtils.setTypeAndData(b, mat, data, false);
+					BlockUtils.setTypeAndData(b, mat, false);
 					this.platform.add(b);
 				}
 			}

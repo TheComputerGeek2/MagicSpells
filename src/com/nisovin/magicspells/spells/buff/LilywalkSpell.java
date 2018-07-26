@@ -127,7 +127,7 @@ public class LilywalkSpell extends BuffSpell {
 		public void onBlockBreak(BlockBreakEvent event) {
 			if (lilywalkers.isEmpty()) return;
 			final Block block = event.getBlock();
-			if (block.getType() != Material.WATER_LILY) return;
+			if (block.getType() != Material.LILY_PAD) return;
 			if (Util.containsValueParallel(lilywalkers, lilies -> lilies.contains(block))) event.setCancelled(true);
 		}
 		
@@ -164,8 +164,8 @@ public class LilywalkSpell extends BuffSpell {
 			if (block.getType() != Material.AIR) return;
 			
 			BlockState state = block.getRelative(BlockFace.DOWN).getState();
-			if ((state.getType() == Material.WATER || state.getType() == Material.STATIONARY_WATER) && BlockUtils.getWaterLevel(state) == 0) {
-				block.setType(Material.WATER_LILY);
+			if ((state.getType() == Material.WATER) && BlockUtils.getWaterLevel(state) == 0) {
+				block.setType(Material.LILY_PAD);
 				this.blocks.add(block);
 			}
 		}

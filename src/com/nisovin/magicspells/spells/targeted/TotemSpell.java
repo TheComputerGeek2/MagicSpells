@@ -150,7 +150,7 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
             } else if (yOffset < 0) {
                 target = target.getRelative(BlockFace.DOWN, yOffset);
             }
-            if (target.getType() != Material.AIR && target.getType() != Material.SNOW && target.getType() != Material.LONG_GRASS) return noTarget(player);
+            if (target.getType() != Material.AIR && target.getType() != Material.SNOW && target.getType() != Material.TALL_GRASS) return noTarget(player);
             if (target != null) {
                 SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, player, target.getLocation(), power);
                 EventUtil.call(event);
@@ -181,12 +181,12 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
         } else if (yOffset < 0) {
             block = block.getRelative(BlockFace.DOWN, yOffset);
         }
-        if (block.getType() == Material.AIR || block.getType() == Material.SNOW || block.getType() == Material.LONG_GRASS) {
+        if (block.getType() == Material.AIR || block.getType() == Material.SNOW || block.getType() == Material.TALL_GRASS) {
             createTotem(caster, block.getLocation(), power);
             return true;
         }
         block = block.getRelative(BlockFace.UP);
-        if (block.getType() == Material.AIR || block.getType() == Material.SNOW || block.getType() == Material.LONG_GRASS) {
+        if (block.getType() == Material.AIR || block.getType() == Material.SNOW || block.getType() == Material.TALL_GRASS) {
             createTotem(caster, block.getLocation(), power);
             return true;
         }

@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -89,7 +90,7 @@ public class BindSpell extends CommandSpell {
 				} else { // TODO is the 'else' really needed explicitly?
 					CastItem castItem = new CastItem(HandHandler.getItemInMainHand(player));
 					MagicSpells.debug(3, "Trying to bind spell '" + spell.getInternalName() + "' to cast item " + castItem.toString() + "...");
-					if (castItem.getItemTypeId() == 0 && !this.allowBindToFist) {
+					if (castItem.getItemType() == Material.AIR && !this.allowBindToFist) {
 						sendMessage(this.strCantBindItem, player, args);
 						return PostCastAction.ALREADY_HANDLED;
 					} else if (this.bindableItems != null && !this.bindableItems.contains(castItem)) {

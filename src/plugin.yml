@@ -4,6 +4,7 @@ version: $project.ext.magicspellsData.stringVersionCore
 authors: [nisovin, TheComputerGeek2,Chronoken]
 softdepend: [GriefPrevention,Vault,ProtocolLib,WorldGuard,Residence,PowerNBT,LibsDisguises,NoCheatPlus,PlaceholderAPI]
 depend: [EffectLib]
+api-version: 1.13
 commands:
     magicspellcast:
         description: Cast a spell

@@ -214,7 +214,7 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 						for (int z = loc.getBlockZ() - 1; z <= loc.getBlockZ() + 1; z++) {
 							if (loc.getWorld().getBlockAt(x, y, z).getType() == Material.AIR) {
 								Block b = loc.getWorld().getBlockAt(x, y, z);
-								BlockUtils.setTypeAndData(b, Material.FIRE, (byte)15, false);
+								BlockUtils.setTypeAndData(b, Material.FIRE, false);
 								fires.add(b);
 							}
 						}

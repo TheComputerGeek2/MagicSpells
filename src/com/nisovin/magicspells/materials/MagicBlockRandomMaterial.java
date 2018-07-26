@@ -22,21 +22,13 @@ public class MagicBlockRandomMaterial extends MagicBlockMaterial {
 	}
 	
 	@Override
-	public MaterialData getMaterialData() {
-		return this.materials[ItemNameResolver.rand.nextInt(this.materials.length)].getMaterialData();
-	}
-	
-	@Override
 	public void setBlock(Block block, boolean applyPhysics) {
 		MagicMaterial material = this.materials[ItemNameResolver.rand.nextInt(this.materials.length)];
 		BlockState state = block.getState();
-		MaterialData data = material.getMaterialData();
-		state.setType(data.getItemType());
-		state.setData(data);
+		state.setType(block.getType());
 		state.update(true, applyPhysics);
 	}
-	
-	@Override
+
 	public boolean equals(MaterialData data) {
 		return Arrays.stream(this.materials).anyMatch(m -> m.equals(data));
 	}

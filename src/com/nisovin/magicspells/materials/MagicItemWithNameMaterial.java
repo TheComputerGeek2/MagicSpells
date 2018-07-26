@@ -20,11 +20,7 @@ public class MagicItemWithNameMaterial extends MagicMaterial {
 	public Material getMaterial() {
 		return this.material.getMaterial();
 	}
-	
-	@Override
-	public MaterialData getMaterialData() {
-		return this.material.getMaterialData();
-	}
+
 
 	@Override
 	public ItemStack toItemStack(int quantity) {
@@ -47,7 +43,7 @@ public class MagicItemWithNameMaterial extends MagicMaterial {
 	public boolean equals(Object o) {
 		if (o instanceof MagicItemWithNameMaterial) {
 			MagicItemWithNameMaterial m = (MagicItemWithNameMaterial)o;
-			return m.getMaterialData().equals(getMaterialData()) && m.name.equals(this.name);
+			return m.name.equals(this.name);
 		}
 		return false;
 	}

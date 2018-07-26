@@ -182,7 +182,7 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 		}
 		
 		for (Block b : blocksToThrow) {
-			MagicMaterial mat = new MagicBlockMaterial(b.getState().getData());
+			MagicMaterial mat = new MagicBlockMaterial(b.getType());
 			Location l = new Location(target.getWorld(), b.getX() + 0.5, b.getY() + 0.5, b.getZ() + 0.5);
 			FallingBlock fb = mat.spawnFallingBlock(l);
 			playSpellEffects(EffectPosition.PROJECTILE, fb);

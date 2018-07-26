@@ -67,7 +67,7 @@ public class FirenovaSpell extends InstantSpell implements TargetedLocationSpell
 		burnTallGrass = getConfigBoolean("burn-tall-grass", true);
 		checkPlugins = getConfigBoolean("check-plugins", true);
 		
-		mat = MagicSpells.getItemNameResolver().resolveBlock(getConfigString("block-type", "51:15"));
+		mat = MagicSpells.getItemNameResolver().resolveBlock(getConfigString("block-type", "FIRE"));
 		
 		expandRate = getConfigInt("expanding-radius-change", expandRate);
 		if (expandRate < 1) expandRate = 1;
@@ -174,16 +174,16 @@ public class FirenovaSpell extends InstantSpell implements TargetedLocationSpell
 					for (int z = bz - this.i; z <= bz + this.i; z++) {
 						if (!(Math.abs(x - bx) == this.i || Math.abs(z - bz) == this.i)) continue;
 						Block b = this.center.getWorld().getBlockAt(x, y, z);
-						if (b.getType() == Material.AIR || (burnTallGrass && b.getType() == Material.LONG_GRASS)) {
+						if (b.getType() == Material.AIR || (burnTallGrass && b.getType() == Material.TALL_GRASS)) {
 							Block under = b.getRelative(BlockFace.DOWN);
-							if (under.getType() == Material.AIR || (burnTallGrass && under.getType() == Material.LONG_GRASS)) {
+							if (under.getType() == Material.AIR || (burnTallGrass && under.getType() == Material.TALL_GRASS)) {
 								b = under;
 							}
 							mat.setBlock(b, false);
 							playSpellEffects(EffectPosition.SPECIAL, b.getLocation());
 							if (subSpell != null) subSpell.castAtLocation(this.player, b.getLocation(), 1);
 							this.fireBlocks.add(b);
-						} else if (b.getRelative(BlockFace.UP).getType() == Material.AIR || (burnTallGrass && b.getRelative(BlockFace.UP).getType() == Material.LONG_GRASS)) {
+						} else if (b.getRelative(BlockFace.UP).getType() == Material.AIR || (burnTallGrass && b.getRelative(BlockFace.UP).getType() == Material.TALL_GRASS)) {
 							b = b.getRelative(BlockFace.UP);
 							mat.setBlock(b, false);
 							playSpellEffects(EffectPosition.SPECIAL, b.getLocation());

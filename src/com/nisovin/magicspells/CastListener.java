@@ -38,24 +38,22 @@ public class CastListener implements Listener {
 		boolean noInteract = false;
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			Material m = event.getClickedBlock().getType();
-			if (m == Material.WOODEN_DOOR || 
-					m == Material.TRAP_DOOR ||
-					m == Material.BED || 
-					m == Material.WORKBENCH ||
+			if (m.name().endsWith("DOOR") ||
+					m.name().endsWith("BED") ||
+					m == Material.CRAFTING_TABLE ||
 					m == Material.CHEST || 
 					m == Material.TRAPPED_CHEST ||
 					m == Material.ENDER_CHEST ||
 					m == Material.FURNACE || 
 					m == Material.HOPPER ||
 					m == Material.LEVER ||
-					m == Material.STONE_BUTTON ||
-					m == Material.WOOD_BUTTON ||
-					m == Material.ENCHANTMENT_TABLE) {
+					m.name().endsWith("BUTTON") ||
+					m == Material.ENCHANTING_TABLE) {
 				noInteract = true;
 			} else if (event.hasItem() && event.getItem().getType().isBlock()) {
 				noInteract = true;
 			}
-			if (m == Material.ENCHANTMENT_TABLE) {
+			if (m == Material.ENCHANTING_TABLE) {
 				// Force exp bar back to show exp when trying to enchant
 				MagicSpells.getExpBarManager().update(player, player.getLevel(), player.getExp());
 			}

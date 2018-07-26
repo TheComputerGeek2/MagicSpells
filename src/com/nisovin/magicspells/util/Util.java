@@ -41,7 +41,6 @@ import org.bukkit.util.Vector;
 
 import com.nisovin.magicspells.DebugHandler;
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.materials.ItemNameResolver.ItemTypeAndData;
 import com.nisovin.magicspells.materials.MagicMaterial;
 import com.nisovin.magicspells.util.itemreader.BannerHandler;
 import com.nisovin.magicspells.util.itemreader.LeatherArmorHandler;
@@ -75,6 +74,7 @@ public class Util {
 	 * @return the item stack represented by the string
 	 */
 	public static ItemStack getItemStackFromString(String string) {
+		if(string == null || string.isEmpty()) return null;
 		try {
 			if (predefinedItems.containsKey(string)) return predefinedItems.get(string).clone();
 
@@ -123,12 +123,7 @@ public class Util {
 					color = Integer.parseInt(temp[1], 16);
 				}
 			}
-			ItemTypeAndData itemTypeAndData = MagicSpells.getItemNameResolver().resolve(s);
-			if (itemTypeAndData != null) {
-				item = new ItemStack(itemTypeAndData.id, 1, itemTypeAndData.data);
-			} else {
-				return null;
-			}
+			item = MagicSpells.getItemNameResolver().resolveItem(s).toItemStack();
 			if (name != null || lore != null || color >= 0) {
 				try {
 					ItemMeta meta = item.getItemMeta();
@@ -489,7 +484,7 @@ public class Util {
 	}
 	
 	public static void sendFakeBlockChange(Player player, Block block, MagicMaterial mat) {
-		player.sendBlockChange(block.getLocation(), mat.getMaterial(), mat.getMaterialData().getData());
+		player.sendBlockChange(block.getLocation(), mat.getMaterial().createBlockData());
 	}
 	
 	public static void restoreFakeBlockChange(Player player, Block block) {
@@ -742,19 +737,13 @@ public class Util {
 			return false;
 		}
 	}
-	
+
 	public static void createFire(Block block, byte d) {
-		block.setTypeIdAndData(Material.FIRE.getId(), d, false);
+		block.setBlockData(Material.FIRE.createBlockData(), false);
 	}
 	
 	public static ItemStack getEggItemForEntityType(EntityType type) {
-		ItemStack ret = new ItemStack(Material.MONSTER_EGG, 1);
-		ItemMeta meta = ret.getItemMeta();
-		if (meta instanceof SpawnEggMeta) {
-			((SpawnEggMeta) meta).setSpawnedType(type);
-			ret.setItemMeta(meta);
-		}
-		return ret;
+		return new ItemStack(Material.valueOf(type + "_SPAWN_EGG"), 1);
 	}
 	
 	private static Map<String, String> uniqueIds = new HashMap<>();

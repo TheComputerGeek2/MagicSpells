@@ -145,7 +145,6 @@ public class VolatileCodeEnabled_1_9_R1 extends VolatileCodeEnabledNMSBase {
 	public void addAILookAtPlayer(LivingEntity entity, int range) {
 		try {
 			EntityInsentient ev = (EntityInsentient) ((CraftLivingEntity) entity).getHandle();
-
 			Field goalsField = EntityInsentient.class.getDeclaredField("goalSelector");
 			goalsField.setAccessible(true);
 			PathfinderGoalSelector goals = (PathfinderGoalSelector) goalsField.get(ev);

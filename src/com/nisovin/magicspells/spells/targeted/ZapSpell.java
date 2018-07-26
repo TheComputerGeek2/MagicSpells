@@ -53,7 +53,7 @@ public class ZapSpell extends TargetedSpell implements TargetedLocationSpell {
 			}
 		}
 		
-		List<String> disallowed = getConfigStringList("disallowed-block-types", Arrays.asList("bedrock", "lava", "stationary_lava", "water", "stationary_water"));
+		List<String> disallowed = getConfigStringList("disallowed-block-types", Arrays.asList("bedrock", "lava", "water"));
 		if (disallowed != null) {
 			disallowedBlockTypes = EnumSet.noneOf(Material.class);
 			for (String s : disallowed) {

@@ -18,7 +18,7 @@ import java.util.Objects;
 
 public class HasItemCondition extends Condition {
 
-	int id;
+	Material mat;
 	short data;
 	boolean checkData;
 	String name;
@@ -39,7 +39,7 @@ public class HasItemCondition extends Condition {
 			}
 			if (var.contains(":")) {
 				String[] vardata = var.split(":");
-				id = Integer.parseInt(vardata[0]);
+				mat = Material.getMaterial(vardata[0]);
 				if (vardata[1].equals("*")) {
 					data = 0;
 					checkData = false;
@@ -48,7 +48,7 @@ public class HasItemCondition extends Condition {
 					checkData = true;
 				}
 			} else {
-				id = Integer.parseInt(var);
+				mat = Material.getMaterial(var);
 				checkData = false;
 			}
 			return true;
@@ -76,11 +76,11 @@ public class HasItemCondition extends Condition {
 				} catch (Exception e) {
 					DebugHandler.debugGeneral(e);
 				}
-				if (item.getTypeId() == id && (!checkData || item.getDurability() == data) && (!checkName || Objects.equals(thisname, name))) return true;
+				if (item.getType() == mat && (!checkData || item.getDurability() == data) && (!checkName || Objects.equals(thisname, name))) return true;
 			}
 			return false;
 		}
-		return inventory.contains(Material.getMaterial(id));
+		return inventory.contains(mat);
 	}
 	
 	@Override

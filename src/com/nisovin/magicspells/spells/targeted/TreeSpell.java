@@ -12,6 +12,7 @@ import org.bukkit.TreeType;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 
 import com.nisovin.magicspells.events.SpellTargetLocationEvent;
@@ -148,42 +149,21 @@ public class TreeSpell extends TargetedSpell implements TargetedLocationSpell {
 		}
 
 		@Override
-		public int getTypeId(int x, int y, int z) {
-			return loc.getWorld().getBlockTypeIdAt(x, y, z);
+		public BlockData getBlockData(int x, int y, int z) {
+			return loc.getWorld().getBlockAt(x, y, z).getBlockData();
+		}
+
+		@Override
+		public boolean setBlockData(int x, int y, int z, BlockData blockData) {
+			loc.getWorld().getBlockAt(x, y, z).setBlockData(blockData);
+			return true;
 		}
 
 		@Override
 		public boolean isEmpty(int x, int y, int z) {
-			return getTypeId(x, y, z) == 0;
+			return loc.getWorld().getBlockAt(x, y, z).getType() == Material.AIR;
 		}
 
-		@Override
-		public boolean setRawTypeId(int x, int y, int z, int id) {
-			BlockState state = loc.getWorld().getBlockAt(x, y, z).getState();
-			state.setTypeId(id);
-			blockStates.add(state);
-			return true;
-		}
-
-		@Override
-		public boolean setRawTypeIdAndData(int x, int y, int z, int id, int data) {
-			BlockState state = loc.getWorld().getBlockAt(x, y, z).getState();
-			state.setTypeId(id);
-			state.setRawData((byte)data);
-			blockStates.add(state);
-			return true;
-		}
-
-		@Override
-		public boolean setTypeId(int x, int y, int z, int id) {
-			return setRawTypeId(x, y, z, id);
-		}
-
-		@Override
-		public boolean setTypeIdAndData(int x, int y, int z, int id, int data) {
-			return setRawTypeIdAndData(x, y, z, id, data);
-		}
-		
 	}
 
 }
