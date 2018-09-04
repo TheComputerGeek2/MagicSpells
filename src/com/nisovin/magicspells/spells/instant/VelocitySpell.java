@@ -12,11 +12,13 @@ import org.bukkit.util.Vector;
 public class VelocitySpell extends InstantSpell {
 	
 	private double speed;
+	private boolean addVelocityInstead;
 	
 	public VelocitySpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
 		this.speed = getConfigDouble("speed", 4.0);
+		this.addVelocityInstead = getConfigBoolean("add-velocity-instead", false);
 	}
 	
 	@Override
@@ -25,7 +27,8 @@ public class VelocitySpell extends InstantSpell {
 			Vector v = player.getEyeLocation().getDirection();
 			v = v.normalize();
 			v = v.multiply(speed * power);
-			player.setVelocity(v);
+			if (!addVelocityInstead) player.setVelocity(v);
+			else player.setVelocity(player.getVelocity().add(v));
 			playSpellEffects(EffectPosition.CASTER, player);
 		}
 		

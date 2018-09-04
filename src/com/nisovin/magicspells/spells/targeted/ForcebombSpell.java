@@ -25,6 +25,7 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 	private int force;
 	private int yForce;
 	private int maxYForce;
+	private boolean addVelocityInstead;
 	private boolean callTargetEvents;
 	
 	public ForcebombSpell(MagicConfig config, String spellName) {
@@ -36,6 +37,7 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 		force = getConfigInt("pushback-force", 30);
 		yForce = getConfigInt("additional-vertical-force", 15);
 		maxYForce = getConfigInt("max-vertical-force", 20);
+		addVelocityInstead = getConfigBoolean("add-velocity-instead", false);
 		callTargetEvents = getConfigBoolean("call-target-events", false);
 	}
 
@@ -97,7 +99,8 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 					v.setY(yForce/10.0 * power);
 				}
 				if (v.getY() > maxYForce/10.0) v.setY(maxYForce/10.0);
-				entity.setVelocity(v);
+				if (!addVelocityInstead) entity.setVelocity(v);
+				else entity.setVelocity(entity.getVelocity().add(v));
 				playSpellEffects(EffectPosition.TARGET, entity);
 			}
 	    }

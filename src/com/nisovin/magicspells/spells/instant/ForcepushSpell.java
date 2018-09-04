@@ -19,6 +19,7 @@ public class ForcepushSpell extends InstantSpell {
 	private int force;
 	private int yForce;
 	private int maxYForce;
+	private boolean addVelocityInstead;
 	
 	public ForcepushSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -27,6 +28,7 @@ public class ForcepushSpell extends InstantSpell {
 		this.force = getConfigInt("pushback-force", 30);
 		this.yForce = getConfigInt("additional-vertical-force", 15);
 		this.maxYForce = getConfigInt("max-vertical-force", 20);
+		this.addVelocityInstead = getConfigBoolean("add-velocity-instead", false);
 	}
 
 	@Override
@@ -64,7 +66,8 @@ public class ForcepushSpell extends InstantSpell {
 				v.setY(this.yForce/10.0 * power);
 			}
 			if (v.getY() > (this.maxYForce/10.0)) v.setY(this.maxYForce/10.0);
-			target.setVelocity(v);
+			if (!addVelocityInstead) target.setVelocity(v);
+			else target.setVelocity(target.getVelocity().add(v));
 			playSpellEffects(EffectPosition.TARGET, target);
 	    }
 		playSpellEffects(EffectPosition.CASTER, player);

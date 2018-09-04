@@ -20,6 +20,7 @@ public class LeapSpell extends InstantSpell {
 	private float rotation;
 	private double forwardVelocity;
 	private double upwardVelocity;
+	private boolean addVelocityInstead;
 	private boolean cancelDamage;
 	private boolean clientOnly;
 	private Subspell landSpell;
@@ -35,6 +36,7 @@ public class LeapSpell extends InstantSpell {
 		this.rotation = getConfigFloat("rotation", 0F);
 		this.forwardVelocity = getConfigInt("forward-velocity", 40) / 10D;
 		this.upwardVelocity = getConfigInt("upward-velocity", 15) / 10D;
+		this.addVelocityInstead = getConfigBoolean("add-velocity-instead", false);
 		this.cancelDamage = getConfigBoolean("cancel-damage", true);
 		this.clientOnly = getConfigBoolean("client-only", false);
 		this.landSpellName = getConfigString("land-spell", "");
@@ -64,7 +66,8 @@ public class LeapSpell extends InstantSpell {
 			if (clientOnly) {
 				MagicSpells.getVolatileCodeHandler().setClientVelocity(player, v);
 			} else {
-				player.setVelocity(v);
+				if (!addVelocityInstead) player.setVelocity(v);
+				else player.setVelocity(player.getVelocity().add(v));
 			}
 			jumping.add(player);
 			playSpellEffects(EffectPosition.CASTER, player);

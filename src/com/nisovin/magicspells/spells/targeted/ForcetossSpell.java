@@ -21,6 +21,7 @@ public class ForcetossSpell extends TargetedSpell implements TargetedEntitySpell
 	private float rotation;
 	private boolean checkPlugins;
 	private boolean powerAffectsForce;
+	private boolean addVelocityInstead;
 	private boolean avoidDamageModification;
 
 	public ForcetossSpell(MagicConfig config, String spellName) {
@@ -32,6 +33,7 @@ public class ForcetossSpell extends TargetedSpell implements TargetedEntitySpell
 		rotation = getConfigFloat("rotation", 0);
 		checkPlugins = getConfigBoolean("check-plugins", true);
 		powerAffectsForce = getConfigBoolean("power-affects-force", true);
+		addVelocityInstead = getConfigBoolean("add-velocity-instead", false);
 		avoidDamageModification = getConfigBoolean("avoid-damage-modification", false);
 	}
 
@@ -74,7 +76,8 @@ public class ForcetossSpell extends TargetedSpell implements TargetedEntitySpell
 		if (v == null) throw new NullPointerException("v");
 		v.setY(0).normalize().multiply(hForce * power).setY(vForce * power);
 		if (rotation != 0) Util.rotateVector(v, rotation);
-		target.setVelocity(v);
+		if (!addVelocityInstead) target.setVelocity(v);
+		else target.setVelocity(target.getVelocity().add(v));
 		playSpellEffects(player, target);
 	}
 
