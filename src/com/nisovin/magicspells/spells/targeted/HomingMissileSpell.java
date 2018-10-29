@@ -74,6 +74,8 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 
 	int intermediateSpecialEffects = 0;
 
+	boolean canRender;
+
 	public HomingMissileSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
@@ -116,9 +118,12 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 		intermediateSpecialEffects = getConfigInt("intermediate-special-effect-locations", 0);
 		if (intermediateSpecialEffects < 0) intermediateSpecialEffects = 0;
 
-		EffectPackage pkg = ParticleNameUtil.findEffectPackage(particleName);
-		effect = pkg.effect;
-		data = pkg.data;
+		EffectPackage pkg = ParticleNameUtil.findEffectPackage(this.particleName);
+		canRender = pkg.canRender();
+		if (canRender) {
+			data = pkg.data;
+			effect = pkg.effect;
+		}
 	}
 
 	@Override
@@ -336,7 +341,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 
 		private void playMissileEffect(Location loc) {
 			// Show particle
-			if (useParticles) {
+			if (useParticles && canRender) {
 				//MagicSpells.getVolatileCodeHandler().playParticleEffect(currentLocation, particleName, particleHorizontalSpread, particleVerticalSpread, particleSpeed, particleCount, renderDistance, 0F);
 
 				effect.display(data, loc, null, renderDistance, particleHorizontalSpread, particleVerticalSpread, particleHorizontalSpread, particleSpeed, particleCount);

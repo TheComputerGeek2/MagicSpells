@@ -77,6 +77,8 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell {
 	ParticleEffect effect;
 	ParticleData data;
 
+	boolean canRender;
+
 	public OrbitSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
@@ -114,9 +116,12 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell {
 		stopOnHitEntity = getConfigBoolean("stop-on-hit-entity", false);
 		stopOnHitGround = getConfigBoolean("stop-on-hit-ground", false);
 		//TODO add color config
-		EffectPackage pkg = ParticleNameUtil.findEffectPackage(particleName);
-		effect = pkg.effect;
-		data = pkg.data;
+		EffectPackage pkg = ParticleNameUtil.findEffectPackage(this.particleName);
+		canRender = pkg.canRender();
+		if (canRender) {
+			data = pkg.data;
+			effect = pkg.effect;
+		}
 
 		groundSpellName = getConfigString("spell-on-hit-ground", "");
 		entitySpellName = getConfigString("spell-on-hit-entity", "");
@@ -250,7 +255,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell {
 			//MagicSpells.getVolatileCodeHandler().playParticleEffect(loc, particleName, particleHorizontalSpread, particleVerticalSpread, particleSpeed, particleCount, renderDistance, 0F);
 
 			playSpellEffects(EffectPosition.SPECIAL, loc);
-			effect.display(data, loc, particleColor, renderDistance, particleHorizontalSpread, particleVerticalSpread, particleHorizontalSpread, particleSpeed, particleCount);
+			if (canRender) effect.display(data, loc, particleColor, renderDistance, particleHorizontalSpread, particleVerticalSpread, particleHorizontalSpread, particleSpeed, particleCount);
 
 			// Cast the spell at the location if it isn't null
 			if (orbitSpell != null) orbitSpell.castAtLocation(caster, loc, power);

@@ -107,6 +107,8 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 	ParticleEffect effect;
 	ParticleData data;
 
+	boolean canRender;
+
 	public ParticleProjectileSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
@@ -191,8 +193,11 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		this.durationSpellName = getConfigString("spell-on-duration-end", defaultSpellName);
 
 		EffectPackage pkg = ParticleNameUtil.findEffectPackage(this.particleName);
-		this.effect = pkg.effect;
-		this.data = pkg.data;
+		canRender = pkg.canRender();
+		if (canRender) {
+			data = pkg.data;
+			effect = pkg.effect;
+		}
 	}
 
 	@Override
@@ -375,7 +380,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 			if (projectileHorizGravity != 0 || projectileVertGravity != 0) this.currentLocation.setDirection(currentVelocity);
 
 			// Show particle
-			effect.display(data, this.currentLocation, null, renderDistance, particleXSpread, particleYSpread, particleZSpread, particleSpeed, particleCount);
+			if (canRender) effect.display(data, this.currentLocation, null, renderDistance, particleXSpread, particleYSpread, particleZSpread, particleSpeed, particleCount);
 
 			// Play effects
 			if (specialEffectInterval > 0 && this.counter % specialEffectInterval == 0) playSpellEffects(EffectPosition.SPECIAL, this.currentLocation);

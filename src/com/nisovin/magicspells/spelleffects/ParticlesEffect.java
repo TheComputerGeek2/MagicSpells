@@ -163,6 +163,8 @@ public class ParticlesEffect extends SpellEffect {
 	Color color = null;
 	ParticleData data = null;
 
+	boolean canRender;
+
 	@Override
 	public void loadFromString(String string) {
 		if (string != null && !string.isEmpty()) {
@@ -179,8 +181,11 @@ public class ParticlesEffect extends SpellEffect {
 			if (data.length >= 7) color = ColorUtil.getColorFromHexString(data[6]);
 		}
 		EffectPackage pkg = ParticleNameUtil.findEffectPackage(name);
-		this.data = pkg.data;
-		this.effect = pkg.effect;
+		canRender = pkg.canRender();
+		if (canRender) {
+			data = pkg.data;
+			effect = pkg.effect;
+		}
 	}
 
 	@Override
@@ -198,14 +203,17 @@ public class ParticlesEffect extends SpellEffect {
 		renderDistance = config.getInt("render-distance", renderDistance);
 		color = ColorUtil.getColorFromHexString(config.getString("color", null));
 		EffectPackage pkg = ParticleNameUtil.findEffectPackage(name);
-		data = pkg.data;
-		effect = pkg.effect;
+		canRender = pkg.canRender();
+		if (canRender) {
+			data = pkg.data;
+			effect = pkg.effect;
+		}
 	}
 	
 	@Override
 	public Runnable playEffectLocation(Location location) {
 		//ParticleData data, Location center, Color color, double range, float offsetX, float offsetY, float offsetZ, float speed, int amount
-		effect.display(data, location.clone().add(0, yOffset, 0), color, renderDistance, xSpread, ySpread, zSpread, speed, count);
+		if (canRender) effect.display(data, location.clone().add(0, yOffset, 0), color, renderDistance, xSpread, ySpread, zSpread, speed, count);
 		//MagicSpells.getVolatileCodeHandler().playParticleEffect(location, name, xSpread, ySpread, zSpread, speed, count, renderDistance, yOffset);
 		return null;
 	}

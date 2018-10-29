@@ -27,8 +27,11 @@ public class ParticleLineEffect extends ParticlesEffect {
 			if (data.length >= 8) color = ColorUtil.getColorFromHexString(data[7]);
 		}
 		EffectPackage pkg = ParticleNameUtil.findEffectPackage(name);
-		data = pkg.data;
-		effect = pkg.effect;
+		canRender = pkg.canRender();
+		if (canRender) {
+			data = pkg.data;
+			effect = pkg.effect;
+		}
 	}
 	
 	@Override

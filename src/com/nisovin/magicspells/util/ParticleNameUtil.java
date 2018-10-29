@@ -22,6 +22,7 @@ public class ParticleNameUtil {
 		ParticleData data = null;
 		ParticleEffect effect = null;
 		String[] splits = name.split("_");
+		if (splits[0].equalsIgnoreCase("take")) return new EffectPackage();
 		effect = ParticleEffect.fromName(splits[0]);
 		
 		if (splits.length > 1) {
