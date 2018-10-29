@@ -19,11 +19,11 @@ public enum EffectPosition {
 	
 	/** Can be referenced as: disabled
 	 *  Used in:
-	 *      - SteedSpell
-	 *      - ExternalCommandSpell
-	 *      - BuffSpell (and all sub classes)
-	 *      - DisguiseSpell
-	 *	- TotemSpell
+	 *  - SteedSpell
+	 *  - ExternalCommandSpell
+	 *  - BuffSpell (and all sub classes)
+	 *  - DisguiseSpell
+	 *  - TotemSpell
 	 **/
 	DISABLED(4, "disabled"),
 	
@@ -55,32 +55,32 @@ public enum EffectPosition {
 	
 	/** Can be referenced as: buff, active 
 	 *  Used in:
-	 *      - BuffSpell (and all subclasses)
-	 *      - StunSpell
+	 *  - BuffSpell (and all subclasses)
+	 *  - StunSpell
 	 **/
 	BUFF(7, "buff", "active"),
 	
 	/** Can be referenced as: orbit
 	 *  Used in:
-	 *      - BuffSpell (and all subclasses)
-	 *      - StunSpell
-	 *  	- BeamSpell
-	 *  	- ConjureSpell
-	 *  	- ConjureBookSpell
-	 *  	- ConjureFireworkSpell
-	 *  	- FirenovaSpell
-	 *  	- FlightPathSpell
-	 *  	- ParticleProjectileSpell
-	 *  	- MenuSpell
-	 *  	- AreaEffectSpell
-	 *  	- DrainlifeSpell
-	 *  	- EntombSpell
-	 *  	- ForcebombSpell
-	 *  	- HomingArrowSpell
-	 *  	- HomingMissileSpell
-	 *  	- OrbitSpell
-	 *  	- RewindSpell
-	 *  	- TotemSpell
+	 *  - BuffSpell (and all subclasses)
+	 *  - StunSpell
+	 *  - BeamSpell
+	 *  - ConjureSpell
+	 *  - ConjureBookSpell
+	 *  - ConjureFireworkSpell
+	 *  - FirenovaSpell
+	 *  - FlightPathSpell
+	 *  - ParticleProjectileSpell
+	 *  - MenuSpell
+	 *  - AreaEffectSpell
+	 *  - DrainlifeSpell
+	 *  - EntombSpell
+	 *  - ForcebombSpell
+	 *  - HomingArrowSpell
+	 *  - HomingMissileSpell
+	 *  - OrbitSpell
+	 *  - RewindSpell
+	 *  - TotemSpell
 	 **/
 	ORBIT(8, "orbit"),
 	
@@ -91,52 +91,61 @@ public enum EffectPosition {
 	/** May be referenced as: projectile
 	 * Some spells may use this to play an effect on projectile entities.
 	 * Currently enabled in:
-	 *   - ArrowSpell
-	 *   - DestroySpell
-	 *   - FireballSpell
-	 *   - FreezeSpell
-	 *   - HomingArrowSpell
-	 *   - ItemProjectileSpell
-	 *   - ProjectileSpell
-	 *   - SpawnTntSpell
-	 *   - ThrowBlockSpell
-	 *   - VolleySpell
-	 *   - WitherSkullSpell
-	 *   - Magnetspell
+	 *  - ArrowSpell
+	 *  - DestroySpell
+	 *  - FireballSpell
+	 *  - FreezeSpell
+	 *  - HomingArrowSpell
+	 *  - ItemProjectileSpell
+	 *  - ProjectileSpell
+	 *  - SpawnTntSpell
+	 *  - ThrowBlockSpell
+	 *  - VolleySpell
+	 *  - WitherSkullSpell
+	 *  - Magnetspell
 	 **/
 	PROJECTILE(10, "projectile"),
 	
 	/**
 	 * May be referenced as: casterprojectile or casterprojectileline
 	 * Currently supported effects:
-	 *    - effectlibline
+	 *  - effectlibline
 	 * Currently enabled in:
-	 *    - ArrowSpell
-	 *    - DestroySpell
-	 *    - FireballSpell
-	 *    - FreezeSpell
-	 *    - HomingArrowSpell
-	 *    - ItemProjectileSpell
-	 *    - ProjectileSpell
-	 *    - SpawnTntSpell
-	 *    - ThrowBlockSpell
-	 *    - VolleySpell
-	 *    - WitherSkullSpell
-	 *    - LevitateSpell
+	 *  - ArrowSpell
+	 *  - DestroySpell
+	 *  - FireballSpell
+	 *  - FreezeSpell
+	 *  - HomingArrowSpell
+	 *  - ItemProjectileSpell
+	 *  - ProjectileSpell
+	 *  - SpawnTntSpell
+	 *  - ThrowBlockSpell
+	 *  - VolleySpell
+	 *  - WitherSkullSpell
+	 *  - LevitateSpell
 	 */
 	DYNAMIC_CASTER_PROJECTILE_LINE(11, "casterprojectile", "casterprojectileline"),
 	
 	/**
 	 * May be referenced as: blockdestroy or blockdestruction
 	 * Spells supported in:
-	 *     - ThrowBlockSpell
-	 *     - SpawnTntSpell
-	 *     - MaterializeSpell
-	 *     - PulserSpell
-	 *     - EntombSpell
+	 *  - ThrowBlockSpell
+	 *  - SpawnTntSpell
+	 *  - MaterializeSpell
+	 *  - PulserSpell
+	 *  - EntombSpell
 	 */
-	BLOCK_DESTRUCTION(12, "blockdestroy", "blockdestruction");
+	BLOCK_DESTRUCTION(12, "blockdestroy", "blockdestruction"),
 	//TODO add this effect position to the WallSpell
+
+	/**
+	 * May be referenced in cleansable spells as: clear or cleansed
+	 * Spells supports in:
+	 *  - LevitateSpell
+	 *  - DotSpell
+	 *  - StunSpell
+	 */
+	CLEANSED(13, "clear", "cleansed");
 	
 	private int id;
 	private String[] names;

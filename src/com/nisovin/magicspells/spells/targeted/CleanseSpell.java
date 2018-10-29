@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.targeted;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
@@ -25,7 +26,12 @@ public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 	boolean targetNonPlayers;
 	
 	List<PotionEffectType> potionEffectTypes;
+
 	List<BuffSpell> buffSpells;
+	List<StunSpell> stunSpells;
+	List<DotSpell> dotSpells;
+	List<LevitateSpell> levitateSpells;
+
 	List<String> toCleanse;
 	boolean fire;
 	
@@ -36,10 +42,14 @@ public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 		
 		targetPlayers = getConfigBoolean("target-players", true);
 		targetNonPlayers = getConfigBoolean("target-non-players", false);
-		
-		potionEffectTypes = new ArrayList<>();
+
 		buffSpells = new ArrayList<>();
+		stunSpells = new ArrayList<>();
+		dotSpells = new ArrayList<>();
+		levitateSpells = new ArrayList<>();
+
 		fire = false;
+		potionEffectTypes = new ArrayList<>();
 		toCleanse = getConfigStringList("remove", Arrays.asList("fire", "17", "19", "20"));
 
 	}
@@ -47,6 +57,7 @@ public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 	@Override
 	public void initialize() {
 		super.initialize();
+
 		for (String s : toCleanse) {
 			if (s.equalsIgnoreCase("fire")) {
 				fire = true;
@@ -57,6 +68,30 @@ public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 				Spell spell = MagicSpells.getSpellByInternalName(s.replace("buff:", ""));
 				if (spell instanceof BuffSpell) {
 					buffSpells.add((BuffSpell)spell);
+				}
+				continue;
+			}
+
+			if (s.startsWith("stun:")) {
+				Spell spell = MagicSpells.getSpellByInternalName(s.replace("stun:", ""));
+				if (spell instanceof StunSpell) {
+					stunSpells.add((StunSpell)spell);
+				}
+				continue;
+			}
+
+			if (s.startsWith("dot:")) {
+				Spell spell = MagicSpells.getSpellByInternalName(s.replace("dot:", ""));
+				if (spell instanceof DotSpell) {
+					dotSpells.add((DotSpell)spell);
+				}
+				continue;
+			}
+
+			if (s.startsWith("levitate:")) {
+				Spell spell = MagicSpells.getSpellByInternalName(s.replace("levitate:", ""));
+				if (spell instanceof LevitateSpell) {
+					levitateSpells.add((LevitateSpell)spell);
 				}
 				continue;
 			}
@@ -73,9 +108,11 @@ public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 			}
 
 			if (entity instanceof Player) {
-				for (BuffSpell spell : buffSpells) {
-					if (spell.isActive((Player)entity)) return true;
-				}
+				Player player = (Player) entity;
+				if (buffSpells.stream().anyMatch(spell -> spell.isActive(player))) return true;
+				if (stunSpells.stream().anyMatch(spell -> spell.isStunned(player))) return true;
+				if (dotSpells.stream().anyMatch(spell -> spell.isActive(player))) return true;
+				if (levitateSpells.stream().anyMatch(spell -> spell.isActive(player))) return true;
 			}
 
 			return false;
@@ -104,9 +141,11 @@ public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 			target.removePotionEffect(type);
 		}
 		if (target instanceof Player) {
-			for (BuffSpell spell : buffSpells) {
-				spell.turnOff((Player)target);
-			}
+			Player player = (Player) target;
+			buffSpells.forEach(buffSpell -> buffSpell.turnOff(player));
+			stunSpells.forEach(stunSpell -> stunSpell.cancelStun(player));
+			dotSpells.forEach(dotSpell -> dotSpell.cancelDot(player));
+			levitateSpells.forEach(levitateSpell -> levitateSpell.cancelLevitation(player));
 		}
 		if (caster != null) {
 			playSpellEffects(caster, target);

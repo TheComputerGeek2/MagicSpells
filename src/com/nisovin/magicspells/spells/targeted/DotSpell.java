@@ -79,6 +79,24 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell, Spel
 		applyDot(null, target, power);
 		return true;
 	}
+
+	public boolean isActive(LivingEntity entity) {
+		return activeDots.keySet().stream()
+				.anyMatch(key -> {
+					Dot dot = activeDots.get(key);
+					return dot.target.getUniqueId().equals(entity.getUniqueId());
+				});
+	}
+
+	public void cancelDot(LivingEntity entity) {
+		activeDots.keySet().stream()
+				.map(key -> activeDots.get(key))
+				.filter(d -> d.target.getUniqueId().equals(entity.getUniqueId()))
+				.findFirst().ifPresent(dot -> {
+					dot.cancel();
+					playSpellEffects(EffectPosition.CLEANSED, entity);
+				});
+	}
 	
 	@EventHandler
 	void onDeath(PlayerDeathEvent event) {

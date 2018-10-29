@@ -64,6 +64,27 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
+
+	public boolean isStunned(Player player) {
+		return stunnedPlayersUntil.containsKey(player.getName());
+	}
+
+	public boolean isStunned(LivingEntity entity) {
+		return stunnedEntitiesUntil.containsKey(entity);
+	}
+
+	public void cancelStun(Player player) {
+		if (listener == null) return;
+		StunListener listener = (StunListener) this.listener;
+		listener.removePlayer(player.getName());
+		playSpellEffects(EffectPosition.CLEANSED, player);
+	}
+
+	public void cancelStun(LivingEntity entity) {
+		stunnedEntitiesUntil.remove(entity);
+		stunnedEntitiesLocation.remove(entity);
+		playSpellEffects(EffectPosition.CLEANSED, entity);
+	}
 	
 	void stunPlayer(Player caster, Player target, int duration) {
 		stunnedPlayersUntil.put(target.getName(), System.currentTimeMillis() + duration);

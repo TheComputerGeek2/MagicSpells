@@ -92,6 +92,24 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 	public boolean castAtEntity(LivingEntity target, float power) {
 		return false;
 	}
+
+	public boolean isActive(LivingEntity entity) {
+		return levitating.keySet().stream()
+				.anyMatch(key -> {
+					Levitator levitator = levitating.get(key);
+					return levitator.target.getUniqueId().equals(entity.getUniqueId());
+				});
+	}
+
+	public void cancelLevitation(LivingEntity entity) {
+		levitating.keySet().stream()
+				.map(key -> levitating.get(key))
+				.filter(d -> d.target.getUniqueId().equals(entity.getUniqueId()))
+				.findFirst().ifPresent(levitator -> {
+					levitator.stop();
+					playSpellEffects(EffectPosition.CLEANSED, entity);
+				});
+	}
 	
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		if (!levitating.containsKey(event.getEntity())) return;
@@ -184,7 +202,14 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 			stopped = true;
 			levitating.remove(caster);
 		}
-		
+
+		public Player getCaster() {
+			return caster;
+		}
+
+		public Entity getTarget() {
+			return target;
+		}
 	}
 
 }
