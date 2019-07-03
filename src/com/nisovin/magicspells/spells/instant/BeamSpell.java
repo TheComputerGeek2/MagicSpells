@@ -38,8 +38,10 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 	Subspell spell;
 	Subspell endSpell;
 	Subspell groundSpell;
+	Subspell airSpell;
 	String endSpellName;
 	String groundSpellName;
+	String airSpellName;
 	String spellNameToCast;
 
 	public BeamSpell(MagicConfig config, String spellName) {
@@ -63,6 +65,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 
 		endSpellName = getConfigString("spell-on-end", "");
 		groundSpellName = getConfigString("spell-on-hit-ground", "");
+		airSpellName = getConfigString("hit-air-during", "");
 		spellNameToCast = getConfigString("spell", "");
 
 		if (interval < 0.01) interval = 0.01F;
@@ -82,6 +85,12 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 		if (!endSpell.process()) {
 			if (!endSpellName.isEmpty()) MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-end defined");
 			endSpell = null;
+		}
+		
+		airSpell = new Subspell(airSpellName);
+		if (!airSpell.process()) {
+			if (!airSpellName.isEmpty()) MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-hit-air defined");
+			airSpell = null;
 		}
 
 		groundSpell = new Subspell(groundSpellName);
@@ -163,6 +172,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell {
 				}
 
 				playSpellEffects(EffectPosition.SPECIAL, this.currentLoc);
+				if (airSpell != null && airSpell.isTargetedLocationSpell()) airSpell.castAtLocation(this.caster, this.currentLoc, this.power);
 
 				box.setCenter(this.currentLoc);
 
