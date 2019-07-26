@@ -24,6 +24,7 @@ import com.nisovin.magicspells.materials.MagicMaterial;
 import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.util.HandHandler;
 import com.nisovin.magicspells.util.OverridePriority;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 // Optional trigger variable that may contain a comma separated list
 // Of weapons to trigger on
@@ -32,30 +33,58 @@ public class GiveDamageListener extends PassiveListener {
 	Set<Material> types = new HashSet<>();
 	Map<MagicMaterial, List<PassiveSpell>> weapons = new LinkedHashMap<>();
 	List<PassiveSpell> always = new ArrayList<>();
+	boolean ignoreSpellDamage = false;
+	boolean physicalOnly = false;
 	
 	@Override
 	public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
 		if (var == null || var.isEmpty()) {
 			always.add(spell);
 		} else {
-			String[] split = var.split(",");
-			for (String s : split) {
-				s = s.trim();
-				MagicMaterial mat;
-				if (s.contains("|")) {
-					String[] stuff = s.split("\\|");
-					mat = MagicSpells.getItemNameResolver().resolveItem(stuff[0]);
-					if (mat != null) mat = new MagicItemWithNameMaterial(mat, stuff[1]);						
-				} else {
-					mat = MagicSpells.getItemNameResolver().resolveItem(s);
+			String[] arguments = var.split(" ");
+			for (String argument : arguments) {
+				if (argument.equalsIgnoreCase("ignoreSpellDamage")) {
+					ignoreSpellDamage = true;
+					continue;
 				}
-				if (mat != null) {
-					List<PassiveSpell> list = weapons.computeIfAbsent(mat, magicMaterial -> new ArrayList<>());
-					list.add(spell);
-					types.add(mat.getMaterial());
+				
+				if (argument.equalsIgnoreCase("physicalOnly")) {
+					physicalOnly = true;
+					continue;
+				}
+				
+				String[] split = argument.split(",");
+				for (String s : split) {
+					s = s.trim();
+					MagicMaterial mat;
+					if (s.contains("|")) {
+						String[] stuff = s.split("\\|");
+						mat = MagicSpells.getItemNameResolver().resolveItem(stuff[0]);
+						if (mat != null) mat = new MagicItemWithNameMaterial(mat, stuff[1]);						
+					} else {
+						mat = MagicSpells.getItemNameResolver().resolveItem(s);
+					}
+					if (mat != null) {
+						List<PassiveSpell> list = weapons.computeIfAbsent(mat, magicMaterial -> new ArrayList<>());
+						list.add(spell);
+						types.add(mat.getMaterial());
+					}
 				}
 			}
 		}
+	}
+	
+	public static boolean startedByMagicSpells() {
+		StackTraceElement[] trace = Thread.currentThread().getStackTrace();			
+		for (int ctr = 15; ctr < trace.length && ctr < 40; ctr++) {
+			StackTraceElement element = trace[ctr];
+			String pack = element.getClassName();
+			if (pack.contains("com.nisovin.magicspells.")) {		
+				return true;
+			}
+			ctr++;
+		}
+		return false;
 	}
 	
 	@OverridePriority
@@ -65,6 +94,18 @@ public class GiveDamageListener extends PassiveListener {
 		if (player == null || !(event.getEntity() instanceof LivingEntity)) return;
 		LivingEntity attacked = (LivingEntity)event.getEntity();
 		Spellbook spellbook = null;
+		
+		if (physicalOnly && event.getCause() != DamageCause.ENTITY_ATTACK) {
+            		return;
+        	}
+		
+		if (physicalOnly && event.getCause() == DamageCause.ENTITY_ATTACK && event.isCancelled()) {
+            		return;
+        	}
+		
+		if (ignoreSpellDamage && startedByMagicSpells()) {
+                	return;
+            	}
 		
 		if (!always.isEmpty()) {
 			spellbook = MagicSpells.getSpellbook(player);
