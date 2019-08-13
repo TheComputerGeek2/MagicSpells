@@ -19,6 +19,7 @@ import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.TargetInfo;
+import java.util.HashSet;
 
 public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 	
@@ -27,7 +28,7 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 	private boolean preventImmunity;
 	private boolean checkPlugins;
 	
-	HashMap<Integer, CombustData> combusting = new HashMap<>();
+	private static HashMap<Integer, CombustData> combusting = new HashMap<>();
 	
 	public CombustSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -64,7 +65,7 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 		
 		int duration = Math.round(fireTicks * power);
-		combusting.put(target.getEntityId(), new CombustData(power));
+		combusting.put(target.getEntityId(), new CombustData(this, power));
 		EventUtil.call(new SpellApplyDamageEvent(this, player, target, fireTickDamage, DamageCause.FIRE_TICK, ""));
 		target.setFireTicks(duration);
 		if (player != null) {
@@ -72,11 +73,12 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 		} else {
 			playSpellEffects(EffectPosition.TARGET, target);
 		}
+                CombustSpell spell = this;
 		Bukkit.getScheduler().scheduleSyncDelayedTask(MagicSpells.plugin, new Runnable() {
 			@Override
 			public void run() {
 				CombustData data = combusting.get(target.getEntityId());
-				if (data != null) combusting.remove(target.getEntityId());
+				if (data != null && data.spell == spell) combusting.remove(target.getEntityId());
 			}
 		}, duration + 2);
 		return true;
@@ -88,9 +90,20 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 		
 		final Entity entity = event.getEntity();
 		CombustData data = combusting.get(entity.getEntityId());
-		if (data == null) return;
+                
+		if (data == null || data.spell != this) return;
+                
+		int damage;
 		
-		event.setDamage(Math.round(fireTickDamage * data.power));
+		// Bukkit deals 1 damage on fire ticks if damage is 0, so make it -1 for 0
+		// ideally this would be fixed in Bukkit, but for now lets make it make sense here
+		if (fireTickDamage > 0) {
+			damage = Math.round(fireTickDamage * data.power);
+		} else {		    
+                    damage = -1;
+                }
+                
+		event.setDamage(damage);
 		if (preventImmunity) {
 			Bukkit.getScheduler().scheduleSyncDelayedTask(MagicSpells.plugin, () -> ((LivingEntity)entity).setNoDamageTicks(0), 0);
 		}
@@ -99,8 +112,10 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 	private class CombustData {
 		
 		float power;
+                CombustSpell spell;
 		
-		CombustData(float power) {
+		CombustData(CombustSpell spell, float power) {
+                        this.spell = spell;
 			this.power = power;
 		}
 		
