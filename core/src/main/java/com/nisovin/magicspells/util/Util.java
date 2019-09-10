@@ -318,6 +318,9 @@ public class Util {
 			// Banner
 			meta = BannerHandler.process(config, meta);
 
+			// Custom Model Data
+			meta = CustomModelDataHandler.process(config, meta);
+
 			// Set meta
 			item.setItemMeta(meta);
 
