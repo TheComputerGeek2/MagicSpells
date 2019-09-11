@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 
+import com.nisovin.magicspells.util.*;
+import de.slikey.effectlib.Effect;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -36,35 +38,18 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
-import com.nisovin.magicspells.util.Util;
-import com.nisovin.magicspells.util.IntMap;
-import com.nisovin.magicspells.util.TxtUtil;
-import com.nisovin.magicspells.util.TimeUtil;
-import com.nisovin.magicspells.util.CastItem;
-import com.nisovin.magicspells.util.TargetInfo;
-import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.mana.ManaHandler;
-import com.nisovin.magicspells.util.VariableMod;
-import com.nisovin.magicspells.util.MagicConfig;
-import com.nisovin.magicspells.util.MoneyHandler;
-import com.nisovin.magicspells.util.LocationUtil;
-import com.nisovin.magicspells.util.SpellReagents;
 import com.nisovin.magicspells.spells.PassiveSpell;
-import com.nisovin.magicspells.util.ExperienceUtils;
-import com.nisovin.magicspells.util.ValidTargetList;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.mana.ManaChangeReason;
 import com.nisovin.magicspells.events.SpellCastEvent;
 import com.nisovin.magicspells.events.SpellCastedEvent;
 import com.nisovin.magicspells.events.SpellTargetEvent;
-import com.nisovin.magicspells.util.ValidTargetChecker;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.variables.VariableManager;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.events.MagicSpellsEntityDamageByEntityEvent;
-
-import de.slikey.effectlib.Effect;
 
 public abstract class Spell implements Comparable<Spell>, Listener {
 
@@ -528,6 +513,9 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 					} else if (data[0].equalsIgnoreCase("money")) {
 						if (data.length > 1) money = Float.parseFloat(data[1]);
 						reagents.setMoney(money);
+					} else if (data[0].equalsIgnoreCase("copper")) {
+						if (data.length > 1) amt = Integer.parseInt(data[1]);
+						reagents.setCopper(amt);
 					} else if (data[0].equalsIgnoreCase("variable")) {
 						reagents.addVariable(data[1], Double.parseDouble(data[2]));
 					} else {
@@ -1025,7 +1013,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	 */
 	protected boolean hasReagents(Player player, SpellReagents reagents) {
 		if (reagents == null) return true;
-		return hasReagents(player, reagents.getItemsAsArray(), reagents.getHealth(), reagents.getMana(), reagents.getHunger(), reagents.getExperience(), reagents.getLevels(), reagents.getDurability(), reagents.getMoney(), reagents.getVariables());
+		return hasReagents(player, reagents.getItemsAsArray(), reagents.getHealth(), reagents.getMana(), reagents.getHunger(), reagents.getExperience(), reagents.getLevels(), reagents.getDurability(), reagents.getMoney(), reagents.getCopper(), reagents.getVariables());
 	}
 
 	/**
@@ -1036,7 +1024,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	 * @param manaCost the mana cost
 	 * @return true if the player has all the reagents, false otherwise
 	 */
-	private boolean hasReagents(Player player, ItemStack[] reagents, int healthCost, int manaCost, int hungerCost, int experienceCost, int levelsCost, int durabilityCost, float moneyCost, Map<String, Double> variables) {
+	private boolean hasReagents(Player player, ItemStack[] reagents, int healthCost, int manaCost, int hungerCost, int experienceCost, int levelsCost, int durabilityCost, float moneyCost, int copperCost, Map<String, Double> variables) {
 		// Is the player exempt from reagent costs?
 		if (Perm.NOREAGENTS.has(player)) return true;
 
@@ -1068,6 +1056,14 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		if (moneyCost > 0) {
 			MoneyHandler moneyHandler = MagicSpells.getMoneyHandler();
 			if (moneyHandler == null || !moneyHandler.hasMoney(player, moneyCost)) {
+				return false;
+			}
+		}
+
+		// Copper costs
+		if (copperCost > 0) {
+			GoldHandler goldHandler = MagicSpells.getGoldHandler();
+			if (goldHandler == null || !(goldHandler.getTotalGold(player) >= copperCost)) {
 				return false;
 			}
 		}
@@ -1112,11 +1108,11 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	 * @param reagents the inventory item reagents to remove
 	 */
 	protected void removeReagents(Player player, ItemStack[] reagents) {
-		removeReagents(player, reagents, 0, 0, 0, 0, 0, 0, 0, null);
+		removeReagents(player, reagents, 0, 0, 0, 0, 0, 0, 0, 0, null);
 	}
 
 	protected void removeReagents(Player player, SpellReagents reagents) {
-		removeReagents(player, reagents.getItemsAsArray(), reagents.getHealth(), reagents.getMana(), reagents.getHunger(), reagents.getExperience(), reagents.getLevels(), reagents.getDurability(), reagents.getMoney(), reagents.getVariables());
+		removeReagents(player, reagents.getItemsAsArray(), reagents.getHealth(), reagents.getMana(), reagents.getHunger(), reagents.getExperience(), reagents.getLevels(), reagents.getDurability(), reagents.getMoney(), reagents.getCopper(), reagents.getVariables());
 	}
 
 	/**
@@ -1127,7 +1123,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	 * @param healthCost the health to remove
 	 * @param manaCost the mana to remove
 	 */
-	private void removeReagents(Player player, ItemStack[] reagents, int healthCost, int manaCost, int hungerCost, int experienceCost, int levelsCost, int durabilityCost, float moneyCost, Map<String, Double> variables) {
+	private void removeReagents(Player player, ItemStack[] reagents, int healthCost, int manaCost, int hungerCost, int experienceCost, int levelsCost, int durabilityCost, float moneyCost, int copperCost, Map<String, Double> variables) {
 		if (Perm.NOREAGENTS.has(player)) return;
 
 		if (reagents != null) {
@@ -1173,6 +1169,15 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 			if (moneyHandler != null) {
 				if (moneyCost > 0) moneyHandler.removeMoney(player, moneyCost);
 				else moneyHandler.addMoney(player, moneyCost);
+			}
+		}
+
+		if (copperCost != 0) {
+			GoldHandler goldHandler = MagicSpells.getGoldHandler();
+
+			if (goldHandler != null) {
+				if (copperCost > 0) goldHandler.takeGold(copperCost, player);
+				else goldHandler.giveGold(copperCost, player);
 			}
 		}
 

@@ -18,6 +18,7 @@ public class SpellReagents {
 	private int levels;
 	private int durability;
 	private float money;
+	private int copper;
 	private HashMap<String, Double> variables;
 	
 	public SpellReagents() {
@@ -28,6 +29,7 @@ public class SpellReagents {
 		this.experience = 0;
 		this.levels = 0;
 		this.money = 0;
+		this.copper = 0;
 		this.variables = null;
 	}
 	
@@ -42,6 +44,7 @@ public class SpellReagents {
 		this.experience = other.experience;
 		this.levels = other.levels;
 		this.money = other.money;
+		this.copper = other.copper;
 		if (other.variables != null) {
 			this.variables = new HashMap<>();
 			this.variables.putAll(other.variables);
@@ -136,7 +139,15 @@ public class SpellReagents {
 	public void setMoney(float newMoney) {
 		this.money = newMoney;
 	}
-	
+
+	public int getCopper() {
+		return this.copper;
+	}
+
+	public void setCopper(int newCopper) {
+		this.copper = newCopper;
+	}
+
 	public HashMap<String, Double> getVariables() {
 		return this.variables;
 	}
@@ -171,6 +182,7 @@ public class SpellReagents {
 		other.levels = this.levels;
 		other.durability = this.durability;
 		other.money = this.money;
+		other.copper = this.copper;
 		if (this.variables != null) {
 			other.variables = new HashMap<>();
 			for (Map.Entry<String, Double> entry : this.variables.entrySet()) {
@@ -197,6 +209,7 @@ public class SpellReagents {
 		other.levels = Math.round(this.levels * x);
 		other.durability = Math.round(this.durability * x);
 		other.money = this.money * x;
+		other.copper = Math.round(this.copper * x);
 		if (this.variables != null) {
 			other.variables = new HashMap<>();
 			for (Map.Entry<String, Double> entry : this.variables.entrySet()) {
@@ -217,6 +230,7 @@ public class SpellReagents {
 			+ ",levels=" + this.levels
 			+ ",durability=" + this.durability
 			+ ",money=" + this.money
+			+ ",copper=" + this.copper
 			+ ",variables=" + this.variables
 			+ ']';
 	}

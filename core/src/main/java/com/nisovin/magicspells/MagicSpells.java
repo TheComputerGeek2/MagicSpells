@@ -26,6 +26,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.MalformedURLException;
 
+import com.nisovin.magicspells.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.ChatColor;
@@ -44,17 +45,9 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.configuration.ConfigurationSection;
 
-import com.nisovin.magicspells.util.Util;
-import com.nisovin.magicspells.util.Metrics;
-import com.nisovin.magicspells.util.TxtUtil;
-import com.nisovin.magicspells.util.RegexUtil;
 import com.nisovin.magicspells.mana.ManaSystem;
 import com.nisovin.magicspells.mana.ManaHandler;
-import com.nisovin.magicspells.util.MagicConfig;
-import com.nisovin.magicspells.util.MoneyHandler;
 import com.nisovin.magicspells.spells.PassiveSpell;
-import com.nisovin.magicspells.util.BossBarManager;
-import com.nisovin.magicspells.util.OverridePriority;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.prompt.PromptType;
 import com.nisovin.magicspells.events.SpellLearnEvent;
@@ -62,7 +55,6 @@ import com.nisovin.magicspells.util.compat.CompatBasics;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
 import com.nisovin.magicspells.variables.VariableManager;
-import com.nisovin.magicspells.util.ExperienceBarManager;
 import com.nisovin.magicspells.materials.ItemNameResolver;
 import com.nisovin.magicspells.volatilecode.ManagerVolatile;
 import com.nisovin.magicspells.events.MagicSpellsLoadedEvent;
@@ -105,6 +97,7 @@ public class MagicSpells extends JavaPlugin {
 	// Container vars
 	private ManaHandler manaHandler;
 	private MoneyHandler moneyHandler;
+	private GoldHandler goldHandler;
 	private MagicXpHandler magicXpHandler;
 	private VolatileCodeHandle volatileCodeHandle;
 
@@ -317,6 +310,7 @@ public class MagicSpells extends JavaPlugin {
 		bossBarManager = new BossBarManager();
 		itemNameResolver = new MagicItemNameResolver();
 		if (CompatBasics.pluginEnabled("Vault")) moneyHandler = new MoneyHandler();
+		goldHandler = new GoldHandler();
 		lifeLengthTracker = new LifeLengthTracker();
 
 		// Call loading event
@@ -801,6 +795,10 @@ public class MagicSpells extends JavaPlugin {
 
 	public static MoneyHandler getMoneyHandler() {
 		return plugin.moneyHandler;
+	}
+
+	public static GoldHandler getGoldHandler() {
+		return plugin.goldHandler;
 	}
 
 	public static MagicXpHandler getMagicXpHandler() {
@@ -1299,6 +1297,7 @@ public class MagicSpells extends JavaPlugin {
 		strCantBind = null;
 		strCastUsage = null;
 		moneyHandler = null;
+		goldHandler = null;
 		expBarManager = null;
 		strOnCooldown = null;
 		strWrongWorld = null;
