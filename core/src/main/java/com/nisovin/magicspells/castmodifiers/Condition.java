@@ -54,6 +54,7 @@ public abstract class Condition {
 		conditions.put("lightlevelbelow", LightLevelBelowCondition.class);
 		conditions.put("onblock", OnBlockCondition.class);
 		conditions.put("inblock", InBlockCondition.class);
+		conditions.put("inpainting", InPaintingCondition.class);
 		conditions.put("onground", OnGroundCondition.class);
 		conditions.put("underblock", UnderBlockCondition.class);
 		conditions.put("overblock", OverBlockCondition.class);
