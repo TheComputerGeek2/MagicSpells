@@ -78,6 +78,7 @@ public class MagicSpells extends JavaPlugin {
 	public static final String[] NULL_ARGS = null;
 
 	private Set<Material> losTransparentBlocks;
+	private Set<Material> ignoreCastEventCancel;
 	private List<Material> ignoreCastItemDurability; // TODO: fix
 	private Map<EntityType, String> entityNames;
 
@@ -251,6 +252,7 @@ public class MagicSpells extends JavaPlugin {
 		castWithLeftClick = config.getBoolean(path + "cast-with-left-click", true);
 		castWithRightClick = config.getBoolean(path + "cast-with-right-click", false);
 		cycleSpellsOnOffhandAction = config.getBoolean(path + "cycle-spells-with-offhand-action", false);
+		ignoreCastEventCancel = Util.getMaterialList(config.getStringList(path + "ignore-cast-event-cancel", new ArrayList<>()), HashSet::new);
 		ignoreDefaultBindings = config.getBoolean(path + "ignore-default-bindings", false);
 		ignoreCastItemEnchants = config.getBoolean(path + "ignore-cast-item-enchants", true);
 		ignoreCastItemNames = config.getBoolean(path + "ignore-cast-item-names", false);
@@ -712,6 +714,11 @@ public class MagicSpells extends JavaPlugin {
 	 * Gets a list of blocks that are considered transparent
 	 * @return list of block types
 	 */
+
+	public static Set<Material> getIgnoreEventCancelItems() {
+		return plugin.ignoreCastEventCancel;
+	}
+
 	public static Set<Material> getTransparentBlocks() {
 		return plugin.losTransparentBlocks;
 	}
@@ -1242,6 +1249,8 @@ public class MagicSpells extends JavaPlugin {
 		incantations = null;
 		entityNames.clear();
 		entityNames = null;
+		ignoreCastEventCancel.clear();
+		ignoreCastEventCancel = null;
 		losTransparentBlocks.clear();
 		losTransparentBlocks = null;
 		ignoreCastItemDurability.clear();

@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import com.nisovin.magicspells.util.CastItem;
+import org.bukkit.inventory.ItemStack;
 
 public class RightClickListener implements Listener {
 
@@ -56,6 +57,8 @@ public class RightClickListener implements Listener {
 		}
 			
 		MagicSpells.scheduleDelayedTask(() -> spell.cast(event.getPlayer()), 0);
+
+		if (plugin.getIgnoreEventCancelItems().contains(castItem.getItemType())) return;
 		event.setCancelled(true);
 	}
 	

@@ -45,6 +45,7 @@ public class MagicConfig {
 	 *     allow-cast-with-fist: false
 	 *     cast-with-left-click: true
 	 *     cast-with-right-click: false
+	 *     ignore-cast-event-cancel: null
 	 *     ignore-default-bindings: false
 	 *     ignore-cast-item-enchants: true
 	 *     ignore-cast-item-names: false
