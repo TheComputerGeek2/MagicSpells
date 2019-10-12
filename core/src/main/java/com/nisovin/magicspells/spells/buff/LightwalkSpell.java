@@ -24,9 +24,10 @@ import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
 
 public class LightwalkSpell extends BuffSpell {
-	
+
 	private Map<UUID, Block> lightwalkers;
 	private Set<Material> allowedTypes;
+	private Set<Material> disallowedTypes;
 	private Material material;
 
 	public LightwalkSpell(MagicConfig config, String spellName) {
@@ -41,6 +42,16 @@ public class LightwalkSpell extends BuffSpell {
 
 		lightwalkers = new HashMap<>();
 		allowedTypes = new HashSet<>();
+		disallowedTypes = new HashSet<>();
+
+		List<String> blockBlackList = getConfigStringList("disallowed-types", null);
+		if (blockBlackList != null) {
+			for (String str : blockBlackList) {
+				Material material = Material.getMaterial(str.toUpperCase());
+				if (material == null) MagicSpells.error("LightwalkSpell " + internalName + " has an invalid block defined " + str);
+				else disallowedTypes.add(material);
+			}
+		}
 
 		List<String> blockList = getConfigStringList("allowed-types", null);
 		if (blockList != null) {
@@ -49,7 +60,7 @@ public class LightwalkSpell extends BuffSpell {
 				if (material == null) MagicSpells.error("LightwalkSpell " + internalName + " has an invalid block defined " + str);
 				else allowedTypes.add(material);
 			}
-		} else {
+		} else if (disallowedTypes == null) {
 			allowedTypes.add(Material.GRASS_BLOCK);
 			allowedTypes.add(Material.DIRT);
 			allowedTypes.add(Material.GRAVEL);
@@ -109,7 +120,12 @@ public class LightwalkSpell extends BuffSpell {
 		if (oldBlock == null) return;
 		if (newBlock == null) return;
 		if (oldBlock.equals(newBlock)) return;
-		if (!allowedTypes.contains(newBlock.getType())) return;
+
+		if (!disallowedTypes.contains(newBlock.getType())) placeBlock(oldBlock, newBlock, player);
+		else if (allowedTypes.contains(newBlock.getType())) placeBlock(oldBlock, newBlock, player);
+	}
+
+	private void placeBlock(Block oldBlock, Block newBlock, Player player) {
 		if (BlockUtils.isAir(newBlock.getType())) return;
 		if (isExpired(player)) {
 			turnOff(player);
