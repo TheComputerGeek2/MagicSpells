@@ -82,6 +82,7 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 			int optionQuantity = getConfigInt(path + optionName + ".quantity", 1);
 			List<String> modifierList = getConfigStringList(path + optionName + ".modifiers", null);
 			boolean optionStayOpen = getConfigBoolean(path + optionName + ".stay-open", false);
+			boolean optionDrag = getConfigBoolean(path + optionName + ".drag", false);
 
 			if (optionSlot < 0) continue;
 			if (optionItem == null) continue;
@@ -98,6 +99,7 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 			option.item = optionItem;
 			option.modifierList = modifierList;
 			option.stayOpen = optionStayOpen;
+			option.Drag = optionDrag;
 			String optionKey = uniqueNames ? getOptionKey(option.item) : optionName;
 			options.put(optionKey, option);
 			if (optionSlot > maxSlot) maxSlot = optionSlot;
@@ -278,6 +280,7 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 						else spell.getSpell().cast(player, power, null);
 					}
 					if (option.stayOpen) close = false;
+					if (option.drag) event.setCancelled = false;
 				}
 			}
 
