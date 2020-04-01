@@ -22,10 +22,10 @@ dependencies {
 }
 
 shadowJar {
-    setArchivesBaseName("MagicSpells")
-    relocate("org.apache.commons.math3", "com.nisovin.magicspells.shaded.org.apache.commons")
-    relocate("de.slikey.effectlib", "com.nisovin.magicspells.shaded.effectlib")
-    relocate("kotlin", "com.nisovin.magicspells.shaded.kotlin")
+    setArchivesBaseName("MagicJutsus")
+    relocate("org.apache.commons.math3", "com.nisovin.magicjutsus.shaded.org.apache.commons")
+    relocate("de.slikey.effectlib", "com.nisovin.magicjutsus.shaded.effectlib")
+    relocate("kotlin", "com.nisovin.magicjutsus.shaded.kotlin")
 }
 compileKotlin {
     kotlinOptions {

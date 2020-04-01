@@ -4,27 +4,27 @@ general:
     enable-error-logging: true
     enable-stat-collection: true
     enable-volatile-features: true
-    enable-new-spell-handling: false
+    enable-new-jutsu-handling: false
     str-cast-usage: |
-        Usage: /cast <spell>. 
-        Use /cast list to see a list of spells.
-    str-unknown-spell: You do not know a spell with that name.
-    str-spell-change: You are now using the %s spell.
-    str-spell-change-empty: You are no longer using a spell.
-    str-on-cooldown: That spell is on cooldown (%c seconds remaining).
-    str-missing-reagents: You do not have the required reagents for that spell.
-    str-cant-cast: You can't cast that spell right now.
-    str-wrong-world: You cannot cast that spell here.
+        Usage: /cast <jutsu>.
+        Use /cast list to see a list of jutsus.
+    str-unknown-jutsu: You do not know a jutsu with that name.
+    str-jutsu-change: You are now using the %s jutsu.
+    str-jutsu-change-empty: You are no longer using a jutsu.
+    str-on-cooldown: That jutsu is on cooldown (%c seconds remaining).
+    str-missing-reagents: You do not have the required reagents for that jutsu.
+    str-cant-cast: You can't cast that jutsu right now.
+    str-wrong-world: You cannot cast that jutsu here.
     str-console-name: Admin
     text-color: 3
     broadcast-range: 20
-    spell-icon-slot: -1
-    separate-player-spells-per-world: false
-    allow-cycle-to-no-spell: false
+    jutsu-icon-slot: -1
+    separate-player-jutsus-per-world: false
+    allow-cycle-to-no-jutsu: false
     always-show-message-on-cycle: false
-    only-cycle-to-castable-spells: true
+    only-cycle-to-castable-jutsus: true
     allow-cast-with-fist: false
-    ops-have-all-spells: true
+    ops-have-all-jutsus: true
     ops-ignore-reagents: true
     ops-ignore-cooldowns: true
     ops-ignore-cast-times: true
@@ -101,79 +101,79 @@ mana:
         - 348 60
         - 331 30
         
-spells:
+jutsus:
 
     list:
-        spell-class: ".command.ListSpell"
+        jutsu-class: ".command.ListJutsu"
         name: list
         always-granted: true
-        description: List all the spells you know.
-        only-show-castable-spells: false
-        reload-granted-spells: true
-        spells-to-hide: []
-        str-prefix: "Known spells:"
-        str-no-spells: You do not know any spells.
+        description: List all the jutsus you know.
+        only-show-castable-jutsus: false
+        reload-granted-jutsus: true
+        jutsus-to-hide: []
+        str-prefix: "Known jutsus:"
+        str-no-jutsus: You do not know any jutsus.
     help:
-        spell-class: ".command.HelpSpell"
+        jutsu-class: ".command.HelpJutsu"
         name: help
         always-granted: true
-        description: Get information about a specified spell.
-        require-known-spell: true
-        str-usage: "Usage: /cast help <spell>"
-        str-no-spell: You do not know a spell by that name.
+        description: Get information about a specified jutsu.
+        require-known-jutsu: true
+        str-usage: "Usage: /cast help <jutsu>"
+        str-no-jutsu: You do not know a jutsu by that name.
         str-desc-line: "%s - %d"
         str-cost-line: "Cost: %c"
     teach:
-        spell-class: ".command.TeachSpell"
+        jutsu-class: ".command.TeachJutsu"
         name: teach
-        description: Teach a spell to another player.
-        require-known-spell: true
-        str-usage: "Usage: /cast teach <target> <spell>"
+        description: Teach a jutsu to another player.
+        require-known-jutsu: true
+        str-usage: "Usage: /cast teach <target> <jutsu>"
         str-no-target: No such player.
-        str-no-spell: You do not know a spell by that name.
-        str-cant-teach: You can't teach that spell.
-        str-cant-learn: That person cannot learn that spell.
-        str-cast-self: You have taught %t the %s spell.
-        str-cast-target: "%a has taught you the %s spell."
+        str-no-jutsu: You do not know a jutsu by that name.
+        str-cant-teach: You can't teach that jutsu.
+        str-cant-learn: That person cannot learn that jutsu.
+        str-cast-self: You have taught %t the %s jutsu.
+        str-cast-target: "%a has taught you the %s jutsu."
     forget:
-        spell-class: ".command.ForgetSpell"
+        jutsu-class: ".command.ForgetJutsu"
         name: forget
-        description: Make a player forget a spell.
+        description: Make a player forget a jutsu.
         allow-self-forget: true
-        str-usage: "Usage: /cast forget <target> <spell>"
+        str-usage: "Usage: /cast forget <target> <jutsu>"
         str-no-target: No such player.
-        str-no-spell: You do not know a spell by that name.
-        str-doesnt-know: That person does not know that spell.
-        str-cast-self: You made %t forget the %s spell.
-        str-cast-target: "%a has made you forget the %s spell."
-        str-cast-self-target: "You have forgotten the %s spell."
-        str-reset-target: "You have reset %t's spellbook."
-        str-reset-self: "You have forgotten all of your spells."
+        str-no-jutsu: You do not know a jutsu by that name.
+        str-doesnt-know: That person does not know that jutsu.
+        str-cast-self: You made %t forget the %s jutsu.
+        str-cast-target: "%a has made you forget the %s jutsu."
+        str-cast-self-target: "You have forgotten the %s jutsu."
+        str-reset-target: "You have reset %t's jutsubook."
+        str-reset-self: "You have forgotten all of your jutsus."
     bind:
-        spell-class: ".command.BindSpell"
+        jutsu-class: ".command.BindJutsu"
         name: bind
         enabled: true
-        description: Binds a spell to a wand item.
+        description: Binds a jutsu to a wand item.
         allow-bind-to-fist: false
-        str-cast-self: "You have successfully bound the %s spell to the \nitem you are holding."
-        str-usage: You must specify a spell name and hold an item in your hand.
-        str-no-spell: You do not know a spell by that name.
-        str-cant-bind-spell: That spell cannot be bound to an item.
-        str-cant-bind-item: That spell cannot be bound to that item.
+        str-cast-self: "You have successfully bound the %s jutsu to the \nitem you are holding."
+        str-usage: You must specify a jutsu name and hold an item in your hand.
+        str-no-jutsu: You do not know a jutsu by that name.
+        str-cant-bind-jutsu: That jutsu cannot be bound to an item.
+        str-cant-bind-item: That jutsu cannot be bound to that item.
     unbind:
-        spell-class: ".command.UnbindSpell"
+        jutsu-class: ".command.UnbindJutsu"
         name: unbind
         enabled: true
-        description: Unbinds a spell from its assigned wand item.
-        str-cast-self: "You have successfully unbound the %s spell."
-        str-usage: You must specify a spell name.
-        str-no-spell: You do not know a spell by that name.
-        str-cant-bind-spell: That spell cannot be bound to an item.
-        str-not-bound: That spell is not bound to that item.
+        description: Unbinds a jutsu from its assigned wand item.
+        str-cast-self: "You have successfully unbound the %s jutsu."
+        str-usage: You must specify a jutsu name.
+        str-no-jutsu: You do not know a jutsu by that name.
+        str-cant-bind-jutsu: That jutsu cannot be bound to an item.
+        str-not-bound: That jutsu is not bound to that item.
     scroll:
-        spell-class: ".command.ScrollSpell"
+        jutsu-class: ".command.ScrollJutsu"
         name: scroll
-        description: Create a limited use spell scroll.
+        description: Create a limited use jutsu scroll.
         cast-for-free: true
         default-uses: 5
         max-uses: 10
@@ -183,63 +183,63 @@ spells:
         ignore-cast-perm: false
         set-unstackable: true
         remove-scroll-when-depleted: true
-        charge-reagents-for-spell-per-charge: false
+        charge-reagents-for-jutsu-per-charge: false
         require-teach-perm: true
         require-scroll-cast-perm-on-use: true
         stack-by-data-fn: "a"
-        str-scroll-over: "Spell Scroll: %s (%u uses remaining)"
+        str-scroll-over: "Jutsu Scroll: %s (%u uses remaining)"
         str-usage: |
             You must hold a single blank paper 
-            and type /cast scroll <spell> <uses>.
-        str-fail: You cannot create a spell scroll at this time.
-        str-no-spell: You do not know a spell by that name.
-        str-cant-teach: You cannot create a tome with that spell.
-        str-cast-self: You have created a spell scroll for %s.
-        str-on-use: "Spell Scroll: %s used. %u uses remaining."
+            and type /cast scroll <jutsu> <uses>.
+        str-fail: You cannot create a jutsu scroll at this time.
+        str-no-jutsu: You do not know a jutsu by that name.
+        str-cant-teach: You cannot create a tome with that jutsu.
+        str-cast-self: You have created a jutsu scroll for %s.
+        str-on-use: "Jutsu Scroll: %s used. %u uses remaining."
         str-use-fail: Unable to use this scroll right now.
-    spellbook:
-        spell-class: ".command.SpellbookSpell"
-        name: spellbook
-        description: Create a spellbook that teaches a spell.
+    jutsubook:
+        jutsu-class: ".command.JutsubookJutsu"
+        name: jutsubook
+        description: Create a jutsubook that teaches a jutsu.
         default-uses: -1
         destroy-when-used-up: false
-        spellbook-block: 47
-        str-use: "Usage: /cast spellbook <spell> [uses]"
-        str-cast-self: You have created a spellbook with the %s spell.
-        str-no-spell: You do not know a spell by that name.
-        str-cant-teach: You can't create a spellbook with that spell.
-        str-no-target: You must target a bookcase to create a spellbook.
-        str-has-spellbook: That bookcase already has a spellbook.
-        str-cant-destroy: You cannot destroy a bookcase with a spellbook.
-        str-cant-learn: You cannot learn the spell in this spellbook.
-        str-already-known: You already know the %s spell.
-        str-learned: You have learned the %s spell!
+        jutsubook-block: 47
+        str-use: "Usage: /cast jutsubook <jutsu> [uses]"
+        str-cast-self: You have created a jutsubook with the %s jutsu.
+        str-no-jutsu: You do not know a jutsu by that name.
+        str-cant-teach: You can't create a jutsubook with that jutsu.
+        str-no-target: You must target a bookcase to create a jutsubook.
+        str-has-jutsubook: That bookcase already has a jutsubook.
+        str-cant-destroy: You cannot destroy a bookcase with a jutsubook.
+        str-cant-learn: You cannot learn the jutsu in this jutsubook.
+        str-already-known: You already know the %s jutsu.
+        str-learned: You have learned the %s jutsu!
     tome:
-        spell-class: ".command.TomeSpell"
+        jutsu-class: ".command.TomeJutsu"
         name: tome
-        spell-icon: book
+        jutsu-icon: book
         enabled: false
-        description: Create a tome that teaches a spell.
+        description: Create a tome that teaches a jutsu.
         cancel-read-on-learn: true
         consume-book: true
         allow-overwrite: false
         max-uses: -1
         default-uses: -1
         require-teach-perm: true
-        str-usage: "Usage: While holding a book, /cast tome <spell>"
-        str-no-spell: You do not know a spell with that name.
-        str-cant-teach: You cannot create a tome with that spell.
+        str-usage: "Usage: While holding a book, /cast tome <jutsu>"
+        str-no-jutsu: You do not know a jutsu with that name.
+        str-cant-teach: You cannot create a tome with that jutsu.
         str-no-book: You must be holding a book.
-        str-already-has-spell: That book already contains a spell.
-        str-already-known: You already know the %s spell.
-        str-cant-learn: You cannot learn the spell in this tome.
-        str-learned: You have learned the %s spell.
-        str-cast-self: You have created a spell tome.
+        str-already-has-jutsu: That book already contains a jutsu.
+        str-already-known: You already know the %s jutsu.
+        str-cant-learn: You cannot learn the jutsu in this tome.
+        str-learned: You have learned the %s jutsu.
+        str-cast-self: You have created a jutsu tome.
 
     anvil:
-        spell-class: ".instant.ThrowBlockSpell"
+        jutsu-class: ".instant.ThrowBlockJutsu"
         name: anvil
-        spell-icon: anvil
+        jutsu-icon: anvil
         description: Throws an anvil.
         cast-item: blaze_rod
         cooldown: 10
@@ -258,9 +258,9 @@ spells:
             - anvil
         str-cost: 25 mana and 1 anvil
     armor:
-        spell-class: ".buff.ArmorSpell"
+        jutsu-class: ".buff.ArmorJutsu"
         name: armor
-        spell-icon: iron_chestplate
+        jutsu-icon: iron_chestplate
         cast-item: book
         duration: 30
         num-uses: 15
@@ -273,11 +273,11 @@ spells:
             - gold_nugget 1
         str-cost: 25 mana and 1 golden nugget
         str-cast-self: You have conjured some magic armor!
-        str-has-armor: You cannot cast this spell if you are already wearing armor.
+        str-has-armor: You cannot cast this jutsu if you are already wearing armor.
     blind:
-        spell-class: ".targeted.PotionEffectSpell"
+        jutsu-class: ".targeted.PotionEffectJutsu"
         name: blind
-        spell-icon: ink_sack:0
+        jutsu-icon: ink_sack:0
         description: Blind your target.
         cast-item: blaze_rod
         cooldown: 15
@@ -295,9 +295,9 @@ spells:
         str-cast-self: You have blinded %t!
         str-no-target: No target found.
     blink:
-        spell-class: ".targeted.BlinkSpell"
+        jutsu-class: ".targeted.BlinkJutsu"
         name: blink
-        spell-icon: ender_pearl
+        jutsu-icon: ender_pearl
         description: Teleport a short distance.
         cast-item: stick
         cooldown: 8
@@ -314,9 +314,9 @@ spells:
         str-cast-others: "%a blinks away!"
         str-cant-blink: You cannot blink there.
     build:
-        spell-class: ".targeted.BuildSpell"
+        jutsu-class: ".targeted.BuildJutsu"
         name: build
-        spell-icon: stone
+        jutsu-icon: stone
         description: Build blocks from far away.
         cast-item: stick
         cooldown: 2
@@ -333,9 +333,9 @@ spells:
         str-invalid-block: You can't build that block.
         str-cant-build: You can't build there.
     carpet:
-        spell-class: ".buff.CarpetSpell"
+        jutsu-class: ".buff.CarpetJutsu"
         name: carpet
-        spell-icon: thin_glass
+        jutsu-icon: thin_glass
         description: Lets you walk on a platform of glass.
         cast-item: book
         cooldown: 30
@@ -354,9 +354,9 @@ spells:
         str-cast-others: "%a is now walking on a platform of glass!"
         str-fade: Your magical glass platform disappears.
     clarity:
-        spell-class: ".buff.ManaRegenSpell"
+        jutsu-class: ".buff.ManaRegenJutsu"
         name: clarity
-        spell-icon: potion
+        jutsu-icon: potion
         description: Increase mana regeneration for a time.
         cast-item: book
         cooldown: 300
@@ -368,9 +368,9 @@ spells:
         str-cast-self: Your thoughts race and flow with ease!
         str-fade: Your mind returns to normal.
     combust:
-        spell-class: ".targeted.CombustSpell"
+        jutsu-class: ".targeted.CombustJutsu"
         name: combust
-        spell-icon: fire
+        jutsu-icon: fire
         description: Set a target on fire.
         cast-item: blaze_rod
         cooldown: 10
@@ -386,9 +386,9 @@ spells:
         str-cost: 10 mana
         str-no-target: No target found.
     confusion:
-        spell-class: ".instant.ConfusionSpell"
+        jutsu-class: ".instant.ConfusionJutsu"
         name: confusion
-        spell-icon: eye_of_ender
+        jutsu-icon: eye_of_ender
         description: Cause nearby monsters to attack each other.
         cast-item: bone
         cooldown: 30
@@ -399,9 +399,9 @@ spells:
         str-cast-self: You cause nearby monsters to become confused and attack each other.
         str-cast-others: "%a causes nearby monsters to attack each other."
     conjure:
-        spell-class: ".instant.ConjureSpell"
+        jutsu-class: ".instant.ConjureJutsu"
         name: conjure
-        spell-icon: redstone
+        jutsu-icon: redstone
         description: Conjure some potion reagents.
         cast-item: book
         cooldown: 600
@@ -418,9 +418,9 @@ spells:
         str-cost: free
         str-cast-self: You have conjured some potion reagents!
     cripple:
-        spell-class: ".targeted.CrippleSpell"
+        jutsu-class: ".targeted.CrippleJutsu"
         name: cripple
-        spell-icon: web
+        jutsu-icon: web
         description: Slow down a targeted enemy.
         cast-item: blaze_rod
         cooldown: 15
@@ -435,9 +435,9 @@ spells:
         str-cast-self: You have crippled %t.
         str-no-target: No target found.
     disarm:
-        spell-class: ".targeted.DisarmSpell"
+        jutsu-class: ".targeted.DisarmJutsu"
         name: disarm
-        spell-icon: stone_sword:130
+        jutsu-icon: stone_sword:130
         description: Disarm your opponent.
         cast-item: blaze_rod
         cooldown: 15
@@ -464,9 +464,9 @@ spells:
         str-cast-self: You have disarmed %t.
         str-cast-target: "%a has disarmed you."
     dowse:
-        spell-class: ".instant.DowseSpell"
+        jutsu-class: ".instant.DowseJutsu"
         name: dowse
-        spell-icon: compass
+        jutsu-icon: compass
         description: Dowse for iron ore.
         cast-item: book
         cooldown: 60
@@ -482,9 +482,9 @@ spells:
         str-cast-self: There is iron ore nearby.
         str-not-found: No iron ore found nearby.
     drainlife:
-        spell-class: ".targeted.DrainlifeSpell"
+        jutsu-class: ".targeted.DrainlifeJutsu"
         name: drainlife
-        spell-icon: ghast_tear
+        jutsu-icon: ghast_tear
         description: Drain life from your enemy and give it to you.
         cast-item: blaze_rod
         cooldown: 5
@@ -504,10 +504,10 @@ spells:
         str-cast-self: You drain life from your enemy.
         str-no-target: No target found.
     empower:
-        spell-class: ".buff.EmpowerSpell"
+        jutsu-class: ".buff.EmpowerJutsu"
         name: empower
-        spell-icon: glowstone_dust
-        description: Makes your spells more powerful.
+        jutsu-icon: glowstone_dust
+        description: Makes your jutsus more powerful.
         cast-item: book
         power-multiplier: 1.5
         cooldown: 120
@@ -518,14 +518,14 @@ spells:
         use-cost:
             - mana 5
         use-cost-interval: 1
-        str-cost: 15 mana, plus 5 mana for each spell cast
+        str-cost: 15 mana, plus 5 mana for each jutsu cast
         str-cast-self: You begin to glow with magical energy.
         str-cast-others: "%a begins to glow with magical energy."
         str-fade: You are no longer glowing with magical energy.        
     enderchest:
-        spell-class: ".instant.EnderchestSpell"
+        jutsu-class: ".instant.EnderchestJutsu"
         name: enderchest
-        spell-icon: ender_chest
+        jutsu-icon: ender_chest
         description: Opens your ender chest inventory.
         cast-item: book
         cooldown: 300
@@ -534,9 +534,9 @@ spells:
             - ender_pearl 1
         str-cost: 50 mana and 1 ender pearl
     entomb:
-        spell-class: ".targeted.EntombSpell"
+        jutsu-class: ".targeted.EntombJutsu"
         name: entomb
-        spell-icon: glass
+        jutsu-icon: glass
         description: Encase an enemy in glass.
         cast-item: blaze_rod
         cooldown: 5
@@ -550,9 +550,9 @@ spells:
         str-cost: 15 mana
         str-no-target: No target found.
     explode:
-        spell-class: ".targeted.ExplodeSpell"
+        jutsu-class: ".targeted.ExplodeJutsu"
         name: explode
-        spell-icon: tnt
+        jutsu-icon: tnt
         description: Create an explosion.
         cast-item: blaze_rod
         cooldown: 30
@@ -573,9 +573,9 @@ spells:
         str-cast-self: Boom!
         str-cast-others: Boom!
     explosivearrow:
-        spell-class: ".instant.ProjectileSpell"
+        jutsu-class: ".instant.ProjectileJutsu"
         name: explosivearrow
-        spell-icon: arrow
+        jutsu-icon: arrow
         description: Cause an explosion where an arrow lands
         cast-item: blaze_rod
         cooldown: 30
@@ -585,7 +585,7 @@ spells:
         cancel-damage: true
         remove-projectile: true
         max-distance: 25
-        spells: [explode]
+        jutsus: [explode]
         cost:
             - mana 25
             - sulpher 1
@@ -593,9 +593,9 @@ spells:
         str-cost: 25 mana, 1 gunpowder, and 1 arrow
         str-cast-self: You fire an explosive arrow.
     farm:
-        spell-class: ".targeted.FarmSpell"
+        jutsu-class: ".targeted.FarmJutsu"
         name: farm
-        spell-icon: seeds
+        jutsu-icon: seeds
         cast-item: book
         description: Make crops grow nearby.
         cooldown: 10
@@ -609,9 +609,9 @@ spells:
         str-cast-self: The crops around you grow quickly.
         str-no-target: There are no crops nearby.
     fireball:
-        spell-class: ".targeted.FireballSpell"
+        jutsu-class: ".targeted.FireballJutsu"
         name: fireball
-        spell-icon: fireball
+        jutsu-icon: fireball
         description: Throw a fiery ball of destruction.
         cast-item: blaze_rod
         cooldown: 5
@@ -634,9 +634,9 @@ spells:
         str-cast-self: You throw a fiery ball of destruction!
         str-cast-others: "%a throws a fiery ball of destruction!"
     firenova:
-        spell-class: ".instant.FirenovaSpell"
+        jutsu-class: ".instant.FirenovaJutsu"
         name: firenova
-        spell-icon: blaze_powder
+        jutsu-icon: blaze_powder
         description: Summon an expanding ring of fire.
         cast-item: bone
         cooldown: 10
@@ -650,9 +650,9 @@ spells:
         str-cast-self: You summon an expanding ring of fire.
         str-cast-others: "%a summons an expanding ring of fire."
     flamewalk:
-        spell-class: ".buff.FlamewalkSpell"
+        jutsu-class: ".buff.FlamewalkJutsu"
         name: flamewalk
-        spell-icon: fire
+        jutsu-icon: fire
         description: Burn your enemies around you as you walk.
         cast-item: book
         cooldown: 30
@@ -671,9 +671,9 @@ spells:
         str-cast-self: You begin to burn your enemies around you.
         str-fade: You are no longer burning your enemies.
     food:
-        spell-class: ".instant.FoodSpell"
+        jutsu-class: ".instant.FoodJutsu"
         name: food
-        spell-icon: cooked_beef
+        jutsu-icon: cooked_beef
         description: Makes you less hungry.
         cast-item: book
         cooldown: 30
@@ -684,9 +684,9 @@ spells:
         str-cost: 25 mana
         str-cast-self: You feel less hungry.
     forcebomb:
-        spell-class: ".targeted.ForcebombSpell"
+        jutsu-class: ".targeted.ForcebombJutsu"
         name: forcepush
-        spell-icon: record_4
+        jutsu-icon: record_4
         description: Push back your enemies.
         cast-item: blaze_rod
         cooldown: 8
@@ -702,9 +702,9 @@ spells:
         str-cost: 30 mana
         str-cast-self: An explosion of energy pushes your enemies around.
     forcepush:
-        spell-class: ".instant.ForcepushSpell"
+        jutsu-class: ".instant.ForcepushJutsu"
         name: forcepush
-        spell-icon: record_3
+        jutsu-icon: record_3
         description: Push back your enemies.
         cast-item: bone
         cooldown: 8
@@ -719,9 +719,9 @@ spells:
         str-cast-self: You push back your enemies!
         str-cast-others: "%a pushes back his enemies."
     forcetoss:
-        spell-class: ".targeted.ForcetossSpell"
+        jutsu-class: ".targeted.ForcetossJutsu"
         name: forcetoss
-        spell-icon: piston_base
+        jutsu-icon: piston_base
         description: Magically throw an enemy into the air.
         cast-item: blaze_rod
         cooldown: 5
@@ -739,9 +739,9 @@ spells:
         str-cast-self: You push back your enemy!
         str-cast-others: "%a pushes back his enemy."
     freeze:
-        spell-class: ".instant.FreezeSpell"
+        jutsu-class: ".instant.FreezeJutsu"
         name: freeze
-        spell-icon: snow_ball
+        jutsu-icon: snow_ball
         description: Spray your enemies with cold snowballs.
         cast-item: blaze_rod
         snowballs: 25
@@ -757,9 +757,9 @@ spells:
             - snow_ball 1
         str-cost: 10 mana and 1 snowball
     frostwalk:
-        spell-class: ".buff.FrostwalkSpell"
+        jutsu-class: ".buff.FrostwalkJutsu"
         name: frostwalk
-        spell-icon: ice
+        jutsu-icon: ice
         description: Lets you walk on water.
         cast-item: book
         size: 2
@@ -775,9 +775,9 @@ spells:
         str-cast-others: "%a can now walk on water!"
         str-fade: You can no longer walk on water.
     gate:
-        spell-class: ".instant.GateSpell"
+        jutsu-class: ".instant.GateJutsu"
         name: gate
-        spell-icon: portal
+        jutsu-icon: portal
         description: Teleport to spawn.
         can-cast-with-item: false
         world: CURRENT
@@ -793,9 +793,9 @@ spells:
         str-cast-others: "%a teleports!"
         str-gate-failed: Unable to teleport.
     geyser:
-        spell-class: ".targeted.GeyserSpell"
+        jutsu-class: ".targeted.GeyserJutsu"
         name: geyser
-        spell-icon: water
+        jutsu-icon: water
         description: Create a geyser of water at your enemy's feet.
         cast-item: blaze_rod
         range: 20
@@ -814,9 +814,9 @@ spells:
         str-cast-self: You create a geyser at your enemy's feet.
         str-no-target: No target found.
     gills:
-        spell-class: ".buff.GillsSpell"
+        jutsu-class: ".buff.GillsJutsu"
         name: gills
-        spell-icon: gold_helmet
+        jutsu-icon: gold_helmet
         description: Allows you to breath underwater.
         cast-item: book
         glass-head-effect: true
@@ -833,9 +833,9 @@ spells:
         str-cast-self: You form gills on your neck!
         str-fade: Your gills disappear.
     haste:
-        spell-class: ".buff.HasteSpell"
+        jutsu-class: ".buff.HasteJutsu"
         name: haste
-        spell-icon: gold_boots
+        jutsu-icon: gold_boots
         description: Sprint faster for a time.
         cast-item: book
         effect-strength: 3
@@ -848,9 +848,9 @@ spells:
         str-cast-others: "%a gains unnatural speed!"
         str-fade: You lose your unnatural speed.
     haze:
-        spell-class: ".targeted.PotionEffectSpell"
+        jutsu-class: ".targeted.PotionEffectJutsu"
         name: haze
-        spell-icon: slime_ball
+        jutsu-icon: slime_ball
         description: Makes your target's vision hazey.
         cast-item: blaze_rod
         cooldown: 15
@@ -868,9 +868,9 @@ spells:
         str-cast-self: You have confuzzled your target!
         str-no-target: No target found.
     heal:
-        spell-class: ".targeted.HealSpell"
+        jutsu-class: ".targeted.HealJutsu"
         name: heal
-        spell-icon: red_rose
+        jutsu-icon: red_rose
         description: Heals a target player.
         cast-item: stick
         heal-amount: 10
@@ -888,9 +888,9 @@ spells:
         str-no-target: No target to heal.
         str-max-health: "%t is already at max health."
     invisibility:
-        spell-class: ".buff.InvisibilitySpell"
+        jutsu-class: ".buff.InvisibilityJutsu"
         name: invisibility
-        spell-icon: record_11
+        jutsu-icon: record_11
         description: Makes you invisible to players and monsters.
         cast-item: bone
         cooldown: 60
@@ -912,9 +912,9 @@ spells:
         str-cast-others: "%a vanishes!"
         str-fade: You are visible again.
     invulnerability:
-        spell-class: ".buff.InvulnerabilitySpell"
+        jutsu-class: ".buff.InvulnerabilityJutsu"
         name: invulnerability
-        spell-icon: gold_chestplate
+        jutsu-icon: gold_chestplate
         description: Makes you invulnerable to damage.
         cast-item: book
         damage-causes:
@@ -948,9 +948,9 @@ spells:
         str-cast-others: "%a's skin hardens."
         str-fade: You feel your skin return to normal.
     leap:
-        spell-class: ".instant.LeapSpell"
+        jutsu-class: ".instant.LeapJutsu"
         name: leap
-        spell-icon: diamond_boots
+        jutsu-icon: diamond_boots
         description: Leap forward.
         cast-item: stick
         forward-velocity: 40
@@ -963,9 +963,9 @@ spells:
         str-cast-self: You leap forward.
         str-cast-others: "%a leaps forward."
     levitate:
-        spell-class: ".targeted.LevitateSpell"
+        jutsu-class: ".targeted.LevitateJutsu"
         name: levitate
-        spell-icon: feather
+        jutsu-icon: feather
         description: Cause your target to fly through the air.
         cast-item: bone
         tick-rate: 5
@@ -973,7 +973,7 @@ spells:
         cooldown: 30
         range: 12
         cancel-on-item-switch: true
-        cancel-on-spell-cast: true
+        cancel-on-jutsu-cast: true
         target-players: false
         obey-los: true
         cost:
@@ -983,9 +983,9 @@ spells:
         str-cast-self: You are levitating %t!
         str-cast-target: "%a is levitating you!"
     lifewalk:
-        spell-class: ".buff.LifewalkSpell"
+        jutsu-class: ".buff.LifewalkJutsu"
         name: lifewalk
-        spell-icon: sapling:2
+        jutsu-icon: sapling:2
         description: Flowers grow in your footsteps!
         cast-item: book
         tick-interval: 15
@@ -1006,9 +1006,9 @@ spells:
         str-cast-others: Flowers grow in %a's footsteps!
         str-fade: Flowers no longer grow in your footsteps.
     lightning:
-        spell-class: ".targeted.LightningSpell"
+        jutsu-class: ".targeted.LightningJutsu"
         name: lightning
-        spell-icon: gold_sword
+        jutsu-icon: gold_sword
         description: Call down lightning.
         cast-item: blaze_rod
         cooldown: 15
@@ -1026,9 +1026,9 @@ spells:
         str-cast-others: "%a calls down lightning."
         str-no-target: Unable to find target.
     lightwalk:
-        spell-class: ".buff.LightwalkSpell"
+        jutsu-class: ".buff.LightwalkJutsu"
         name: lightwalk
-        spell-icon: glowstone
+        jutsu-icon: glowstone
         description: Light your path.
         cast-item: 317
         cost:
@@ -1041,9 +1041,9 @@ spells:
         str-cast-self: Light appears at your feet.
         str-fade: The light at your feet goes out.
     lilywalk:
-        spell-class: ".buff.LilywalkSpell"
+        jutsu-class: ".buff.LilywalkJutsu"
         name: lilywalk
-        spell-icon: water_lily
+        jutsu-icon: water_lily
         description: Lets you walk on water on lily pads.
         cast-item: book
         cooldown: 30
@@ -1058,9 +1058,9 @@ spells:
         str-cast-others: "%a can now walk on water!"
         str-fade: You can no longer walk on water.
     mana:
-        spell-class: ".instant.ManaSpell"
+        jutsu-class: ".instant.ManaJutsu"
         name: lifetap
-        spell-icon: potion:8193
+        jutsu-icon: potion:8193
         description: Restores mana at the cost of life.
         cast-item: bone
         cooldown: 3
@@ -1070,9 +1070,9 @@ spells:
         str-cost: 2 hearts
         str-cast-self: You restore 25 mana.
     mark:
-        spell-class: ".instant.MarkSpell"
+        jutsu-class: ".instant.MarkJutsu"
         name: mark
-        spell-icon: bed
+        jutsu-icon: bed
         description: Marks your location for later recall.
         cast-item: stick
         cooldown: 43200
@@ -1084,9 +1084,9 @@ spells:
         str-cost: 75 mana, 5 redstone dust and 5 iron bars
         str-cast-self: You have marked your location.
     minion:
-        spell-class: ".buff.MinionSpell"
+        jutsu-class: ".buff.MinionJutsu"
         name: minion
-        spell-icon: monster_egg:54
+        jutsu-icon: monster_egg:54
         description: Summons an undead minion to aid you.
         cast-item: bone
         cooldown: 60
@@ -1104,9 +1104,9 @@ spells:
         str-cast-others: "%a has summoned an undead minion."
         str-fade: Your undead minion dies.
     pain:
-        spell-class: ".targeted.PainSpell"
+        jutsu-class: ".targeted.PainJutsu"
         name: pain
-        spell-icon: bone
+        jutsu-icon: bone
         description: Cause your enemy pain.
         cast-item: blaze_rod
         cooldown: 5
@@ -1122,9 +1122,9 @@ spells:
         str-cost: 10 mana and a half heart
         str-no-target: No target found.
     phase:
-        spell-class: ".instant.PhaseSpell"
+        jutsu-class: ".instant.PhaseJutsu"
         name: phase
-        spell-icon: diamond
+        jutsu-icon: diamond
         description: Phase through solid matter.
         cast-item: stick
         cooldown: 10
@@ -1136,9 +1136,9 @@ spells:
         str-cost: 15 mana
         str-cant-phase: Unable to find place to phase to.
     poison:
-        spell-class: ".targeted.PotionEffectSpell"
+        jutsu-class: ".targeted.PotionEffectJutsu"
         name: poison
-        spell-icon: spider_eye
+        jutsu-icon: spider_eye
         description: Poison your target.
         cast-item: blaze_rod
         cooldown: 15
@@ -1156,9 +1156,9 @@ spells:
         str-cast-self: You have poisoned your target!
         str-no-target: No target found.
     prayer:
-        spell-class: ".instant.PrayerSpell"
+        jutsu-class: ".instant.PrayerJutsu"
         name: prayer
-        spell-icon: yellow_flower
+        jutsu-icon: yellow_flower
         description: Heals yourself for five hearts.
         cast-item: stick
         cooldown: 15
@@ -1169,9 +1169,9 @@ spells:
         str-cast-self: You have healed yourself.
         str-at-full-health: You are already at full health.
     purge:
-        spell-class: ".instant.PurgeSpell"
+        jutsu-class: ".instant.PurgeJutsu"
         name: purge
-        spell-icon: potion:16396
+        jutsu-icon: potion:16396
         description: Kill all monsters and animals around you.
         cast-item: bone
         cooldown: 60
@@ -1182,9 +1182,9 @@ spells:
         str-cast-self: You purge all life around you.
         str-cast-others: "%a purges all nearby life."
     reach:
-        spell-class: ".buff.ReachSpell"
+        jutsu-class: ".buff.ReachJutsu"
         name: reach
-        spell-icon: dispenser
+        jutsu-icon: dispenser
         description: Place and destroy blocks from far away.
         cast-item: stick
         cooldown: 120
@@ -1200,13 +1200,13 @@ spells:
         str-cast-self: You gain the ability to manipulate the world around you.
         str-fade: You can no longer manipulate the world around you.        
     recall:
-        spell-class: ".instant.RecallSpell"
+        jutsu-class: ".instant.RecallJutsu"
         name: recall
-        spell-icon: compass
+        jutsu-icon: compass
         description: Teleports you to your marked location.
         cast-item: stick
         cooldown: 300
-        mark-spell: mark
+        mark-jutsu: mark
         max-range: -1
         allow-cross-world: true
         use-bed-location: false
@@ -1220,10 +1220,10 @@ spells:
         str-too-far: Your marked location is too far away.
         str-cast-others: "%a disappears!"
     reflect:
-        spell-class: ".buff.ReflectSpell"
+        jutsu-class: ".buff.ReflectJutsu"
         name: reflect
-        spell-icon: thin_glass
-        description: Reflect spells cast at you.
+        jutsu-icon: thin_glass
+        description: Reflect jutsus cast at you.
         cooldown: 30
         num-uses: 3
         cost:
@@ -1231,14 +1231,14 @@ spells:
         use-cost:
             - mana 20
         use-cost-interval: 1
-        str-cost: 30 mana, plus 20 mana per spell reflected
+        str-cost: 30 mana, plus 20 mana per jutsu reflected
         str-cast-self: You feel a magical barrier surround you.
         str-cast-others: A magical barrier surrounds %a.
         str-fade: Your magical barrier fades.
     repair:
-        spell-class: ".instant.RepairSpell"
+        jutsu-class: ".instant.RepairJutsu"
         name: repair
-        spell-icon: workbench
+        jutsu-icon: workbench
         description: Repairs your gear.
         cast-item: book
         cooldown: 120
@@ -1261,9 +1261,9 @@ spells:
         str-cast-self: You've repaired your gear!
         str-nothing-to-repair: You have nothing to repair.
     roar:
-        spell-class: ".instant.RoarSpell"
+        jutsu-class: ".instant.RoarJutsu"
         name: roar
-        spell-icon: mob_spawner
+        jutsu-icon: mob_spawner
         description: Forces nearby enemies to attack you.
         cast-item: book
         cooldown: 15
@@ -1274,9 +1274,9 @@ spells:
         str-cast-self: "You roar, causing nearby enemies to attack you."
         str-cast-others: "%a roars loudly!"
     safefall:
-        spell-class: ".buff.InvulnerabilitySpell"
+        jutsu-class: ".buff.InvulnerabilityJutsu"
         name: safefall
-        spell-icon: feather
+        jutsu-icon: feather
         description: Allows you to fall without taking damage.
         cast-item: book
         cooldown: 60
@@ -1293,9 +1293,9 @@ spells:
         str-cast-self: You feel lighter.
         str-fade: Your normal weight returns.
     shadowstep:
-        spell-class: ".targeted.ShadowstepSpell"
+        jutsu-class: ".targeted.ShadowstepJutsu"
         name: shadowstep
-        spell-icon: leather_boots
+        jutsu-icon: leather_boots
         cast-item: stick
         effects:
             - caster spawner
@@ -1309,17 +1309,17 @@ spells:
         str-no-target: No target.
         str-no-landing-spot: Cannot shadowstep there.
     silence:
-        spell-class: ".targeted.SilenceSpell"
+        jutsu-class: ".targeted.SilenceJutsu"
         name: silence
-        spell-icon: raw_fish
-        description: Prevent a player from casting spells for a time.
+        jutsu-icon: raw_fish
+        description: Prevent a player from casting jutsus for a time.
         cast-item: blaze_rod
         range: 10
         prevent-cast: true
         prevent-chat: false
         prevent-commands: false
         duration: 200
-        allowed-spells:
+        allowed-jutsus:
             - list
             - help
         cost:
@@ -1328,11 +1328,11 @@ spells:
         str-cast-self: You have silenced %t.
         str-cast-target: "%a has silenced you."
         str-silenced: You are silenced.
-    spellhaste:
-        spell-class: ".buff.SpellHasteSpell"
-        name: spellhaste
-        spell-icon: ink_sack:4
-        description: Reduces the cast time and cooldown of your spells.
+    jutsuhaste:
+        jutsu-class: ".buff.JutsuHasteJutsu"
+        name: jutsuhaste
+        jutsu-icon: ink_sack:4
+        description: Reduces the cast time and cooldown of your jutsus.
         cast-item: book
         cooldown: 60
         duration: 15
@@ -1344,9 +1344,9 @@ spells:
         str-cast-self: Your mind quickens, allowing you to cast faster!
         str-fade: Your mind slows again.
     stealth:
-        spell-class: ".buff.StealthSpell"
+        jutsu-class: ".buff.StealthJutsu"
         name: stealth
-        spell-icon: leather_boots
+        jutsu-icon: leather_boots
         description: Become invisible to monsters.
         cast-item: bone
         cooldown: 60
@@ -1357,9 +1357,9 @@ spells:
         str-cast-self: You become invisble to monsters.
         str-fade: You are no longer invisible to monsters.
     stonevision:
-        spell-class: ".buff.StonevisionSpell"
+        jutsu-class: ".buff.StonevisionJutsu"
         name: stonevision
-        spell-icon: stone
+        jutsu-icon: stone
         description: See through stone.
         cast-item: book
         range: 4
@@ -1375,9 +1375,9 @@ spells:
         str-cast-self: You can see through stone!
         str-fade: You can no longer see through stone.
     storm:
-        spell-class: ".targeted.AreaEffectSpell"
+        jutsu-class: ".targeted.AreaEffectJutsu"
         name: storm
-        spell-icon: gold_sword
+        jutsu-icon: gold_sword
         description: Strike lightning upon all nearby enemies.
         cast-item: bone
         horizontal-radius: 10
@@ -1388,7 +1388,7 @@ spells:
         target-non-players: true
         target-caster: false
         target-invisible-players: false
-        spells:
+        jutsus:
             - lightning
         cooldown: 15
         cost:
@@ -1396,9 +1396,9 @@ spells:
         str-cost: 35 mana
         str-cast-self: You call down a lightning storm!
     stormblock:
-        spell-class: ".targeted.PulserSpell"
+        jutsu-class: ".targeted.PulserJutsu"
         name: stormblock
-        spell-icon: diamond_block
+        jutsu-icon: diamond_block
         description: Summons a diamond block that calls lightning down upon nearby enemies.
         cast-item: blaze_rod
         cooldown: 30
@@ -1409,13 +1409,13 @@ spells:
         block-type: diamond_block
         unbreakable: false
         only-count-on-success: false
-        spells:
+        jutsus:
             - storm
         str-cast-self: You have summoned a storm block!
         str-cast-others: "%a has summoned a storm block!"
         str-at-cap: You have too many effects at once.
     summon_helper:
-        spell-class: ".targeted.SummonSpell"
+        jutsu-class: ".targeted.SummonJutsu"
         can-cast-with-item: false
         can-cast-by-command: false
         require-exact-name: false
@@ -1430,9 +1430,9 @@ spells:
         str-summon-accepted: You have been summoned.
         str-summon-expired: The summon has expired.
     summon:
-        spell-class: ".instant.RitualSpell"
+        jutsu-class: ".instant.RitualJutsu"
         name: summon
-        spell-icon: portal
+        jutsu-icon: portal
         description: Summon another player to your position. This ritual requires 3 participants.
         cast-item: stick
         cooldown: 300
@@ -1441,7 +1441,7 @@ spells:
         charge-reagents-immediately: true
         set-cooldown-immediately: true
         set-cooldown-for-all: true
-        spell: summon_helper
+        jutsu: summon_helper
         tick-interval: 5
         effect-interval: 20
         cost:
@@ -1456,9 +1456,9 @@ spells:
         str-ritual-interrupted: The summoning ritual has been interrupted.
         str-ritual-failed: The summoning ritual has failed.
     sun:
-        spell-class: ".instant.TimeSpell"
+        jutsu-class: ".instant.TimeJutsu"
         name: sun
-        spell-icon: watch
+        jutsu-icon: watch
         description: Changes the time to morning.
         cast-item: book
         cooldown: 1800
@@ -1470,9 +1470,9 @@ spells:
         time-to-set: 0
         str-announce: The sun has suddenly appeared in the sky!
     switch:
-        spell-class: ".targeted.SwitchSpell"
+        jutsu-class: ".targeted.SwitchJutsu"
         name: switch
-        spell-icon: eye_of_ender
+        jutsu-icon: eye_of_ender
         description: Switch places with your target.
         cast-item: stick
         cooldown: 6
@@ -1485,9 +1485,9 @@ spells:
         str-cast-self: You have switched places with %t.
         str-cast-target: "%a has switched places with you."
     telekinesis:
-        spell-class: ".targeted.TelekinesisSpell"
+        jutsu-class: ".targeted.TelekinesisJutsu"
         name: telekinesis
-        spell-icon: lever
+        jutsu-icon: lever
         description: Manipulate switches and buttons remotely.
         cast-item: stick
         cooldown: 15
@@ -1497,9 +1497,9 @@ spells:
         str-cost: 5 mana
         str-no-target: You must target a switch or button.
     tree:
-        spell-class: ".targeted.TreeSpell"
+        jutsu-class: ".targeted.TreeJutsu"
         name: tree
-        spell-icon: sapling
+        jutsu-icon: sapling
         range: 15
         cooldown: 5
         tree-type: tree
@@ -1510,9 +1510,9 @@ spells:
         str-cost: 10 mana and 1 sapling
         str-no-target: You cannot grow a tree there.
     volley:
-        spell-class: ".targeted.VolleySpell"
+        jutsu-class: ".targeted.VolleyJutsu"
         name: volley
-        spell-icon: bow
+        jutsu-icon: bow
         description: Send a volley of arrows at your targeted location.
         cast-item: blaze_rod
         cooldown: 45
@@ -1529,9 +1529,9 @@ spells:
         str-cast-others: "%a fires a volley of arrows."
         str-no-target: No target found.
     walkway:
-        spell-class: ".buff.WalkwaySpell"
+        jutsu-class: ".buff.WalkwayJutsu"
         name: walkway
-        spell-icon: wood_stairs
+        jutsu-icon: wood_stairs
         description: Summon a moving magical walkway to take you places.
         cast-item: book
         cooldown: 60
@@ -1550,9 +1550,9 @@ spells:
         str-cast-self: You summon a magical walkway.
         str-fade: Your magical walkway disappears.
     wall:
-        spell-class: ".instant.WallSpell"
+        jutsu-class: ".instant.WallJutsu"
         name: wall
-        spell-icon: brick
+        jutsu-icon: brick
         description: Creates a temporary wall to block your enemies.
         cast-item: stick
         cooldown: 15
@@ -1567,9 +1567,9 @@ spells:
         str-cost: 12 mana and 2 stone
         str-no-target: Unable to create a wall.
     water:
-        spell-class: ".targeted.MaterializeSpell"
+        jutsu-class: ".targeted.MaterializeJutsu"
         name: water
-        spell-icon: water_bucket
+        jutsu-icon: water_bucket
         description: Summons a water spring into existence.
         cast-item: stick
         cooldown: 120
@@ -1584,9 +1584,9 @@ spells:
         str-no-target: No target.
         str-failed: ""
     waterwalk:
-        spell-class: ".buff.WaterwalkSpell"
+        jutsu-class: ".buff.WaterwalkJutsu"
         name: waterwalk
-        spell-icon: boat
+        jutsu-icon: boat
         description: Walk across the water.
         cast-item: book
         speed: 0.05
@@ -1603,9 +1603,9 @@ spells:
         str-cast-self: You can now walk on water!
         str-fade: You can no longer walk on water.
     windwalk:
-        spell-class: ".buff.WindwalkSpell"
+        jutsu-class: ".buff.WindwalkJutsu"
         name: windwalk
-        spell-icon: feather
+        jutsu-icon: feather
         enabled: true
         description: Fly through the air.
         cast-item: book
@@ -1627,9 +1627,9 @@ spells:
         str-cast-others: "%a is now walking on the wind!"
         str-fade: You are no longer walking on the wind.
     zap:
-        spell-class: ".targeted.ZapSpell"
+        jutsu-class: ".targeted.ZapJutsu"
         name: zap
-        spell-icon: gold_pickaxe
+        jutsu-icon: gold_pickaxe
         description: Instantly destroys a block.
         cast-item: stick
         cooldown: 1
@@ -1648,9 +1648,9 @@ spells:
         str-cant-zap: You can't zap that.
         
     gianttree:
-        spell-class: ".ExternalCommandSpell"
+        jutsu-class: ".ExternalCommandJutsu"
         name: gianttree
-        spell-icon: sapling:3
+        jutsu-icon: sapling:3
         enabled: false
         description: Create a giant tree!
         cooldown: 300
@@ -1674,9 +1674,9 @@ spells:
         str-cant-use-command: "&4You don't have permission to do that."
         
     torcharrow:
-        spell-class: ".PermissionSpell"
+        jutsu-class: ".PermissionJutsu"
         name: torcharrow
-        spell-icon: torch
+        jutsu-icon: torch
         enabled: false
         description: Shoot torch arrows.
         cast-item: book
@@ -1693,16 +1693,16 @@ spells:
         str-cast-self: You can now fire torch arrows.
         
     zeus:
-        spell-class: ".MultiSpell"
+        jutsu-class: ".MultiJutsu"
         name: zeus
-        spell-icon: gold_axe
+        jutsu-icon: gold_axe
         cooldown: 30
         cast-item: blaze_rod
         check-individual-cooldowns: false
         cost:
             - mana 30
         str-cost: 30 mana
-        spells:
+        jutsus:
             - lightning
             - DELAY 5
             - explode

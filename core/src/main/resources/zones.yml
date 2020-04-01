@@ -4,8 +4,8 @@ zone1:
     type: cuboid
     point1: -30,0,-30
     point2: 30,128,30
-    message: An anti-magic aura makes your spell fizzle.
-    allowed-spells:
+    message: An anti-magic aura makes your jutsu fizzle.
+    allowed-jutsus:
         - list
         - help
 zone2:
@@ -13,8 +13,8 @@ zone2:
     world: world
     type: worldguard
     region: arena
-    message: You cannot use that spell in the arena.
-    disallowed-spells:
+    message: You cannot use that jutsu in the arena.
+    disallowed-jutsus:
         - blink
         - gate
         - mark

@@ -1,5 +1,5 @@
 ignore-other-plugins: false
-require-known-spell: true
+require-known-jutsu: true
 require-teach-perm: true
 
 currencies:
@@ -9,15 +9,15 @@ currencies:
     gold: "266"
     cocoa: "351:3"
 
-first-line: [SPELL SHOP]
-str-already-known: You already know that spell.
-str-cant-afford: You cannot afford that spell.
-str-cant-learn: You are not able to buy that spell.
-str-purchased: You have purchased the %s spell.
+first-line: [JUTSU SHOP]
+str-already-known: You already know that jutsu.
+str-cant-afford: You cannot afford that jutsu.
+str-cant-learn: You are not able to buy that jutsu.
+str-purchased: You have purchased the %s jutsu.
 
 first-line-scroll: [SCROLL SHOP]
-scroll-spell-name: scroll
+scroll-jutsu-name: scroll
 scroll-item-type: 339
 str-cant-afford-scroll: You cannot afford that scroll.
-str-purchased-scroll: You have purchased a scroll for the %s spell (with %u uses).
+str-purchased-scroll: You have purchased a scroll for the %s jutsu (with %u uses).
 str-scroll-fail: You cannot purchase a scroll at this time.

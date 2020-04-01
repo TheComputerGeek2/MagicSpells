@@ -1,5 +1,5 @@
-name: MagicSpells
-main: com.nisovin.magicspells.MagicSpells
+name: MagicJutsus
+main: com.nisovin.magicjutsus.MagicJutsus
 version: $version
 authors: [nisovin, TheComputerGeek2, Chronoken]
 softdepend: [GriefPrevention,Vault,ProtocolLib,WorldGuard,Residence,PowerNBT,LibsDisguises,NoCheatPlus,PlaceholderAPI]
@@ -7,15 +7,15 @@ api-version: "1.13"
 
 #depend: [EffectLib]
 commands:
-    magicspellcast:
-        description: Cast a spell
+    magicjutsucast:
+        description: Cast a jutsu
         usage: /<command>
         aliases: [cast,c]
-    magicspellmana:
+    magicjutsumana:
         description: Show mana bar
         usage: /<command>
         aliases: [mana]
-    magicspellxp:
+    magicjutsuxp:
         description: Show magic XP info
         usage: /<command>
-        aliases: [magicxp,spellxp]
+        aliases: [magicxp,jutsuxp]

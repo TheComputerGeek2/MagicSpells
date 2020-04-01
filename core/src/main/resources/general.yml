@@ -5,28 +5,28 @@ enable-stat-collection: true
 enable-volatile-features: true
 enable-tab-completion: true
 str-cast-usage: |
-    Usage: /cast <spell>. 
-    Use /cast list to see a list of spells.
-str-unknown-spell: You do not know a spell with that name.
-str-spell-change: You are now using the %s spell.
-str-spell-change-empty: You are no longer using a spell.
-str-on-cooldown: That spell is on cooldown (%c seconds remaining).
-str-missing-reagents: You do not have the required reagents for that spell.
-str-cant-cast: You can't cast that spell right now.
-str-wrong-world: You cannot cast that spell here.
+    Usage: /cast <jutsu>.
+    Use /cast list to see a list of jutsus.
+str-unknown-jutsu: You do not know a jutsu with that name.
+str-jutsu-change: You are now using the %s jutsu.
+str-jutsu-change-empty: You are no longer using a jutsu.
+str-on-cooldown: That jutsu is on cooldown (%c seconds remaining).
+str-missing-reagents: You do not have the required reagents for that jutsu.
+str-cant-cast: You can't cast that jutsu right now.
+str-wrong-world: You cannot cast that jutsu here.
 str-console-name: Admin
 text-color: 3
 broadcast-range: 20
-spell-icon-slot: -1
-separate-player-spells-per-world: false
-allow-cycle-to-no-spell: false
+jutsu-icon-slot: -1
+separate-player-jutsus-per-world: false
+allow-cycle-to-no-jutsu: false
 always-show-message-on-cycle: false
-only-cycle-to-castable-spells: true
+only-cycle-to-castable-jutsus: true
 allow-cast-with-fist: false
 cast-with-left-click: true
 cast-with-right-click: false
-cycle-spells-with-offhand-action: false
-ops-have-all-spells: true
+cycle-jutsus-with-offhand-action: false
+ops-have-all-jutsus: true
 ops-ignore-reagents: true
 ops-ignore-cooldowns: true
 ops-ignore-cast-times: true

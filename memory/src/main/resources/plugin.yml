@@ -1,13 +1,13 @@
-name: MagicSpellsMemory
+name: MagicJutsusMemory
 version: $version
-main: com.nisovin.magicspells.memory.MagicSpellsMemory
-depend: [MagicSpells]
+main: com.nisovin.magicjutsus.memory.MagicJutsusMemory
+depend: [MagicJutsus]
 commands:
-    magicspellsmemory:
+    magicjutsusmemory:
         description: Check your memory usage
         usage: /<command>
         aliases: [memory,mem]
 permissions:
-    magicspells.memory.checkothers:
+    magicjutsus.memory.checkothers:
         description: Check someone else's memory usage
         default: op

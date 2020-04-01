@@ -1,0 +1,130 @@
+list:
+    jutsu-class: ".command.ListJutsu"
+    name: list
+    always-granted: true
+    description: List all the jutsus you know.
+    only-show-castable-jutsus: false
+    reload-granted-jutsus: true
+    jutsus-to-hide: []
+    str-prefix: "Known jutsus:"
+    str-no-jutsus: You do not know any jutsus.
+help:
+    jutsu-class: ".command.HelpJutsu"
+    name: help
+    always-granted: true
+    description: Get information about a specified jutsu.
+    require-known-jutsu: true
+    str-usage: "Usage: /cast help <jutsu>"
+    str-no-jutsu: You do not know a jutsu by that name.
+    str-desc-line: "%s - %d"
+    str-cost-line: "Cost: %c"
+teach:
+    jutsu-class: ".command.TeachJutsu"
+    name: teach
+    description: Teach a jutsu to another player.
+    require-known-jutsu: true
+    str-usage: "Usage: /cast teach <target> <jutsu>"
+    str-no-target: No such player.
+    str-no-jutsu: You do not know a jutsu by that name.
+    str-cant-teach: You can't teach that jutsu.
+    str-cant-learn: That person cannot learn that jutsu.
+    str-cast-self: You have taught %t the %s jutsu.
+    str-cast-target: "%a has taught you the %s jutsu."
+forget:
+    jutsu-class: ".command.ForgetJutsu"
+    name: forget
+    description: Make a player forget a jutsu.
+    allow-self-forget: true
+    str-usage: "Usage: /cast forget <target> <jutsu>"
+    str-no-target: No such player.
+    str-no-jutsu: You do not know a jutsu by that name.
+    str-doesnt-know: That person does not know that jutsu.
+    str-cast-self: You made %t forget the %s jutsu.
+    str-cast-target: "%a has made you forget the %s jutsu."
+    str-cast-self-target: "You have forgotten the %s jutsu."
+    str-reset-target: "You have reset %t's jutsubook."
+    str-reset-self: "You have forgotten all of your jutsus."
+bind:
+    jutsu-class: ".command.BindJutsu"
+    name: bind
+    enabled: true
+    description: Binds a jutsu to a wand item.
+    allow-bind-to-fist: false
+    str-cast-self: "You have successfully bound the %s jutsu to the \nitem you are holding."
+    str-usage: You must specify a jutsu name and hold an item in your hand.
+    str-no-jutsu: You do not know a jutsu by that name.
+    str-cant-bind-jutsu: That jutsu cannot be bound to an item.
+    str-cant-bind-item: That jutsu cannot be bound to that item.
+unbind:
+    jutsu-class: ".command.UnbindJutsu"
+    name: unbind
+    enabled: true
+    description: Unbinds a jutsu from its assigned wand item.
+    str-cast-self: "You have successfully unbound the %s jutsu."
+    str-usage: You must specify a jutsu name.
+    str-no-jutsu: You do not know a jutsu by that name.
+    str-cant-bind-jutsu: That jutsu cannot be bound to an item.
+    str-not-bound: That jutsu is not bound to that item.
+scroll:
+    jutsu-class: ".command.ScrollJutsu"
+    name: scroll
+    description: Create a limited use jutsu scroll.
+    cast-for-free: true
+    default-uses: 5
+    max-uses: 10
+    item-id: paper
+    right-click-cast: true
+    left-click-cast: false
+    ignore-cast-perm: false
+    remove-scroll-when-depleted: true
+    charge-reagents-for-jutsu-per-charge: false
+    require-teach-perm: true
+    require-scroll-cast-perm-on-use: true
+    str-scroll-name: "Magic Scroll: %s"
+    str-scroll-subtext: "Uses remaining: %u"
+    str-scroll-over: "Jutsu Scroll: %s (%u uses remaining)"
+    str-usage: |
+        You must hold a single blank paper 
+        and type /cast scroll <jutsu> <uses>.
+    str-no-jutsu: You do not know a jutsu by that name.
+    str-cant-teach: You cannot create a tome with that jutsu.
+    str-cast-self: You have created a jutsu scroll for %s.
+    str-on-use: "Jutsu Scroll: %s used. %u uses remaining."
+    str-use-fail: Unable to use this scroll right now.
+jutsubook:
+    jutsu-class: ".command.JutsubookJutsu"
+    name: jutsubook
+    description: Create a jutsubook that teaches a jutsu.
+    default-uses: -1
+    destroy-when-used-up: false
+    jutsubook-block: bookshelf
+    str-use: "Usage: /cast jutsubook <jutsu> [uses]"
+    str-cast-self: You have created a jutsubook with the %s jutsu.
+    str-no-jutsu: You do not know a jutsu by that name.
+    str-cant-teach: You can't create a jutsubook with that jutsu.
+    str-no-target: You must target a bookcase to create a jutsubook.
+    str-has-jutsubook: That bookcase already has a jutsubook.
+    str-cant-destroy: You cannot destroy a bookcase with a jutsubook.
+    str-cant-learn: You cannot learn the jutsu in this jutsubook.
+    str-already-known: You already know the %s jutsu.
+    str-learned: You have learned the %s jutsu!
+tome:
+    jutsu-class: ".command.TomeJutsu"
+    name: tome
+    jutsu-icon: book
+    description: Create a tome that teaches a jutsu.
+    cancel-read-on-learn: true
+    consume-book: true
+    allow-overwrite: false
+    max-uses: -1
+    default-uses: -1
+    require-teach-perm: true
+    str-usage: "Usage: While holding a book, /cast tome <jutsu>"
+    str-no-jutsu: You do not know a jutsu with that name.
+    str-cant-teach: You cannot create a tome with that jutsu.
+    str-no-book: You must be holding a book.
+    str-already-has-jutsu: That book already contains a jutsu.
+    str-already-known: You already know the %s jutsu.
+    str-cant-learn: You cannot learn the jutsu in this tome.
+    str-learned: You have learned the %s jutsu.
+    str-cast-self: You have created a jutsu tome.

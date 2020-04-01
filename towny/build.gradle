@@ -4,5 +4,5 @@ dependencies {
     compile ":Towny"
 }
 jar {
-    archiveFileName = "MagicSpellsTowny.jar"
+    archiveFileName = "MagicJutsusTowny.jar"
 }

@@ -1,17 +1,17 @@
-name: MagicSpellsTeams
+name: MagicJutsusTeams
 version: $version
-main: com.nisovin.magicspells.teams.MagicSpellsTeams
+main: com.nisovin.magicjutsus.teams.MagicJutsusTeams
 authors: [nisovin, TheComputerGeek2]
-depend: [MagicSpells]
+depend: [MagicJutsus]
 commands:
-    magicspellsteams:
+    magicjutsusteams:
         usage: |
             /<command> <create|new|make> <teamname> - makes a new team
             /<command> list - lists the existing teams
             /<command> <info|about> <name> - shows setup information about a team
-        permission: magicspellsteams.manage
+        permission: magicjutsusteams.manage
         description: Base command for team management.
 permissions:
-    magicspellsteams.manage:
+    magicjutsusteams.manage:
         default: op
         description: Manage teams from in game.

@@ -1,10 +1,10 @@
-name: MagicSpellsShop
+name: MagicJutsusShop
 version: $version
-main: com.nisovin.magicspells.shop.MagicSpellsShop
+main: com.nisovin.magicjutsus.shop.MagicJutsusShop
 author: nisovin
-depend: [MagicSpells]
+depend: [MagicJutsus]
 softdepend: [Vault]
 permissions:
-    magicspells.createsignshop:
-        description: Create a spell shop
+    magicjutsus.createsignshop:
+        description: Create a jutsu shop
         default: op

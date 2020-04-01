@@ -1,16 +1,16 @@
-Spells to add:
+Jutsus to add:
     - sleeping ignored (buff)
     - set player time (targeted)
     - force raw chat (targeted)
-    - large recipe spell (use a chest or double chest size inventory for crafting something)
+    - large recipe jutsu (use a chest or double chest size inventory for crafting something)
     - set selected slot (targeted)
-    - view inventory spell (targeted. view the target's inventory, option to set access rules)
+    - view inventory jutsu (targeted. view the target's inventory, option to set access rules)
     - disable item pickup (targeted)
-    - regrow wool spell (targeted. force sheep to regrow their wool)
-    - shear spell (shear target entity. eg. sheep, mooshrooms)
-    - Spawn AreaEffectCloud spell (targeted. allow specification of all factors possible)
-    - set biome spell (targeted location. permanent or temporary)
+    - regrow wool jutsu (targeted. force sheep to regrow their wool)
+    - shear jutsu (shear target entity. eg. sheep, mooshrooms)
+    - Spawn AreaEffectCloud jutsu (targeted. allow specification of all factors possible)
+    - set biome jutsu (targeted location. permanent or temporary)
 
-Spell enhancements:
-    - allow lightning spell to be silent
+Jutsu enhancements:
+    - allow lightning jutsu to be silent
     - allow the knockback strength of volley arrows to be specified

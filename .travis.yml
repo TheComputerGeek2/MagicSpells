@@ -1,5 +1,5 @@
 language: java
-script: gradle magicspellsBuild -PDeploymentNaming
+script: gradle magicjutsusBuild -PDeploymentNaming
 jdk:
     - oraclejdk8
 branches:
@@ -13,12 +13,12 @@ deploy:
   api_key:
     secure: R/NDbeD698sdnzxt0i5Jac57gVnwdV7ORNvX0EnNCOi+MazSontIN5QMerY5UwohDxLmIA75jT61ZBqt28DzOUHOHiHi9jLjbNsQVuSvVwCcgx3hS9VQOlJqKX6PDJBqbWGx8gfWpTe30AlEWWDKlr+jUsjx1Iwtvtd53BYEEhgaYEGda9m7vZ0EeLkMK0TkRpUOwoyIWsBK853hG7wl9PD8Ytn0JqAQSaIC/D/ZJ0RjRoI9piCEtsKs0tzRxY0wQuwc8bTGxyCpAMvsR9ZCA8/bocMbifddTSQ4OBCu6ah4q7CZ8pPiAm6CACtnvffUzJeCz2IRlDZbTU1H9OJu25mGrXMMxtQBzEgf6YM53F2Ii2wy6LtS0J4yi/LGmxomhd7gWh8LxuDE/qg5T608Jx8hdvP2ZigpBKJhToEoO0du3+r6lJrCKqeKUHJ0XlMerUao0w9a57W5d8Q9hFUSquDtwd5n0/hh5Hg2kPXLA+UQ4KzzvGPnlZj0G1gvzBltk50u+8cSV7UUw+1LaMsuv+yG8W98mlocfpyW7kQOBalX/9x5ArQHroSM5OQYKGY2aj8wtRmBeqwWgBWuX/TFc0Zbv6LMW1hmf+Fz5OEafG6jeaiOJ78c3u+dawyzDygBPCl3J6zPwv4RD8JY4mGUwl3+TsXNQNcUWTf3ai7hoKM=
   file:
-    - "dist/MagicSpells.jar"
-    - "dist/MagicSpellsFactions.jar"
-    - "dist/MagicSpellsMemory.jar"
-    - "dist/MagicSpellsShop.jar"
-    - "dist/MagicSpellsTeams.jar"
-    - "dist/MagicSpellsTowny.jar"
+    - "dist/MagicJutsus.jar"
+    - "dist/MagicJutsusFactions.jar"
+    - "dist/MagicJutsusMemory.jar"
+    - "dist/MagicJutsusShop.jar"
+    - "dist/MagicJutsusTeams.jar"
+    - "dist/MagicJutsusTowny.jar"
   on:
-    repo: TheComputerGeek2/MagicSpells
+    repo: TheComputerGeek2/MagicJutsus
     branch: master

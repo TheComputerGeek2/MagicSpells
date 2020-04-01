@@ -1,5 +1,5 @@
-name: MagicSpellsFactions
+name: MagicJutsusFactions
 version: $version
-main: com.nisovin.magicspells.factions.MagicSpellsFactions
-depend: [ MagicSpells, Factions ]
+main: com.nisovin.magicjutsus.factions.MagicJutsusFactions
+depend: [ MagicJutsus, Factions ]
 authors: [nisovin, TheComputerGeek2]

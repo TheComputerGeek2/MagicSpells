@@ -57,7 +57,7 @@ final String OPTION_RELEASE = "release"
 }*/
 
 ext {
-  magicspellsData = new MSConfig()
+  magicjutsusData = new MSConfig()
 }
 
 /*dependencies {
@@ -116,7 +116,7 @@ public class MSConfig {
   String stringVersionShop
 }
 
-MSConfig msconfig = ext.magicspellsData
+MSConfig msconfig = ext.magicjutsusData
 
 static def downloadFile(File file, URL url) {
   if (!file.exists()) {
@@ -126,33 +126,33 @@ static def downloadFile(File file, URL url) {
 
 // FIXME this should be setup as a task instead of a method running on configuration time
 // Ensures resource availability
-def magicspellsGetResources() {
+def magicjutsusGetResources() {
   println "Running the get resources phase"
 
-  File libFolder = project.file(project.ext.magicspellsData.libDir)
+  File libFolder = project.file(project.ext.magicjutsusData.libDir)
 
   // Get NoCheatPlus
-  downloadFile(new File(libFolder, "NoCheatPlus.jar"), new URL(project.ext.magicspellsData.resourceNcpUrl))
+  downloadFile(new File(libFolder, "NoCheatPlus.jar"), new URL(project.ext.magicjutsusData.resourceNcpUrl))
 
   // Get PlaceholderAPI
-  //downloadFile(new File(libFolder, "PlaceholderAPI.jar"), new URL(project.ext.magicspellsData.resourcePlaceholderapiUrl))
+  //downloadFile(new File(libFolder, "PlaceholderAPI.jar"), new URL(project.ext.magicjutsusData.resourcePlaceholderapiUrl))
 
   // Get GriefPrevention
-  //downloadFile(new File(libFolder, "GriefPrevention.jar"), new URL(project.ext.magicspellsData.resourceGriefPreventionUrl))
+  //downloadFile(new File(libFolder, "GriefPrevention.jar"), new URL(project.ext.magicjutsusData.resourceGriefPreventionUrl))
 
   println "Finished running the get resources phase"
 }
 
 afterEvaluate {
-  magicspellsGetResources()
+  magicjutsusGetResources()
 }
 
 // FIXME this should not be run at configuration time
-//magicspellsGetResources()
+//magicjutsusGetResources()
 task downloadDependencies() {
     group = "Setup"
     doFirst {
-        magicspellsGetResources()
+        magicjutsusGetResources()
     }
 }
 
@@ -195,26 +195,26 @@ subprojects {
 }
 
 // FIXME fix up this task
-/*task magicspellsBuildVersion() {
+/*task magicjutsusBuildVersion() {
   description = "Assign version suffix in dev build format"
   msconfig.versionSuffix = "dev-${-> msconfig.datestampString}"
 }
 
 // FIXME fix up this task
-task magicspellsReleaseVersion() {
+task magicjutsusReleaseVersion() {
   description = "Assign version suffix in release format"
   if (project.hasProperty("${OPTION_RELEASE}")) msconfig.versionSuffix = "Release"
 }
 
 // FIXME do more of this at build time, not config time
-task magicspellsCoreJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-  description = "Create the main MagicSpells jar"
+task magicjutsusCoreJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+  description = "Create the main MagicJutsus jar"
   dependsOn = [
-    "magicspellsCoreCompile",
-    "magicspellsCoreCopyResources"
+    "magicjutsusCoreCompile",
+    "magicjutsusCoreCopyResources"
   ]
-  archiveFileName = "MagicSpells-${msconfig.stringVersionCore}.jar"
-  if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveFileName = "MagicSpells.jar"
+  archiveFileName = "MagicJutsus-${msconfig.stringVersionCore}.jar"
+  if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveFileName = "MagicJutsus.jar"
   destinationDirectory = project.file(msconfig.distDir)
   from("${msconfig.coreBuildDir}")
   dependencies {
@@ -224,9 +224,9 @@ task magicspellsCoreJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.S
     dependency("org.apache.commons:commons-math3")
   }
   from (project.configurations.compile)
-  relocate "org.apache.commons.math3", "com.nisovin.magicspells.shaded.org.apache.commons"
-  magicspellsCoreJar.exclude "**${File.separator}*.xml", "**${File.separator}*pom.properties", "**${File.separator}**LocalizedFormats**"
-  println magicspellsCoreJar.excludes
+  relocate "org.apache.commons.math3", "com.nisovin.magicjutsus.shaded.org.apache.commons"
+  magicjutsusCoreJar.exclude "**${File.separator}*.xml", "**${File.separator}*pom.properties", "**${File.separator}**LocalizedFormats**"
+  println magicjutsusCoreJar.excludes
 }
 
 apply plugin: "maven-publish"
@@ -238,20 +238,20 @@ publishing {
         mavenJava(MavenPublication) {
             groupId = "com.github.TheComputerGeek2"
             afterEvaluate {
-              version = "MagicSpells-${msconfig.coreVersion}-${gitdata.getCommit()}"
+              version = "MagicJutsus-${msconfig.coreVersion}-${gitdata.getCommit()}"
             }
-            artifact magicspellsCoreJar
+            artifact magicjutsusCoreJar
         }
     }
 }
 
 artifacts {
-  mscore magicspellsCoreJar
-  teams magicspellsTeamsJar
-  memory magicspellsMemoryJar
-  shop magicspellsShopJar
-  towny magicspellsTownyJar
-  factions magicspellsFactionsJar
-  archives magicspellsZip
+  mscore magicjutsusCoreJar
+  teams magicjutsusTeamsJar
+  memory magicjutsusMemoryJar
+  shop magicjutsusShopJar
+  towny magicjutsusTownyJar
+  factions magicjutsusFactionsJar
+  archives magicjutsusZip
 }
 */

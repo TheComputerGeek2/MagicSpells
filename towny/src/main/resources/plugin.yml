@@ -1,5 +1,5 @@
-name: MagicSpellsTowny
-main: com.nisovin.magicspells.towny.MagicSpellsTowny
+name: MagicJutsusTowny
+main: com.nisovin.magicjutsus.towny.MagicJutsusTowny
 version: $version
 author: nisovin
-depend: [MagicSpells,Towny]
+depend: [MagicJutsus,Towny]

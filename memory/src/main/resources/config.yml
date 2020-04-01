@@ -1,4 +1,4 @@
-str-out-of-memory: "You don't have enough memory to learn the %spell spell."
+str-out-of-memory: "You don't have enough memory to learn the %jutsu jutsu."
 str-memory-usage: "You have used %memory memory out of %total."
 max-memory-default: 10
 max-memory-perms:

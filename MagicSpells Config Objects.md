@@ -1,6 +1,6 @@
-MagicSpells Config Objects
+MagicJutsus Config Objects
 ===========
-This is a basic guide to the configuration representation of various objects in MagicSpells. By no means is this guaranteed to be complete but rather a quick reference on how to put together common details.
+This is a basic guide to the configuration representation of various objects in MagicJutsus. By no means is this guaranteed to be complete but rather a quick reference on how to put together common details.
 
 Vector
 --------
@@ -10,24 +10,24 @@ TargetBooleanState
 --------
 The TargetBooleanState format is just a string which represents a 3 outcome type boolean state, `on`, `off`, and `toggle`.
 
-SpellFilter
+JutsuFilter
 --------
-The SpellFilter format is a configuration section which may contain any of the following:
-- `spells` accepts a list of the internal spell names to explicitly allow.
-- `denied-spells` accepts a list of the internal spell names to explicitly deny.
-- `spell-tags` accepts a list of strings to indicate spell tags to look for and allow.
-- `denied-spell-tags` accepts a list of strings to indicate which spell tags to look for and deny.
+The JutsuFilter format is a configuration section which may contain any of the following:
+- `jutsus` accepts a list of the internal jutsu names to explicitly allow.
+- `denied-jutsus` accepts a list of the internal jutsu names to explicitly deny.
+- `jutsu-tags` accepts a list of strings to indicate jutsu tags to look for and allow.
+- `denied-jutsu-tags` accepts a list of strings to indicate which jutsu tags to look for and deny.
 
-Spells are checked against the options in this order.
-- If none of the options are defined, it allows all spells to pass through it.
-- If `spells` is defined and contains the spell being checked, the spell is allowed through the filter.
-- If `denied-spells` is defined and contains the spell being checked, the spell is not allowed through the filter.
-- If `denied-spell-tags` is defined and the spell being checked contains a tag that is denied, the spell is not allowed through the filter.
-- If `spell-tags` is defined and the spell being checked contains a tag in this collection, the spell is allowed through the filter.
+Jutsus are checked against the options in this order.
+- If none of the options are defined, it allows all jutsus to pass through it.
+- If `jutsus` is defined and contains the jutsu being checked, the jutsu is allowed through the filter.
+- If `denied-jutsus` is defined and contains the jutsu being checked, the jutsu is not allowed through the filter.
+- If `denied-jutsu-tags` is defined and the jutsu being checked contains a tag that is denied, the jutsu is not allowed through the filter.
+- If `jutsu-tags` is defined and the jutsu being checked contains a tag in this collection, the jutsu is allowed through the filter.
 - If none of these have applied, a default handling is applied. The default handling is determined as follows:
-  - If `spells` or `spell-tags` are defined, the default action is to block the spell when being checked.
-  - If the previous has not applied, then if `denied-spells` or `denied-spell-tags` is defined, the default action is to allow the checked spell through the filter.
-  - If a default result has not been determined from the 2 above rules, the filter has no fields defined and is treated as being an open filter, meaning that it allows all spells to pass through it.
+  - If `jutsus` or `jutsu-tags` are defined, the default action is to block the jutsu when being checked.
+  - If the previous has not applied, then if `denied-jutsus` or `denied-jutsu-tags` is defined, the default action is to allow the checked jutsu through the filter.
+  - If a default result has not been determined from the 2 above rules, the filter has no fields defined and is treated as being an open filter, meaning that it allows all jutsus to pass through it.
 
 Prompt
 --------

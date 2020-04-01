@@ -3,15 +3,15 @@ clear-cache-on-death: false
 
 teams:
     admins:
-        permission: "magicspells.team.admins"
+        permission: "magicjutsus.team.admins"
         friendly-fire: false
     team1:
-        permission: "magicspells.team.one"
+        permission: "magicjutsus.team.one"
         friendly-fire: false
         can-target:
           - team2
     team2:
-        permission: "magicspells.team.two"
+        permission: "magicjutsus.team.two"
         friendly-fire: false
         cant-target:
           - admins

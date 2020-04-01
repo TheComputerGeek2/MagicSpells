@@ -1,4 +1,4 @@
-rootProject.name = "MagicSpellsParent"
+rootProject.name = "MagicJutsusParent"
 
 include("core")
 include("factions")

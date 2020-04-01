@@ -3,5 +3,5 @@ dependencies {
     compile ":spigot-1.12"
 }
 jar {
-    archiveFileName = "MagicSpellsShop.jar"
+    archiveFileName = "MagicJutsusShop.jar"
 }
