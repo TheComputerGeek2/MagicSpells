@@ -6,10 +6,10 @@ import org.bukkit.entity.Player;
 
 public class ReagentList {
 
-	Map<Reagent, Integer> reagents;
+	private Map<Reagent, Integer> reagents;
 	
 	public boolean has(Player player) {
-		for (Map.Entry<Reagent, Integer> entry : this.reagents.entrySet()) {
+		for (Map.Entry<Reagent, Integer> entry : reagents.entrySet()) {
 			if (!entry.getKey().has(player, entry.getValue())) {
 				return false;
 			}
@@ -18,15 +18,15 @@ public class ReagentList {
 	}
 	
 	public void remove(Player player) {
-		for (Map.Entry<Reagent, Integer> entry : this.reagents.entrySet()) {
+		for (Map.Entry<Reagent, Integer> entry : reagents.entrySet()) {
 			entry.getKey().remove(player, entry.getValue());
 		}
 	}
 	
 	public void multiply(float num) {
-		for (Reagent reagent : this.reagents.keySet()) {
-			int amount = this.reagents.get(reagent);
-			this.reagents.put(reagent, Math.round(amount * num));
+		for (Reagent reagent : reagents.keySet()) {
+			int amount = reagents.get(reagent);
+			reagents.put(reagent, Math.round(amount * num));
 		}
 	}
 	

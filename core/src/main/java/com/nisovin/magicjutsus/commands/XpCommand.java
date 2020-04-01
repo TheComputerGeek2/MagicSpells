@@ -25,7 +25,7 @@ public class XpCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String [] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         try {
             if (!command.getName().equalsIgnoreCase("magicjutsuxp")) return false;
             if (!(sender instanceof Player)) return true;

@@ -24,7 +24,7 @@ public class ManaCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String [] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         try {
             if (!command.getName().equalsIgnoreCase("magicjutsumana")) return false;
             if (!MagicJutsus.enableManaBars() || !(sender instanceof Player)) return true;

@@ -112,6 +112,10 @@ public class NoMagicZoneManager {
 		return zones.size();
 	}
 
+	public Map<String, NoMagicZone> getZones() {
+		return zones;
+	}
+
 	public void addZoneType(String name, Class<? extends NoMagicZone> clazz) {
 		zoneTypes.put(name, clazz);
 	}

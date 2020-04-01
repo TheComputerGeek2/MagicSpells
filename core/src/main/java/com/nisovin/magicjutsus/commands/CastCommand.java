@@ -49,7 +49,7 @@ public class CastCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String [] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         try {
             if (!command.getName().equalsIgnoreCase("magicjutsucast")) return false;
             args = Util.splitParams(args);
