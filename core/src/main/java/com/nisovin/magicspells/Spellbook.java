@@ -231,17 +231,17 @@ public class Spellbook {
 		}
 
 		MagicSpells.debug("Checking learn permissions for " + player.getName());
-		return Perm.LEARN.has(player, spell);
+		return Perm.LEARN.has(player, spell) || !MagicSpells.getInstance().defaultAllPermsFalse;
 	}
 
 	public boolean canCast(Spell spell) {
 		if (spell.isHelperSpell()) return true;
-		return plugin.ignoreCastPerms || Perm.CAST.has(player, spell);
+		return plugin.ignoreCastPerms || Perm.CAST.has(player, spell) || !MagicSpells.getInstance().defaultAllPermsFalse;
 	}
 
 	public boolean canTeach(Spell spell) {
 		if (spell.isHelperSpell()) return false;
-		return Perm.TEACH.has(player, spell);
+		return Perm.TEACH.has(player, spell) || !MagicSpells.getInstance().defaultAllPermsFalse;
 	}
 
 	public boolean hasAdvancedPerm(String spell) {

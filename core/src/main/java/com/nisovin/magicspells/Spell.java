@@ -809,7 +809,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		}
 
 		if (event.hasSpellCastStateChanged()) debug(2, "    Spell cast state changed: " + state);
-		if (Perm.NOCASTTIME.has(livingEntity)) event.setCastTime(0);
+		if (Perm.NOCASTTIME.has(livingEntity) || (livingEntity.isOp() && MagicSpells.getInstance().opsIgnoreCastTimes)) event.setCastTime(0);
 		return event;
 	}
 
@@ -975,7 +975,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	 * @return whether the spell is on cooldown
 	 */
 	public boolean onCooldown(LivingEntity livingEntity) {
-		if (Perm.NOCOOLDOWN.has(livingEntity)) return false;
+		if (Perm.NOCOOLDOWN.has(livingEntity) || (livingEntity.isOp() && MagicSpells.getInstance().opsIgnoreCooldowns)) return false;
 		if (charges > 0) return chargesConsumed.get(livingEntity.getUniqueId()) >= charges;
 		if (serverCooldown > 0 && nextCastServer > System.currentTimeMillis()) return true;
 
@@ -1081,7 +1081,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	 */
 	private boolean hasReagents(LivingEntity livingEntity, ItemStack[] reagents, int healthCost, int manaCost, int hungerCost, int experienceCost, int levelsCost, int durabilityCost, float moneyCost, Map<String, Double> variables) {
 		// Is the livingEntity exempt from reagent costs?
-		if (Perm.NOREAGENTS.has(livingEntity)) return true;
+		if (Perm.NOREAGENTS.has(livingEntity) || (livingEntity.isOp() && MagicSpells.getInstance().opsIgnoreReagents)) return true;
 
 		// player reagents
 		if (livingEntity instanceof Player) {
@@ -1183,7 +1183,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	 * @param manaCost the mana to remove
 	 */
 	private void removeReagents(LivingEntity livingEntity, ItemStack[] reagents, int healthCost, int manaCost, int hungerCost, int experienceCost, int levelsCost, int durabilityCost, float moneyCost, Map<String, Double> variables) {
-		if (Perm.NOREAGENTS.has(livingEntity)) return;
+		if (Perm.NOREAGENTS.has(livingEntity) || (livingEntity.isOp() && MagicSpells.getInstance().opsIgnoreReagents)) return;
 
 		if (reagents != null) {
 			for (ItemStack item : reagents) {

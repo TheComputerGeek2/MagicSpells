@@ -19,3 +19,39 @@ commands:
         description: Show magic XP info
         usage: /<command>
         aliases: [magicxp,spellxp]
+permissions:
+    magicspells.silent:
+        description: "If spell messages should be silenced"
+        default: false
+    magicspells.notarget:
+       description: "If the player should not be affected by any spells or targetted."
+       default: false
+    magicspells.noreagents:
+        description: "If reagents should be ignored."
+        default: false
+    magicspells.nocooldown:
+        description: "If cooldowns should be ignored."
+        default: false
+    magicspells.nocasttime:
+        description: "If cast time should be ignored."
+        default: false
+    magicspells.advanced.*:
+        description: "Gives access to all advanced MagicSpells permissions."
+        default: op
+        children:
+            magicspells.advanced.list: true
+            magicspells.advanced.forget: true
+            magicspells.advanced.scroll: true
+            magicspells.advanced.imbue: true
+    magicspells.advanced.list:
+        description: "If the player should be able to use the List Spell to see a list of a player's known spells."
+        default: op
+    magicspells.advanced.forget:
+        description: "If the player should be able to use the Forget Spell to force another player to forget a spell."
+        default: op
+    magicspells.advanced.scroll:
+        description: "If the player should be able to use the Scroll Spell to create a base scroll."
+        default: op
+    magicspells.advanced.imbue:
+        description: "If the player should be able to imbue (bind) spells to a scroll for a certain amount of time."
+        default: op

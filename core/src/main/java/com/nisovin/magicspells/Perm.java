@@ -72,14 +72,14 @@ public enum Perm {
 	
 	public boolean has(Permissible permissible) {
 		if (requiresOp() && !permissible.isOp()) return false;
-		if (requiresNode() && !permissible.hasPermission(getNode())) return false;
-		return true;
+		return !requiresNode() || permissible.hasPermission(getNode());
 	}
 	
 	public boolean has(Permissible permissible, Spell spell) {
 		if (requiresOp() && !permissible.isOp()) return false;
-		if (requiresNode() && !permissible.hasPermission(getNode(spell))) return false;
-		return true;
+		return !requiresNode() || permissible.hasPermission(getNode(spell))
+				|| (getNode(spell).endsWith(".") && permissible.hasPermission(node + "*"))
+				|| spell.isAlwaysGranted();
 	}
 	
 }

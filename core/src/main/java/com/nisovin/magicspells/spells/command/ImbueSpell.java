@@ -150,7 +150,7 @@ public class ImbueSpell extends CommandSpell {
 				else if (uses <= 0) uses = 1;
 			}
 			
-			if (chargeReagentsForSpellPerUse && !Perm.NOREAGENTS.has(player)) {
+			if (chargeReagentsForSpellPerUse && !(Perm.NOREAGENTS.has(player) || (livingEntity.isOp() && MagicSpells.getInstance().opsIgnoreReagents))) {
 				SpellReagents reagents = spell.getReagents().multiply(uses);
 				if (!hasReagents(player, reagents)) {
 					sendMessage(strMissingReagents, player, args);
