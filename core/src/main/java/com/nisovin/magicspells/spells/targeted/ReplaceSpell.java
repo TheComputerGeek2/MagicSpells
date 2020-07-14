@@ -118,8 +118,10 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 
 	@Override
 	public void turnOff() {
-		for (Block b : blocks.keySet()) {
-			b.setType(blocks.get(b));
+		if (replaceDuration > 0) {
+			for (Block b : blocks.keySet()) {
+				b.setType(blocks.get(b));
+			}
 		}
 
 		blocks.clear();
