@@ -1,7 +1,10 @@
 package com.nisovin.magicspells.volatilecode;
 
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.*;
 import org.bukkit.Location;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.util.Vector;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
@@ -53,4 +56,13 @@ public interface VolatileCodeHandle {
 	ItemStack setNBTString(ItemStack item, String key, String value);
 
 	String getNBTString(ItemStack item, String key);
+
+	void setInventoryTitle(Player player, String title);
+
+	Recipe createCookingRecipe(String type, NamespacedKey namespaceKey, String group, ItemStack result, Material ingredient, float experience, int cookingTime);
+
+	Recipe createStonecutterRecipe(NamespacedKey namespaceKey, String group, ItemStack result, Material ingredient);
+
+	Recipe createSmithingRecipe(NamespacedKey namespaceKey, ItemStack result, Material base, Material addition);
+
 }

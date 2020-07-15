@@ -8,14 +8,18 @@ import java.lang.reflect.Field
 
 import org.bukkit.Bukkit
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.entity.*
+import org.bukkit.inventory.*
 import org.bukkit.util.Vector
+import org.bukkit.NamespacedKey
 import org.bukkit.entity.Entity
 import org.bukkit.OfflinePlayer
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.craftbukkit.v1_16_R1.entity.*
+import org.bukkit.persistence.PersistentDataType
 import org.bukkit.craftbukkit.v1_16_R1.CraftWorld
 import org.bukkit.event.entity.ExplosionPrimeEvent
 import org.bukkit.craftbukkit.v1_16_R1.CraftServer
@@ -30,8 +34,6 @@ import com.mojang.authlib.GameProfile
 import com.mojang.authlib.properties.Property
 
 import net.minecraft.server.v1_16_R1.*
-import org.bukkit.NamespacedKey
-import org.bukkit.persistence.PersistentDataType
 
 private typealias nmsItemStack = net.minecraft.server.v1_16_R1.ItemStack
 
@@ -284,4 +286,34 @@ class VolatileCode1_16_R1: VolatileCodeHandle {
     override fun getNBTString(item: ItemStack, key: String): String? {
         return item.itemMeta?.persistentDataContainer?.get(NamespacedKey(MagicSpells.plugin, key), PersistentDataType.STRING)
     }
+
+    override fun setInventoryTitle(player: Player, title: String) {
+        val entityPlayer = (player as CraftPlayer).handle
+        val container = entityPlayer.activeContainer
+        val packet = PacketPlayOutOpenWindow(container.windowId, container.type, ChatMessage(title))
+        entityPlayer.playerConnection.sendPacket(packet)
+        entityPlayer.updateInventory(container)
+    }
+
+    override fun createCookingRecipe(type: String, namespaceKey: NamespacedKey, group: String, result: ItemStack, ingredient: Material, experience: Float, cookingTime: Int): Recipe {
+        var recipe : Recipe? = null
+        when (type) {
+            "smoking" -> recipe = SmokingRecipe(namespaceKey, result, ingredient, experience, cookingTime)
+            "campfire" -> recipe = CampfireRecipe(namespaceKey, result, ingredient, experience, cookingTime)
+            "blasting" -> recipe = BlastingRecipe(namespaceKey, result, ingredient, experience, cookingTime)
+        }
+        (recipe as CookingRecipe<*>).group = group
+        return recipe
+    }
+
+    override fun createStonecutterRecipe(namespaceKey: NamespacedKey, group: String, result: ItemStack, ingredient: Material): Recipe {
+        val recipe = StonecuttingRecipe(namespaceKey, result, ingredient)
+        recipe.group = group
+        return recipe
+    }
+
+    override fun createSmithingRecipe(namespaceKey: NamespacedKey, result: ItemStack, base: Material, addition: Material): Recipe {
+        return SmithingRecipe(namespaceKey, result, RecipeChoice.MaterialChoice(base), RecipeChoice.MaterialChoice(addition))
+    }
+
 }

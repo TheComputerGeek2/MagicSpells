@@ -8,9 +8,12 @@ import java.lang.reflect.Field
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.*
+import org.bukkit.Material
 import org.bukkit.util.Vector
 import org.bukkit.entity.Entity
 import org.bukkit.OfflinePlayer
+import org.bukkit.NamespacedKey
+import org.bukkit.inventory.Recipe
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.inventory.meta.SkullMeta
@@ -295,4 +298,25 @@ class VolatileCode1_13_R2: VolatileCodeHandle {
     override fun getNBTString(item: ItemStack, key: String): String {
         return getNBTTag(item).getString(key)
     }
+
+    override fun setInventoryTitle(player: Player, title: String) {
+        val entityPlayer = (player as CraftPlayer).handle
+        val container = entityPlayer.activeContainer
+        val packet = PacketPlayOutOpenWindow(container.windowId, "minecraft:chest", ChatMessage(title))
+        entityPlayer.playerConnection.sendPacket(packet)
+        entityPlayer.updateInventory(container)
+    }
+
+    override fun createCookingRecipe(type: String, namespaceKey: NamespacedKey, group: String, result: ItemStack, ingredient: Material, experience: Float, cookingTime: Int): Recipe? {
+        return null
+    }
+
+    override fun createStonecutterRecipe(namespaceKey: NamespacedKey, group: String, result: ItemStack, ingredient: Material): Recipe? {
+        return null
+    }
+
+    override fun createSmithingRecipe(namespaceKey: NamespacedKey, result: ItemStack, base: Material, addition: Material): Recipe? {
+        return null
+    }
+
 }

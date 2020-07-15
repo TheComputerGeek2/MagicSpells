@@ -1,20 +1,22 @@
 package com.nisovin.magicspells.volatilecode
 
-import com.destroystokyo.paper.profile.PlayerProfile
-import com.destroystokyo.paper.profile.ProfileProperty
-import com.nisovin.magicspells.MagicSpells
-import org.bukkit.Bukkit
-import org.bukkit.Location
-import org.bukkit.OfflinePlayer
+import java.util.*
+import java.io.File
+import java.io.FileWriter
+import java.util.stream.Collectors
+
+import org.bukkit.*
 import org.bukkit.entity.*
+import org.bukkit.util.Vector
+import org.bukkit.inventory.Recipe
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.inventory.meta.SkullMeta
-import org.bukkit.util.Vector
-import java.io.File
-import java.io.FileWriter
-import java.util.*
-import java.util.stream.Collectors
+
+import com.nisovin.magicspells.MagicSpells
+
+import com.destroystokyo.paper.profile.PlayerProfile
+import com.destroystokyo.paper.profile.ProfileProperty
 
 class VolatileCodePaper(private val parent: VolatileCodeHandle): VolatileCodeHandle {
 
@@ -150,5 +152,21 @@ class VolatileCodePaper(private val parent: VolatileCodeHandle): VolatileCodeHan
 
     override fun setAbsorptionHearts(entity: LivingEntity, double: Double) {
         parent.setAbsorptionHearts(entity, double)
+    }
+
+    override fun setInventoryTitle(player: Player?, title: String?) {
+        parent.setInventoryTitle(player, title)
+    }
+
+    override fun createCookingRecipe(type: String?, namespaceKey: NamespacedKey?, group: String?, result: ItemStack?, ingredient: Material?, experience: Float, cookingTime: Int): Recipe {
+        return parent.createCookingRecipe(type, namespaceKey, group, result, ingredient, experience, cookingTime)
+    }
+
+    override fun createStonecutterRecipe(namespaceKey: NamespacedKey?, group: String?, result: ItemStack?, ingredient: Material?): Recipe {
+        return parent.createStonecutterRecipe(namespaceKey, group, result, ingredient)
+    }
+
+    override fun createSmithingRecipe(namespaceKey: NamespacedKey?, result: ItemStack?, base: Material?, addition: Material?): Recipe {
+        return parent.createSmithingRecipe(namespaceKey, result, base, addition)
     }
 }
