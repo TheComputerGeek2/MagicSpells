@@ -4,7 +4,6 @@ import java.util.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -69,9 +68,20 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 		for (String optionName : optionKeys) {
 			String path = "options." + optionName + ".";
 
-			int slot = getConfigInt(path + "slot", -1);
-			if (slot < 0) {
-				MagicSpells.error("MenuSpell '" + internalName + "' has an invalid slot defined for: " + optionName);
+			List<Integer> slots = getConfigIntList(path + "slots", new ArrayList<>());
+			if (slots.isEmpty()) slots.add(getConfigInt(path + "slot", -1));
+
+			List<Integer> validSlots = new ArrayList<>();
+			for (int slot : slots) {
+				if (slot < 0 || slot > 53) {
+					MagicSpells.error("MenuSpell '" + internalName + "' a slot defined which is out of bounds for '" + optionName + "': " + slot);
+					continue;
+				}
+				validSlots.add(slot);
+				if (slot > maxSlot) maxSlot = slot;
+			}
+			if (validSlots.isEmpty()) {
+				MagicSpells.error("MenuSpell '" + internalName + "' has no slots defined for: " + optionName);
 				continue;
 			}
 
@@ -108,7 +118,7 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 
 			MenuOption option = new MenuOption();
 			option.menuOptionName = optionName;
-			option.slot = slot;
+			option.slots = validSlots;
 			option.item = item;
 			option.items = items;
 			option.spellName = getConfigString(path + "spell", "");
@@ -120,7 +130,6 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 			option.modifierList = getConfigStringList(path + "modifiers", null);
 			option.stayOpen = getConfigBoolean(path + "stay-open", false);
 			options.put(optionName, option);
-			if (slot > maxSlot) maxSlot = slot;
 		}
 		size = (int) Math.ceil((maxSlot+1) / 9.0) * 9;
 		if (options.isEmpty()) MagicSpells.error("MenuSpell '" + spellName + "' has no menu options!");
@@ -226,10 +235,6 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 		return item;
 	}
 
-	private String getTitle(Player player) {
-		return Util.doVarReplacementAndColorize(player, title);
-	}
-
 	private void open(final Player caster, Player opener, LivingEntity entityTarget, Location locTarget, final float power, final String[] args) {
 		if (delay < 0) {
 			openMenu(caster, opener, entityTarget, locTarget, power, args);
@@ -246,9 +251,10 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 		if (requireEntityTarget && entityTarget != null) castEntityTarget.put(opener.getUniqueId(), entityTarget);
 		if (requireLocationTarget && locTarget != null) castLocTarget.put(opener.getUniqueId(), locTarget);
 
-		Inventory inv = Bukkit.createInventory(opener, size, getTitle(opener));
+		Inventory inv = Bukkit.createInventory(opener, size, internalName);
 		applyOptionsToInventory(opener, inv, args);
 		opener.openInventory(inv);
+		Util.setInventoryTitle(opener, title);
 
 		if (entityTarget != null && caster != null) {
 			playSpellEffects(caster, entityTarget);
@@ -262,15 +268,19 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 	private void applyOptionsToInventory(Player opener, Inventory inv, String[] args) {
 		// Setup option items.
 		for (MenuOption option : options.values()) {
-			if (inv.getItem(option.slot) != null) continue;
+			// Check modifiers.
 			if (option.menuOptionModifiers != null) {
 				MagicSpellsGenericPlayerEvent event = new MagicSpellsGenericPlayerEvent(opener);
 				option.menuOptionModifiers.apply(event);
 				if (event.isCancelled()) continue;
 			}
+			// Select and finalise item to display.
 			ItemStack item = (option.item != null ? option.item : option.items.get(Util.getRandomInt(option.items.size()))).clone();
-			item = MagicSpells.getVolatileCodeHandler().setNBTString(item, "menuOption", option.menuOptionName);
-			inv.setItem(option.slot, translateItem(opener, args, item));
+			item = translateItem(opener, args, item);
+			// Set item for all defined slots.
+			for (int slot : option.slots) {
+				if (inv.getItem(slot) == null) inv.setItem(slot, item);
+			}
 		}
 		// Fill inventory.
 		if (filler == null) return;
@@ -300,9 +310,7 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 	@EventHandler
 	public void onInvClick(InventoryClickEvent event) {
 		Player player = (Player) event.getWhoClicked();
-		String realTitle = ChatColor.stripColor(getTitle(player));
-		String currentTitle = ChatColor.stripColor(event.getView().getTitle());
-		if (!realTitle.equals(currentTitle)) return;
+		if (!event.getView().getTitle().equals(internalName)) return;
 		event.setCancelled(true);
 
 		String closeState = castSpells(player, event.getCurrentItem(), event.getClick());
@@ -318,9 +326,10 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 			return;
 		}
 		// Reopen.
-		Inventory newInv = Bukkit.createInventory(player, event.getView().getTopInventory().getSize(), getTitle(player));
+		Inventory newInv = Bukkit.createInventory(player, event.getView().getTopInventory().getSize(), internalName);
 		applyOptionsToInventory(player, newInv, MagicSpells.NULL_ARGS);
 		player.openInventory(newInv);
+		Util.setInventoryTitle(player, title);
 	}
 
 	private String castSpells(Player player, ItemStack item, ClickType click) {
@@ -363,7 +372,7 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 	private static class MenuOption {
 
 		private String menuOptionName;
-		private int slot;
+		private List<Integer> slots;
 		private ItemStack item;
 		private List<ItemStack> items;
 		private String spellName;
