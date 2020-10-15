@@ -132,6 +132,8 @@ public class VariableManager implements Listener {
 						this.dirtyPlayerVars.add(player);
 					} else if (var instanceof GlobalVariable) {
 						this.dirtyGlobalVars = true;
+					} else if (var instanceof GlobalStringVariable) {
+						this.dirtyGlobalVars = true;
 					}
 				}
 			}
@@ -161,6 +163,8 @@ public class VariableManager implements Listener {
 					this.dirtyPlayerVars.add(player);
 				} else if (var instanceof GlobalVariable) {
 					this.dirtyGlobalVars = true;
+				} else if (var instanceof GlobalStringVariable) {
+					this.dirtyGlobalVars = true;
 				}
 			}
 		}
@@ -180,6 +184,8 @@ public class VariableManager implements Listener {
 				if (var instanceof PlayerVariable) {
 					this.dirtyPlayerVars.add(player);
 				} else if (var instanceof GlobalVariable) {
+					this.dirtyGlobalVars = true;
+				} else if (var instanceof GlobalStringVariable) {
 					this.dirtyGlobalVars = true;
 				}
 			}
@@ -225,6 +231,8 @@ public class VariableManager implements Listener {
 					this.dirtyPlayerVars.add(player != null ? player.getName() : "");
 				} else if (var instanceof GlobalVariable) {
 					this.dirtyGlobalVars = true;
+				} else if (var instanceof GlobalStringVariable) {
+					this.dirtyGlobalVars = true;
 				}
 			}
 		}
@@ -264,7 +272,11 @@ public class VariableManager implements Listener {
 					if (!line.isEmpty()) {
 						String[] s = line.split("=", 2);
 						Variable variable = this.variables.get(s[0]);
-						if (variable instanceof GlobalVariable && variable.permanent) variable.parseAndSet("", s[1]);
+						if (variable instanceof GlobalVariable && variable.permanent) {
+							variable.parseAndSet("", s[1]);
+						} else if (variable instanceof GlobalStringVariable && variable.permanent) {
+							variable.parseAndSet("", s[1]);
+						}
 					}
 				}
 				scanner.close();
@@ -285,6 +297,9 @@ public class VariableManager implements Listener {
 		for (String variableName : this.variables.keySet()) {
 			Variable variable = this.variables.get(variableName);
 			if (variable instanceof GlobalVariable && variable.permanent) {
+				String val = variable.getStringValue("");
+				if (!val.equals(variable.defaultStringValue)) lines.add(variableName + '=' + Util.flattenLineBreaks(val));
+			} else if (variable instanceof GlobalStringVariable && variable.permanent) {
 				String val = variable.getStringValue("");
 				if (!val.equals(variable.defaultStringValue)) lines.add(variableName + '=' + Util.flattenLineBreaks(val));
 			}

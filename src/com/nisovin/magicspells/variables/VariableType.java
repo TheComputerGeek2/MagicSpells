@@ -49,6 +49,15 @@ public enum VariableType {
 			return new PlayerStringVariable();
 		}
 		
+	},
+	
+	GLOBAL_STRING("globalstring") {
+
+		@Override
+		public Variable newInstance() {
+			return new GlobalStringVariable();
+		}
+		
 	}
 	;
 	
