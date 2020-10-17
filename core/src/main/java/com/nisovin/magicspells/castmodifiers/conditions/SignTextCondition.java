@@ -18,7 +18,7 @@ public class SignTextCondition extends Condition {
 	private String[] text;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			String[] vars = var.split(",");
 			location = new MagicLocation(vars[0], Integer.parseInt(vars[1]), Integer.parseInt(vars[2]), Integer.parseInt(vars[3]));

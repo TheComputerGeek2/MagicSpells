@@ -137,15 +137,24 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 	}
 
 	@Override
+	public void initializeModifiers() {
+		super.initializeModifiers();
+
+		for (MenuOption option : options.values()) {
+			if (option.modifierList != null) option.menuOptionModifiers = new ModifierSet(option.modifierList);
+		}
+	}
+
+	@Override
 	public void initialize() {
 		super.initialize();
+
 		for (MenuOption option : options.values()) {
 			option.spell = initSubspell(option.spellName, "MenuSpell '" + internalName + "' has an invalid 'spell' defined for: " + option.menuOptionName);
 			option.spellRight = initSubspell(option.spellRightName, "MenuSpell '" + internalName + "' has an invalid 'spell' defined for: " + option.menuOptionName);
 			option.spellMiddle = initSubspell(option.spellMiddleName, "MenuSpell '" + internalName + "' has an invalid 'spell' defined for: " + option.menuOptionName);
 			option.spellSneakLeft = initSubspell(option.spellSneakLeftName, "MenuSpell '" + internalName + "' has an invalid 'spell' defined for: " + option.menuOptionName);
 			option.spellSneakRight = initSubspell(option.spellSneakRightName, "MenuSpell '" + internalName + "' has an invalid 'spell' defined for: " + option.menuOptionName);
-			if (option.modifierList != null) option.menuOptionModifiers = new ModifierSet(option.modifierList);
 		}
 	}
 

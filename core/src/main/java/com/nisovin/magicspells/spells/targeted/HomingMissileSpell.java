@@ -121,13 +121,18 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 	}
 
 	@Override
-	public void initialize() {
-		super.initialize();
+	public void initializeModifiers() {
+		super.initializeModifiers();
 
 		if (homingModifiersStrings != null && !homingModifiersStrings.isEmpty()) {
 			homingModifiers = new ModifierSet(homingModifiersStrings);
 			homingModifiersStrings = null;
 		}
+	}
+
+	@Override
+	public void initialize() {
+		super.initialize();
 
 		hitSpell = new Subspell(hitSpellName);
 		if (!hitSpell.process()) {

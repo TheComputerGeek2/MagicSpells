@@ -26,7 +26,7 @@ public class OverBlockCondition extends Condition {
 	private List<Material> mats;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		//Lets TRY and catch some formatting mistakes for this modifier.
 		try {
 			String[] variable = var.split(";",2);

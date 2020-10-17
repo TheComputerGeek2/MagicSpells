@@ -10,7 +10,7 @@ public class MoonPhaseCondition extends Condition {
 	private String phaseName = "";
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		phaseName = var.toLowerCase();
 		return true;
 	}

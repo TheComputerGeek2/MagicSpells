@@ -8,6 +8,8 @@ import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.BukkitPlayer;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
+import com.nisovin.magicspells.castmodifiers.conditions.util.AbstractWorldGuardCondition;
+
 public class WorldGuardRegionMembershipCondition extends AbstractWorldGuardCondition {
 	
 	private boolean ownerRequired = false;
@@ -16,7 +18,7 @@ public class WorldGuardRegionMembershipCondition extends AbstractWorldGuardCondi
 	this condition will check the highest priority region that the player is standing in. */
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (!worldGuardEnabled()) return false;
 		var = var.toLowerCase();
 		ownerRequired = var.contains("owner");

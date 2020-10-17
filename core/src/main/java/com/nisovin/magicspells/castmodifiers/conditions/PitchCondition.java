@@ -4,18 +4,19 @@ import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
 
 public class PitchCondition extends OperatorCondition {
 
 	private float pitch;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.length() < 2) {
 			return false;
 		}
 
-		super.setVar(var);
+		super.initialize(var);
 
 		try {
 			pitch = Float.parseFloat(var.substring(1));

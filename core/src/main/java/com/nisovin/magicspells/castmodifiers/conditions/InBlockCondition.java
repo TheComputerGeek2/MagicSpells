@@ -17,7 +17,7 @@ public class InBlockCondition extends Condition {
 	private Material material;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.contains(",")) {
 			materials = new HashSet<>();
 			String[] split = var.split(",");

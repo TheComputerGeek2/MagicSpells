@@ -12,7 +12,7 @@ public class LastDamageTypeCondition extends Condition {
 	private DamageCause cause;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		for (DamageCause dc : DamageCause.values()) {
 			if (dc.name().equalsIgnoreCase(var)) {
 				cause = dc;

@@ -4,7 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import com.nisovin.magicspells.util.PlayerNameUtils;
-import com.nisovin.magicspells.variables.MetaVariable;
+import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
 
 public class CompassTargetXVariable extends MetaVariable {
 	
@@ -18,10 +18,11 @@ public class CompassTargetXVariable extends MetaVariable {
 	@Override
 	public void set(String player, double amount) {
 		Player p = PlayerNameUtils.getPlayerExact(player);
-		if (p != null) {
-			Location to = p.getCompassTarget();
-			to.setX((float)amount);
-			p.setCompassTarget(to);
-		}
+		if (p == null) return;
+
+		Location to = p.getCompassTarget();
+		to.setX((float) amount);
+		p.setCompassTarget(to);
 	}
+
 }

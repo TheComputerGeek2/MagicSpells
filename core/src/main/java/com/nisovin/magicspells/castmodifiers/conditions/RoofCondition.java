@@ -14,7 +14,7 @@ public class RoofCondition extends Condition {
 	private int height = 10;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var != null && RegexUtil.matches(RegexUtil.SIMPLE_INT_PATTERN, var)) {
 			height = Integer.parseInt(var);
 		}

@@ -18,7 +18,7 @@ public class HasScoreboardTagCondition extends Condition {
     private Set<String> enttags = new HashSet<>();
 
     @Override
-    public boolean setVar(String var) {
+    public boolean initialize(String var) {
         if (var == null || var.isEmpty()) return false;
         if (var.contains("%var:")) isVar = true;
         this.var = var;

@@ -45,7 +45,7 @@ public class SpellBeneficialCondition extends Condition implements IModifier {
 	}
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		return true;
 	}
 

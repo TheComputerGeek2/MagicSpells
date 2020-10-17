@@ -1,23 +1,24 @@
 package com.nisovin.magicspells.variables.meta;
 
+import org.bukkit.entity.Player;
+import org.bukkit.attribute.Attribute;
+
 import com.nisovin.magicspells.util.PlayerNameUtils;
 import com.nisovin.magicspells.util.compat.CompatBasics;
-import com.nisovin.magicspells.variables.MetaVariable;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.entity.Player;
+import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
 
 public class AttributeBaseValueVariable extends MetaVariable {
-	
+
+	private final String attributeName;
+
 	private boolean safeHere = false;
 	private boolean safetyChecked = false;
 	
 	private Attribute targetAttribute = null;
-	
-	private String attributeName = null;
-	
+
 	public AttributeBaseValueVariable(String attributeName) {
 		super();
+
 		this.attributeName = attributeName;
 	}
 	

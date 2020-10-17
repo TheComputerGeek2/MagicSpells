@@ -1,46 +1,29 @@
 debug: false
+debug-null: true
+debug-number-format: true
 debug-level: 3
+tab-complete-internal-names: false
 enable-error-logging: true
-enable-stat-collection: true
-enable-volatile-features: true
-enable-tab-completion: true
-str-cast-usage: |
-    Usage: /cast <spell>. 
-    Use /cast list to see a list of spells.
-str-unknown-spell: You do not know a spell with that name.
-str-spell-change: You are now using the %s spell.
-str-spell-change-empty: You are no longer using a spell.
-str-on-cooldown: That spell is on cooldown (%c seconds remaining).
-str-missing-reagents: You do not have the required reagents for that spell.
-str-cant-cast: You can't cast that spell right now.
-str-wrong-world: You cannot cast that spell here.
-str-console-name: Admin
+enable-profiling: false
 text-color: 3
 broadcast-range: 20
-spell-icon-slot: -1
-separate-player-spells-per-world: false
-global-radius: 500
-global-cooldown: 500
-check-world-pvp-flag: true
-cast-on-animate: false
-use-exp-bar-as-cast-time-bar: true
-cooldowns-persist-through-reload: true
-allow-anticheat-integrations: false
+ops-have-all-spells: true
+default-all-perms-false: false
+ignore-grant-perms: false
 ignore-grant-perms-fake-value: true
-buff-check-interval: 100
+ignore-cast-perms: false
+enable-tempgrant-perms: true
+separate-player-spells-per-world: false
 allow-cycle-to-no-spell: false
+reverse-bow-cycle-buttons: false
+bow-cycle-spells-sneaking: false
 always-show-message-on-cycle: false
 only-cycle-to-castable-spells: true
+spell-icon-slot: -1
 allow-cast-with-fist: false
 cast-with-left-click: true
 cast-with-right-click: false
 cycle-spells-with-offhand-action: false
-ops-have-all-spells: true
-ops-ignore-reagents: true
-ops-ignore-cooldowns: true
-ops-ignore-cast-times: true
-default-all-perms-false: false
-hide-magic-items-tooltips: false
 ignore-default-bindings: false
 ignore-cast-item-enchants: true
 ignore-cast-item-names: false
@@ -106,6 +89,9 @@ ignore-cast-item-durability:
     - "trident"
     - "shield"
     - "elytra"
+check-world-pvp-flag: true
+check-scoreboard-teams: false
+show-str-cost-on-missing-reagents: true
 los-transparent-blocks:
     - "air"
     - "cave_air"
@@ -129,7 +115,11 @@ los-transparent-blocks:
     - "repeater"
     - "vine"
     - "lily_pad"
-
+global-radius: 500
+global-cooldown: 500
+cast-on-animate: false
+use-exp-bar-as-cast-time-bar: true
+cooldowns-persist-through-reload: true
 entity-names:
     zombie: an ugly zombie
     skeleton: a scary skeleton
@@ -155,3 +145,24 @@ entity-names:
     mushroomcow: a deformed cow
     squid: a slimy squid
     irongolem: a friendly iron golem
+sound-on-cooldown: ""
+sound-missing-reagents: ""
+str-unknown-spell: You do not know a spell with that name.
+str-spell-change: You are now using the %s spell.
+str-spell-change-empty: You are no longer using a spell.
+str-on-cooldown: That spell is on cooldown (%c seconds remaining).
+str-missing-reagents: You do not have the required reagents for that spell.
+str-cant-cast: You can't cast that spell right now.
+str-cant-bind: You cannot bind that spell to that item.
+str-wrong-world: You cannot cast that spell here.
+str-console-name: Admin
+str-xp-auto-learned: You have learned the %s spell!
+allow-anticheat-integrations: false
+buff-check-interval: 100
+ops-ignore-reagents: true
+ops-ignore-cooldowns: true
+ops-ignore-cast-times: true
+hide-magic-items-tooltips: false
+enable-magic-xp: false
+enable-dance-casting: true
+enable-logging: false

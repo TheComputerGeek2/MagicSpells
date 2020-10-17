@@ -11,7 +11,7 @@ public class PlayerOnlineCondition extends Condition {
 	private String name;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		name = var;
 		return true;
 	}

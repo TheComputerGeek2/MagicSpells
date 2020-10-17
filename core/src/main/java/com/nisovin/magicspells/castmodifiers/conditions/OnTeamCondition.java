@@ -13,7 +13,7 @@ public class OnTeamCondition extends Condition {
 	private String teamName;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		teamName = var;
 		return true;
 	}

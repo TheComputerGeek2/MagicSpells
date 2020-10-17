@@ -27,7 +27,7 @@ public class SpellCastStateCondition extends Condition implements IModifier {
 	private SpellCastState state;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null) return false;
 		try {
 			state = SpellCastState.valueOf(var.trim().toUpperCase());

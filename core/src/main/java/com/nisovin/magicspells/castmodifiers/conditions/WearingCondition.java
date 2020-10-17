@@ -23,7 +23,7 @@ public class WearingCondition extends Condition {
 	private boolean[] checkData;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			String[] vardata = var.split(",");
 			ids = new Material[vardata.length];

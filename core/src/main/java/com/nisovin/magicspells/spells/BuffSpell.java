@@ -219,6 +219,7 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 		boolean ok;
 		if (isActive(target)) ok = recastBuff(target, power, args);
 		else ok = castBuff(target, power, args);
+
 		if (!ok) return PostCastAction.HANDLE_NORMALLY;
 
 		startSpellDuration(target, power);
@@ -232,7 +233,7 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 	public abstract boolean castBuff(LivingEntity entity, float power, String[] args);
 
 	public boolean recastBuff(LivingEntity entity, float power, String[] args) {
-		stopEffects();
+		stopEffects(entity);
 		return true;
 	}
 
@@ -388,13 +389,23 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 		turnOffBuff(entity);
 		playSpellEffects(EffectPosition.DISABLED, entity);
 		cancelEffects(EffectPosition.CASTER, entity.getUniqueId().toString());
-		stopEffects();
+		stopEffects(entity);
 
 		if (spellOnEnd != null) spellOnEnd.cast(entity, 1f);
 		sendMessage(strFade, entity, null);
 	}
 
-	public void stopEffects() {
+	public void stopEffects(LivingEntity livingEntity) {
+		Set<EffectTracker> trackers = new HashSet<>(getEffectTrackers());
+		for (EffectTracker tracker : trackers) {
+			if (tracker.getEntity() != null && !tracker.getEntity().equals(livingEntity)) continue;
+			tracker.stop();
+			tracker.unregister();
+		}
+		trackers.clear();
+	}
+
+	public void stopAllEffects() {
 		Set<EffectTracker> trackers = new HashSet<>(getEffectTrackers());
 		getEffectTrackers().clear();
 		for (EffectTracker effectTracker : trackers) {
@@ -422,17 +433,23 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 		@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 		public void onEntityDamage(EntityDamageEvent e) {
 			Entity entity = e.getEntity();
-			if (cancelOnTakeDamage && entity instanceof LivingEntity && isActiveAndNotExpired((LivingEntity) entity)) {
+			if (!cancelOnTakeDamage) return;
+			if (entity instanceof LivingEntity && isActiveAndNotExpired((LivingEntity) entity)) {
 				turnOff((LivingEntity) entity);
-			} else if (cancelOnGiveDamage && e instanceof EntityDamageByEntityEvent) {
-				EntityDamageByEntityEvent evt = (EntityDamageByEntityEvent) e;
-				Entity damager = evt.getDamager();
-				if (damager instanceof LivingEntity && isActiveAndNotExpired((LivingEntity) damager)) {
-					turnOff((LivingEntity) damager);
-				} else if (damager instanceof Projectile && ((Projectile) damager).getShooter() instanceof LivingEntity) {
-					LivingEntity shooter = (LivingEntity) ((Projectile) damager).getShooter();
-					if (isActiveAndNotExpired(shooter)) turnOff(shooter);
-				}
+				return;
+			}
+
+			if (!(e instanceof EntityDamageByEntityEvent)) return;
+
+			EntityDamageByEntityEvent evt = (EntityDamageByEntityEvent) e;
+			Entity damager = evt.getDamager();
+			if (damager instanceof LivingEntity && isActiveAndNotExpired((LivingEntity) damager)) {
+				turnOff((LivingEntity) damager);
+				return;
+			}
+			if (damager instanceof Projectile && ((Projectile) damager).getShooter() instanceof LivingEntity) {
+				LivingEntity shooter = (LivingEntity) ((Projectile) damager).getShooter();
+				if (isActiveAndNotExpired(shooter)) turnOff(shooter);
 			}
 		}
 
@@ -494,9 +511,10 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 
 		@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 		public void onSpellCast(SpellCastEvent e) {
-			if (thisSpell != e.getSpell() && e.getSpellCastState() == SpellCastState.NORMAL && isActiveAndNotExpired(e.getCaster())) {
-				if (filter.check(e.getSpell())) turnOff(e.getCaster());
-			}
+			if (thisSpell == e.getSpell()) return;
+			if (e.getSpellCastState() != SpellCastState.NORMAL) return;
+			if (!isActiveAndNotExpired(e.getCaster())) return;
+			if (filter.check(e.getSpell())) turnOff(e.getCaster());
 		}
 
 	}

@@ -120,13 +120,18 @@ public class ProjectileSpell extends InstantSpell implements TargetedLocationSpe
 	}
 
 	@Override
-	public void initialize() {
-		super.initialize();
+	public void initializeModifiers() {
+		super.initializeModifiers();
 
 		if (projectileModifiersStrings != null && !projectileModifiersStrings.isEmpty()) {
 			projectileModifiers = new ModifierSet(projectileModifiersStrings);
 			projectileModifiersStrings = null;
 		}
+	}
+
+	@Override
+	public void initialize() {
+		super.initialize();
 
 		hitSpell = new Subspell(hitSpellName);
 		if (!hitSpell.process()) {

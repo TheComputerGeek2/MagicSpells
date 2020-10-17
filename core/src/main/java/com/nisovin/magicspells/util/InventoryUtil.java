@@ -127,7 +127,7 @@ public class InventoryUtil {
 		if (itemData == null) return false;
 		int count = 0;
 		ItemStack[] items = inventory.getContents();
-		for (int i = 0; i < 36; i++) {
+		for (int i = 0; i < items.length; i++) {
 			if (items[i] == null) continue;
 			MagicItemData magicItemData = MagicItems.getMagicItemDataFromItemStack(items[i]);
 			if (magicItemData == null) continue;

@@ -1,36 +1,31 @@
 package com.nisovin.magicspells.spells.passive;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 
-import com.nisovin.magicspells.Spellbook;
+import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.util.OverridePriority;
 import com.nisovin.magicspells.events.SpellSelectionChangedEvent;
+import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 
 public class SpellSelectListener extends PassiveListener {
 
-	private List<PassiveSpell> spellsAll = new ArrayList<>();
-
-	private Map<String, List<PassiveSpell>> spellsSpecial = new HashMap<>();
+	private final Set<String> spellNames = new HashSet<>();
 
 	@Override
-	public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
-		if (var == null || var.isEmpty()) {
-			spellsAll.add(spell);
-			return;
-		}
+	public void initialize(String var) {
+		if (var == null || var.isEmpty()) return;
 
-		for (String spellName : var.replace(" ", "").split(",")) {
-			List<PassiveSpell> spells = spellsSpecial.getOrDefault(spellName, new ArrayList<>());
-			spells.add(spell);
-			spellsSpecial.put(spellName, spells);
+		String[] split = var.split(",");
+		for (String s : split) {
+			Spell sp = MagicSpells.getSpellByInternalName(s.trim());
+			if (sp == null) continue;
+
+			spellNames.add(sp.getInternalName());
 		}
 	}
 
@@ -39,20 +34,12 @@ public class SpellSelectListener extends PassiveListener {
 	public void onSpellSelect(SpellSelectionChangedEvent event) {
 		if (!(event.getCaster() instanceof Player)) return;
 		Player player = (Player) event.getCaster();
-		Spellbook spellbook = MagicSpells.getSpellbook(player);
-		if (!spellsAll.isEmpty()) {
-			for (PassiveSpell spell : spellsAll) {
-				if (!spellbook.hasSpell(spell)) continue;
-				spell.activate(player);
-			}
-		}
+		if (!hasSpell(player)) return;
 
-		String spellName = event.getSpell().getInternalName();
-		if (!spellsSpecial.containsKey(spellName)) return;
-		for (PassiveSpell spell : spellsSpecial.get(spellName)) {
-			if (!spellbook.hasSpell(spell)) continue;
-			spell.activate(player);
-		}
+		Spell spell = event.getSpell();
+		if (!spellNames.isEmpty() && !spellNames.contains(spell.getInternalName())) return;
+
+		passiveSpell.activate(player);
 	}
 
 }

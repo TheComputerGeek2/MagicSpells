@@ -4,17 +4,19 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
+
 public class SaturationCondition extends OperatorCondition {
 
 	private float saturation;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.length() < 2) {
 			return false;
 		}
 
-		super.setVar(var);
+		super.initialize(var);
 
 		try {
 			saturation = Float.parseFloat(var.substring(1));

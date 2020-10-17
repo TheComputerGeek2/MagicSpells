@@ -3,17 +3,19 @@ package com.nisovin.magicspells.castmodifiers.conditions;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
+
 public class YawCondition extends OperatorCondition {
 	
 	private float yaw;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.length() < 2) {
 			return false;
 		}
 
-		super.setVar(var);
+		super.initialize(var);
 
 		try {
 			yaw = Float.parseFloat(var.substring(1));

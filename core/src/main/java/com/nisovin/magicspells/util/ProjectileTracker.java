@@ -15,6 +15,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.util.NumberConversions;
 
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.MagicSpells;
@@ -29,9 +30,11 @@ import io.papermc.lib.PaperLib;
 
 import de.slikey.effectlib.Effect;
 
+import org.apache.commons.math3.util.FastMath;
+
 public class ProjectileTracker implements Runnable {
 
-	private Random rand = new Random();
+	private final Random rand = new Random();
 
 	private Set<Effect> effectSet;
 	private Set<Entity> entitySet;
@@ -176,7 +179,7 @@ public class ProjectileTracker implements Runnable {
 
 		previousLocation = startLocation.clone();
 		currentLocation = startLocation.clone();
-		currentVelocity = from.setDirection(dir).getDirection();
+		currentVelocity = setDirection(from, dir).getDirection();
 
 		init();
 	}
@@ -203,7 +206,7 @@ public class ProjectileTracker implements Runnable {
 		immune = new HashSet<>();
 		maxHitLimit = 0;
 		hitBox = new BoundingBox(currentLocation, horizontalHitRadius, verticalHitRadius);
-		currentLocation.setDirection(currentVelocity);
+		setDirection(currentLocation, currentVelocity);
 		tracker = this;
 		if (spell != null) {
 			effectSet = spell.playEffectsProjectile(EffectPosition.PROJECTILE, currentLocation);
@@ -244,7 +247,7 @@ public class ProjectileTracker implements Runnable {
 			currentVelocity = caster.getLocation().getDirection();
 			if (hugSurface) currentVelocity.setY(0).normalize();
 			currentVelocity.multiply(projectileVelocity / ticksPerSecond);
-			currentLocation.setDirection(currentVelocity);
+			setDirection(currentLocation, currentVelocity);
 		}
 
 		currentVelocity = Util.makeFinite(currentVelocity);
@@ -297,7 +300,7 @@ public class ProjectileTracker implements Runnable {
 		if (projectileHorizGravity != 0) Util.rotateVector(currentVelocity, (projectileHorizGravity / ticksPerSecond) * counter);
 
 		// Rotate effects properly
-		currentLocation.setDirection(currentVelocity);
+		setDirection(currentLocation, currentVelocity);
 
 		if (effectSet != null) {
 			for (Effect effect : effectSet) {
@@ -421,6 +424,28 @@ public class ProjectileTracker implements Runnable {
 		trackers.clear();
 	}
 
+	private Location setDirection(Location loc, Vector v) {
+
+		final double _2PI = 2 * FastMath.PI;
+		final double x = v.getX();
+		final double z = v.getZ();
+
+		if (x == 0 && z == 0) {
+			loc.setPitch(v.getY() > 0 ? -90 : 90);
+			return loc;
+		}
+
+		double theta = FastMath.atan2(-x, z);
+		loc.setYaw((float) FastMath.toDegrees((theta + _2PI) % _2PI));
+
+		double x2 = NumberConversions.square(x);
+		double z2 = NumberConversions.square(z);
+		double xz = FastMath.sqrt(x2 + z2);
+		loc.setPitch((float) FastMath.toDegrees(FastMath.atan(-v.getY() / xz)));
+
+		return loc;
+	}
+
 	private void playIntermediateEffects(Location old, Vector movement) {
 		int divideFactor = intermediateEffects + 1;
 		Vector v = movement.clone();
@@ -430,7 +455,7 @@ public class ProjectileTracker implements Runnable {
 		v.setZ(v.getZ() / divideFactor);
 
 		for (int i = 0; i < intermediateEffects; i++) {
-			old = old.add(v).setDirection(v);
+			old = setDirection(old.add(v), v);
 			if (spell != null && specialEffectInterval > 0 && counter % specialEffectInterval == 0) spell.playEffects(EffectPosition.SPECIAL, old);
 		}
 	}
@@ -444,7 +469,7 @@ public class ProjectileTracker implements Runnable {
 		v.setZ(v.getZ() / divideFactor);
 
 		for (int i = 0; i < intermediateHitboxes; i++) {
-			old = old.add(v).setDirection(v);
+			old = setDirection(old.add(v), v);
 			checkHitbox(old);
 		}
 	}
@@ -461,11 +486,10 @@ public class ProjectileTracker implements Runnable {
 		double y = verticalHitRadius / 2D;
 		double z = horizontalHitRadius / 2D;
 
-		for (Entity entity : currentLoc.getWorld().getNearbyEntities(currentLoc, x, y, z)) {
-			if (!(entity instanceof LivingEntity)) continue;
+		for (LivingEntity entity : currentLoc.getWorld().getNearbyLivingEntities(currentLoc, x, y, z)) {
 			if (!targetList.canTarget(caster, entity)) continue;
 			if (immune.contains(entity)) continue;
-			inRange.add((LivingEntity) entity);
+			inRange.add(entity);
 		}
 
 		for (int i = 0; i < inRange.size(); i++) {

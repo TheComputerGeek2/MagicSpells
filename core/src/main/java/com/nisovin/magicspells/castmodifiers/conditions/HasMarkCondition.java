@@ -14,7 +14,7 @@ public class HasMarkCondition extends Condition {
 	private MarkSpell spell;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		Spell s = MagicSpells.getSpellByInternalName(var);
 		if (s == null) return false;
 		if (!(s instanceof MarkSpell)) return false;

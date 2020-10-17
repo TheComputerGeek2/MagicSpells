@@ -4,17 +4,19 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
+
 public class PlayerCountCondition extends OperatorCondition {
 
 	private int count;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.length() < 2) {
 			return false;
 		}
 
-		super.setVar(var);
+		super.initialize(var);
 
 		try {
 			count = Integer.parseInt(var.substring(1));

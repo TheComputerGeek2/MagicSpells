@@ -1,9 +1,6 @@
 package com.nisovin.magicspells.spells.passive;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.EnumSet;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -13,10 +10,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.player.PlayerFishEvent;
 
 import com.nisovin.magicspells.util.Util;
-import com.nisovin.magicspells.Spellbook;
-import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.util.OverridePriority;
+import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 
 // Trigger variable is optional
 // If not specified, it triggers in all forms
@@ -24,36 +19,34 @@ import com.nisovin.magicspells.util.OverridePriority;
 // ground, fish, fail, <entity type>
 public class FishListener extends PassiveListener {
 
-	Map<EntityType, List<PassiveSpell>> types = new HashMap<>();
-	List<PassiveSpell> ground = new ArrayList<>();
-	List<PassiveSpell> fish = new ArrayList<>();
-	List<PassiveSpell> fail = new ArrayList<>();
-	List<PassiveSpell> allTypes = new ArrayList<>();
+	private final EnumSet<EntityType> types = EnumSet.noneOf(EntityType.class);
+
+	private final EnumSet<PlayerFishEvent.State> states = EnumSet.noneOf(PlayerFishEvent.State.class);
 	
 	@Override
-	public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
-		if (var == null || var.isEmpty()) {
-			allTypes.add(spell);
-			return;
-		}
+	public void initialize(String var) {
+		if (var == null || var.isEmpty()) return;
 
 		String[] split = var.replace(" ", "").toUpperCase().split(",");
 		for (String s : split) {
 			switch (s.toLowerCase()) {
+				case "in_ground":
 				case "ground":
-					ground.add(spell);
+					states.add(PlayerFishEvent.State.IN_GROUND);
 					break;
+				case "caught_fish":
 				case "fish":
-					fish.add(spell);
+					states.add(PlayerFishEvent.State.CAUGHT_FISH);
 					break;
+				case "failed_attempt":
+				case "failed":
 				case "fail":
-					fail.add(spell);
+					states.add(PlayerFishEvent.State.FAILED_ATTEMPT);
 					break;
 				default:
-					EntityType t = Util.getEntityType(s);
-					if (t == null) return;
-					List<PassiveSpell> list = types.computeIfAbsent(t, type -> new ArrayList<>());
-					list.add(spell);
+					EntityType type = Util.getEntityType(s);
+					if (type == null) return;
+					types.add(type);
 					break;
 			}
 		}
@@ -64,63 +57,38 @@ public class FishListener extends PassiveListener {
 	public void onFish(PlayerFishEvent event) {
 		PlayerFishEvent.State state = event.getState();
 		Player player = event.getPlayer();
-		Spellbook spellbook = MagicSpells.getSpellbook(player);
+		if (!hasSpell(player)) return;
 
-		if (!allTypes.isEmpty()) {
-			Entity entity = event.getCaught();
-			for (PassiveSpell spell : allTypes) {
-				if (!isCancelStateOk(spell, event.isCancelled())) continue;
-				if (!spellbook.hasSpell(spell)) continue;
-				boolean casted = spell.activate(player, entity instanceof LivingEntity ? (LivingEntity)entity : null);
-				if (!PassiveListener.cancelDefaultAction(spell, casted)) continue;
-				event.setCancelled(true);
-			}
+		Entity entity = event.getCaught();
+
+		if (states.isEmpty()) {
+			if (!isCancelStateOk(event.isCancelled())) return;
+			boolean casted = passiveSpell.activate(player, entity instanceof LivingEntity ? (LivingEntity) entity : null);
+			if (!cancelDefaultAction(casted)) return;
+			event.setCancelled(true);
+
+			return;
 		}
 
+		if (!states.contains(state) && types.isEmpty()) return;
+		boolean casted;
 		switch (state) {
 			case IN_GROUND:
-				if (ground.isEmpty()) return;
-				for (PassiveSpell spell : ground) {
-					if (!isCancelStateOk(spell, event.isCancelled())) continue;
-					if (!spellbook.hasSpell(spell)) continue;
-					boolean casted = spell.activate(player, event.getHook().getLocation());
-					if (!PassiveListener.cancelDefaultAction(spell, casted)) continue;
-					event.setCancelled(true);
-				}
-				break;
 			case CAUGHT_FISH:
-				if (fish.isEmpty()) return;
-				for (PassiveSpell spell : fish) {
-					if (!isCancelStateOk(spell, event.isCancelled())) continue;
-					if (!spellbook.hasSpell(spell)) continue;
-					boolean casted = spell.activate(player, event.getHook().getLocation());
-					if (!PassiveListener.cancelDefaultAction(spell, casted)) continue;
-					event.setCancelled(true);
-				}
-				break;
 			case FAILED_ATTEMPT:
-				if (fail.isEmpty()) return;
-				for (PassiveSpell spell : fail) {
-					if (!isCancelStateOk(spell, event.isCancelled())) continue;
-					if (!spellbook.hasSpell(spell)) continue;
-					boolean casted = spell.activate(player, event.getHook().getLocation());
-					if (!PassiveListener.cancelDefaultAction(spell, casted)) continue;
-					event.setCancelled(true);
-				}
+				if (!states.contains(state)) return;
+				if (!isCancelStateOk(event.isCancelled())) return;
+				casted = passiveSpell.activate(player, event.getHook().getLocation());
+				if (!cancelDefaultAction(casted)) return;
+				event.setCancelled(true);
 				break;
 			case CAUGHT_ENTITY:
-				if (types.isEmpty()) return;
-				Entity entity = event.getCaught();
-
 				if (entity == null) return;
-				if (!types.containsKey(entity.getType())) return;
-				for (PassiveSpell spell : fail) {
-					if (!isCancelStateOk(spell, event.isCancelled())) continue;
-					if (!spellbook.hasSpell(spell)) continue;
-					boolean casted = spell.activate(player, entity instanceof LivingEntity ? (LivingEntity)entity : null);
-					if (!PassiveListener.cancelDefaultAction(spell, casted)) continue;
-					event.setCancelled(true);
-				}
+				if (!types.contains(entity.getType())) return;
+				if (!isCancelStateOk(event.isCancelled())) return;
+				casted = passiveSpell.activate(player, entity instanceof LivingEntity ? (LivingEntity) entity : null);
+				if (!cancelDefaultAction(casted)) return;
+				event.setCancelled(true);
 				break;
 		}
 	}

@@ -18,7 +18,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
+    classpath "com.github.jengelman.gradle.plugins:shadow:6.0.0"
     classpath "de.undercouch:gradle-download-task:3.4.2"
     classpath "com.sarhanm:gradle-versioner:2.4.0"
   }

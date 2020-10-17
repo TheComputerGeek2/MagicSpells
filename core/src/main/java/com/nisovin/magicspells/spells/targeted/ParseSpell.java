@@ -39,10 +39,9 @@ public class ParseSpell extends TargetedSpell implements TargetedEntitySpell {
 		secondVariable = getConfigString("second-variable", "");
 	}
 
-
 	@Override
-	public void initialize() {
-		super.initialize();
+	public void initializeVariables() {
+		super.initializeVariables();
 		// Check if the related spell properties were defined properly.
 		switch (operation) {
 			case "translate":

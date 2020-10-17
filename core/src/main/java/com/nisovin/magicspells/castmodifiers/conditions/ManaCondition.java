@@ -7,6 +7,7 @@ import org.bukkit.entity.LivingEntity;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.mana.ManaHandler;
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
 
 public class ManaCondition extends OperatorCondition {
 
@@ -16,12 +17,12 @@ public class ManaCondition extends OperatorCondition {
 	private boolean percent = false;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.length() < 2) {
 			return false;
 		}
 
-		super.setVar(var);
+		super.initialize(var);
 
 		String number = var.substring(1);
 

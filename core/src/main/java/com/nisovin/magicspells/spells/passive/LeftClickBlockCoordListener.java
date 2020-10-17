@@ -1,18 +1,15 @@
 package com.nisovin.magicspells.spells.passive;
 
-import java.util.Map;
-import java.util.HashMap;
-
 import org.bukkit.Location;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.util.MagicLocation;
 import com.nisovin.magicspells.util.OverridePriority;
+import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 
 // Trigger variable is a semicolon separated list of locations to accept
 // The format of locations is world,x,y,z
@@ -20,10 +17,10 @@ import com.nisovin.magicspells.util.OverridePriority;
 // And x, y, and z are integers
 public class LeftClickBlockCoordListener extends PassiveListener {
 
-	Map<MagicLocation, PassiveSpell> locs = new HashMap<>();
+	private MagicLocation magicLocation;
 	
 	@Override
-	public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
+	public void initialize(String var) {
 		String[] split = var.split(";");
 		for (String s : split) {
 			try {
@@ -32,28 +29,28 @@ public class LeftClickBlockCoordListener extends PassiveListener {
 				int x = Integer.parseInt(data[1]);
 				int y = Integer.parseInt(data[2]);
 				int z = Integer.parseInt(data[3]);				
-				locs.put(new MagicLocation(world, x, y, z), spell);
+				magicLocation = new MagicLocation(world, x, y, z);
 			} catch (NumberFormatException e) {
-				MagicSpells.error("Invalid coords on leftclickblockcoord trigger for spell '" + spell.getInternalName() + '\'');
+				MagicSpells.error("Invalid coords on leftClickBlockCoord trigger for spell '" + passiveSpell.getInternalName() + "'");
 			}
 		}
 	}
 	
 	@OverridePriority
 	@EventHandler
-	public void onRightClick(PlayerInteractEvent event) {
+	public void onLeftClick(PlayerInteractEvent event) {
 		if (event.getAction() != Action.LEFT_CLICK_BLOCK) return;
 		Location location = event.getClickedBlock().getLocation();
 		MagicLocation loc = new MagicLocation(location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
-		PassiveSpell spell = locs.get(loc);
-		if (spell == null) return;
-		if (!isCancelStateOk(spell, event.isCancelled())) return;
+		if (!magicLocation.equals(loc)) return;
+		if (!isCancelStateOk(isCancelled(event))) return;
+		if (!hasSpell(event.getPlayer())) return;
+		boolean casted = passiveSpell.activate(event.getPlayer(), location.add(0.5, 0.5, 0.5));
+		if (cancelDefaultAction(casted)) event.setCancelled(true);
+	}
 
-		Spellbook spellbook = MagicSpells.getSpellbook(event.getPlayer());
-		if (!spellbook.hasSpell(spell, false)) return;
-
-		boolean casted = spell.activate(event.getPlayer(), location.add(0.5, 0.5, 0.5));
-		if (PassiveListener.cancelDefaultAction(spell, casted)) event.setCancelled(true);
+	private boolean isCancelled(PlayerInteractEvent event) {
+		return event.useInteractedBlock() == Event.Result.DENY;
 	}
 
 }

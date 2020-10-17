@@ -5,12 +5,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 
 import com.massivecraft.factions.entity.MPlayer;
+
 import com.nisovin.magicspells.castmodifiers.Condition;
 
 public class HasFactionCondition extends Condition {
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		return true;
 	}
 

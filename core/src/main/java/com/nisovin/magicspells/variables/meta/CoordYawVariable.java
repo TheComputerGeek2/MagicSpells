@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 import com.nisovin.magicspells.util.PlayerNameUtils;
-import com.nisovin.magicspells.variables.MetaVariable;
+import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
 
 public class CoordYawVariable extends MetaVariable {
 
@@ -19,10 +19,11 @@ public class CoordYawVariable extends MetaVariable {
 	@Override
 	public void set(String player, double amount) {
 		Player p = PlayerNameUtils.getPlayerExact(player);
-		if (p != null) {
-			Location to = p.getLocation();
-			to.setYaw((float)amount);
-			p.teleport(to, TeleportCause.PLUGIN);
-		}
+		if (p == null) return;
+
+		Location to = p.getLocation();
+		to.setYaw((float) amount);
+		p.teleport(to, TeleportCause.PLUGIN);
 	}
+
 }

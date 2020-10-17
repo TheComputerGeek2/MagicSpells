@@ -22,7 +22,7 @@ import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 
 public class Subspell {
 
-	private static Random random = new Random();
+	private static final Random random = new Random();
 	
 	private Spell spell;
 	private String spellName;

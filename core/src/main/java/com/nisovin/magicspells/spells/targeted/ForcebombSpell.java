@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.util.Util;
@@ -84,12 +83,12 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 		if (location.getWorld() == null) return;
 
 		location = location.clone().add(0D, yOffset, 0D);
-		Collection<Entity> entities = location.getWorld().getEntitiesByClasses(LivingEntity.class);
+		Collection<LivingEntity> entities = location.getWorld().getLivingEntities();
 
 		Vector e;
 		Vector v;
 		Vector t = location.toVector();
-		for (Entity entity : entities) {
+		for (LivingEntity entity : entities) {
 			if (livingEntity == null && !validTargetList.canTarget(entity)) continue;
 			if (livingEntity != null && !validTargetList.canTarget(livingEntity, entity)) continue;
 			if (!entity.getLocation().getWorld().equals(location.getWorld())) continue;
@@ -97,7 +96,7 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 
 			float power = basePower;
 			if (callTargetEvents && livingEntity != null) {
-				SpellTargetEvent event = new SpellTargetEvent(this, livingEntity, (LivingEntity) entity, power);
+				SpellTargetEvent event = new SpellTargetEvent(this, livingEntity, entity, power);
 				EventUtil.call(event);
 				if (event.isCancelled()) continue;
 				power = event.getPower();

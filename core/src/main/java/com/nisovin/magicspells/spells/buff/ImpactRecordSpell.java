@@ -36,8 +36,8 @@ public class ImpactRecordSpell extends BuffSpell {
 	}
 	
 	@Override
-	public void initialize() {
-		super.initialize();
+	public void initializeVariables() {
+		super.initializeVariables();
 		
 		if (variableName == null || MagicSpells.getVariableManager().getVariable(variableName) == null) {
 			MagicSpells.error("ImpactRecordSpell '" + internalName + "' has an invalid variable-name defined!");

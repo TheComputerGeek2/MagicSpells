@@ -17,7 +17,7 @@ public class MagicXpBelowCondition extends Condition {
 	private int[] amount;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			handler = MagicSpells.getMagicXpHandler();
 			if (handler == null) return false;

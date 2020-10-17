@@ -147,16 +147,15 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 		Location finalLoc = livingEntity != null ? livingEntity.getLocation() : location;
 
 		location = Util.makeFinite(location);
-		List<Entity> entities = new ArrayList<>(location.getWorld().getNearbyEntities(location, hRadius, vRadius, hRadius));
+		List<LivingEntity> entities = new ArrayList<>(location.getWorld().getNearbyLivingEntities(location, hRadius, vRadius, hRadius));
 
 		if (useProximity) {
-			Comparator<Entity> comparator = Comparator.comparingDouble(entity -> entity.getLocation().distanceSquared(finalLoc));
+			Comparator<LivingEntity> comparator = Comparator.comparingDouble(entity -> entity.getLocation().distanceSquared(finalLoc));
 			if (reverseProximity) comparator = comparator.reversed();
 			entities.sort(comparator);
 		}
 
-		for (Entity e : entities) {
-			if (!(e instanceof LivingEntity)) continue;
+		for (LivingEntity e : entities) {
 			if (circleShape) {
 				double hDistance = NumberConversions.square(e.getLocation().getX() - location.getX()) + NumberConversions.square(e.getLocation().getZ() - location.getZ());
 				if (hDistance > hRadiusSquared) continue;
@@ -168,7 +167,7 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 				if (FastMath.toDegrees(FastMath.abs(dir.angle(finalLoc.getDirection()))) > cone) continue;
 			}
 
-			LivingEntity target = (LivingEntity) e;
+			LivingEntity target = e;
 			float power = basePower;
 
 			if (target.isDead()) continue;

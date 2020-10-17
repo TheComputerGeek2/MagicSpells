@@ -4,18 +4,19 @@ import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.util.Util;
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
 
 public class TargetMaxHealthCondition extends OperatorCondition {
 
 	private double health;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.length() < 2) {
 			return false;
 		}
 
-		super.setVar(var);
+		super.initialize(var);
 
 		try {
 			health = Double.parseDouble(var.substring(1));

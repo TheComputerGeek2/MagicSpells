@@ -1,44 +1,33 @@
 package com.nisovin.magicspells.spells.passive;
 
-import java.util.List;
-import java.util.ArrayList;
-
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityShootBowEvent;
 
-import com.nisovin.magicspells.Spellbook;
-import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.util.OverridePriority;
+import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 
 // No trigger variable is used here
 public class ShootListener extends PassiveListener {
 
-	List<PassiveSpell> spells = new ArrayList<>();
-
 	@Override
-	public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
-		spells.add(spell);
+	public void initialize(String var) {
+
 	}
 	
 	@OverridePriority
 	@EventHandler
 	public void onShoot(final EntityShootBowEvent event) {
-		if (spells.isEmpty()) return;
-		if (!(event.getEntity() instanceof Player)) return;
+		LivingEntity shooter = event.getEntity();
 
-		Player player = (Player) event.getEntity();
-		Spellbook spellbook = MagicSpells.getSpellbook(player);
+		if (!hasSpell(shooter)) return;
+		if (!canTrigger(shooter)) return;
 
-		for (PassiveSpell spell : spells) {
-			if (!isCancelStateOk(spell, event.isCancelled())) continue;
-			if (!spellbook.hasSpell(spell)) continue;
-			boolean casted = spell.activate(player, event.getForce());
-			if (!PassiveListener.cancelDefaultAction(spell, casted)) continue;
-			event.setCancelled(true);
-			event.getProjectile().remove();
-		}
+		if (!isCancelStateOk(event.isCancelled())) return;
+		boolean casted = passiveSpell.activate(shooter, event.getForce());
+		if (!cancelDefaultAction(casted)) return;
+		event.setCancelled(true);
+		event.getProjectile().remove();
 	}
 	
 }

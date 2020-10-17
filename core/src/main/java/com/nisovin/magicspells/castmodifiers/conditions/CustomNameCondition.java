@@ -13,7 +13,7 @@ public class CustomNameCondition extends Condition {
 	private boolean isVar;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null || var.isEmpty()) return false;
 		name = Util.colorize(var);
 		if (name.contains("%var:") || name.contains("%playervar")) isVar = true;

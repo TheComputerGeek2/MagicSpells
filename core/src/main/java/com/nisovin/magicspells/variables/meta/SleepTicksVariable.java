@@ -1,8 +1,9 @@
 package com.nisovin.magicspells.variables.meta;
 
-import com.nisovin.magicspells.util.PlayerNameUtils;
-import com.nisovin.magicspells.variables.MetaVariable;
 import org.bukkit.entity.Player;
+
+import com.nisovin.magicspells.util.PlayerNameUtils;
+import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
 
 public class SleepTicksVariable extends MetaVariable {
 

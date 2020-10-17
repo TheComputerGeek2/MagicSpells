@@ -22,7 +22,7 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 
 	private static final Pattern DELAY_PATTERN = Pattern.compile("DELAY [0-9]+");
 
-	private Random random;
+	private final Random random;
 
 	private List<Action> actions;
 	private List<String> spellList;
@@ -54,18 +54,20 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 	public void initialize() {
 		super.initialize();
 
-		if (spellList != null) {
-			for (String s : spellList) {
-				if (RegexUtil.matches(DELAY_PATTERN, s)) {
-					int delay = Integer.parseInt(s.split(" ")[1]);
-					actions.add(new Action(delay));
-				} else {
-					Subspell spell = new Subspell(s);
-					if (spell.process()) actions.add(new Action(spell));
-					else MagicSpells.error("TargetedMultiSpell '" + internalName + "' has an invalid spell '" + s + "' defined!");
-				}
+		if (spellList == null) return;
+
+		for (String s : spellList) {
+			if (RegexUtil.matches(DELAY_PATTERN, s)) {
+				int delay = Integer.parseInt(s.split(" ")[1]);
+				actions.add(new Action(delay));
+				continue;
 			}
+
+			Subspell spell = new Subspell(s);
+			if (spell.process()) actions.add(new Action(spell));
+			else MagicSpells.error("TargetedMultiSpell '" + internalName + "' has an invalid spell '" + s + "' defined!");
 		}
+
 		spellList = null;
 	}
 
@@ -140,18 +142,21 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 			for (Action action : actions) {
 				if (action.isDelay()) {
 					delay += action.getDelay();
-				} else if (action.isSpell()) {
+					continue;
+				}
+				if (action.isSpell()) {
 					spell = action.getSpell();
 					if (delay == 0) {
 						boolean ok = castTargetedSpell(spell, livingEntity, entTarget, locTarget, power);
 						if (ok) somethingWasDone = true;
 						else if (stopOnFail) break;
-					} else {
-						DelayedSpell ds = new DelayedSpell(spell, livingEntity, entTarget, locTarget, power, delayedSpells);
-						delayedSpells.add(ds);
-						MagicSpells.scheduleDelayedTask(ds, delay);
-						somethingWasDone = true;
+						continue;
 					}
+
+					DelayedSpell ds = new DelayedSpell(spell, livingEntity, entTarget, locTarget, power, delayedSpells);
+					delayedSpells.add(ds);
+					MagicSpells.scheduleDelayedTask(ds, delay);
+					somethingWasDone = true;
 				}
 			}
 		} else {
@@ -172,29 +177,29 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 	}
 	
 	private boolean castTargetedSpell(Subspell spell, LivingEntity caster, LivingEntity entTarget, Location locTarget, float power) {
-		boolean success = false;
 		if (spell.isTargetedEntitySpell() && entTarget != null) {
-			success = spell.castAtEntity(caster, entTarget, power);
-		} else if (spell.isTargetedLocationSpell()) {
-			if (entTarget != null) success = spell.castAtLocation(caster, entTarget.getLocation(), power);
-			else if (locTarget != null) success = spell.castAtLocation(caster, locTarget, power);
-		} else {
-			success = spell.cast(caster, power) == PostCastAction.HANDLE_NORMALLY;
+			return spell.castAtEntity(caster, entTarget, power);
 		}
-		return success;
+
+		if (spell.isTargetedLocationSpell()) {
+			if (entTarget != null) return spell.castAtLocation(caster, entTarget.getLocation(), power);
+			if (locTarget != null) return spell.castAtLocation(caster, locTarget, power);
+		}
+
+		return spell.cast(caster, power) == PostCastAction.HANDLE_NORMALLY;
 	}
 	
 	private static class Action {
 		
-		private Subspell spell;
-		private int delay;
+		private final Subspell spell;
+		private final int delay;
 		
-		Action(Subspell spell) {
+		private Action(Subspell spell) {
 			this.spell = spell;
 			delay = 0;
 		}
-		
-		Action(int delay) {
+
+		private Action(int delay) {
 			this.delay = delay;
 			spell = null;
 		}
@@ -219,16 +224,16 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 	
 	private class DelayedSpell implements Runnable {
 		
-		private Subspell spell;
-		private LivingEntity caster;
-		private LivingEntity entTarget;
-		private Location locTarget;
-		private float power;
+		private final Subspell spell;
+		private final LivingEntity caster;
+		private final LivingEntity entTarget;
+		private final Location locTarget;
+		private final float power;
 		
 		private List<DelayedSpell> delayedSpells;
 		private boolean cancelled;
 		
-		DelayedSpell(Subspell spell, LivingEntity caster, LivingEntity entTarget, Location locTarget, float power, List<DelayedSpell> delayedSpells) {
+		private DelayedSpell(Subspell spell, LivingEntity caster, LivingEntity entTarget, Location locTarget, float power, List<DelayedSpell> delayedSpells) {
 			this.spell = spell;
 			this.caster = caster;
 			this.entTarget = entTarget;
@@ -254,13 +259,17 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 		
 		@Override
 		public void run() {
-			if (!cancelled) {
-				if (caster == null || caster.isValid()) {
-					boolean ok = castTargetedSpell(spell, caster, entTarget, locTarget, power);
-					delayedSpells.remove(this);
-					if (!ok && stopOnFail) cancelAll();
-				} else cancelAll();
+			if (cancelled) {
+				delayedSpells = null;
+				return;
 			}
+
+			if (caster == null || caster.isValid()) {
+				boolean ok = castTargetedSpell(spell, caster, entTarget, locTarget, power);
+				delayedSpells.remove(this);
+				if (!ok && stopOnFail) cancelAll();
+			} else cancelAll();
+
 			delayedSpells = null;
 		}
 		

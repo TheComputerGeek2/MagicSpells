@@ -1,8 +1,8 @@
 package com.nisovin.magicspells.variables.meta;
 
-import com.nisovin.magicspells.variables.MetaVariable;
-
 import java.time.Instant;
+
+import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
 
 public class TimestampSecondsVariable extends MetaVariable {
 

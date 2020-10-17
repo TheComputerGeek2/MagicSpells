@@ -14,7 +14,7 @@ public class VariableMatchesCondition extends Condition {
 	private String variable;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null || var.isEmpty()) return false;
 		variable = var;
 		return true;

@@ -76,6 +76,14 @@ public class BlockUtils {
 		return ((Ageable) block.getBlockData()).getAge();
 	}
 
+	public static int getMaxGrowthLevel(Block block) {
+		return ((Ageable) block.getBlockData()).getMaximumAge();
+	}
+
+	public static boolean isPlant(Block b) {
+		return b.getBlockData() instanceof Ageable;
+	}
+
 	public static void setGrowthLevel(Block block, int level) {
 		Ageable age = ((Ageable) block.getBlockData());
 		age.setAge(level);

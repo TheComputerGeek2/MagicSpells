@@ -15,7 +15,7 @@ public class NamePatternCondition extends Condition {
 	private Pattern compiledPattern;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null || var.isEmpty()) return false;
 		rawPattern = var;
 		compiledPattern = Pattern.compile(rawPattern);

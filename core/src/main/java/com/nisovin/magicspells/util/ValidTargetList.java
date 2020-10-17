@@ -205,6 +205,24 @@ public class ValidTargetList {
 		if (types.contains(target.getType())) return true;
 		return false;
 	}
+
+	public boolean canTarget(Entity target, boolean ignoreGameMode) {
+		if (!(target instanceof LivingEntity) && !targetNonLivingEntities) return false;
+		boolean targetIsPlayer = target instanceof Player;
+		if (!ignoreGameMode) {
+			if (targetIsPlayer && ((Player) target).getGameMode() == GameMode.CREATIVE) return false;
+			if (targetIsPlayer && ((Player) target).getGameMode() == GameMode.SPECTATOR) return false;
+		}
+		if (targetPlayers && targetIsPlayer) return true;
+		if (targetNonPlayers && !targetIsPlayer) return true;
+		if (targetMonsters && target instanceof Monster) return true;
+		if (targetAnimals && target instanceof Animals) return true;
+		// Lets target mounts (Again...)
+		if (targetPassengers && target instanceof LivingEntity && !target.getVehicle().isEmpty()) return true;
+		if (targetMounts && target instanceof LivingEntity && !target.getPassengers().isEmpty() && target.getVehicle().isEmpty()) return true;
+		if (types.contains(target.getType())) return true;
+		return false;
+	}
 	
 	public List<LivingEntity> filterTargetListCastingAsLivingEntities(LivingEntity caster, List<Entity> targets) {
 		return filterTargetListCastingAsLivingEntities(caster, targets, targetPlayers);

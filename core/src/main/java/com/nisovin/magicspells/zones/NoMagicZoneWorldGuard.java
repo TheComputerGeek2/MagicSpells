@@ -22,6 +22,8 @@ public class NoMagicZoneWorldGuard extends NoMagicZone {
 	private ProtectedRegion region;
 	private WorldGuardPlugin worldGuard;
 
+	private boolean global = false;
+
 	@Override
 	public void initialize(ConfigurationSection config) {
 		worldName = config.getString("world", "");
@@ -35,16 +37,19 @@ public class NoMagicZoneWorldGuard extends NoMagicZone {
 
 		RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(w));
 		if (rm != null) region = rm.getRegion(regionName);
+
+		if (regionName.toLowerCase().contains("global")) global = true;
 	}
 
 	@Override
 	public boolean inZone(Location location) {
 		if (!worldName.equals(location.getWorld().getName())) return false;
-		if (region == null) {
-			MagicSpells.error("Failed to access WorldGuard region '" + regionName + '\'');
+		if (region == null && !global) {
+			MagicSpells.error("Failed to access WorldGuard region '" + regionName + "'");
 			return false;
 		}
 
+		if (global) return true;
 		return region.contains(location.getBlockX(), location.getBlockY(), location.getBlockZ());
 	}
 

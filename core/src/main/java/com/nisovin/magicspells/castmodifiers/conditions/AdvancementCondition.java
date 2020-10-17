@@ -18,7 +18,7 @@ public class AdvancementCondition extends Condition {
 	private Set<Advancement> advancements;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null || var.isEmpty()) return false;
 
 		advancements = new HashSet<>();

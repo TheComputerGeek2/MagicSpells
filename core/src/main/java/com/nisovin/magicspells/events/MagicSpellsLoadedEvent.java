@@ -7,7 +7,7 @@ import com.nisovin.magicspells.MagicSpells;
 
 /**
  * This event is fired whenever MagicSpells finishes loading, either after the server first starts,
- * after a server reload (/reload), or after an internal reload (/cast reload).
+ * after a server reload (/reload), or after an internal reload (/ms reload).
  *
  */
 public class MagicSpellsLoadedEvent extends Event {

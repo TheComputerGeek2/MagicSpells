@@ -22,7 +22,9 @@ public class PlaceholderAPIDataSpell extends TargetedSpell {
 	}
 
 	@Override
-	public void initialize() {
+	public void initializeVariables() {
+		super.initializeVariables();
+
 		if (variableName == null) {
 			MagicSpells.error("variable-name is null for '" + internalName + "'");
 			MagicSpells.error("In most cases, this should be set to the name of a string variable, but non string variables may work depending on values.");

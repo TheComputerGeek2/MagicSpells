@@ -21,7 +21,7 @@ public class EntityTypeCondition extends Condition {
 	private Set<EntityType> types = new HashSet<>();
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		String[] vars = var.replace(" ", "").split(",");
 		for (String v : vars) {
 			switch (v.toLowerCase()) {

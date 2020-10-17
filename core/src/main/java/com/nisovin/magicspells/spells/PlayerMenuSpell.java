@@ -80,8 +80,18 @@ public class PlayerMenuSpell extends TargetedSpell implements TargetedEntitySpel
 	}
 
 	@Override
+	public void initializeModifiers() {
+		super.initializeModifiers();
+
+		if (playerModifiersStrings != null && !playerModifiersStrings.isEmpty()) {
+			playerModifiers = new ModifierSet(playerModifiersStrings);
+		}
+	}
+
+	@Override
 	public void initialize() {
 		super.initialize();
+
 		spellOffline = initSubspell(spellOfflineName, "PlayerMenuSpell '" + internalName + "' has an invalid spell-offline defined!");
 		spellRange = initSubspell(spellRangeName, "PlayerMenuSpell '" + internalName + "' has an invalid spell-range defined!");
 		spellOnLeft = initSubspell(spellOnLeftName, "PlayerMenuSpell '" + internalName + "' has an invalid spell-on-left defined!");
@@ -91,9 +101,6 @@ public class PlayerMenuSpell extends TargetedSpell implements TargetedEntitySpel
 		spellOnSneakRight = initSubspell(spellOnSneakRightName, "PlayerMenuSpell '" + internalName + "' has an invalid spell-on-sneak-right defined!");
 
 		spellPower = new HashMap<>();
-		if (playerModifiersStrings != null && !playerModifiersStrings.isEmpty()) {
-			playerModifiers = new ModifierSet(playerModifiersStrings);
-		}
 	}
 
 	@Override

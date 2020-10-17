@@ -1,9 +1,10 @@
 package com.nisovin.magicspells.variables.meta;
 
-import com.nisovin.magicspells.util.PlayerNameUtils;
-import com.nisovin.magicspells.variables.MetaVariable;
-import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.bukkit.entity.Player;
+
+import com.nisovin.magicspells.util.PlayerNameUtils;
+import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
 
 public class VelocityZVariable extends MetaVariable {
 	
@@ -17,10 +18,11 @@ public class VelocityZVariable extends MetaVariable {
 	@Override
 	public void set(String player, double amount) {
 		Player p = PlayerNameUtils.getPlayerExact(player);
-		if (p != null) {
-			Vector velocity = p.getVelocity();
-			velocity.setZ(amount);
-			p.setVelocity(velocity);
-		}
+		if (p == null) return;
+
+		Vector velocity = p.getVelocity();
+		velocity.setZ(amount);
+		p.setVelocity(velocity);
 	}
+
 }

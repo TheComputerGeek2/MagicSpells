@@ -9,6 +9,7 @@ import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
 
 public class VariableCondition extends OperatorCondition {
 
@@ -19,7 +20,7 @@ public class VariableCondition extends OperatorCondition {
 	private double value = 0;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		Matcher matcher = VARIABLE_NAME_PATTERN.matcher(var);
 		String variableName;
 
@@ -27,7 +28,7 @@ public class VariableCondition extends OperatorCondition {
 		else return false;
 
 		String number = var.substring(variableName.length());
-		super.setVar(number);
+		super.initialize(number);
 
 		variable = variableName;
 

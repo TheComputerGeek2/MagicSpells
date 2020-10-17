@@ -4,18 +4,19 @@ import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
 
 public class LightLevelCondition extends OperatorCondition {
 
 	private byte level = 0;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.length() < 2) {
 			return false;
 		}
 
-		super.setVar(var);
+		super.initialize(var);
 
 		try {
 			level = Byte.parseByte(var.substring(1));

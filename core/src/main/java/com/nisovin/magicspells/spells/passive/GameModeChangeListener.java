@@ -1,47 +1,29 @@
 package com.nisovin.magicspells.spells.passive;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.EnumSet;
 
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 
-import com.nisovin.magicspells.Spellbook;
-import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.util.OverridePriority;
+import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 
 public class GameModeChangeListener extends PassiveListener {
 
-	List<PassiveSpell> spellsCreative = new ArrayList<>();
-	List<PassiveSpell> spellsSurvival = new ArrayList<>();
-	List<PassiveSpell> spellsAdventure = new ArrayList<>();
-	List<PassiveSpell> spellsSpectator = new ArrayList<>();
+	private final EnumSet<GameMode> gameModes = EnumSet.noneOf(GameMode.class);
 
 	@Override
-	public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
-		if (var == null || var.isEmpty()) {
-			spellsCreative.add(spell);
-			spellsSurvival.add(spell);
-			spellsAdventure.add(spell);
-			spellsSpectator.add(spell);
-			return;
-		}
+	public void initialize(String var) {
+		if (var == null || var.isEmpty()) return;
 
-		switch (var.toLowerCase()) {
-			case "creative":
-				spellsCreative.add(spell);
-				break;
-			case "survival":
-				spellsSurvival.add(spell);
-				break;
-			case "adventure":
-				spellsAdventure.add(spell);
-				break;
-			case "spectator":
-				spellsSpectator.add(spell);
-				break;
+		GameMode gameMode;
+		try {
+			gameMode = GameMode.valueOf(var.toUpperCase());
+			gameModes.add(gameMode);
+		} catch (Exception e) {
+			// ignored
 		}
 	}
 
@@ -49,28 +31,18 @@ public class GameModeChangeListener extends PassiveListener {
 	@EventHandler
 	public void onGameModeChange(PlayerGameModeChangeEvent event) {
 		Player player = event.getPlayer();
-		Spellbook spellbook = MagicSpells.getSpellbook(player);
-		List<PassiveSpell> spells = new ArrayList<>();
-		switch (event.getNewGameMode().name().toLowerCase()) {
-			case "creative":
-				spells = spellsCreative;
-				break;
-			case "survival":
-				spells = spellsSurvival;
-				break;
-			case "adventure":
-				spells = spellsAdventure;
-				break;
-			case "spectator":
-				spells = spellsSpectator;
-				break;
+		if (!hasSpell(player)) return;
+
+		if (gameModes.isEmpty()) {
+			boolean casted = passiveSpell.activate(player);
+			if (cancelDefaultAction(casted)) event.setCancelled(true);
+			return;
 		}
 
-		for (PassiveSpell spell : spells) {
-			if (!spellbook.hasSpell(spell)) continue;
-			boolean casted = spell.activate(player);
-			if (PassiveListener.cancelDefaultAction(spell, casted)) event.setCancelled(true);
-		}
+		if (!gameModes.contains(event.getNewGameMode())) return;
+
+		boolean casted = passiveSpell.activate(player);
+		if (cancelDefaultAction(casted)) event.setCancelled(true);
 	}
 
 }

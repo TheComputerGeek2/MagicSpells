@@ -13,7 +13,7 @@ public class VariableStringEqualsCondition extends Condition {
 	private String value;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		String[] split = var.split(":",2);
 
 		//Were two parts of this modifier created?

@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 
+import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.RegexUtil;
 import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.events.SpellCastEvent;
@@ -42,14 +43,14 @@ public class Modifier implements IModifier {
 			m.negated = true;
 			data[0] = data[0].substring(1);
 		}
-		m.condition = Condition.getConditionByName(data[0]);
+		m.condition = MagicSpells.getConditionManager().getConditionByName(data[0].replace("_", ""));
 		if (m.condition == null) return null;
 
 		// Get type and vars
 		m.type = getTypeByName(data[1]);
 		if (m.type == null && data.length > 2) {
-			boolean varok = m.condition.setVar(data[1]);
-			if (!varok) return null;
+			boolean init = m.condition.initialize(data[1]);
+			if (!init) return null;
 			m.type = getTypeByName(data[2]);
 			if (data.length > 3) m.modifierVar = data[3];
 		} else if (data.length > 2) {

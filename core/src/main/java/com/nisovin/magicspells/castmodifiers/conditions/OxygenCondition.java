@@ -4,18 +4,19 @@ import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
 
-public class OxygenCondition extends OperatorCondition{
+public class OxygenCondition extends OperatorCondition {
 	
 	private int oxygen;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.length() < 2) {
 			return false;
 		}
 
-		super.setVar(var);
+		super.initialize(var);
 
 		try {
 			oxygen = Integer.parseInt(var.substring(1));

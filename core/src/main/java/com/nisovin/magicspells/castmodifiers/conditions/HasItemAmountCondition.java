@@ -15,6 +15,7 @@ import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.magicitems.MagicItemData;
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
 
 public class HasItemAmountCondition extends OperatorCondition {
 
@@ -25,11 +26,11 @@ public class HasItemAmountCondition extends OperatorCondition {
 	private int amount;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		String[] args = var.split(";");
 		if (args.length < 2) return false;
 
-		super.setVar(var);
+		super.initialize(var);
 
 		try {
 			amount = Integer.parseInt(args[0].substring(1));

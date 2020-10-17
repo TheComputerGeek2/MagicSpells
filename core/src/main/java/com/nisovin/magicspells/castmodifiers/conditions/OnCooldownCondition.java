@@ -12,7 +12,7 @@ public class OnCooldownCondition extends Condition {
 	private Spell spell;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		spell = MagicSpells.getSpellByInternalName(var);
 		return spell != null;
 	}

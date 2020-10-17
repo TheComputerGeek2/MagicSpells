@@ -9,7 +9,7 @@ import com.nisovin.magicspells.castmodifiers.Condition;
 public class BlockingCondition extends Condition {
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		return true;
 	}
 	

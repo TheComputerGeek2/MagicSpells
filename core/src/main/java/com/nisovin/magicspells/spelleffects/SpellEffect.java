@@ -1,9 +1,7 @@
 package com.nisovin.magicspells.spelleffects;
 
-import java.util.Map;
 import java.util.List;
 import java.util.Random;
-import java.util.HashMap;
 
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -14,7 +12,6 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TimeUtil;
-import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
 import com.nisovin.magicspells.spelleffects.trackers.BuffTracker;
 import com.nisovin.magicspells.spelleffects.trackers.OrbitTracker;
@@ -24,7 +21,7 @@ import de.slikey.effectlib.util.VectorUtils;
 
 public abstract class SpellEffect {
 
-	private static Map<String, Class<? extends SpellEffect>> effects = new HashMap<>();
+	private final Random random = new Random();
 
 	private int delay;
 	private double chance;
@@ -59,9 +56,10 @@ public abstract class SpellEffect {
 
 	private boolean counterClockwise;
 
+	private List<String> modifiersList;
+	private List<String> locationModifiersList;
 	private ModifierSet modifiers;
 	private ModifierSet locationModifiers;
-	private Random random = new Random();
 
 	public void loadFromString(String string) {
 		MagicSpells.plugin.getLogger().warning("Warning: single line effects are being removed, usage encountered: " + string);
@@ -82,32 +80,36 @@ public abstract class SpellEffect {
 		maxDistance = config.getDouble("max-distance", 100);
 		distanceBetween = config.getDouble("distance-between", 1);
 
-		orbitXAxis = (float) config.getDouble("orbit-x-axis", 0F);
-		orbitYAxis = (float) config.getDouble("orbit-y-axis", 0F);
-		orbitZAxis = (float) config.getDouble("orbit-z-axis", 0F);
-		orbitRadius = (float) config.getDouble("orbit-radius", 1F);
-		orbitYOffset = (float) config.getDouble("orbit-y-offset", 0F);
-		horizOffset = (float) config.getDouble("orbit-horiz-offset", 0F);
-		horizExpandRadius = (float) config.getDouble("orbit-horiz-expand-radius", 0);
-		vertExpandRadius = (float) config.getDouble("orbit-vert-expand-radius", 0);
-		secondsPerRevolution = (float) config.getDouble("orbit-seconds-per-revolution", 3);
+		String path = "orbit-";
+		orbitXAxis = (float) config.getDouble(path + "x-axis", 0F);
+		orbitYAxis = (float) config.getDouble(path + "y-axis", 0F);
+		orbitZAxis = (float) config.getDouble(path + "z-axis", 0F);
+		orbitRadius = (float) config.getDouble(path + "radius", 1F);
+		orbitYOffset = (float) config.getDouble(path + "y-offset", 0F);
+		horizOffset = (float) config.getDouble(path + "horiz-offset", 0F);
+		horizExpandRadius = (float) config.getDouble(path + "horiz-expand-radius", 0);
+		vertExpandRadius = (float) config.getDouble(path + "vert-expand-radius", 0);
+		secondsPerRevolution = (float) config.getDouble(path + "seconds-per-revolution", 3);
 
-		horizExpandDelay = config.getInt("orbit-horiz-expand-delay", 0);
-		vertExpandDelay = config.getInt("orbit-vert-expand-delay", 0);
+		horizExpandDelay = config.getInt(path + "horiz-expand-delay", 0);
+		vertExpandDelay = config.getInt(path + "vert-expand-delay", 0);
 		effectInterval = config.getInt("effect-interval", TimeUtil.TICKS_PER_SECOND);
 
-		counterClockwise = config.getBoolean("orbit-counter-clockwise", false);
+		counterClockwise = config.getBoolean(path + "counter-clockwise", false);
 		
-		List<String> modifiersList = config.getStringList("modifiers");
-		List<String> locationModifiersList = config.getStringList("location-modifiers");
-		if (modifiersList != null) modifiers = new ModifierSet(modifiersList);
-		if (locationModifiersList != null) locationModifiers = new ModifierSet(locationModifiersList);
+		modifiersList = config.getStringList("modifiers");
+		locationModifiersList = config.getStringList("location-modifiers");
 
 		maxDistance *= maxDistance;
 		ticksPerSecond = 20F / (float) effectInterval;
 		ticksPerRevolution = Math.round(ticksPerSecond * secondsPerRevolution);
 		distancePerTick = 6.28F / (ticksPerSecond * secondsPerRevolution);
 		loadFromConfig(config);
+	}
+
+	public void initializeModifiers() {
+		if (modifiersList != null) modifiers = new ModifierSet(modifiersList);
+		if (locationModifiersList != null) locationModifiers = new ModifierSet(locationModifiersList);
 	}
 	
 	protected abstract void loadFromConfig(ConfigurationSection config);
@@ -130,7 +132,7 @@ public abstract class SpellEffect {
 	 */
 	public Runnable playEffect(final Entity entity) {
 		if (chance > 0 && chance < 1 && random.nextDouble() > chance) return null;
-		if (entity instanceof LivingEntity && !modifiers.check((LivingEntity) entity)) return null;
+		if (entity instanceof LivingEntity && modifiers != null && !modifiers.check((LivingEntity) entity)) return null;
 		if (delay <= 0) return playEffectEntity(entity);
 		MagicSpells.scheduleDelayedTask(() -> playEffectEntity(entity), delay);
 		return null;
@@ -146,7 +148,7 @@ public abstract class SpellEffect {
 	 */
 	public final Runnable playEffect(final Location location) {
 		if (chance > 0 && chance < 1 && random.nextDouble() > chance) return null;
-		if (!locationModifiers.check(null, location)) return null;
+		if (locationModifiers != null && !locationModifiers.check(null, location)) return null;
 		if (delay <= 0) return playEffectLocationReal(location);
 		MagicSpells.scheduleDelayedTask(() -> playEffectLocationReal(location), delay);
 		return null;
@@ -154,7 +156,7 @@ public abstract class SpellEffect {
 
 	public final Effect playEffectLib(final Location location) {
 		if (chance > 0 && chance < 1 && random.nextDouble() > chance) return null;
-		if (!locationModifiers.check(null, location)) return null;
+		if (locationModifiers != null && !locationModifiers.check(null, location)) return null;
 		if (delay <= 0) return playEffectLibLocationReal(location);
 		MagicSpells.scheduleDelayedTask(() -> playEffectLibLocationReal(location), delay);
 		return null;
@@ -162,7 +164,7 @@ public abstract class SpellEffect {
 
 	public final Entity playEntityEffect(final Location location) {
 		if (chance > 0 && chance < 1 && random.nextDouble() > chance) return null;
-		if (!locationModifiers.check(null, location)) return null;
+		if (locationModifiers != null && !locationModifiers.check(null, location)) return null;
 		if (delay <= 0) return playEntityEffectLocationReal(location);
 		MagicSpells.scheduleDelayedTask(() -> playEffectLibLocationReal(location), delay);
 		return null;
@@ -170,7 +172,7 @@ public abstract class SpellEffect {
 
 	public final ArmorStand playArmorStandEffect(final Location location) {
 		if (chance > 0 && chance < 1 && random.nextDouble() > chance) return null;
-		if (!locationModifiers.check(null, location)) return null;
+		if (locationModifiers != null && !locationModifiers.check(null, location)) return null;
 		if (delay <= 0) return playArmorStandEffectLocationReal(location);
 		MagicSpells.scheduleDelayedTask(() -> playEffectLibLocationReal(location), delay);
 		return null;
@@ -364,75 +366,9 @@ public abstract class SpellEffect {
 	public ModifierSet getModifiers() {
 		return modifiers;
 	}
-
-	/**
-	 * Gets the GraphicalEffect by the provided name.
-	 * @param name the name of the effect
-	 * @return
-	 */
-	public static SpellEffect createNewEffectByName(String name) {
-		Class<? extends SpellEffect> clazz = effects.get(name.toLowerCase());
-		if (clazz == null) return null;
-		try {
-			return clazz.newInstance();
-		} catch (Exception e) {
-			DebugHandler.debugGeneral(e);
-			return null;
-		}
-	}
 	
 	public void playTrackingLinePatterns(Location origin, Location target, Entity originEntity, Entity targetEntity) {
 		// no op, effects should override this with their own behavior
 	}
-	
-	/**
-	 * Adds an effect with the provided name to the list of available effects.
-	 * This will replace an existing effect if the same name is used.
-	 * @param name the name of the effect
-	 * @param effect the effect to add
-	 * @return Returns true if an existing effect was overwritten
-	 */
-	public static boolean addEffect(String name, Class<? extends SpellEffect> effect) {
-		return effects.put(name.toLowerCase(), effect) != null;
-	}
 
-	public static void removeEffect(String name) {
-		effects.remove(name.toLowerCase());
-	}
-
-	public static Map<String, Class<? extends SpellEffect>> getEffects() {
-		return effects;
-	}
-	
-	static {
-		effects.put("armorstand", ArmorStandEffect.class);
-		effects.put("actionbartext", ActionBarTextEffect.class);
-		effects.put("bossbar", BossBarEffect.class);
-		effects.put("broadcast", BroadcastEffect.class);
-		effects.put("cloud", CloudEffect.class);
-		effects.put("dragondeath", DragonDeathEffect.class);
-		effects.put("ender", EnderSignalEffect.class);
-		effects.put("entity", EntityEffect.class);
-		effects.put("explosion", ExplosionEffect.class);
-		effects.put("fireworks", FireworksEffect.class);
-		effects.put("itemcooldown", ItemCooldownEffect.class);
-		effects.put("itemspray", ItemSprayEffect.class);
-		effects.put("lightning", LightningEffect.class);
-		effects.put("nova", NovaEffect.class);
-		effects.put("particles", ParticlesEffect.class);
-		effects.put("particlespersonal", ParticlesPersonalEffect.class);
-		effects.put("particlecloud", ParticleCloudEffect.class);
-		effects.put("potion", PotionEffect.class);
-		effects.put("smokeswirl", SmokeSwirlEffect.class);
-		effects.put("smoketrail", SmokeTrailEffect.class);
-		effects.put("sound", SoundEffect.class);
-		effects.put("soundpersonal", SoundPersonalEffect.class);
-		effects.put("spawn", MobSpawnerEffect.class);
-		effects.put("splash", SplashPotionEffect.class);
-		effects.put("title", TitleEffect.class);
-		effects.put("effectlib", EffectLibEffect.class);
-		effects.put("effectlibline", EffectLibLineEffect.class);
-		effects.put("effectlibentity", EffectLibEntityEffect.class);
-	}
-	
 }

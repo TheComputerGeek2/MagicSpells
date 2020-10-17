@@ -19,7 +19,7 @@ public class InCuboidCondition extends Condition {
 	private int maxZ;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			String[] split = var.split(",");
 			worldName = split[0];

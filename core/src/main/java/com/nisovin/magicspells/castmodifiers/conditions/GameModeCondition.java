@@ -13,7 +13,7 @@ public class GameModeCondition extends Condition {
 	private GameMode mode;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			mode = GameMode.valueOf(var.toUpperCase());
 			return true;

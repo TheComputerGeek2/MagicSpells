@@ -18,7 +18,7 @@ public class DurabilityCondition extends Condition {
 	private Set<DurabilityChecker> durabilitySet;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		durabilitySet = new HashSet<>();
 
 		String[] args = var.split(",");

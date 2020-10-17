@@ -15,7 +15,7 @@ public class TestForBlockCondition extends Condition {
 	private Material blockType;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			String[] vars = var.split("=");
 			String[] locs = vars[0].split(",");

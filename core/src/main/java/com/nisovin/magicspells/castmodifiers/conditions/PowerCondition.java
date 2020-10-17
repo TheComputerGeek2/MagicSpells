@@ -9,18 +9,19 @@ import com.nisovin.magicspells.castmodifiers.IModifier;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.events.SpellTargetLocationEvent;
 import com.nisovin.magicspells.events.MagicSpellsGenericPlayerEvent;
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
 
 public class PowerCondition extends OperatorCondition implements IModifier {
 
 	private float power;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.length() < 2) {
 			return false;
 		}
 
-		super.setVar(var);
+		super.initialize(var);
 
 		try {
 			power = Float.parseFloat(var.substring(1));

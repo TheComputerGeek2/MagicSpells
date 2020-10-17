@@ -15,7 +15,7 @@ public class WearingPreciseCondition extends Condition {
 	private MagicItemData itemData = null;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		MagicItem magicItem = MagicItems.getMagicItemFromString(var.trim());
 		if (magicItem == null) return false;
 

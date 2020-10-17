@@ -3,7 +3,7 @@ package com.nisovin.magicspells.variables.meta;
 import org.bukkit.entity.Player;
 
 import com.nisovin.magicspells.util.PlayerNameUtils;
-import com.nisovin.magicspells.variables.MetaVariable;
+import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
 
 public class FireTicksVariable extends MetaVariable {
 
@@ -19,4 +19,5 @@ public class FireTicksVariable extends MetaVariable {
 		Player p = PlayerNameUtils.getPlayerExact(player);
 		if (p != null) p.setFireTicks((int) amount);
 	}
+
 }

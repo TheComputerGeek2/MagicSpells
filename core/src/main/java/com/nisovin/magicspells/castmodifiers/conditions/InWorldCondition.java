@@ -10,7 +10,7 @@ public class InWorldCondition extends Condition {
 	private String world = "";
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		world = var;
 		return true;
 	}

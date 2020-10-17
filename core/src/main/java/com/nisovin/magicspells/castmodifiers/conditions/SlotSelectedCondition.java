@@ -4,12 +4,14 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 
+import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
+
 public class SlotSelectedCondition extends OperatorCondition {
 
 	private int slot;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null || var.isEmpty()) return false;
 		try {
 			slot = Integer.parseInt(var);

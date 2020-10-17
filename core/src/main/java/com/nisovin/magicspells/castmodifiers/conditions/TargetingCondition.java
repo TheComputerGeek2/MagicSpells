@@ -18,7 +18,7 @@ public class TargetingCondition extends Condition {
 	private boolean targetingCaster = false;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null || var.isEmpty()) {
 			anyType = true;
 			return true;

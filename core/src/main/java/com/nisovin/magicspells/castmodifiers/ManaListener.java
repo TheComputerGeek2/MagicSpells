@@ -25,8 +25,8 @@ public class ManaListener implements Listener {
 	public void onManaRegen(ManaChangeEvent event) {
 		if (event.getReason() != ManaChangeReason.REGEN) return;
 		ModifierSet modifiers = MagicSpells.getManaHandler().getModifiers();
-		for (IModifier premod : preModifierHooks) {
-			if (!premod.apply(event)) return;
+		for (IModifier preMod : preModifierHooks) {
+			if (!preMod.apply(event)) return;
 		}
 		if (modifiers != null) modifiers.apply(event);
 		for (IModifier postMod : postModifierHooks) {

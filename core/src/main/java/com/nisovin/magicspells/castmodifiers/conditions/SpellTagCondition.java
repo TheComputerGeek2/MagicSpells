@@ -19,7 +19,7 @@ public class SpellTagCondition extends Condition implements IModifier {
 	private String tag;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null) return false;
 		tag = var.trim();
 		return true;

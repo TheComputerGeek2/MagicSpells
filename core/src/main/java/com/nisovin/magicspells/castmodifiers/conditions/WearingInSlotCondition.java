@@ -17,7 +17,7 @@ public class WearingInSlotCondition extends Condition {
 	private Material material;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			String[] data = var.split("=");
 			String s = data[0].toLowerCase();

@@ -12,7 +12,7 @@ public class InNoMagicZoneCondition extends Condition {
 	private String zone;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null) return false;
 		zone = var;
 		return true;

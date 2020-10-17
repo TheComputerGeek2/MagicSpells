@@ -11,7 +11,7 @@ public class PluginEnabledCondition extends Condition {
 	private String pluginName = null;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null) return false;
 		var = var.trim();
 		if (var.isEmpty()) return false;

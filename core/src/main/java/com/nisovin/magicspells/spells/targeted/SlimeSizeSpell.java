@@ -16,6 +16,8 @@ public class SlimeSizeSpell extends TargetedSpell implements TargetedEntitySpell
 	
 	private VariableMod variableMod;
 
+	private String size;
+
 	private int minSize;
 	private int maxSize;
 	
@@ -24,13 +26,20 @@ public class SlimeSizeSpell extends TargetedSpell implements TargetedEntitySpell
 	public SlimeSizeSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
-		variableMod = new VariableMod(getConfigString("size", "=5"));
+		size = getConfigString("size", "=5");
 		
 		minSize = getConfigInt("min-size", 0);
 		maxSize = getConfigInt("max-size", 20);
 
 		if (minSize < 0) minSize = 0;
 		if (maxSize < minSize) maxSize = minSize;
+	}
+
+	@Override
+	public void initializeVariables() {
+		super.initializeVariables();
+
+		variableMod = new VariableMod(size);
 	}
 	
 	@Override

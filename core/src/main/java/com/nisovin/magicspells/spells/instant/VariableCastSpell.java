@@ -21,8 +21,8 @@ public class VariableCastSpell extends InstantSpell {
 	}
 	
 	@Override
-	public void initialize() {
-		super.initialize();
+	public void initializeVariables() {
+		super.initializeVariables();
 		
 		if (MagicSpells.getVariableManager().getVariable(variableName) == null) {
 			MagicSpells.error("VariableCastSpell '" + internalName + "' has an invalid variable-name defined!");

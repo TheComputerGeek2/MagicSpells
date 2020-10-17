@@ -60,11 +60,12 @@ public class BossBarManager {
 	}
 
 	public class Bar {
+
 		final BossBar bossbar;
 		final Player player;
 		final String namespaceKey;
 
-		Bar(BossBar bossbar, Player player, String namespaceKey) {
+		public Bar(BossBar bossbar, Player player, String namespaceKey) {
 			this.bossbar = bossbar;
 			this.player = player;
 			this.namespaceKey = namespaceKey;
@@ -91,5 +92,7 @@ public class BossBarManager {
 			deleteBossbar();
 			bars.remove(this);
 		}
+
 	}
+
 }

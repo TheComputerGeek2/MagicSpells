@@ -157,6 +157,16 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 	}
 
 	@Override
+	public void initializeModifiers() {
+		super.initializeModifiers();
+
+		if (projModifiersStrings != null && !projModifiersStrings.isEmpty()) {
+			projModifiers = new ModifierSet(projModifiersStrings);
+			projModifiersStrings = null;
+		}
+	}
+
+	@Override
 	public void initialize() {
 		super.initialize();
 
@@ -206,11 +216,6 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 		if (!entityLocationSpell.process() || !entityLocationSpell.isTargetedLocationSpell()) {
 			if (!entityLocationSpellName.isEmpty()) MagicSpells.error("ProjectileModifySpell '" + internalName + "' has an invalid spell-on-entity-location defined!");
 			entityLocationSpell = null;
-		}
-
-		if (projModifiersStrings != null && !projModifiersStrings.isEmpty()) {
-			projModifiers = new ModifierSet(projModifiersStrings);
-			projModifiersStrings = null;
 		}
 	}
 

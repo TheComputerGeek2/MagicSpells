@@ -1,44 +1,34 @@
 package com.nisovin.magicspells.spells.passive;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.inventory.CraftItemEvent;
 
-import com.nisovin.magicspells.Spellbook;
-import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.util.OverridePriority;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
+import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 
 public class CraftListener extends PassiveListener {
 
-	List<PassiveSpell> spellsAll = new ArrayList<>();
-	Map<ItemStack, List<PassiveSpell>> spellsSpecial = new HashMap<>();
+	private final Set<ItemStack> items = new HashSet<>();
 
 	@Override
-	public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
-		if (var == null || var.isEmpty()) {
-			spellsAll.add(spell);
-			return;
-		}
+	public void initialize(String var) {
+		if (var == null || var.isEmpty()) return;
 
 		for (String itemString : var.split(",")) {
 			MagicItem magicItem = MagicItems.getMagicItemFromString(itemString.trim());
 			if (magicItem == null) continue;
+
 			ItemStack item = magicItem.getItemStack();
-			// Stop processing this item if it couldn't be created.
 			if (item == null) continue;
-			List<PassiveSpell> spells = spellsSpecial.getOrDefault(item, new ArrayList<>());
-			spells.add(spell);
-			spellsSpecial.put(item, spells);
+
+			items.add(item);
 		}
 	}
 
@@ -46,28 +36,26 @@ public class CraftListener extends PassiveListener {
 	@EventHandler
 	public void onCraft(CraftItemEvent event) {
 		ItemStack item = event.getCurrentItem();
-		if (item == null || item.getType() == Material.AIR) return;
+		if (item == null || item.getType().isAir()) return;
 
 		Player player = (Player) event.getWhoClicked();
-		Spellbook spellbook = MagicSpells.getSpellbook(player);
+		if (!hasSpell(player)) return;
 
-		if (!spellsAll.isEmpty()) {
-			for (PassiveSpell spell : spellsAll) {
-				if (!isCancelStateOk(spell, event.isCancelled())) continue;
-				if (!spellbook.hasSpell(spell)) continue;
-				boolean casted = spell.activate(player);
-				if (PassiveListener.cancelDefaultAction(spell, casted)) event.setCancelled(true);
-			}
+		// all items
+		if (items.isEmpty()) {
+			if (!isCancelStateOk(event.isCancelled())) return;
+			boolean casted = passiveSpell.activate(player);
+			if (cancelDefaultAction(casted)) event.setCancelled(true);
+
+			return;
 		}
 
-		if (spellsSpecial.containsKey(item)) {
-			for (PassiveSpell spell : spellsSpecial.get(item)) {
-				if (!isCancelStateOk(spell, event.isCancelled())) continue;
-				if (!spellbook.hasSpell(spell)) continue;
-				boolean casted = spell.activate(player);
-				if (PassiveListener.cancelDefaultAction(spell, casted)) event.setCancelled(true);
-			}
-		}
+		// doesn't contain the item
+		if (!items.contains(item)) return;
+
+		if (!isCancelStateOk(event.isCancelled())) return;
+		boolean casted = passiveSpell.activate(player);
+		if (cancelDefaultAction(casted)) event.setCancelled(true);
 	}
 
 }

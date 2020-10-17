@@ -12,7 +12,7 @@ import com.nisovin.magicspells.castmodifiers.Condition;
 public class OnSameTeamCondition extends Condition {
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		return true;
 	}
 

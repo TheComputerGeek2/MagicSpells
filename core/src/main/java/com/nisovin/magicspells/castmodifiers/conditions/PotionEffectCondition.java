@@ -14,7 +14,7 @@ public class PotionEffectCondition extends Condition {
 	private int value;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var.contains(":")) {
 			String[] s = var.split(":");
 			effectType = Util.getPotionEffectType(s[0]);

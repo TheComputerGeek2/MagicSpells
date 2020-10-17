@@ -14,9 +14,9 @@ import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
-import com.nisovin.magicspells.spelleffects.EntityEffect;
-import com.nisovin.magicspells.spelleffects.ArmorStandEffect;
 import com.nisovin.magicspells.events.ParticleProjectileHitEvent;
+import com.nisovin.magicspells.spelleffects.effecttypes.EntityEffect;
+import com.nisovin.magicspells.spelleffects.effecttypes.ArmorStandEffect;
 
 public class MagicSpellListener implements Listener {
 

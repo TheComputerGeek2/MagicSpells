@@ -19,7 +19,7 @@ public class BuffTracker extends EffectTracker implements Runnable {
 			return;
 		}
 
-		if (entity instanceof LivingEntity && !effect.getModifiers().check((LivingEntity) entity)) return;
+		if (entity instanceof LivingEntity && effect.getModifiers() != null && !effect.getModifiers().check((LivingEntity) entity)) return;
 
 		effect.playEffect(entity);
 	}

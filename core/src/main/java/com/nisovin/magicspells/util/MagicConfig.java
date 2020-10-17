@@ -5,10 +5,10 @@ import java.util.Set;
 import java.util.List;
 import java.io.FilenameFilter;
 
+import com.nisovin.magicspells.MagicSpells;
+
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-
-import com.nisovin.magicspells.MagicSpells;
 
 public class MagicConfig {
 	
@@ -16,19 +16,13 @@ public class MagicConfig {
 	private static final FilenameFilter DIRECTORY_FILTER = (File dir, String name) -> name.startsWith("spells");
 
 	private YamlConfiguration mainConfig;
-	
-	public MagicConfig(File file) {
-		this(MagicSpells.plugin);
-	}
 
-	public MagicConfig(MagicSpells plugin) {
+	public MagicConfig() {
 		try {
-			File folder = plugin.getDataFolder();
-			File file = new File(folder, "config.yml");
+			File folder = MagicSpells.getInstance().getDataFolder();
 			
 			// Load main config
 			mainConfig = new YamlConfiguration();
-			if (file.exists()) mainConfig.load(file);
 			if (!mainConfig.contains("general")) mainConfig.createSection("general");
 			if (!mainConfig.contains("mana")) mainConfig.createSection("mana");
 			if (!mainConfig.contains("spells")) mainConfig.createSection("spells");

@@ -2,5 +2,15 @@ name: MagicSpells
 main: com.nisovin.magicspells.MagicSpells
 version: $version
 authors: [nisovin, TheComputerGeek2, Chronoken]
-softdepend: [GriefPrevention,Vault,ProtocolLib,WorldGuard,Residence,PowerNBT,LibsDisguises,NoCheatPlus,PlaceholderAPI]
 api-version: "1.13"
+softdepend:
+    - GriefPrevention
+    - Vault
+    - ProtocolLib
+    - WorldGuard
+    - Residence
+    - PowerNBT
+    - LibsDisguises
+    - NoCheatPlus
+    - PlaceholderAPI
+    - Citizens

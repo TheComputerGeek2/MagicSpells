@@ -1,45 +1,31 @@
 package com.nisovin.magicspells.spells.passive;
 
-import java.util.Set;
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.ArrayList;
+import java.util.EnumSet;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 
 import com.nisovin.magicspells.util.Util;
-import com.nisovin.magicspells.Spellbook;
-import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.util.OverridePriority;
+import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 
 // Optional trigger variable of a comma separated list of blocks to accept
 public class BlockBreakListener extends PassiveListener {
 
-	Set<Material> materials = new HashSet<>();
-	Map<Material, List<PassiveSpell>> types = new HashMap<>();
-	List<PassiveSpell> allTypes = new ArrayList<>();
-	
+	private final EnumSet<Material> materials = EnumSet.noneOf(Material.class);
+
 	@Override
-	public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
-		if (var == null || var.isEmpty()) {
-			allTypes.add(spell);
-			return;
-		}
+	public void initialize(String var) {
+		if (var == null || var.isEmpty()) return;
 
 		String[] split = var.split(",");
 		for (String s : split) {
 			s = s.trim();
 			Material m = Util.getMaterial(s);
 			if (m == null) continue;
-			List<PassiveSpell> list = types.computeIfAbsent(m, material -> new ArrayList<>());
-			list.add(spell);
 			materials.add(m);
 		}
 	}
@@ -47,33 +33,27 @@ public class BlockBreakListener extends PassiveListener {
 	@OverridePriority
 	@EventHandler
 	public void onBlockBreak(BlockBreakEvent event) {
-		Spellbook spellbook = MagicSpells.getSpellbook(event.getPlayer());
-		if (!allTypes.isEmpty()) {
-			for (PassiveSpell spell : allTypes) {
-				if (!isCancelStateOk(spell, event.isCancelled())) continue;
-				if (!spellbook.hasSpell(spell, false)) continue;
-				boolean casted = spell.activate(event.getPlayer(), event.getBlock().getLocation().add(0.5, 0.5, 0.5));
-				if (PassiveListener.cancelDefaultAction(spell, casted)) event.setCancelled(true);
-			}
+		Player player = event.getPlayer();
+		Block block = event.getBlock();
+
+		if (!hasSpell(player)) return;
+
+		// all blocks if its empty
+		if (materials.isEmpty()) {
+			if (!isCancelStateOk(event.isCancelled())) return;
+			boolean casted = passiveSpell.activate(player, block.getLocation().add(0.5, 0.5, 0.5));
+			if (cancelDefaultAction(casted)) event.setCancelled(true);
+
+			return;
 		}
 
-		if (types.isEmpty()) return;
-		List<PassiveSpell> list = getSpells(event.getBlock());
-		if (list == null) return;
-		for (PassiveSpell spell : list) {
-			if (!isCancelStateOk(spell, event.isCancelled())) continue;
-			if (!spellbook.hasSpell(spell, false)) continue;
-			boolean casted = spell.activate(event.getPlayer(), event.getBlock().getLocation().add(0.5, 0.5, 0.5));
-			if (PassiveListener.cancelDefaultAction(spell, casted)) event.setCancelled(true);
-		}
-	}
-	
-	private List<PassiveSpell> getSpells(Block block) {
-		if (!materials.contains(block.getType())) return null;
-		for (Entry<Material, List<PassiveSpell>> entry : types.entrySet()) {
-			if (entry.getKey().equals(block.getType())) return entry.getValue();
-		}
-		return null;
+		// check if block type is valid
+		if (!materials.contains(block.getType())) return;
+
+		if (!isCancelStateOk(event.isCancelled())) return;
+		boolean casted = passiveSpell.activate(player, event.getBlock().getLocation().add(0.5, 0.5, 0.5));
+		if (cancelDefaultAction(casted)) event.setCancelled(true);
+
 	}
 
 }

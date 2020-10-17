@@ -216,6 +216,16 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 	}
 
 	@Override
+	public void initializeModifiers() {
+		super.initializeModifiers();
+
+		if (projModifiersStrings != null && !projModifiersStrings.isEmpty()) {
+			projModifiers = new ModifierSet(projModifiersStrings);
+			projModifiersStrings = null;
+		}
+	}
+
+	@Override
 	public void initialize() {
 		super.initialize();
 
@@ -271,11 +281,6 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		if (!entityLocationSpell.process() || !entityLocationSpell.isTargetedLocationSpell()) {
 			if (!entityLocationSpellName.isEmpty()) MagicSpells.error("ParticleProjectileSpell '" + internalName + "' has an invalid spell-on-entity-location defined!");
 			entityLocationSpell = null;
-		}
-
-		if (projModifiersStrings != null && !projModifiersStrings.isEmpty()) {
-			projModifiers = new ModifierSet(projModifiersStrings);
-			projModifiersStrings = null;
 		}
 
 		if (interactions != null && !interactions.isEmpty()) {

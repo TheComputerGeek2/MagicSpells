@@ -11,7 +11,7 @@ import me.ryanhamshire.GriefPrevention.GriefPrevention;
 public class GriefPreventionIsOwnerCondition extends Condition {
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		return true;
 	}
 

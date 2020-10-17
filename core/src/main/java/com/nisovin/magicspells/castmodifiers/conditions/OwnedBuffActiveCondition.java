@@ -13,7 +13,7 @@ public class OwnedBuffActiveCondition extends Condition {
 	private BuffSpell buff;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		Spell spell = MagicSpells.getSpellByInternalName(var);
 		if (!(spell instanceof BuffSpell)) return false;
 		buff = (BuffSpell) spell;

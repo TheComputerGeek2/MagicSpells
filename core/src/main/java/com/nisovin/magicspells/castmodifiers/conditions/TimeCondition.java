@@ -12,7 +12,7 @@ public class TimeCondition extends Condition {
 	private int end;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			String[] vardata = var.split("-");
 			start = Integer.parseInt(vardata[0]);

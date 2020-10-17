@@ -56,7 +56,7 @@ public class MultiCondition extends Condition implements IModifier {
 	private PassCondition passCondition = PassCondition.ALL;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		configPrefix += var;
 		MagicConfig config = MagicSpells.plugin.getMagicConfig();
 		if (!(config.contains(configPrefix) && config.isSection(configPrefix))) return false;

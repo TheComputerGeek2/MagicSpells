@@ -72,7 +72,7 @@ public class MagicSpellsMemory extends JavaPlugin {
 		}
 		
 		// Get spell mem requirements from magicspells config
-		MagicConfig magicConfig = new MagicConfig(new File(MagicSpells.plugin.getDataFolder(), "config.yml"));
+		MagicConfig magicConfig = new MagicConfig();
 		if (magicConfig.isLoaded()) {
 			for (String spell : magicConfig.getSpellKeys()) {
 				if (!magicConfig.contains("spells." + spell + ".memory")) continue;;

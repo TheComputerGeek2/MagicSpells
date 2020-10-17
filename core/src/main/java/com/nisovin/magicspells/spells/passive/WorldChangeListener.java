@@ -1,37 +1,30 @@
 package com.nisovin.magicspells.spells.passive;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.bukkit.World;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
-import com.nisovin.magicspells.Spellbook;
-import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.util.OverridePriority;
+import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 
 public class WorldChangeListener extends PassiveListener {
 
-	private Map<String, List<PassiveSpell>> spellsSpecific = new HashMap<>();
-	private List<PassiveSpell> spellsAll = new ArrayList<>();
+	private final Set<String> worldNames = new HashSet<>();
 
 	@Override
-	public void registerSpell(PassiveSpell spell, PassiveTrigger trigger, String var) {
-		if (var == null || var.isEmpty()) {
-			spellsAll.add(spell);
-			return;
-		}
+	public void initialize(String var) {
+		if (var == null || var.isEmpty()) return;
 
-		List<PassiveSpell> spells;
-		for (String world : var.split(",")) {
-			spells = spellsSpecific.getOrDefault(world.trim(), new ArrayList<>());
-			spells.add(spell);
-			spellsSpecific.put(var, spells);
+		for (String worldName : var.split(",")) {
+			World world = Bukkit.getWorld(worldName);
+			if (world == null) continue;
+
+			worldNames.add(worldName);
 		}
 	}
 
@@ -48,25 +41,11 @@ public class WorldChangeListener extends PassiveListener {
 		if (worldTo == null) return;
 		if (worldFrom.equals(worldTo)) return;
 
-		Spellbook spellbook;
-		if (!spellsAll.isEmpty()) {
-			spellbook = MagicSpells.getSpellbook(event.getPlayer());
-			for (PassiveSpell spell : spellsAll) {
-				if (!isCancelStateOk(spell, event.isCancelled())) continue;
-				if (!spellbook.hasSpell(spell)) continue;
-				boolean casted = spell.activate(event.getPlayer());
-				if (PassiveListener.cancelDefaultAction(spell, casted)) event.setCancelled(true);
-			}
-		}
-
-		if (!spellsSpecific.containsKey(worldTo.getName())) return;
-		spellbook = MagicSpells.getSpellbook(event.getPlayer());
-		for (PassiveSpell spell : spellsSpecific.get(worldTo.getName())) {
-			if (!isCancelStateOk(spell, event.isCancelled())) continue;
-			if (!spellbook.hasSpell(spell)) continue;
-			boolean casted = spell.activate(event.getPlayer());
-			if (PassiveListener.cancelDefaultAction(spell, casted)) event.setCancelled(true);
-		}
+		if (!worldNames.isEmpty() && !worldNames.contains(worldTo.getName())) return;
+		if (!hasSpell(event.getPlayer())) return;
+		if (!isCancelStateOk(event.isCancelled())) return;
+		boolean casted = passiveSpell.activate(event.getPlayer());
+		if (cancelDefaultAction(casted)) event.setCancelled(true);
 	}
 
 }

@@ -18,6 +18,7 @@ import com.nisovin.magicspells.util.ExperienceUtils;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.mana.ManaChangeReason;
+import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.spells.SpellDamageSpell;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -53,6 +54,8 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 	private String spellOnAnimationName;
 	private Subspell spellOnAnimation;
 
+	private DamageCause damageType;
+
 	public DrainlifeSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
@@ -72,6 +75,14 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 		avoidDamageModification = getConfigBoolean("avoid-damage-modification", false);
 
 		spellOnAnimationName = getConfigString("spell-on-animation", "");
+
+		String damageTypeName = getConfigString("damage-type", "ENTITY_ATTACK");
+		try {
+			damageType = DamageCause.valueOf(damageTypeName.toUpperCase());
+		} catch (IllegalArgumentException ignored) {
+			DebugHandler.debugBadEnumValue(DamageCause.class, damageTypeName);
+			damageType = DamageCause.ENTITY_ATTACK;
+		}
 	}
 
 	@Override
@@ -128,14 +139,14 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 		switch (takeType) {
 			case STR_HEALTH:
 				if (pl != null && checkPlugins) {
-					MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(livingEntity, pl, DamageCause.ENTITY_ATTACK, take);
+					MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(livingEntity, pl, damageType, take);
 					EventUtil.call(event);
 					if (event.isCancelled()) return false;
 					if (!avoidDamageModification) take = event.getDamage();
 					livingEntity.setLastDamageCause(event);
 				}
 
-				SpellApplyDamageEvent event = new SpellApplyDamageEvent(this, livingEntity, target, take, DamageCause.MAGIC, spellDamageType);
+				SpellApplyDamageEvent event = new SpellApplyDamageEvent(this, livingEntity, target, take, damageType, spellDamageType);
 				EventUtil.call(event);
 				take = event.getFinalDamage();
 
@@ -213,22 +224,22 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 		private Vector current;
 
 		private int range;
-		private double giveAmtAnimator;
+		private double giveAmt;
 
-		DrainAnimation(Location start, LivingEntity caster, double giveAmt, float power) {
+		private DrainAnimation(Location start, LivingEntity caster, double giveAmt, float power) {
 			super(animationSpeed, true);
 			
-			this.current = start.toVector();
 			this.caster = caster;
-			this.world = caster.getWorld();
-			this.giveAmtAnimator = giveAmt;
-			this.range = getRange(power);
+			this.giveAmt = giveAmt;
+
+			current = start.toVector();
+			world = caster.getWorld();
+			range = getRange(power);
 		}
 
 		@Override
 		protected void onTick(int tick) {
-			Vector v = current.clone();
-			v.subtract(caster.getLocation().toVector()).normalize();
+			Vector v = current.clone().subtract(caster.getLocation().toVector()).normalize();
 			current.subtract(v);
 
 			Location playAt = current.toLocation(world).setDirection(v);
@@ -237,7 +248,7 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 				stop(true);
 				playSpellEffects(EffectPosition.DELAYED, caster);
 				if (spellOnAnimation != null) spellOnAnimation.cast(caster, 1F);
-				if (!instant) giveToCaster(caster, giveAmtAnimator);
+				if (!instant) giveToCaster(caster, giveAmt);
 			}
 		}
 

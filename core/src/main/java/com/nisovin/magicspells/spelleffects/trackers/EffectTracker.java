@@ -9,14 +9,14 @@ import com.nisovin.magicspells.spelleffects.SpellEffect.SpellEffectActiveChecker
 
 public class EffectTracker implements Runnable {
 
-	Entity entity;
-	BuffSpell buffSpell;
-	SpellEffect effect;
-	SpellEffectActiveChecker checker;
+	protected Entity entity;
+	protected BuffSpell buffSpell;
+	protected SpellEffect effect;
+	protected SpellEffectActiveChecker checker;
 
-	int effectTrackerTaskId;
+	protected int effectTrackerTaskId;
 
-	EffectTracker(Entity entity, SpellEffectActiveChecker checker, SpellEffect effect) {
+	public EffectTracker(Entity entity, SpellEffectActiveChecker checker, SpellEffect effect) {
 		this.entity = entity;
 		this.checker = checker;
 		this.effect = effect;

@@ -112,7 +112,6 @@ public class ForgetSpell extends CommandSpell {
 			}
 
 			targetSpellbook.removeAllSpells();
-			targetSpellbook.addGrantedSpells();
 			targetSpellbook.save();
 
 			if (!player.equals(target)) {
@@ -164,7 +163,6 @@ public class ForgetSpell extends CommandSpell {
 			sender.sendMessage(formatMessage(strCastSelf, "%a", getConsoleName(), "%s", spell.getName(), "%t", target.getDisplayName()));
 		} else {
 			targetSpellbook.removeAllSpells();
-			targetSpellbook.addGrantedSpells();
 			targetSpellbook.save();
 			sender.sendMessage(formatMessage(strResetTarget, "%t", target.getDisplayName()));
 		}

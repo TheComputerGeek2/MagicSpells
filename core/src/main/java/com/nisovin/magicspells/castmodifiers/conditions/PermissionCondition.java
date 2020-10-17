@@ -10,7 +10,7 @@ public class PermissionCondition extends Condition {
 	private String perm;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		perm = var;
 		return true;
 	}

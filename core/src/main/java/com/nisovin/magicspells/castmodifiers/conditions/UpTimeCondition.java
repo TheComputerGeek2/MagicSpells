@@ -14,7 +14,7 @@ public class UpTimeCondition extends Condition {
 	private int ms;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			ms = Integer.parseInt(var) * (int) TimeUtil.MILLISECONDS_PER_SECOND;
 			return true;

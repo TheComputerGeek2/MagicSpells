@@ -27,8 +27,9 @@ public class SlotSelectSpell extends TargetedSpell implements TargetedEntitySpel
 	}
 
 	@Override
-	public void initialize() {
-		super.initialize();
+	public void initializeVariables() {
+		super.initializeVariables();
+
 		if (isVariable && (variable == null || variable.isEmpty() || MagicSpells.getVariableManager().getVariable(variable) == null)) {
 			MagicSpells.error("SlotSelectSpell '" + internalName + "' has an invalid variable specified in 'slot'!");
 		}

@@ -23,7 +23,7 @@ public class InRegionCondition extends Condition {
 	private ProtectedRegion region;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null) return false;
 		
 		worldGuard = (WorldGuardPlugin) CompatBasics.getPlugin("WorldGuard");

@@ -13,7 +13,7 @@ public class LeapingCondition extends Condition {
 	private LeapSpell leapSpell;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		Spell spell = MagicSpells.getSpellByInternalName(var);
 		if (!(spell instanceof LeapSpell)) return false;
 		leapSpell = (LeapSpell) spell;

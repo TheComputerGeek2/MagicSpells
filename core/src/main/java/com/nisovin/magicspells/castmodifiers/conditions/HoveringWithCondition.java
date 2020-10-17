@@ -15,7 +15,7 @@ public class HoveringWithCondition extends Condition {
 	private MagicItemData itemData;
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null || var.isEmpty()) return false;
 
 		MagicItem magicItem = MagicItems.getMagicItemFromString(var);

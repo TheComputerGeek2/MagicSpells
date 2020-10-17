@@ -15,7 +15,7 @@ public class BiomeCondition extends Condition {
 	private EnumSet<Biome> biomes = EnumSet.noneOf(Biome.class);
 
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		String[] s = var.split(",");
 
 		for (String value : s) {

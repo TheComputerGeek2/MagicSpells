@@ -15,7 +15,7 @@ public class LookingAtBlockCondition extends Condition {
 	private int dist = 4;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			String[] split = var.split(",");
 			blockType = Util.getMaterial(split[0]);

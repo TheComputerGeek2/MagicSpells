@@ -1,8 +1,8 @@
 package com.nisovin.magicspells.variables.meta;
 
-import com.nisovin.magicspells.variables.MetaVariable;
-
 import java.time.Instant;
+
+import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
 
 public class TimestampHoursVariable extends MetaVariable {
 
@@ -10,7 +10,7 @@ public class TimestampHoursVariable extends MetaVariable {
     public double getValue(String player) {
         Instant instant = Instant.now();
         long mins = instant.getEpochSecond();
-        return Math.floor(mins/60/60);
+        return Math.floor(mins / 60 / 60);
     }
 
 }

@@ -11,7 +11,7 @@ public class NameCondition extends Condition {
 	private String name;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var == null || var.isEmpty()) return false;
 		name = Util.colorize(var);
 		return true;

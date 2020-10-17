@@ -12,7 +12,7 @@ public class AgeCondition extends Condition {
 	private boolean passAdult = false;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		if (var != null) {
 			if (var.equalsIgnoreCase("baby")) {
 				passBaby = true;

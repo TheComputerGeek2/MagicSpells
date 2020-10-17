@@ -12,7 +12,7 @@ public class DisplayNameCondition extends Condition {
     private String displayName;
 
     @Override
-    public boolean setVar(String var) {
+    public boolean initialize(String var) {
         if (var == null || var.isEmpty()) return false;
         displayName = Util.colorize(var);
         return true;

@@ -14,7 +14,7 @@ public class ChanceCondition extends Condition {
 	private Random random;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		random = new Random();
 		try {
 			chance = Integer.parseInt(var);

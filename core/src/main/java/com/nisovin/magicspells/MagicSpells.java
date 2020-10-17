@@ -1,9 +1,6 @@
 package com.nisovin.magicspells;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -39,37 +36,36 @@ import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.*;
+import com.nisovin.magicspells.events.*;
 import com.nisovin.magicspells.handlers.*;
 import com.nisovin.magicspells.listeners.*;
+import com.nisovin.magicspells.util.managers.*;
 import com.nisovin.magicspells.mana.ManaSystem;
 import com.nisovin.magicspells.mana.ManaHandler;
 import com.nisovin.magicspells.spells.PassiveSpell;
+import com.nisovin.magicspells.commands.MagicCommand;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.prompt.PromptType;
-import com.nisovin.magicspells.events.SpellLearnEvent;
 import com.nisovin.magicspells.util.compat.CompatBasics;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
-import com.nisovin.magicspells.variables.VariableManager;
-import com.nisovin.magicspells.util.managers.BuffManager;
+import com.nisovin.magicspells.commands.CommandHelpFilter;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
-import com.nisovin.magicspells.util.managers.BossBarManager;
 import com.nisovin.magicspells.volatilecode.ManagerVolatile;
-import com.nisovin.magicspells.events.MagicSpellsLoadedEvent;
-import com.nisovin.magicspells.spells.passive.PassiveManager;
-import com.nisovin.magicspells.util.managers.AttributeManager;
-import com.nisovin.magicspells.events.MagicSpellsLoadingEvent;
 import com.nisovin.magicspells.volatilecode.VolatileCodeHandle;
 import com.nisovin.magicspells.volatilecode.VolatileCodeDisabled;
 import com.nisovin.magicspells.events.SpellLearnEvent.LearnSource;
-import com.nisovin.magicspells.util.managers.ExperienceBarManager;
 
 import de.slikey.effectlib.EffectManager;
 
 public class MagicSpells extends JavaPlugin {
 
 	public static MagicSpells plugin;
+
+	private static final FilenameFilter CLASS_DIRECTORY_FILTER = (File dir, String name) -> name.startsWith("classes");
+
+	private static final List<ClassLoader> classLoaders = new ArrayList<>();
 
 	// Change this when you want to start tweaking the source and fixing bugs
 	public static Level DEVELOPER_DEBUG_LEVEL = Level.OFF;
@@ -103,6 +99,9 @@ public class MagicSpells extends JavaPlugin {
 	private BossBarManager bossBarManager;
 	private VariableManager variableManager;
 	private AttributeManager attributeManager;
+	private PassiveManager passiveManager;
+	private SpellEffectManager spellEffectManager;
+	private ConditionManager conditionManager;
 	private NoMagicZoneManager noMagicZones;
 	private PaperCommandManager commandManager;
 	private ExperienceBarManager expBarManager;
@@ -133,7 +132,7 @@ public class MagicSpells extends JavaPlugin {
 	boolean ignoreCastItemCustomModelData;
 
 	boolean castOnAnimate;
-	boolean enableManaBars;
+	boolean enableManaSystem;
 	boolean ignoreCastPerms;
 	boolean opsHaveAllSpells;
 	boolean ignoreGrantPerms;
@@ -212,14 +211,14 @@ public class MagicSpells extends JavaPlugin {
 		new File(getDataFolder(), "spellbooks").mkdir();
 
 		// Load config
-		if (!new File(getDataFolder(), "config.yml").exists() && !new File(getDataFolder(), "general.yml").exists()) {
+		if (!new File(getDataFolder(), "general.yml").exists()) {
 			saveResource("general.yml", false);
 			if (!new File(getDataFolder(), "mana.yml").exists()) saveResource("mana.yml", false);
 			if (!new File(getDataFolder(), "spells-command.yml").exists()) saveResource("spells-command.yml", false);
 			if (!new File(getDataFolder(), "spells-regular.yml").exists()) saveResource("spells-regular.yml", false);
 			if (!new File(getDataFolder(), "zones.yml").exists()) saveResource("zones.yml", false);
 		}
-		config = new MagicConfig(this);
+		config = new MagicConfig();
 		if (!config.isLoaded()) {
 			MagicSpells.log(Level.SEVERE, "Error in config file, stopping config load");
 			return;
@@ -312,7 +311,7 @@ public class MagicSpells extends JavaPlugin {
 		strUnknownSpell = config.getString(path + "str-unknown-spell", "You do not know a spell with that name.");
 		strSpellChange = config.getString(path + "str-spell-change", "You are now using the %s spell.");
 		strSpellChangeEmpty = config.getString(path + "str-spell-change-empty", "You are no longer using a spell.");
-		strOnCooldown = config.getString(path + "str-on-cooldown", "That spell is on cooldown.");
+		strOnCooldown = config.getString(path + "str-on-cooldown", "That spell is on cooldown (%c seconds remaining).");
 		strMissingReagents = config.getString(path + "str-missing-reagents", "You do not have the reagents for that spell.");
 		strCantCast = config.getString(path + "str-cant-cast", "You can't cast that spell right now.");
 		strCantBind = config.getString(path + "str-cant-bind", "You cannot bind that spell to that item.");
@@ -322,10 +321,9 @@ public class MagicSpells extends JavaPlugin {
 
 		allowAnticheatIntegrations = config.getBoolean(path + "allow-anticheat-integrations", false);
 
-		enableManaBars = config.getBoolean(manaPath + "enable-mana-system", false);
+		enableManaSystem = config.getBoolean(manaPath + "enable-mana-system", false);
 
 		// Create handling objects
-		if (enableManaBars) manaHandler = new ManaSystem(config);
 		noMagicZones = new NoMagicZoneManager();
 		buffManager = new BuffManager(config.getInt(path + "buff-check-interval", 100));
 		expBarManager = new ExperienceBarManager();
@@ -384,15 +382,6 @@ public class MagicSpells extends JavaPlugin {
 			}
 		}
 		log("..." + MagicItems.getMagicItems().size() + " magic items loaded");
-
-		// Load variables
-		log("Loading variables...");
-		ConfigurationSection varSec = null;
-		if (config.contains(path + "variables") && config.isSection(path + "variables")) {
-			varSec = config.getSection(path + "variables");
-		}
-		variableManager = new VariableManager(this, varSec);
-		log("..." + variableManager.count() + " variables loaded");
 
 		// Load crafting recipes.
 		RecipeHandler.clearRecipes();
@@ -494,12 +483,6 @@ public class MagicSpells extends JavaPlugin {
 		Util.forEachPlayerOnline(p -> spellbooks.put(p.getName(), new Spellbook(p, this)));
 		log("...done");
 
-		// Initialize passive manager
-		log("Initializing passive manager...");
-		PassiveManager passiveManager = PassiveSpell.getManager();
-		if (passiveManager != null) passiveManager.initialize();
-		log("...done");
-
 		// Load saved cooldowns
 		if (cooldownsPersistThroughReload) {
 			File file = new File(getDataFolder(), "cooldowns.txt");
@@ -528,13 +511,10 @@ public class MagicSpells extends JavaPlugin {
 		}
 
 		// Setup mana
-		if (enableManaBars) {
-			log("Enabling mana bars...");
-			// Init
-			manaHandler.initialize();
+		if (enableManaSystem) {
+			log("Enabling mana system...");
 
-			// Setup online player mana bars
-			Util.forEachPlayerOnline(p -> manaHandler.createManaBar(p));
+			manaHandler = new ManaSystem(config);
 
 			log("...done");
 		}
@@ -557,7 +537,6 @@ public class MagicSpells extends JavaPlugin {
 		if (consumeListener.hasConsumeCastItems()) registerEvents(consumeListener);
 		if (config.getBoolean(path + "enable-dance-casting", true)) new DanceCastListener(this, config);
 
-		ModifierSet.initializeModifierListeners();
 		log("...done");
 
 		// Initialize logger
@@ -568,6 +547,7 @@ public class MagicSpells extends JavaPlugin {
 		// Register commands
 		commandManager.enableUnstableAPI("help");
 		commandManager.registerCommand(new MagicCommand());
+		CommandHelpFilter.mapPerms();
 
 		// Setup profiling
 		if (enableProfiling) {
@@ -577,35 +557,118 @@ public class MagicSpells extends JavaPlugin {
 
 		CompatBasics.setupExemptionAssistant();
 
+		// Load external data
+		Bukkit.getScheduler().runTaskLater(this, this::loadExternalData, 1);
+	}
+
+	private void loadExternalData() {
+		PluginManager pm = plugin.getServer().getPluginManager();
+		log("Loading external data...");
+
+		loadVariables(pm);
+		loadSpellEffects(pm);
+		loadConditions(pm);
+		loadPassiveListeners(pm);
+
+		log("...done");
+
 		// Call loaded event
 		pm.callEvent(new MagicSpellsLoadedEvent(this));
 
 		log("MagicSpells loading complete!");
 	}
 
+	private void loadVariables(PluginManager pm) {
+		// Load variables
+		log("Loading variables...");
+		String path = "general.";
+		ConfigurationSection varSec = null;
+		if (config.contains(path + "variables") && config.isSection(path + "variables")) {
+			varSec = config.getSection(path + "variables");
+		}
+		variableManager = new VariableManager();
+
+		// Call variable event
+		pm.callEvent(new VariablesLoadingEvent(plugin, variableManager));
+
+		variableManager.loadVariables(varSec);
+
+		spells.values().forEach(Spell::initializeVariables);
+
+		if (!variableManager.getVariables().isEmpty()) registerEvents(new VariableListener());
+
+		log("...variable meta types loaded: " + variableManager.getMetaVariables().size());
+		log("...variable types loaded: " + variableManager.getVariableTypes().size());
+		log("...variables loaded: " + (variableManager.getVariables().size() - variableManager.getMetaVariables().size()));
+	}
+
+	private void loadSpellEffects(PluginManager pm) {
+		// Load spell effects
+		log("Loading spell effect types...");
+		spellEffectManager = new SpellEffectManager();
+
+		// Call spell effect event
+		pm.callEvent(new SpellEffectsLoadingEvent(plugin, spellEffectManager));
+
+		spells.values().forEach(Spell::initializeSpellEffects);
+
+		log("...spell effect types loaded: " + spellEffectManager.getSpellEffects().size());
+	}
+
+	private void loadConditions(PluginManager pm) {
+		// Load conditions
+		log("Loading conditions...");
+		conditionManager = new ConditionManager();
+
+		// Call condition event
+		pm.callEvent(new ConditionsLoadingEvent(plugin, conditionManager));
+
+		for (Spell spell : spells.values()) {
+			spell.initializeModifiers();
+		}
+
+		if (enableManaSystem) {
+			// setup mana bar conditions
+			manaHandler.initialize();
+
+			// Setup online player mana bars
+			Util.forEachPlayerOnline(p -> manaHandler.createManaBar(p));
+		}
+
+		ModifierSet.initializeModifierListeners();
+		log("...conditions loaded: " + conditionManager.getConditions().size());
+	}
+
+	private void loadPassiveListeners(PluginManager pm) {
+		// Load passive listeners
+		log("Loading passive listeners...");
+		passiveManager = new PassiveManager();
+
+		// Call passive event
+		pm.callEvent(new PassiveListenersLoadingEvent(plugin, passiveManager));
+
+		for (Spell spell : spells.values()) {
+			if (!(spell instanceof PassiveSpell)) continue;
+			((PassiveSpell) spell).initializeListeners();
+		}
+
+		log("...passive listeners loaded: " + passiveManager.getListeners().size());
+	}
+
 	private static final int LONG_LOAD_THRESHOLD = 50;
-	// DEBUG INFO: level 2, loaded spell spellname
+	// DEBUG INFO: level 2, loaded spell spellName
 	private void loadSpells(MagicConfig config, PluginManager pm, Map<String, Boolean> permGrantChildren, Map<String, Boolean> permLearnChildren, Map<String, Boolean> permCastChildren, Map<String, Boolean> permTeachChildren) {
 		long startTimePre = System.currentTimeMillis();
 
-		// Load spells from plugin folder
-		final List<File> jarList = new ArrayList<>();
-		for (File file : getDataFolder().listFiles()) {
-			if (file.getName().endsWith(".jar")) jarList.add(file);
+		// Load classes from folders inside the plugin
+		for (File directoryFile : getDataFolder().listFiles(CLASS_DIRECTORY_FILTER)) {
+			if (!directoryFile.isDirectory()) continue;
+
+			classLoaders.add(createSpellClassLoader(directoryFile));
 		}
 
-		// Create class loader
-		URL[] urls = new URL[jarList.size() + 1];
-		ClassLoader cl = getClassLoader();
-		try {
-			urls[0] = getDataFolder().toURI().toURL();
-			for(int i = 1; i <= jarList.size(); i++) {
-				urls[i] = jarList.get(i - 1).toURI().toURL();
-			}
-			cl = new URLClassLoader(urls, getClassLoader());
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
+		// Load classes from the plugin folder
+		classLoaders.add(createSpellClassLoader(getDataFolder()));
 
 		// Get spells from config
 		Set<String> spellKeys = config.getSpellKeys();
@@ -621,51 +684,71 @@ public class MagicSpells extends JavaPlugin {
 			if (className == null || className.isEmpty()) {
 				error("Spell '" + spellName + "' does not have a spell-class property");
 				continue;
-			} else if (className.startsWith(".")) {
-				className = "com.nisovin.magicspells.spells" + className;
 			}
 
-			try {
-				// Load spell class
-				Constructor<? extends Spell> constructor = constructors.get(className);
-				if (constructor == null) {
-					Class<? extends Spell> spellClass = cl.loadClass(className).asSubclass(Spell.class);
-					constructor = spellClass.getConstructor(MagicConfig.class, String.class);
+			if (className.startsWith(".")) className = "com.nisovin.magicspells.spells" + className;
+
+			Constructor<? extends Spell> constructor = constructors.get(className);
+
+			// Load spell class
+			if (constructor == null) {
+				for (ClassLoader cl : classLoaders) {
+					Class<? extends Spell> spellClass;
+					try {
+						spellClass = cl.loadClass(className).asSubclass(Spell.class);
+					} catch (ClassNotFoundException e) {
+						continue;
+					}
+
+					try {
+						constructor = spellClass.getConstructor(MagicConfig.class, String.class);
+					} catch (NoSuchMethodException e) {
+						continue;
+					}
+
 					constructor.setAccessible(true);
 					constructors.put(className, constructor);
 				}
-				Spell spell = constructor.newInstance(config, spellName);
-				spells.put(spellName.toLowerCase(), spell);
-				spellsOrdered.add(spell);
+			}
 
-				// Add permissions
-				if (!spell.isHelperSpell()) {
-					String permName = spell.getPermissionName();
-					if (!spell.isAlwaysGranted()) {
-						addPermission(pm, "grant." + permName, PermissionDefault.FALSE);
-						permGrantChildren.put(Perm.GRANT.getNode() + permName, true);
-					}
-					addPermission(pm, "learn." + permName, defaultAllPermsFalse ? PermissionDefault.FALSE : PermissionDefault.TRUE);
-					addPermission(pm, "cast." + permName, defaultAllPermsFalse ? PermissionDefault.FALSE : PermissionDefault.TRUE);
-					addPermission(pm, "teach." + permName, defaultAllPermsFalse ? PermissionDefault.FALSE : PermissionDefault.TRUE);
-					if (enableTempGrantPerms) addPermission(pm, "tempgrant." + permName, PermissionDefault.FALSE);
+			constructor = constructors.get(className);
+			if (constructor == null) {
+				error("Unable to load spell " + spellName + " (missing/malformed class " + className + ')');
+				continue;
+			}
 
-					permLearnChildren.put(Perm.LEARN.getNode() + permName, true);
-					permCastChildren.put(Perm.CAST.getNode() + permName, true);
-					permTeachChildren.put(Perm.TEACH.getNode() + permName, true);
-				}
-
-				// Done
-				debug(2, "Loaded spell: " + spellName);
-
-			} catch (ClassNotFoundException e) {
-				error("Unable to load spell " + spellName + " (missing class " + className + ')');
-			} catch (NoSuchMethodException e) {
-				error("Unable to load spell " + spellName + " (malformed class)");
+			Spell spell;
+			try {
+				spell = constructor.newInstance(config, spellName);
 			} catch (Exception e) {
 				error("Unable to load spell " + spellName + " (general error)");
 				e.printStackTrace();
+				continue;
 			}
+
+			spells.put(spellName.toLowerCase(), spell);
+			spellsOrdered.add(spell);
+
+			// Add permissions
+			if (!spell.isHelperSpell()) {
+				String permName = spell.getPermissionName();
+				if (!spell.isAlwaysGranted()) {
+					addPermission(pm, "grant." + permName, PermissionDefault.FALSE);
+					permGrantChildren.put(Perm.GRANT.getNode() + permName, true);
+				}
+				addPermission(pm, "learn." + permName, defaultAllPermsFalse ? PermissionDefault.FALSE : PermissionDefault.TRUE);
+				addPermission(pm, "cast." + permName, defaultAllPermsFalse ? PermissionDefault.FALSE : PermissionDefault.TRUE);
+				addPermission(pm, "teach." + permName, defaultAllPermsFalse ? PermissionDefault.FALSE : PermissionDefault.TRUE);
+				if (enableTempGrantPerms) addPermission(pm, "tempgrant." + permName, PermissionDefault.FALSE);
+
+				permLearnChildren.put(Perm.LEARN.getNode() + permName, true);
+				permCastChildren.put(Perm.CAST.getNode() + permName, true);
+				permTeachChildren.put(Perm.TEACH.getNode() + permName, true);
+			}
+
+			// Done
+			debug(2, "Loaded spell: " + spellName);
+
 			long elapsed = System.currentTimeMillis() - startTime;
 			if (elapsed > LONG_LOAD_THRESHOLD) getLogger().warning("LONG SPELL LOAD TIME: " + spellName + ": " + elapsed + "ms");
 		}
@@ -674,6 +757,36 @@ public class MagicSpells extends JavaPlugin {
 		if (lastReloadTime != 0) getLogger().warning("Loaded in " + finalElapsed + "ms (previously " + lastReloadTime + " ms)");
 		getLogger().warning("Need help? Check out our discord: discord.gg/6bYqnNy");
 		lastReloadTime = finalElapsed;
+	}
+
+	public static List<ClassLoader> getClassLoaders() {
+		return classLoaders;
+	}
+
+	// Create class loader
+	public ClassLoader createSpellClassLoader(List<File> jarList, File dataFolder) {
+		URL[] urls = new URL[jarList.size() + 1];
+		ClassLoader cl = null;
+		try {
+			urls[0] = dataFolder.toURI().toURL();
+			for (int i = 1; i <= jarList.size(); i++) {
+				urls[i] = jarList.get(i - 1).toURI().toURL();
+			}
+			cl = new URLClassLoader(urls, getClassLoader());
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+
+		return cl;
+	}
+
+	// Create class loader with jar files within the directory
+	public ClassLoader createSpellClassLoader(File dataFolder) {
+		final List<File> jarList = new ArrayList<>();
+		for (File file : dataFolder.listFiles()) {
+			if (file.getName().endsWith(".jar")) jarList.add(file);
+		}
+		return createSpellClassLoader(jarList, dataFolder);
 	}
 
 	private void addPermission(PluginManager pm, String perm, PermissionDefault permDefault) {
@@ -835,8 +948,8 @@ public class MagicSpells extends JavaPlugin {
 		return plugin.hideMagicItemTooltips;
 	}
 
-	public static boolean enableManaBars() {
-		return plugin.enableManaBars;
+	public static boolean isManaSystemEnabled() {
+		return plugin.enableManaSystem;
 	}
 
 	public static boolean isDebug() {
@@ -927,10 +1040,6 @@ public class MagicSpells extends JavaPlugin {
 		return plugin.volatileCodeHandle;
 	}
 
-	public static MagicXpHandler getMagicExpHandler() {
-		return plugin.magicXpHandler;
-	}
-
 	public static ExperienceBarManager getExpBarManager() {
 		return plugin.expBarManager;
 	}
@@ -941,6 +1050,18 @@ public class MagicSpells extends JavaPlugin {
 
 	public static AttributeManager getAttributeManager() {
 		return plugin.attributeManager;
+	}
+
+	public static ConditionManager getConditionManager() {
+		return plugin.conditionManager;
+	}
+
+	public static PassiveManager getPassiveManager() {
+		return plugin.passiveManager;
+	}
+
+	public static SpellEffectManager getSpellEffectManager() {
+		return plugin.spellEffectManager;
 	}
 
 	public static MoneyHandler getMoneyHandler() {
@@ -1173,7 +1294,7 @@ public class MagicSpells extends JavaPlugin {
 	}
 
 	public static int scheduleDelayedTask(final Runnable task, int delay) {
-		return Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, !plugin.enableErrorLogging ? task : (Runnable) () -> {
+		return Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, !plugin.enableErrorLogging ? task : () -> {
 			try {
 				task.run();
 			} catch (Exception e) {
@@ -1183,7 +1304,7 @@ public class MagicSpells extends JavaPlugin {
 	}
 
 	public static int scheduleRepeatingTask(final Runnable task, int delay, int interval) {
-		return Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, !plugin.enableErrorLogging ? task : (Runnable) () -> {
+		return Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, !plugin.enableErrorLogging ? task : () -> {
 			try {
 				task.run();
 			} catch (Exception e) {
@@ -1228,29 +1349,30 @@ public class MagicSpells extends JavaPlugin {
 	}
 
 	public static void profilingReport() {
-		if (plugin.profilingTotalTime != null && plugin.profilingRuns != null) {
-			PrintWriter writer = null;
-			try {
-				writer = new PrintWriter(new File(plugin.getDataFolder(), "profiling_report_" + System.currentTimeMillis() + ".txt"));
-				long totalTime = 0;
-				writer.println("Key\tRuns\tAvg\tTotal");
-				for (String key : plugin.profilingTotalTime.keySet()) {
-					long time = plugin.profilingTotalTime.get(key);
-					int runs = plugin.profilingRuns.get(key);
-					totalTime += time;
-					writer.println(key + '\t' + runs + '\t' + (time / runs / 1000000F) + "ms\t" + (time / 1000000F) + "ms");
-				}
-				writer.println();
-				writer.println("TOTAL TIME: " + (totalTime / 1000000F) + "ms");
-			} catch (Exception ex) {
-				error("Failed to save profiling report");
-				handleException(ex);
-			} finally {
-				if (writer != null) writer.close();
+		if (plugin.profilingTotalTime == null) return;
+		if (plugin.profilingRuns == null) return;
+
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter(new File(plugin.getDataFolder(), "profiling_report_" + System.currentTimeMillis() + ".txt"));
+			long totalTime = 0;
+			writer.println("Key\tRuns\tAvg\tTotal");
+			for (String key : plugin.profilingTotalTime.keySet()) {
+				long time = plugin.profilingTotalTime.get(key);
+				int runs = plugin.profilingRuns.get(key);
+				totalTime += time;
+				writer.println(key + '\t' + runs + '\t' + (time / runs / 1000000F) + "ms\t" + (time / 1000000F) + "ms");
 			}
-			plugin.profilingTotalTime.clear();
-			plugin.profilingRuns.clear();
+			writer.println();
+			writer.println("TOTAL TIME: " + (totalTime / 1000000F) + "ms");
+		} catch (Exception ex) {
+			error("Failed to save profiling report");
+			handleException(ex);
+		} finally {
+			if (writer != null) writer.close();
 		}
+		plugin.profilingTotalTime.clear();
+		plugin.profilingRuns.clear();
 	}
 
 	/**
@@ -1293,16 +1415,16 @@ public class MagicSpells extends JavaPlugin {
 	}
 
 	public static void addProfile(String key, long time) {
-		if (plugin.enableProfiling) {
-			Long total = plugin.profilingTotalTime.get(key);
-			if (total == null) total = (long)0;
-			total += time;
-			plugin.profilingTotalTime.put(key, total);
-			Integer runs = plugin.profilingRuns.get(key);
-			if (runs == null) runs = 0;
-			runs += 1;
-			plugin.profilingRuns.put(key, runs);
-		}
+		if (!plugin.enableProfiling) return;
+
+		Long total = plugin.profilingTotalTime.get(key);
+		if (total == null) total = (long) 0;
+		total += time;
+		plugin.profilingTotalTime.put(key, total);
+		Integer runs = plugin.profilingRuns.get(key);
+		if (runs == null) runs = 0;
+		runs += 1;
+		plugin.profilingRuns.put(key, runs);
 	}
 
 	/**
@@ -1342,8 +1464,6 @@ public class MagicSpells extends JavaPlugin {
 			animation.stop(false);
 		}
 		SpellAnimation.getAnimations().clear();
-
-		PassiveSpell.resetManager();
 
 		// Save cooldowns
 		if (cooldownsPersistThroughReload) {
@@ -1444,10 +1564,11 @@ public class MagicSpells extends JavaPlugin {
 		soundFailMissingReagents = null;
 
 		// Remove star permissions (to allow new spells to be added to them)
-		getServer().getPluginManager().removePermission("magicspells.grant.*");
-		getServer().getPluginManager().removePermission("magicspells.cast.*");
-		getServer().getPluginManager().removePermission("magicspells.learn.*");
-		getServer().getPluginManager().removePermission("magicspells.teach.*");
+		PluginManager pm = getServer().getPluginManager();
+		pm.removePermission("magicspells.grant.*");
+		pm.removePermission("magicspells.cast.*");
+		pm.removePermission("magicspells.learn.*");
+		pm.removePermission("magicspells.teach.*");
 
 		// Unregister all listeners
 		HandlerList.unregisterAll(this);
@@ -1459,6 +1580,7 @@ public class MagicSpells extends JavaPlugin {
 		PromptType.unloadDestructPromptData();
 		CompatBasics.destructExemptionAssistant();
 
+		classLoaders.clear();
 		effectManager.dispose();
 		effectManager = null;
 		plugin = null;
@@ -1481,9 +1603,5 @@ public class MagicSpells extends JavaPlugin {
 
 /*
  * TODO:
- *
- * - Use MagicPlayer (Caster/PlayerCaster) across the entire plugin
- * - Allow spells to be cast by something other than players, like blocks and other entities
  * - Move NoMagicZoneWorldGuard outside of the core plugin
- *
  */

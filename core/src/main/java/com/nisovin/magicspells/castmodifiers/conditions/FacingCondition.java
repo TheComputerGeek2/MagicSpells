@@ -10,7 +10,7 @@ public class FacingCondition extends Condition {
 	private String direction;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		direction = var;
 		return true;
 	}

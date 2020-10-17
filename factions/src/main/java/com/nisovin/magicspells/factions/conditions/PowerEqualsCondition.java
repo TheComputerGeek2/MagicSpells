@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 
 import com.massivecraft.factions.entity.MPlayer;
+
 import com.nisovin.magicspells.castmodifiers.Condition;
 
 public class PowerEqualsCondition extends Condition {
@@ -12,7 +13,7 @@ public class PowerEqualsCondition extends Condition {
 	private double power;
 	
 	@Override
-	public boolean setVar(String var) {
+	public boolean initialize(String var) {
 		try {
 			power = Double.parseDouble(var);
 			return true;

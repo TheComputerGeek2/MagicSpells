@@ -27,12 +27,17 @@ public class DataSpell extends TargetedSpell implements TargetedEntitySpell {
 	
 	@Override
 	public void initialize() {
+		if (dataElement == null) MagicSpells.error("DataSpell '" + internalName + "' has an invalid option defined for data-element!");
+	}
+
+	@Override
+	public void initializeVariables() {
+		super.initializeVariables();
+
 		if (variableName.isEmpty() || MagicSpells.getVariableManager().getVariable(variableName) == null) {
 			MagicSpells.error("DataSpell '" + internalName + "' has an invalid variable-name defined!");
 			return;
 		}
-
-		if (dataElement == null) MagicSpells.error("DataSpell '" + internalName + "' has an invalid option defined for data-element!");
 	}
 	
 	@Override

@@ -30,6 +30,8 @@ import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
 public class ParticleCloudSpell extends TargetedSpell implements TargetedLocationSpell, TargetedEntitySpell {
 
+	private String customName;
+
 	private Particle particle;
 	private String particleName;
 
@@ -67,6 +69,9 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 	public ParticleCloudSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
+
+		customName = getConfigString("custom-name", null);
+		if (customName != null) customName = Util.colorize(customName);
 
 		particleName = getConfigString("particle-name", "EXPLOSION_NORMAL");
 		particle = Util.getParticle(particleName);
@@ -210,6 +215,11 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 		for (PotionEffect eff: this.potionEffects) {
 			cloud.addCustomEffect(eff, true);
+		}
+
+		if (customName != null) {
+			cloud.setCustomName(customName);
+			cloud.setCustomNameVisible(true);
 		}
 
 		return cloud;
