@@ -14,19 +14,19 @@ import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.events.MagicSpellsEntityRegainHealthEvent;
 
 public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
-	
-	private double healAmount;
 
-	private boolean checkPlugins;
-	private boolean cancelIfFull;
+	private final double healAmount;
 
-	private String strMaxHealth;
+	private final boolean checkPlugins;
+	private final boolean cancelIfFull;
 
-	private ValidTargetChecker checker;
+	private final String strMaxHealth;
+
+	private final ValidTargetChecker checker;
 
 	public HealSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
+
 		healAmount = getConfigFloat("heal-amount", 10);
 
 		checkPlugins = getConfigBoolean("check-plugins", true);
@@ -69,19 +69,19 @@ public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 	public ValidTargetChecker getValidTargetChecker() {
 		return checker;
 	}
-	
+
 	private boolean heal(LivingEntity livingEntity, LivingEntity target, float power) {
 		double health = target.getHealth();
-		double amt = healAmount * power;
+		double amount = healAmount * power;
 
 		if (checkPlugins) {
-			MagicSpellsEntityRegainHealthEvent evt = new MagicSpellsEntityRegainHealthEvent(target, amt, RegainReason.CUSTOM);
-			EventUtil.call(evt);
-			if (evt.isCancelled()) return false;
-			amt = evt.getAmount();
+			MagicSpellsEntityRegainHealthEvent event = new MagicSpellsEntityRegainHealthEvent(target, amount, RegainReason.CUSTOM);
+			EventUtil.call(event);
+			if (event.isCancelled()) return false;
+			amount = event.getAmount();
 		}
 
-		health += amt;
+		health += amount;
 		if (health > Util.getMaxHealth(target)) health = Util.getMaxHealth(target);
 		target.setHealth(health);
 
