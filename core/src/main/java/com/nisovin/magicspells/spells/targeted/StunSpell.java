@@ -32,6 +32,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 	private final int duration;
 	private final boolean stunMonitor;
 	private final boolean stunBody;
+	private final boolean useTargetLocation;
 
 	private final Listener listener;
 
@@ -42,6 +43,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 		duration = (int) ((getConfigInt("duration", 200) / 20) * TimeUtil.MILLISECONDS_PER_SECOND);
 		stunMonitor = getConfigBoolean("stun-monitor", true);
 		stunBody = getConfigBoolean("stun-body", true);
+		useTargetLocation = getConfigBoolean("use-target-location", true);
 
 		listener = new StunListener();
 		stunnedLivingEntities = new HashMap<>();
@@ -147,7 +149,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 			if (!shouldStun) return;
 
 			if (info.until > System.currentTimeMillis()) {
-				event.setTo(info.targetLocation);
+				event.setTo(useTargetLocation ? info.targetLocation : from);
 				return;
 			}
 
