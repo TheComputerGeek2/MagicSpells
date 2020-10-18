@@ -42,6 +42,7 @@ public enum Perm {
 	COMMAND_PROFILE_REPORT("magicspells.command.profilereport"),
 	COMMAND_DEBUG("magicspells.command.debug"),
 	COMMAND_MAGICXP("magicspells.command.magicxp"),
+	COMMAND_CAST_POWER("magicspells.command.cast.power"),
 	COMMAND_CAST_SELF("magicspells.command.cast.self"),
 	COMMAND_CAST_AS("magicspells.command.cast.as"),
 	COMMAND_CAST_ON("magicspells.command.cast.on"),

@@ -443,6 +443,7 @@ public class MagicSpells extends JavaPlugin {
 		addPermission(pm, "command.profilereport", PermissionDefault.OP);
 		addPermission(pm, "command.debug", PermissionDefault.OP);
 		addPermission(pm, "command.magicxp", PermissionDefault.OP);
+		addPermission(pm, "command.cast.power", PermissionDefault.OP);
 		addPermission(pm, "command.cast.self", PermissionDefault.TRUE);
 		addPermission(pm, "command.cast.as", PermissionDefault.OP);
 		addPermission(pm, "command.cast.on", PermissionDefault.OP);

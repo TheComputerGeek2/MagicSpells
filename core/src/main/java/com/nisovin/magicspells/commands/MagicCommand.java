@@ -188,6 +188,14 @@ public class MagicCommand extends BaseCommand {
 		return spellArgs.toArray(new String[0]);
 	}
 
+	private static boolean hasPowerArg(String[] args) {
+		for (String string : args) {
+			if (!string.startsWith("-p:")) continue;
+			return true;
+		}
+		return false;
+	}
+
 	private static float getPowerFromArgs(String[] args) {
 		float power = 1F;
 		for (String string : args) {
@@ -199,8 +207,12 @@ public class MagicCommand extends BaseCommand {
 	}
 
 	private static boolean noPermission(CommandSender sender, Perm perm) {
+		return noPermission(sender, perm, "You do not have permission to perform this command.");
+	}
+
+	private static boolean noPermission(CommandSender sender, Perm perm, String error) {
 		if (perm.has(sender)) return false;
-		sender.sendMessage(Util.colorize("&4Error: You do not have permission to perform this command."));
+		sender.sendMessage(Util.colorize("&4Error: " + error));
 		return true;
 	}
 
@@ -627,6 +639,12 @@ public class MagicCommand extends BaseCommand {
 
 			Spell spell = getSpell(issuer, args[0]);
 			if (spell == null) return;
+
+			// Get spell power if the user has permission.
+			if (hasPowerArg(args)) {
+				boolean noPowerPerm = noPermission(issuer.getIssuer(), Perm.COMMAND_CAST_POWER,"You do not have permission to use the power parameter.");
+				if (noPowerPerm) return;
+			}
 			float power = getPowerFromArgs(args);
 			String[] spellArgs = getCustomArgs(args, 1);
 
@@ -680,6 +698,12 @@ public class MagicCommand extends BaseCommand {
 			if (target == null) throw new ConditionFailedException("Entity not found.");
 			Spell spell = getSpell(issuer, args[1]);
 			if (spell == null) return;
+
+			// Get spell power if the user has permission.
+			if (hasPowerArg(args)) {
+				boolean noPowerPerm = noPermission(issuer.getIssuer(), Perm.COMMAND_CAST_POWER,"You do not have permission to use the power parameter.");
+				if (noPowerPerm) return;
+			}
 			float power = getPowerFromArgs(args);
 			String[] spellArgs = getCustomArgs(args, 2);
 			spell.cast(target, power, spellArgs);
