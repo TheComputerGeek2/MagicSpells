@@ -110,6 +110,12 @@ public class MagicCommand extends BaseCommand {
 			if (!num.isEmpty()) completions.add(num);
 			return completions;
 		});
+		commandManager.getCommandCompletions().registerAsyncCompletion("power", context -> {
+			Player player = context.getPlayer();
+			if (player == null) return Collections.emptyList();
+			if (!Perm.COMMAND_CAST_POWER.has(player)) return Collections.emptyList();
+			return Collections.singleton("-p:");
+		});
 	}
 
 	private static Set<String> getSpellNames(Collection<Spell> spells) {
@@ -622,7 +628,7 @@ public class MagicCommand extends BaseCommand {
 
 		@Subcommand("self")
 		@CommandAlias("c|cast")
-		@CommandCompletion("@owned_spells -p: @nothing")
+		@CommandCompletion("@owned_spells @power @nothing")
 		@Syntax("<spell> [-p:(power)] [spellArgs]")
 		@Description("Cast a spell. (You can optionally define power: -p:1.0)")
 		@HelpPermission(permission = Perm.COMMAND_CAST_SELF)
@@ -686,7 +692,7 @@ public class MagicCommand extends BaseCommand {
 		}
 
 		@Subcommand("as")
-		@CommandCompletion("@players @spells -p: @nothing")
+		@CommandCompletion("@players @spells @power @nothing")
 		@Syntax("<player/UUID> <spell> (-p:[power]) [spellArgs]")
 		@Description("Force a player to cast a spell. (You can optionally define power: -p:1.0)")
 		@HelpPermission(permission = Perm.COMMAND_CAST_AS)
