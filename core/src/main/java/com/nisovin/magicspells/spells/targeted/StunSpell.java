@@ -25,33 +25,32 @@ import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
-	
-	private Map<UUID, StunnedInfo> stunnedLivingEntities;
 
-	private int taskId = -1;
-	private int interval;
-	private int duration;
+	private final Map<UUID, StunnedInfo> stunnedLivingEntities;
 
-	private Listener listener;
-	
+	private final int interval;
+	private final int duration;
+
+	private final Listener listener;
+
 	public StunSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
+
 		interval = getConfigInt("interval", 5);
 		duration = (int) ((getConfigInt("duration", 200) / 20) * TimeUtil.MILLISECONDS_PER_SECOND);
 
 		listener = new StunListener();
 		stunnedLivingEntities = new HashMap<>();
 	}
-	
+
 	@Override
 	public void initialize() {
 		super.initialize();
-		
+
 		registerEvents(listener);
-		taskId = MagicSpells.scheduleRepeatingTask(new StunMonitor(), interval, interval);
+		MagicSpells.scheduleRepeatingTask(new StunMonitor(), interval, interval);
 	}
-	
+
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
@@ -59,108 +58,108 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 			if (targetInfo == null) return noTarget(caster);
 			LivingEntity target = targetInfo.getTarget();
 			power = targetInfo.getPower();
-			
+
 			stunLivingEntity(caster, target, Math.round(duration * power));
 			sendMessages(caster, target);
 			return PostCastAction.NO_MESSAGES;
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
-	
+
 	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
 		if (!validTargetList.canTarget(caster, target)) return false;
 		stunLivingEntity(caster, target, Math.round(duration * power));
 		return true;
 	}
-	
+
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
 		if (!validTargetList.canTarget(target)) return false;
 		stunLivingEntity(null, target, Math.round(duration * power));
 		return true;
 	}
-	
+
 	private void stunLivingEntity(LivingEntity caster, LivingEntity target, int duration) {
 		StunnedInfo info = new StunnedInfo(caster, target, System.currentTimeMillis() + duration, target.getLocation());
 		stunnedLivingEntities.put(target.getUniqueId(), info);
-		
+
 		if (caster != null) playSpellEffects(caster, target);
 		else playSpellEffects(EffectPosition.TARGET, target);
-		
+
 		playSpellEffectsBuff(target, entity -> {
 			if (!(entity instanceof LivingEntity)) return false;
 			return isStunned((LivingEntity) entity);
 		});
-		
+
 	}
 
 	public boolean isStunned(LivingEntity entity) {
 		return stunnedLivingEntities.containsKey(entity.getUniqueId());
 	}
-	
+
 	public void removeStun(LivingEntity entity) {
 		stunnedLivingEntities.remove(entity.getUniqueId());
 	}
-	
+
 	private static class StunnedInfo {
-		
-		private Long until;
-		private LivingEntity caster;
-		private LivingEntity target;
-		private Location targetLocation;
-		
+
+		private final Long until;
+		private final LivingEntity caster;
+		private final LivingEntity target;
+		private final Location targetLocation;
+
 		private StunnedInfo(LivingEntity caster, LivingEntity target, Long until, Location targetLocation) {
 			this.caster = caster;
 			this.target = target;
 			this.until = until;
 			this.targetLocation = targetLocation;
 		}
-		
+
 	}
-	
+
 	private class StunListener implements Listener {
-		
+
 		@EventHandler
-		private void onMove(PlayerMoveEvent e) {
-			Player pl = e.getPlayer();
-			if (!isStunned(pl)) return;
-			StunnedInfo info = stunnedLivingEntities.get(pl.getUniqueId());
+		private void onMove(PlayerMoveEvent event) {
+			Player player = event.getPlayer();
+			if (!isStunned(player)) return;
+			StunnedInfo info = stunnedLivingEntities.get(player.getUniqueId());
 			if (info == null) return;
-			
+
 			if (info.until > System.currentTimeMillis()) {
-				e.setTo(info.targetLocation);
+				event.setTo(info.targetLocation);
 				return;
 			}
-			
-			removeStun(pl);
+
+			removeStun(player);
 		}
-		
+
 		@EventHandler
-		private void onInteract(PlayerInteractEvent e) {
-			if (!isStunned(e.getPlayer())) return;
-			e.setCancelled(true);
+		private void onInteract(PlayerInteractEvent event) {
+			if (!isStunned(event.getPlayer())) return;
+			event.setCancelled(true);
 		}
-		
+
 		@EventHandler
-		private void onQuit(PlayerQuitEvent e) {
-			Player pl = e.getPlayer();
-			if (!isStunned(pl)) return;
-			removeStun(pl);
+		private void onQuit(PlayerQuitEvent event) {
+			Player player = event.getPlayer();
+			if (!isStunned(player)) return;
+			removeStun(player);
 		}
-		
+
 		@EventHandler
-		private void onDeath(PlayerDeathEvent e) {
-			Player pl = e.getEntity();
-			if (!isStunned(pl)) return;
-			removeStun(pl);
+		private void onDeath(PlayerDeathEvent event) {
+			Player player = event.getEntity();
+			if (!isStunned(player)) return;
+			removeStun(player);
 		}
-		
+
 	}
-	
+
 	private class StunMonitor implements Runnable {
 
-		private Set<LivingEntity> toRemove = new HashSet<>();
+		private final Set<LivingEntity> toRemove = new HashSet<>();
 
 		@Override
 		public void run() {
@@ -169,7 +168,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 				LivingEntity entity = info.target;
 				Long until = info.until;
 				if (entity instanceof Player) continue;
-				
+
 				if (entity.isValid() && until > System.currentTimeMillis()) {
 					entity.teleport(info.targetLocation);
 					continue;
@@ -184,7 +183,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 
 			toRemove.clear();
 		}
-		
+
 	}
-	
+
 }
