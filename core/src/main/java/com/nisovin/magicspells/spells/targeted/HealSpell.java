@@ -4,6 +4,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 
 import com.nisovin.magicspells.util.Util;
+import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
@@ -16,6 +17,7 @@ import com.nisovin.magicspells.events.MagicSpellsEntityRegainHealthEvent;
 public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private final double healAmount;
+	private final int healPercent;
 
 	private final boolean checkPlugins;
 	private final boolean cancelIfFull;
@@ -28,6 +30,10 @@ public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 		super(config, spellName);
 
 		healAmount = getConfigFloat("heal-amount", 10);
+		healPercent = getConfigInt("heal-percent", 0);
+		if (healPercent < 0 || healPercent > 100) {
+			MagicSpells.error("HealSpell '" + internalName + "' uses heal-percent outside bounds 0-100.");
+		}
 
 		checkPlugins = getConfigBoolean("check-plugins", true);
 		cancelIfFull = getConfigBoolean("cancel-if-full", true);
@@ -72,7 +78,11 @@ public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private boolean heal(LivingEntity livingEntity, LivingEntity target, float power) {
 		double health = target.getHealth();
-		double amount = healAmount * power;
+		double amount;
+		if (healPercent == 0) amount = healAmount * power;
+		else {
+			amount = (Util.getMaxHealth(livingEntity) - health) * (healPercent/100F);
+		}
 
 		if (checkPlugins) {
 			MagicSpellsEntityRegainHealthEvent event = new MagicSpellsEntityRegainHealthEvent(target, amount, RegainReason.CUSTOM);
