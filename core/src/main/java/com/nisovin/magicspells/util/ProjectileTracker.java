@@ -62,6 +62,7 @@ public class ProjectileTracker implements Runnable {
 	private ProjectileTracker tracker;
 	private ParticleProjectileSpell spell;
 	private Set<Material> groundMaterials;
+	private Set<Material> disallowedGroundMaterials;
 	private ValidTargetList targetList;
 	private ModifierSet projectileModifiers;
 	private Map<String, Subspell> interactionSpells;
@@ -360,7 +361,7 @@ public class ProjectileTracker implements Runnable {
 		} else nearBlocks = BlockUtils.getNearbyBlocks(currentLocation, groundHorizontalHitRadius, groundVerticalHitRadius);
 
 		for (Block b : nearBlocks) {
-			if (!groundMaterials.contains(b.getType())) continue;
+			if (!groundMaterials.contains(b.getType()) || disallowedGroundMaterials.contains(b.getType())) continue;
 			if (hitGround && groundSpell != null) {
 				Util.setLocationFacingFromVector(previousLocation, currentVelocity);
 				groundSpell.castAtLocation(caster, previousLocation, power);
@@ -722,6 +723,14 @@ public class ProjectileTracker implements Runnable {
 
 	public void setGroundMaterials(Set<Material> groundMaterials) {
 		this.groundMaterials = groundMaterials;
+	}
+
+	public Set<Material> getDisallowedGroundMaterials() {
+		return disallowedGroundMaterials;
+	}
+
+	public void setDisallowedGroundMaterials(Set<Material> disallowedGroundMaterials) {
+		this.disallowedGroundMaterials = disallowedGroundMaterials;
 	}
 
 	public ValidTargetList getTargetList() {

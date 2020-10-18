@@ -61,6 +61,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 	private int groundHitRadius;
 	private int groundVerticalHitRadius;
 	private Set<Material> groundMaterials;
+	private Set<Material> disallowedGroundMaterials;
 
 	private double maxDuration;
 	private double maxDistanceSquared;
@@ -173,6 +174,16 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 			for (Material material : Material.values()) {
 				if (BlockUtils.isPathable(material)) continue;
 				groundMaterials.add(material);
+			}
+		}
+		disallowedGroundMaterials = new HashSet<>();
+		List<String> disallowedGroundMaterialNames = getConfigStringList("disallowed-ground-materials", null);
+		if (disallowedGroundMaterialNames != null) {
+			for (String str : disallowedGroundMaterialNames) {
+				Material material = Util.getMaterial(str);
+				if (material == null) continue;
+				if (!material.isBlock()) continue;
+				disallowedGroundMaterials.add(material);
 			}
 		}
 
@@ -453,6 +464,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		tracker.setGroundHorizontalHitRadius(groundHitRadius);
 		tracker.setGroundVerticalHitRadius(groundVerticalHitRadius);
 		tracker.setGroundMaterials(groundMaterials);
+		tracker.setDisallowedGroundMaterials(disallowedGroundMaterials);
 
 		tracker.setHugSurface(hugSurface);
 		tracker.setHeightFromSurface(heightFromSurface);
