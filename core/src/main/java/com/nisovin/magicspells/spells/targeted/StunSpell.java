@@ -30,6 +30,8 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private final int interval;
 	private final int duration;
+	private final boolean stunMonitor;
+	private final boolean stunBody;
 
 	private final Listener listener;
 
@@ -38,6 +40,8 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		interval = getConfigInt("interval", 5);
 		duration = (int) ((getConfigInt("duration", 200) / 20) * TimeUtil.MILLISECONDS_PER_SECOND);
+		stunMonitor = getConfigBoolean("stun-monitor", true);
+		stunBody = getConfigBoolean("stun-body", true);
 
 		listener = new StunListener();
 		stunnedLivingEntities = new HashMap<>();
@@ -46,6 +50,11 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 	@Override
 	public void initialize() {
 		super.initialize();
+
+		if (!stunBody && !stunMonitor) {
+			MagicSpells.error("StunSpell '" + internalName + "' is not attempting to stun the body or the monitor.");
+			return;
+		}
 
 		registerEvents(listener);
 		MagicSpells.scheduleRepeatingTask(new StunMonitor(), interval, interval);
@@ -126,6 +135,16 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 			if (!isStunned(player)) return;
 			StunnedInfo info = stunnedLivingEntities.get(player.getUniqueId());
 			if (info == null) return;
+
+			// Perform checks whether to stun the player.
+			boolean shouldStun = false;
+			Location from = event.getFrom();
+			Location to = event.getTo();
+			boolean movedBody = from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ();
+			boolean movedMonitor = from.getPitch() != to.getPitch() || from.getYaw() != to.getYaw();
+			if (stunBody && movedBody) shouldStun = true;
+			if (stunMonitor && movedMonitor) shouldStun = true;
+			if (!shouldStun) return;
 
 			if (info.until > System.currentTimeMillis()) {
 				event.setTo(info.targetLocation);
