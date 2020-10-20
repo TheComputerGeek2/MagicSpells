@@ -1,6 +1,6 @@
 package com.nisovin.magicspells.listeners;
 
-import java.util.Collection;
+import java.util.Map;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -53,14 +53,12 @@ public class VariableListener implements Listener {
 		LivingEntity caster = event.getCaster();
 		if (!(caster instanceof Player)) return;
 		Player player = (Player) caster;
-		for (String var : varMods.keySet()) {
-			Collection<VariableMod> mods = varMods.get(var);
-			if (mods == null) continue;
-			for (VariableMod mod : mods) {
-				if (mod == null) continue;
-				String amount = variableManager.processVariableMods(var, mod, player, player, null);
-				MagicSpells.debug(3, "Variable '" + var + "' for player '" + player.getName() + "' modified by " + amount + " as a result of spell cast '" + event.getSpell().getName() + "'");
-			}
+		for (Map.Entry<String, VariableMod> entry : varMods.entries()) {
+			VariableMod mod = entry.getValue();
+			if (mod == null) continue;
+
+			String amount = variableManager.processVariableMods(entry.getKey(), mod, player, player, null);
+			MagicSpells.debug(3, "Variable '" + entry.getKey() + "' for player '" + player.getName() + "' modified by " + amount + " as a result of spell cast '" + event.getSpell().getName() + "'");
 		}
 	}
 
@@ -73,14 +71,12 @@ public class VariableListener implements Listener {
 		LivingEntity caster = event.getCaster();
 		if (!(caster instanceof Player)) return;
 		Player player = (Player) caster;
-		for (String var : varMods.keySet()) {
-			Collection<VariableMod> mods = varMods.get(var);
-			if (mods == null) continue;
-			for (VariableMod mod : mods) {
-				if (mod == null) continue;
-				String amount = variableManager.processVariableMods(var, mod, player, player, null);
-				MagicSpells.debug(3, "Variable '" + var + "' for player '" + player.getName() + "' modified by " + amount + " as a result of spell casted '" + event.getSpell().getName() + "'");
-			}
+		for (Map.Entry<String, VariableMod> entry : varMods.entries()) {
+			VariableMod mod = entry.getValue();
+			if (mod == null) continue;
+
+			String amount = variableManager.processVariableMods(entry.getKey(), mod, player, player, null);
+			MagicSpells.debug(3, "Variable '" + entry.getKey() + "' for player '" + player.getName() + "' modified by " + amount + " as a result of spell casted '" + event.getSpell().getName() + "'");
 		}
 	}
 
@@ -93,14 +89,12 @@ public class VariableListener implements Listener {
 		if (!(caster instanceof Player)) return;
 		Player target = event.getTarget() instanceof Player ? (Player) event.getTarget() : null;
 		if (target == null) return;
-		for (String var : varMods.keySet()) {
-			Collection<VariableMod> mods = varMods.get(var);
-			if (mods == null) continue;
-			for (VariableMod mod : mods) {
-				if (mod == null) continue;
-				String amount = variableManager.processVariableMods(var, mod, target, (Player) caster, target);
-				MagicSpells.debug(3, "Variable '" + var + "' for player '" + target.getName() + "' modified by " + amount + " as a result of spell target from '" + event.getSpell().getName() + "'");
-			}
+		for (Map.Entry<String, VariableMod> entry : varMods.entries()) {
+			VariableMod mod = entry.getValue();
+			if (mod == null) continue;
+
+			String amount = variableManager.processVariableMods(entry.getKey(), mod, target, (Player) caster, target);
+			MagicSpells.debug(3, "Variable '" + entry.getKey() + "' for player '" + target.getName() + "' modified by " + amount + " as a result of spell target from '" + event.getSpell().getName() + "'");
 		}
 	}
 
