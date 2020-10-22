@@ -12,11 +12,13 @@ public class SlotSelectedCondition extends OperatorCondition {
 
 	@Override
 	public boolean initialize(String var) {
-		if (var == null || var.isEmpty()) return false;
+		if (var == null || var.length() < 2) return false;
+		if (!super.initialize(var)) return false;
+
 		try {
-			slot = Integer.parseInt(var);
-			return true;
-		} catch (NumberFormatException | NullPointerException nfe) {
+			slot = Integer.parseInt(var.substring(1));
+			return slot >= 0 && slot <= 8;
+		} catch (NumberFormatException nfe) {
 			return false;
 		}
 	}
