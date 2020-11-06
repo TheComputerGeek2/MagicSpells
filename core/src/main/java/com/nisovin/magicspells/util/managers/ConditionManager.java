@@ -1,11 +1,11 @@
 package com.nisovin.magicspells.util.managers;
 
-import java.util.Map;
-import java.util.HashMap;
-
-import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.castmodifiers.Condition;
 import com.nisovin.magicspells.castmodifiers.conditions.*;
+import com.nisovin.magicspells.handlers.DebugHandler;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ConditionManager {
 
@@ -157,6 +157,7 @@ public class ConditionManager {
 		addCondition("griefpreventionisowner", GriefPreventionIsOwnerCondition.class);
 		addCondition("slotselected", SlotSelectedCondition.class);
 		addCondition("hasscoreboardtag", HasScoreboardTagCondition.class);
+		addCondition("hasspell", HasSpellCondition.class);
 	}
 
 }
