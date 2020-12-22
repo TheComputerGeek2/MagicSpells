@@ -15,10 +15,10 @@ import java.util.function.Predicate;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.*;
-import org.bukkit.entity.Entity;
 import org.bukkit.inventory.*;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.potion.PotionEffect;
@@ -37,6 +37,7 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 
 import org.apache.commons.math3.util.FastMath;
+
 import org.jetbrains.annotations.Nullable;
 
 public class Util {

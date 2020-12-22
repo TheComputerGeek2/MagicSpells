@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.destroystokyo.paper.entity.ai.MobGoals;
-import com.nisovin.magicspells.util.ai.LookAtEntityGoal;
+
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.Material;
@@ -37,6 +37,7 @@ import com.nisovin.magicspells.util.EntityData;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.ai.LookAtEntityGoal;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;

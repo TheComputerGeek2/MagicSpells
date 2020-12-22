@@ -1,20 +1,23 @@
 package com.nisovin.magicspells.util.ai;
 
-import com.destroystokyo.paper.entity.ai.Goal;
-import com.destroystokyo.paper.entity.ai.GoalKey;
-import com.destroystokyo.paper.entity.ai.GoalType;
-import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.util.Util;
+import org.bukkit.entity.Mob;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Mob;
+
 import org.jetbrains.annotations.NotNull;
 
+import com.nisovin.magicspells.util.Util;
+import com.nisovin.magicspells.MagicSpells;
+
 import java.util.EnumSet;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
+import java.util.concurrent.ThreadLocalRandom;
+
+import com.destroystokyo.paper.entity.ai.Goal;
+import com.destroystokyo.paper.entity.ai.GoalKey;
+import com.destroystokyo.paper.entity.ai.GoalType;
 
 public class LookAtEntityGoal implements Goal<Mob> {
     private final Mob mob;
