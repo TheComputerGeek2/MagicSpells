@@ -1,9 +1,9 @@
 package com.nisovin.magicspells.spells.passive;
 
-import org.bukkit.Statistic;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerStatisticIncrementEvent;
+
+import com.destroystokyo.paper.event.entity.EntityJumpEvent;
 
 import com.nisovin.magicspells.util.OverridePriority;
 import com.nisovin.magicspells.spells.passive.util.PassiveListener;
@@ -18,11 +18,13 @@ public class JumpListener extends PassiveListener {
 
 	@OverridePriority
 	@EventHandler
-	public void onJump(PlayerStatisticIncrementEvent event) {
-		Player player = event.getPlayer();
-		if (event.getStatistic() != Statistic.JUMP) return;
-		if (!hasSpell(player)) return;
-		passiveSpell.activate(player);
+	public void onJump(EntityJumpEvent event) {
+		LivingEntity entity = event.getEntity();
+		if (!hasSpell(entity)) return;
+		if (!isCancelStateOk(event.isCancelled())) return;
+		boolean casted = passiveSpell.activate(entity);
+		if (!cancelDefaultAction(casted)) return;
+		event.setCancelled(true);
 	}
 
 }
