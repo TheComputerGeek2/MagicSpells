@@ -13,18 +13,27 @@
 // TODO clean up dependency management
 
 buildscript {
-  repositories {
-    jcenter()
-    mavenCentral()
-    maven {
-      url "https://plugins.gradle.org/m2/"
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
-  }
-  dependencies {
-    classpath "com.github.jengelman.gradle.plugins:shadow:2.0.3"
-    classpath 'de.undercouch:gradle-download-task:3.4.2'
-    classpath "com.sarhanm:gradle-versioner:2.4.0"
-  }
+    dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.3"
+        classpath 'de.undercouch:gradle-download-task:3.4.2'
+        classpath "com.sarhanm:gradle-versioner:2.4.0"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven { url "https://jitpack.io" }
+        // maven jitpack 추가
+    }
 }
 
 apply plugin: 'java'
@@ -46,108 +55,108 @@ configurations {
 }
 
 ext {
-  magicspellsData = new MSConfig()
+    magicspellsData = new MSConfig()
 }
 
 dependencies {
-  compile group: 'org.apache.commons', name: 'commons-math3', version: '3.0'
-  spigot magicspellsClasspathSpigot()
-  mscore magicspellsClasspathBase()
-  factions magicspellsClasspathFactions()
-  factions configurations.mscore.artifacts.getFiles()
-  teams configurations.mscore.artifacts.getFiles()
-  memory configurations.mscore.artifacts.getFiles()
-  towny configurations.mscore.artifacts.getFiles()
-  towny magicspellsClasspathTowny()
-  shop configurations.mscore.artifacts.getFiles()
-  shop magicspellsClasspathVault()
+    compile group: 'org.apache.commons', name: 'commons-math3', version: '3.0'
+    spigot magicspellsClasspathSpigot()
+    mscore magicspellsClasspathBase()
+    factions magicspellsClasspathFactions()
+    factions configurations.mscore.artifacts.getFiles()
+    teams configurations.mscore.artifacts.getFiles()
+    memory configurations.mscore.artifacts.getFiles()
+    towny configurations.mscore.artifacts.getFiles()
+    towny magicspellsClasspathTowny()
+    shop configurations.mscore.artifacts.getFiles()
+    shop magicspellsClasspathVault()
 }
 
 public class MSConfig {
-  String coreVersion = '3.6'
-  String coreSrcDir = 'src'
-  String coreBuildDir = 'bin'
+    String coreVersion = '3.6'
+    String coreSrcDir = 'src'
+    String coreBuildDir = 'bin'
 
-  String teamsVersion = '1.0'
-  String teamsSrcDir = 'src_teams'
-  String teamsBuildDir = 'bin_teams'
+    String teamsVersion = '1.0'
+    String teamsSrcDir = 'src_teams'
+    String teamsBuildDir = 'bin_teams'
 
-  String memoryVersion = '1.2'
-  String memorySrcDir = 'src_memory'
-  String memoryBuildDir = 'bin_memory'
+    String memoryVersion = '1.2'
+    String memorySrcDir = 'src_memory'
+    String memoryBuildDir = 'bin_memory'
 
-  String shopVersion = '1.6'
-  String shopSrcDir = 'src_shop'
-  String shopBuildDir = 'bin_shop'
+    String shopVersion = '1.6'
+    String shopSrcDir = 'src_shop'
+    String shopBuildDir = 'bin_shop'
 
-  String townyVersion = '1.3'
-  String townySrcDir = 'src_towny'
-  String townyBuildDir = 'bin_towny'
+    String townyVersion = '1.3'
+    String townySrcDir = 'src_towny'
+    String townyBuildDir = 'bin_towny'
 
-  String factionsVersion = '1.0'
-  String factionsSrcDir = 'src_factions'
-  String factionsBuildDir = 'bin_factions'
+    String factionsVersion = '1.0'
+    String factionsSrcDir = 'src_factions'
+    String factionsBuildDir = 'bin_factions'
 
-  String distDir = 'dist'
-  String libDir = 'lib'
-  String docDir = 'doc'
+    String distDir = 'dist'
+    String libDir = 'lib'
+    String docDir = 'doc'
 
-  // Java versions
-  def javaCoreVersion = '1.8'
-  def javaTeamsVersion = '1.8'
-  def javaMemoryVersion = '1.8'
-  def javaShopVersion = '1.8'
-  def javaTownyVersion = '1.8'
-  def javaFactionsVersion = '1.8'
+    // Java versions
+    def javaCoreVersion = '1.8'
+    def javaTeamsVersion = '1.8'
+    def javaMemoryVersion = '1.8'
+    def javaShopVersion = '1.8'
+    def javaTownyVersion = '1.8'
+    def javaFactionsVersion = '1.8'
 
-  //<tstamp><format property="datestamp" pattern="yyMMddHHmm"/></tstamp>
-  def datestampPattern = 'yyMMddHHmm'
-  def datestampString = "${-> new Date().format(datestampPattern)}"
+    //<tstamp><format property="datestamp" pattern="yyMMddHHmm"/></tstamp>
+    def datestampPattern = 'yyMMddHHmm'
+    def datestampString = "${-> new Date().format(datestampPattern)}"
 
-  // Resource retrieving
-  def resourceResidenceUrl = 'http://nexus.hc.to/content/repositories/pub_releases/com/bekvon/bukkit/residence/Residence/4.5.3.0/Residence-4.5.3.0.jar'
-  def resourceNcpUrl = 'https://ci.md-5.net/job/NoCheatPlus/lastSuccessfulBuild/artifact/target/NoCheatPlus.jar'
-  def resourcePlaceholderapiUrl = 'http://repo.extendedclip.com/content/repositories/placeholderapi/me/clip/placeholderapi/2.8.2/placeholderapi-2.8.2.jar'
-  def resourceGriefPreventionUrl = 'https://github.com/TechFortress/GriefPrevention/releases/download/16.8/GriefPrevention.jar'
+    // Resource retrieving
+    def resourceResidenceUrl = 'http://nexus.hc.to/content/repositories/pub_releases/com/bekvon/bukkit/residence/Residence/4.5.3.0/Residence-4.5.3.0.jar'
+    def resourceNcpUrl = 'https://ci.md-5.net/job/NoCheatPlus/lastSuccessfulBuild/artifact/target/NoCheatPlus.jar'
+    def resourcePlaceholderapiUrl = 'http://repo.extendedclip.com/content/repositories/placeholderapi/me/clip/placeholderapi/2.8.2/placeholderapi-2.8.2.jar'
+    def resourceGriefPreventionUrl = 'https://github.com/TechFortress/GriefPrevention/releases/download/16.8/GriefPrevention.jar'
 
-  def versionSuffix
+    def versionSuffix
 
-  String stringVersionCore
-  String stringVersionFactions
-  String stringVersionMemory
-  String stringVersionTeams
-  String stringVersionTowny
-  String stringVersionShop
+    String stringVersionCore
+    String stringVersionFactions
+    String stringVersionMemory
+    String stringVersionTeams
+    String stringVersionTowny
+    String stringVersionShop
 }
 
 MSConfig msconfig = ext.magicspellsData
 
 def downloadFile(File file, URL url) {
-  if (!file.exists()) {
-    url.withInputStream{ i -> file.withOutputStream{ it << i }}
-  }
+    if (!file.exists()) {
+        url.withInputStream { i -> file.withOutputStream { it << i } }
+    }
 }
 
 // FIXME this should be setup as a task instead of a method running on configuration time
 // Ensures resource availability
 def magicspellsGetResources() {
-  println 'Running the get resources phase'
+    println 'Running the get resources phase'
 
-  File libFolder = project.file(project.ext.magicspellsData.libDir)
+    File libFolder = project.file(project.ext.magicspellsData.libDir)
 
-  // Get Residence
-  downloadFile(new File(libFolder, 'Residence.jar'), new URL(project.ext.magicspellsData.resourceResidenceUrl))
+    // Get Residence
+    downloadFile(new File(libFolder, 'Residence.jar'), new URL(project.ext.magicspellsData.resourceResidenceUrl))
 
-  // Get NoCheatPlus
-  downloadFile(new File(libFolder, 'NoCheatPlus.jar'), new URL(project.ext.magicspellsData.resourceNcpUrl))
+    // Get NoCheatPlus
+    downloadFile(new File(libFolder, 'NoCheatPlus.jar'), new URL(project.ext.magicspellsData.resourceNcpUrl))
 
-  // Get PlaceholderAPI
-  downloadFile(new File(libFolder, 'PlaceholderAPI.jar'), new URL(project.ext.magicspellsData.resourcePlaceholderapiUrl))
+    // Get PlaceholderAPI
+    downloadFile(new File(libFolder, 'PlaceholderAPI.jar'), new URL(project.ext.magicspellsData.resourcePlaceholderapiUrl))
 
-  // Get GriefPrevention
-  downloadFile(new File(libFolder, 'GriefPrevention.jar'), new URL(project.ext.magicspellsData.resourceGriefPreventionUrl))
+    // Get GriefPrevention
+    downloadFile(new File(libFolder, 'GriefPrevention.jar'), new URL(project.ext.magicspellsData.resourceGriefPreventionUrl))
 
-  println 'Finished running the get resources phase'
+    println 'Finished running the get resources phase'
 }
 
 task getResidence(type: Download) {
@@ -161,7 +170,7 @@ task getResidence(type: Download) {
 task downloadDependencies() {
     group = 'Setup'
     dependsOn = [
-        'getResidence'
+            'getResidence'
     ]
     doFirst {
         magicspellsGetResources()
@@ -170,14 +179,14 @@ task downloadDependencies() {
 
 // FIXME fix up this task
 task magicspellsBuildVersion() {
-  description = 'Assign version suffix in dev build format'
-  msconfig.versionSuffix = "dev-${-> msconfig.datestampString}"
+    description = 'Assign version suffix in dev build format'
+    msconfig.versionSuffix = "dev-${-> msconfig.datestampString}"
 }
 
 // FIXME fix up this task
 task magicspellsReleaseVersion() {
-  description = 'Assign version suffix in release format'
-  if (project.hasProperty("${OPTION_RELEASE}")) msconfig.versionSuffix = 'Release'
+    description = 'Assign version suffix in release format'
+    if (project.hasProperty("${OPTION_RELEASE}")) msconfig.versionSuffix = 'Release'
 }
 
 Spec<? super File> ymlFilter() {
@@ -190,27 +199,27 @@ Spec<? super File> ymlFilter() {
 }
 
 def magicspellsClean() {
-  // Delete old working directories
-  project.delete project.ext.magicspellsData.coreBuildDir, project.ext.magicspellsData.teamsBuildDir, project.ext.magicspellsData.memoryBuildDir, project.ext.magicspellsData.shopBuildDir, project.ext.magicspellsData.townyBuildDir, project.ext.magicspellsData.factionsBuildDir, project.ext.magicspellsData.docDir, project.ext.magicspellsData.distDir
-  project.file(project.ext.magicspellsData.distDir).mkdir()
+    // Delete old working directories
+    project.delete project.ext.magicspellsData.coreBuildDir, project.ext.magicspellsData.teamsBuildDir, project.ext.magicspellsData.memoryBuildDir, project.ext.magicspellsData.shopBuildDir, project.ext.magicspellsData.townyBuildDir, project.ext.magicspellsData.factionsBuildDir, project.ext.magicspellsData.docDir, project.ext.magicspellsData.distDir
+    project.file(project.ext.magicspellsData.distDir).mkdir()
 }
 
-project.tasks.getByPath("clean").doFirst({magicspellsClean()})
+project.tasks.getByPath("clean").doFirst({ magicspellsClean() })
 
 def cleanYmlFiles() {
     def files = project.files(project.ext.magicspellsData.coreBuildDir)
-      .plus(project.files(project.ext.magicspellsData.teamsBuildDir))
-      .plus(project.files(project.ext.magicspellsData.memoryBuildDir))
-      .plus(project.files(project.ext.magicspellsData.shopBuildDir))
-      .plus(project.files(project.ext.magicspellsData.townyBuildDir))
-      .plus(project.files(project.ext.magicspellsData.factionsBuildDir))
-      .filter(project.ymlFilter())
+            .plus(project.files(project.ext.magicspellsData.teamsBuildDir))
+            .plus(project.files(project.ext.magicspellsData.memoryBuildDir))
+            .plus(project.files(project.ext.magicspellsData.shopBuildDir))
+            .plus(project.files(project.ext.magicspellsData.townyBuildDir))
+            .plus(project.files(project.ext.magicspellsData.factionsBuildDir))
+            .filter(project.ymlFilter())
     project.delete files
 }
 
 def cleanDistFolder() {
-  project.delete project.ext.magicspellsData.distDir
-  project.file(project.ext.magicspellsData.distDir).mkdir()
+    project.delete project.ext.magicspellsData.distDir
+    project.file(project.ext.magicspellsData.distDir).mkdir()
 }
 
 // FIXME this should be setup as a task instead of a method running on configuration time
@@ -219,17 +228,17 @@ cleanDistFolder()
 cleanYmlFiles()
 
 def magicspellsClasspathBase() {
-  return magicspellsClasspathSpigot()
-    .plus(magicspellsClasspathEffectlib())
-    .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}ProtocolLib.jar"))
-    .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}NoCheatPlus.jar"))
-    .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}WorldEdit.jar"))
-    .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}WorldGuard.jar"))
-    .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}LibsDisguises-9.0.9.jar"))
-    .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}Residence.jar"))
-    .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}PlaceholderAPI.jar"))
-    .plus(magicspellsClasspathVault())
-	.plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}GriefPrevention.jar"))
+    return magicspellsClasspathSpigot()
+            .plus(magicspellsClasspathEffectlib())
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}ProtocolLib.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}NoCheatPlus.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}WorldEdit.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}WorldGuard.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}LibsDisguises-9.0.9.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}Residence.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}PlaceholderAPI.jar"))
+            .plus(magicspellsClasspathVault())
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}GriefPrevention.jar"))
 }
 
 def magicspellsClasspathVault() {
@@ -242,39 +251,39 @@ def magicspellsClasspathEffectlib() {
 
 def magicspellsClasspathSpigot() {
     return project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.12.jar")
-      .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.10.2.jar"))
-      .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.9.4.jar"))
-      .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.9.jar"))
-      .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.8.7.jar"))
-      .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.8-R0.1-SNAPSHOT.jar"))
-      .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.11.2.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.10.2.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.9.4.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.9.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.8.7.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.8-R0.1-SNAPSHOT.jar"))
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}spigot-1.11.2.jar"))
 }
 
 def magicspellsClasspathTowny() {
-  return project.files("${-> project.ext.magicspellsData.libDir}${File.separator}Towny.jar")
+    return project.files("${-> project.ext.magicspellsData.libDir}${File.separator}Towny.jar")
 }
 
 def magicspellsClasspathFactions() {
-  return project.files("${-> project.ext.magicspellsData.libDir}${File.separator}MassiveCore.jar")
-    .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}Factions.jar"))
+    return project.files("${-> project.ext.magicspellsData.libDir}${File.separator}MassiveCore.jar")
+            .plus(project.files("${-> project.ext.magicspellsData.libDir}${File.separator}Factions.jar"))
 }
 
 // FIXME fix up this task
 // FIXME do more of this at build time, not config time
 task magicspellsCoreCompile(type: JavaCompile) {
-  description = 'Compile the main MagicSpells java files'
-  dependsOn = [
-      'downloadDependencies'
-  ]
-  File buildDir = project.file(msconfig.coreBuildDir)
-  buildDir.mkdir()
-  destinationDir = buildDir
-  source(msconfig.coreSrcDir)
+    description = 'Compile the main MagicSpells java files'
+    dependsOn = [
+            'downloadDependencies'
+    ]
+    File buildDir = project.file(msconfig.coreBuildDir)
+    buildDir.mkdir()
+    destinationDir = buildDir
+    source(msconfig.coreSrcDir)
 
-  classpath = configurations.mscore
-  sourceCompatibility = msconfig.javaCoreVersion
+    classpath = configurations.mscore
+    sourceCompatibility = msconfig.javaCoreVersion
 
-  msconfig.stringVersionCore = "${msconfig.coreVersion}-${msconfig.versionSuffix}"
+    msconfig.stringVersionCore = "${msconfig.coreVersion}-${msconfig.versionSuffix}"
 }
 
 FileCollection coreYml = null
@@ -286,7 +295,7 @@ task updateCoreYmlFiles() {
 
 task magicspellsCopyResourcesClean(type: Delete) {
     dependsOn = [
-      "updateCoreYmlFiles"
+            "updateCoreYmlFiles"
     ]
 
     doFirst {
@@ -296,286 +305,286 @@ task magicspellsCopyResourcesClean(type: Delete) {
 
 // FIXME fix up this task
 task magicspellsCoreCopyResources(type: Copy) {
-  description = 'Copy yml resources for MagicSpells'
-  from(msconfig.coreSrcDir) {
-    include "**${File.separator}*.yml"
-  }
-  expand(project.properties)
-  into "${msconfig.coreBuildDir}"
+    description = 'Copy yml resources for MagicSpells'
+    from(msconfig.coreSrcDir) {
+        include "**${File.separator}*.yml"
+    }
+    expand(project.properties)
+    into "${msconfig.coreBuildDir}"
 }
 
 // FIXME do more of this at build time, not config time
 task magicspellsCoreJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-  description = 'Create the main MagicSpells jar'
-  dependsOn = [
-    'magicspellsCoreCompile',
-    'magicspellsCoreCopyResources'
-  ]
-  archiveName = "MagicSpells-${msconfig.stringVersionCore}.jar"
-  if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpells.jar'
-  destinationDir = project.file(msconfig.distDir)
-  from("${msconfig.coreBuildDir}")
-  dependencies {
-    repositories {
-      mavenCentral()
+    description = 'Create the main MagicSpells jar'
+    dependsOn = [
+            'magicspellsCoreCompile',
+            'magicspellsCoreCopyResources'
+    ]
+    archiveName = "MagicSpells-${msconfig.stringVersionCore}.jar"
+    if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpells.jar'
+    destinationDir = project.file(msconfig.distDir)
+    from("${msconfig.coreBuildDir}")
+    dependencies {
+        repositories {
+            mavenCentral()
+        }
+        dependency('org.apache.commons:commons-math3')
     }
-    dependency('org.apache.commons:commons-math3')
-  }
-  from (project.configurations.compile)
-  relocate 'org.apache.commons.math3', 'com.nisovin.magicspells.shaded.org.apache.commons'
-  magicspellsCoreJar.exclude "**${File.separator}*.xml", "**${File.separator}*pom.properties", "**${File.separator}**LocalizedFormats**"
-  println magicspellsCoreJar.excludes
+    from(project.configurations.compile)
+    relocate 'org.apache.commons.math3', 'com.nisovin.magicspells.shaded.org.apache.commons'
+    magicspellsCoreJar.exclude "**${File.separator}*.xml", "**${File.separator}*pom.properties", "**${File.separator}**LocalizedFormats**"
+    println magicspellsCoreJar.excludes
 }
 
 // FIXME do more of this at build time, not config time
 task magicspellsTeamsCompile(type: JavaCompile) {
-  description = 'Compile the teams addon'
-  dependsOn = [
-    'magicspellsCoreJar'
-  ]
-  msconfig.stringVersionTeams = "${msconfig.teamsVersion}-${msconfig.versionSuffix}"
-  File buildDir = project.file(msconfig.teamsBuildDir)
-  buildDir.mkdir()
-  destinationDir = buildDir
-  source(msconfig.teamsSrcDir)
+    description = 'Compile the teams addon'
+    dependsOn = [
+            'magicspellsCoreJar'
+    ]
+    msconfig.stringVersionTeams = "${msconfig.teamsVersion}-${msconfig.versionSuffix}"
+    File buildDir = project.file(msconfig.teamsBuildDir)
+    buildDir.mkdir()
+    destinationDir = buildDir
+    source(msconfig.teamsSrcDir)
 
-  classpath = configurations.teams
+    classpath = configurations.teams
 
-  sourceCompatibility = msconfig.javaTeamsVersion
+    sourceCompatibility = msconfig.javaTeamsVersion
 }
 
 // FIXME fix up this task
 task magicspellsTeamsCopyResources(type: Copy) {
-  description = 'Copy yml resources for MagicSpellsTeams'
-  from(msconfig.teamsSrcDir) {
-    include "**${File.separator}*.yml"
-  }
-  expand(project.properties)
-  into "${msconfig.teamsBuildDir}"
+    description = 'Copy yml resources for MagicSpellsTeams'
+    from(msconfig.teamsSrcDir) {
+        include "**${File.separator}*.yml"
+    }
+    expand(project.properties)
+    into "${msconfig.teamsBuildDir}"
 }
 
 // FIXME do more of this at build time, not config time
 task magicspellsTeamsJar(type: Jar) {
-  description = 'Create the teams addon jar'
-  dependsOn = [
-    'magicspellsTeamsCompile',
-    'magicspellsTeamsCopyResources'
-  ]
-  archiveName = "MagicSpellsTeams-${msconfig.teamsVersion}-${msconfig.versionSuffix}.jar"
-  if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpellsTeams.jar'
-  destinationDir = project.file(msconfig.distDir)
-  from("${msconfig.teamsBuildDir}")
+    description = 'Create the teams addon jar'
+    dependsOn = [
+            'magicspellsTeamsCompile',
+            'magicspellsTeamsCopyResources'
+    ]
+    archiveName = "MagicSpellsTeams-${msconfig.teamsVersion}-${msconfig.versionSuffix}.jar"
+    if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpellsTeams.jar'
+    destinationDir = project.file(msconfig.distDir)
+    from("${msconfig.teamsBuildDir}")
 }
 
 // FIXME do more of this at build time, not config time
 task magicspellsMemoryCompile(type: JavaCompile) {
-  description = 'Compile the memory addon'
-  dependsOn = [
-    'magicspellsCoreJar'
-  ]
-  msconfig.stringVersionMemory = "${msconfig.memoryVersion}-${msconfig.versionSuffix}"
-  File buildDir = project.file(msconfig.memoryBuildDir)
-  buildDir.mkdir()
-  destinationDir = buildDir
-  source(msconfig.memorySrcDir)
+    description = 'Compile the memory addon'
+    dependsOn = [
+            'magicspellsCoreJar'
+    ]
+    msconfig.stringVersionMemory = "${msconfig.memoryVersion}-${msconfig.versionSuffix}"
+    File buildDir = project.file(msconfig.memoryBuildDir)
+    buildDir.mkdir()
+    destinationDir = buildDir
+    source(msconfig.memorySrcDir)
 
-  classpath = configurations.memory
+    classpath = configurations.memory
 
-  sourceCompatibility = msconfig.javaMemoryVersion
+    sourceCompatibility = msconfig.javaMemoryVersion
 }
 
 task magicspellsMemoryCopyResources(type: Copy) {
-  description = 'Copy yml resources for MagicSpellsMemory'
-  from(msconfig.memorySrcDir) {
-    include "**${File.separator}*.yml"
-  }
-  expand(project.properties)
-  into "${msconfig.memoryBuildDir}"
+    description = 'Copy yml resources for MagicSpellsMemory'
+    from(msconfig.memorySrcDir) {
+        include "**${File.separator}*.yml"
+    }
+    expand(project.properties)
+    into "${msconfig.memoryBuildDir}"
 }
 
 // FIXME do more of this at build time, not config time
 // Create the memory jar file
 task magicspellsMemoryJar(type: Jar) {
-  description = 'Create the memory addon jar'
-  dependsOn = [
-    'magicspellsMemoryCompile',
-    'magicspellsMemoryCopyResources'
-  ]
-  archiveName = "MagicSpellsMemory-${msconfig.stringVersionMemory}.jar"
-  if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpellsMemory.jar'
-  destinationDir = project.file(msconfig.distDir)
-  from("${msconfig.memoryBuildDir}")
+    description = 'Create the memory addon jar'
+    dependsOn = [
+            'magicspellsMemoryCompile',
+            'magicspellsMemoryCopyResources'
+    ]
+    archiveName = "MagicSpellsMemory-${msconfig.stringVersionMemory}.jar"
+    if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpellsMemory.jar'
+    destinationDir = project.file(msconfig.distDir)
+    from("${msconfig.memoryBuildDir}")
 }
 
 // FIXME do more of this at build time, not config time
 // Compile shop addon
 task magicspellsShopCompile(type: JavaCompile) {
-  description = 'Compile the shop addon'
-  dependsOn = [
-    'magicspellsCoreJar'
-  ]
+    description = 'Compile the shop addon'
+    dependsOn = [
+            'magicspellsCoreJar'
+    ]
 
-  msconfig.stringVersionShop = "${msconfig.shopVersion}-${msconfig.versionSuffix}"
-  File buildDir = project.file(msconfig.shopBuildDir)
-  buildDir.mkdir()
-  destinationDir = buildDir
-  source(msconfig.shopSrcDir)
+    msconfig.stringVersionShop = "${msconfig.shopVersion}-${msconfig.versionSuffix}"
+    File buildDir = project.file(msconfig.shopBuildDir)
+    buildDir.mkdir()
+    destinationDir = buildDir
+    source(msconfig.shopSrcDir)
 
-  classpath = configurations.shop
+    classpath = configurations.shop
 
-  sourceCompatibility = msconfig.javaShopVersion
+    sourceCompatibility = msconfig.javaShopVersion
 }
 
 task magicspellsShopCopyResources(type: Copy) {
-  description = 'Copy yml resources for MagicSpellsShop'
-  from(msconfig.shopSrcDir) {
-    include "**${File.separator}*.yml"
-  }
-  expand(project.properties)
-  into "${msconfig.shopBuildDir}"
+    description = 'Copy yml resources for MagicSpellsShop'
+    from(msconfig.shopSrcDir) {
+        include "**${File.separator}*.yml"
+    }
+    expand(project.properties)
+    into "${msconfig.shopBuildDir}"
 }
 
 // Create the shop jar file
 task magicspellsShopJar(type: Jar) {
-  description = 'Create the shop addon jar'
-  dependsOn = [
-    'magicspellsShopCompile',
-    'magicspellsShopCopyResources'
-  ]
-  archiveName = "MagicSpellsShop-${msconfig.shopVersion}-${msconfig.versionSuffix}.jar"
-  if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpellsShop.jar'
-  destinationDir = project.file(msconfig.distDir)
-  from("${msconfig.shopBuildDir}")
+    description = 'Create the shop addon jar'
+    dependsOn = [
+            'magicspellsShopCompile',
+            'magicspellsShopCopyResources'
+    ]
+    archiveName = "MagicSpellsShop-${msconfig.shopVersion}-${msconfig.versionSuffix}.jar"
+    if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpellsShop.jar'
+    destinationDir = project.file(msconfig.distDir)
+    from("${msconfig.shopBuildDir}")
 }
 
 // FIXME do more of this at build time, not config time
 // Compile towny addon
 task magicspellsTownyCompile(type: JavaCompile) {
-  description = 'Compile the Towny addon'
-  dependsOn = [
-    'magicspellsCoreJar'
-  ]
-  msconfig.stringVersionTowny = "${msconfig.townyVersion}-${msconfig.versionSuffix}"
-  File buildDir = project.file(msconfig.townyBuildDir)
-  buildDir.mkdir()
-  destinationDir = buildDir
-  source(msconfig.townySrcDir)
+    description = 'Compile the Towny addon'
+    dependsOn = [
+            'magicspellsCoreJar'
+    ]
+    msconfig.stringVersionTowny = "${msconfig.townyVersion}-${msconfig.versionSuffix}"
+    File buildDir = project.file(msconfig.townyBuildDir)
+    buildDir.mkdir()
+    destinationDir = buildDir
+    source(msconfig.townySrcDir)
 
-  classpath = configurations.towny
+    classpath = configurations.towny
 
-  sourceCompatibility = msconfig.javaTownyVersion
+    sourceCompatibility = msconfig.javaTownyVersion
 }
 
 task magicspellsTownyCopyResources(type: Copy) {
-  description = 'Copy yml resources for MagicSpellsTowny'
-  from(msconfig.townySrcDir) {
-    include "**${File.separator}*.yml"
-  }
-  expand(project.properties)
-  into "${msconfig.townyBuildDir}"
+    description = 'Copy yml resources for MagicSpellsTowny'
+    from(msconfig.townySrcDir) {
+        include "**${File.separator}*.yml"
+    }
+    expand(project.properties)
+    into "${msconfig.townyBuildDir}"
 }
 
 // Create the towny jar file
 task magicspellsTownyJar(type: Jar) {
-  description = 'Create the Towny addon jar'
-  dependsOn = [
-    'magicspellsTownyCompile',
-    'magicspellsTownyCopyResources'
-  ]
-  archiveName = "MagicSpellsTowny-${msconfig.townyVersion}-${msconfig.versionSuffix}.jar"
-  if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpellsTowny.jar'
-  destinationDir = project.file(msconfig.distDir)
-  from("${msconfig.townyBuildDir}")
+    description = 'Create the Towny addon jar'
+    dependsOn = [
+            'magicspellsTownyCompile',
+            'magicspellsTownyCopyResources'
+    ]
+    archiveName = "MagicSpellsTowny-${msconfig.townyVersion}-${msconfig.versionSuffix}.jar"
+    if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpellsTowny.jar'
+    destinationDir = project.file(msconfig.distDir)
+    from("${msconfig.townyBuildDir}")
 }
 
 // Compile factions addon
 task magicspellsFactionsCompile(type: JavaCompile) {
-  description = 'Compile the Factions addon'
-  dependsOn = [
-    'magicspellsCoreJar'
-  ]
-  msconfig.stringVersionFactions = "${msconfig.factionsVersion}-${msconfig.versionSuffix}"
-  File buildDir = project.file(msconfig.factionsBuildDir)
-  buildDir.mkdir()
-  destinationDir = buildDir
-  source(msconfig.factionsSrcDir)
+    description = 'Compile the Factions addon'
+    dependsOn = [
+            'magicspellsCoreJar'
+    ]
+    msconfig.stringVersionFactions = "${msconfig.factionsVersion}-${msconfig.versionSuffix}"
+    File buildDir = project.file(msconfig.factionsBuildDir)
+    buildDir.mkdir()
+    destinationDir = buildDir
+    source(msconfig.factionsSrcDir)
 
-  classpath = configurations.factions
+    classpath = configurations.factions
 
-  sourceCompatibility = msconfig.javaFactionsVersion
+    sourceCompatibility = msconfig.javaFactionsVersion
 }
 
 task magicspellsFactionsCopyResources(type: Copy) {
-  description = 'Copy yml resources for MagicSpellsFactions'
-  from(msconfig.factionsSrcDir) {
-    include "**${File.separator}*.yml"
-  }
-  expand(project.properties)
-  into "${msconfig.factionsBuildDir}"
+    description = 'Copy yml resources for MagicSpellsFactions'
+    from(msconfig.factionsSrcDir) {
+        include "**${File.separator}*.yml"
+    }
+    expand(project.properties)
+    into "${msconfig.factionsBuildDir}"
 }
 
 // Create the factions jar file
 task magicspellsFactionsJar(type: Jar) {
-  description = 'Create the Factions addon jar'
-  dependsOn = [
-    'magicspellsFactionsCompile',
-    'magicspellsFactionsCopyResources'
-  ]
+    description = 'Create the Factions addon jar'
+    dependsOn = [
+            'magicspellsFactionsCompile',
+            'magicspellsFactionsCopyResources'
+    ]
 
-  archiveName = "MagicSpellsFactions-${msconfig.factionsVersion}-${msconfig.versionSuffix}.jar"
-  if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpellsFactions.jar'
+    archiveName = "MagicSpellsFactions-${msconfig.factionsVersion}-${msconfig.versionSuffix}.jar"
+    if (project.hasProperty("${OPTION_DEPLOYMENT_NAMING}")) archiveName = 'MagicSpellsFactions.jar'
 
-  destinationDir = project.file(msconfig.distDir)
-  from("${msconfig.factionsBuildDir}")
+    destinationDir = project.file(msconfig.distDir)
+    from("${msconfig.factionsBuildDir}")
 }
 
 // Zip everything
 task magicspellsZip(type: Zip) {
-  description = 'Zip up the MagicSpells jars'
-  dependsOn = [
-    'magicspellsCoreJar',
-    'magicspellsMemoryJar',
-    'magicspellsShopJar',
-    'magicspellsTeamsJar',
-    'magicspellsTownyJar',
-    'magicspellsFactionsJar'
-  ]
+    description = 'Zip up the MagicSpells jars'
+    dependsOn = [
+            'magicspellsCoreJar',
+            'magicspellsMemoryJar',
+            'magicspellsShopJar',
+            'magicspellsTeamsJar',
+            'magicspellsTownyJar',
+            'magicspellsFactionsJar'
+    ]
 
-  File distDir = project.file(msconfig.distDir)
+    File distDir = project.file(msconfig.distDir)
 
-  from magicspellsCoreJar, magicspellsMemoryJar, magicspellsShopJar, magicspellsTeamsJar, magicspellsTownyJar, magicspellsFactionsJar
-  eachFile({
-    fcd -> println(fcd.getName())
+    from magicspellsCoreJar, magicspellsMemoryJar, magicspellsShopJar, magicspellsTeamsJar, magicspellsTownyJar, magicspellsFactionsJar
+    eachFile({
+        fcd -> println(fcd.getName())
     })
-  archiveName 'MagicSpells.zip'
-  destinationDir(distDir)
+    archiveName 'MagicSpells.zip'
+    destinationDir(distDir)
 }
 
 task magicspellsJarAll() {
-  description = 'Make all the jars and zip them'
-  dependsOn = [
-    'magicspellsCoreJar',
-    'magicspellsTeamsJar',
-    'magicspellsMemoryJar',
-    'magicspellsShopJar',
-    'magicspellsTownyJar',
-    'magicspellsFactionsJar',
-    'magicspellsZip'
-  ]
+    description = 'Make all the jars and zip them'
+    dependsOn = [
+            'magicspellsCoreJar',
+            'magicspellsTeamsJar',
+            'magicspellsMemoryJar',
+            'magicspellsShopJar',
+            'magicspellsTownyJar',
+            'magicspellsFactionsJar',
+            'magicspellsZip'
+    ]
 }
 
 task magicspellsBuild() {
-  dependsOn = [
-    'magicspellsBuildVersion',
-    'magicspellsJarAll'
-  ]
+    dependsOn = [
+            'magicspellsBuildVersion',
+            'magicspellsJarAll'
+    ]
 }
 
 task magicspellsRelease() {
-  dependsOn = [
-    'magicspellsReleaseVersion',
-    'magicspellsJarAll'
-  ]
+    dependsOn = [
+            'magicspellsReleaseVersion',
+            'magicspellsJarAll'
+    ]
 }
 
 apply plugin: 'maven-publish'
@@ -593,11 +602,11 @@ publishing {
 }
 
 artifacts {
-  mscore magicspellsCoreJar
-  teams magicspellsTeamsJar
-  memory magicspellsMemoryJar
-  shop magicspellsShopJar
-  towny magicspellsTownyJar
-  factions magicspellsFactionsJar
-  archives magicspellsZip
+    mscore magicspellsCoreJar
+    teams magicspellsTeamsJar
+    memory magicspellsMemoryJar
+    shop magicspellsShopJar
+    towny magicspellsTownyJar
+    factions magicspellsFactionsJar
+    archives magicspellsZip
 }
