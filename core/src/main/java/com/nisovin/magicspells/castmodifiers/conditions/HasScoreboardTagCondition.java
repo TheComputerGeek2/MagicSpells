@@ -20,12 +20,12 @@ public class HasScoreboardTagCondition extends Condition {
 
     @Override
     public boolean check(LivingEntity caster) {
-        return checkTags(caster);
+        return checkTags(caster, caster);
     }
 
     @Override
     public boolean check(LivingEntity caster, LivingEntity target) {
-        return checkTags(target);
+        return checkTags(caster, target);
     }
 
     @Override
@@ -33,10 +33,11 @@ public class HasScoreboardTagCondition extends Condition {
         return false;
     }
 
-    private boolean checkTags(LivingEntity entity) {
+    // TODO: Add functionality to check both caster and target variables
+    private boolean checkTags(LivingEntity caster, LivingEntity target) {
         String localTag = tag;
-        if (entity instanceof Player && localTag.contains("%")) localTag = MagicSpells.doVariableReplacements((Player) entity, localTag);
-        return entity.getScoreboardTags().contains(localTag);
+        if (localTag.contains("%")) localTag = MagicSpells.doVariableReplacements((Player) caster, localTag);
+        return target.getScoreboardTags().contains(localTag);
     }
 
 }
