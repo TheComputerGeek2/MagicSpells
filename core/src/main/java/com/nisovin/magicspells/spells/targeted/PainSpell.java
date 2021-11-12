@@ -12,6 +12,7 @@ import com.nisovin.magicspells.spells.DamageSpell;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.compat.CompatBasics;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.events.SpellApplyDamageEvent;
@@ -22,7 +23,7 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell, Dam
 	private String spellDamageType;
 	private DamageCause damageType;
 
-	private double damage;
+	private ConfigData<Double> damage;
 
 	private boolean ignoreArmor;
 	private boolean checkPlugins;
@@ -41,7 +42,7 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell, Dam
 			damageType = DamageCause.ENTITY_ATTACK;
 		}
 
-		damage = getConfigFloat("damage", 4);
+		damage = getConfigDataDouble("damage", 4);
 
 		ignoreArmor = getConfigBoolean("ignore-armor", false);
 		checkPlugins = getConfigBoolean("check-plugins", true);
@@ -56,8 +57,8 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell, Dam
 			if (target == null) return noTarget(caster);
 
 			boolean done;
-			if (caster instanceof Player) done = CompatBasics.exemptAction(() -> causePain(caster, target.getTarget(), target.getPower()), (Player) caster, CompatBasics.activeExemptionAssistant.getPainExemptions());
-			else done = causePain(caster, target.getTarget(), target.getPower());
+			if (caster instanceof Player) done = CompatBasics.exemptAction(() -> causePain(caster, target.getTarget(), target.getPower(), args), (Player) caster, CompatBasics.activeExemptionAssistant.getPainExemptions());
+			else done = causePain(caster, target.getTarget(), target.getPower(), args);
 			if (!done) return noTarget(caster);
 			
 			sendMessages(caster, target.getTarget(), args);
@@ -69,13 +70,13 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell, Dam
 	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		return causePain(caster, target, power);
+		return causePain(caster, target, power, null);
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
 		if (!validTargetList.canTarget(target)) return false;
-		return causePain(null, target, power);
+		return causePain(null, target, power, null);
 	}
 
 	@Override
@@ -83,10 +84,10 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell, Dam
 		return spellDamageType;
 	}
 	
-	private boolean causePain(LivingEntity caster, LivingEntity target, float power) {
+	private boolean causePain(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (target == null) return false;
 		if (target.isDead()) return false;
-		double localDamage = damage * power;
+		double localDamage = damage.get(caster, target, power, args) * power;
 
 		if (checkPlugins) {
 			MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(caster, target, damageType, localDamage, this);
