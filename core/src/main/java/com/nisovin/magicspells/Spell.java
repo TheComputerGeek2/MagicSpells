@@ -1,9 +1,9 @@
 package com.nisovin.magicspells;
 
-import net.kyori.adventure.text.Component;
-
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.apache.commons.math3.util.Pair;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -35,6 +35,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
+import net.kyori.adventure.text.Component;
+
+import de.slikey.exp4j.Expression;
+
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.IntMap;
 import com.nisovin.magicspells.util.TxtUtil;
@@ -58,9 +62,11 @@ import com.nisovin.magicspells.mana.ManaChangeReason;
 import com.nisovin.magicspells.events.SpellCastEvent;
 import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.handlers.MoneyHandler;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellCastedEvent;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.util.ValidTargetChecker;
+import com.nisovin.magicspells.util.config.FunctionData;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
 import com.nisovin.magicspells.spelleffects.effecttypes.*;
@@ -771,6 +777,60 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 
 	protected ConfigurationSection getConfigSection(String key) {
 		return config.getSection("spells." + internalName + '.' + key);
+	}
+
+	protected ConfigData<Integer> getConfigDataInt(String key, int def) {
+		String path = "spells." + internalName + '.' + key;
+
+		if (config.isInt(path)) {
+			int value = config.getInt(path, def);
+			return (caster, target, power, args) -> value;
+		}
+
+		if (config.isString(path)) {
+			Pair<Expression, Boolean> ex = FunctionData.buildExpression(config.getString(path, ""));
+			if (ex == null) return (caster, target, power, args) -> def;
+
+			return new FunctionData.IntegerData(ex.getFirst(), def, ex.getSecond());
+		}
+
+		return (caster, target, power, args) -> def;
+	}
+
+	protected ConfigData<Double> getConfigDataDouble(String key, double def) {
+		String path = "spells." + internalName + '.' + key;
+
+		if (config.isDouble(path)) {
+			double value = config.getDouble(path, def);
+			return (caster, target, power, args) -> value;
+		}
+
+		if (config.isString(path)) {
+			Pair<Expression, Boolean> ex = FunctionData.buildExpression(config.getString(path, ""));
+			if (ex == null) return (caster, target, power, args) -> def;
+
+			return new FunctionData.DoubleData(ex.getFirst(), def, ex.getSecond());
+		}
+
+		return (caster, target, power, args) -> def;
+	}
+
+	protected ConfigData<Float> getConfigDataFloat(String key, float def) {
+		String path = "spells." + internalName + '.' + key;
+
+		if (config.isDouble(path)) {
+			float value = (float) config.getDouble(path, def);
+			return (caster, target, power, args) -> value;
+		}
+
+		if (config.isString(path)) {
+			Pair<Expression, Boolean> ex = FunctionData.buildExpression(config.getString(path, ""));
+			if (ex == null) return (caster, target, power, args) -> def;
+
+			return new FunctionData.FloatData(ex.getFirst(), def, ex.getSecond());
+		}
+
+		return (caster, target, power, args) -> def;
 	}
 
 	protected boolean isConfigString(String key) {
