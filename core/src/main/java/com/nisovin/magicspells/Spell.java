@@ -42,6 +42,7 @@ import de.slikey.exp4j.Expression;
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.IntMap;
 import com.nisovin.magicspells.util.TxtUtil;
+import com.nisovin.magicspells.util.config.*;
 import com.nisovin.magicspells.util.TimeUtil;
 import com.nisovin.magicspells.util.CastItem;
 import com.nisovin.magicspells.spelleffects.*;
@@ -62,7 +63,6 @@ import com.nisovin.magicspells.mana.ManaChangeReason;
 import com.nisovin.magicspells.events.SpellCastEvent;
 import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.handlers.MoneyHandler;
-import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellCastedEvent;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.util.ValidTargetChecker;
@@ -831,6 +831,18 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		}
 
 		return (caster, target, power, args) -> def;
+	}
+
+	protected ConfigData<String> getConfigDataString(String key, String def) {
+		String value = config.getString("spells." + internalName + '.' + key, def);
+
+		if (value.contains("%targetvar")) {
+			return new StringData(value, true);
+		} else if (value.contains("%arg") || value.contains("%var") || value.contains("%castervar")) {
+			return new StringData(value, false);
+		}
+
+		return (caster, target, power, args) -> value;
 	}
 
 	protected boolean isConfigString(String key) {
