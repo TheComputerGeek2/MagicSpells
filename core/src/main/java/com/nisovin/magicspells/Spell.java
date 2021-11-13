@@ -836,11 +836,14 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	protected ConfigData<String> getConfigDataString(String key, String def) {
 		String value = config.getString("spells." + internalName + '.' + key, def);
 
-		if (value.contains("%targetvar")) {
-			return new StringData(value, true);
-		} else if (value.contains("%arg") || value.contains("%var") || value.contains("%castervar")) {
-			return new StringData(value, false);
-		}
+		boolean argReplacement = value.contains("%arg");
+		boolean varReplacement = value.contains("%var") || value.contains("%playervar");
+
+		boolean targeted = value.contains("%targetvar");
+		boolean targetedReplacement = targeted || value.contains("%castervar");
+
+		if (argReplacement || varReplacement || targetedReplacement)
+			return new StringData(value, varReplacement, targetedReplacement, argReplacement, targeted);
 
 		return (caster, target, power, args) -> value;
 	}
