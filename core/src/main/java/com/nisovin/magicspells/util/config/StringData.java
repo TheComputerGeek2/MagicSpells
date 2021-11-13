@@ -6,23 +6,33 @@ import org.bukkit.entity.Player;
 
 public class StringData implements ConfigData<String> {
 
+	private final boolean targetedReplacement;
+	private final boolean varReplacement;
+	private final boolean argReplacement;
+
 	private final boolean targeted;
 	private final String value;
 
-	public StringData(String value, boolean targeted) {
+	public StringData(String value, boolean varReplacement, boolean targetedReplacement, boolean argReplacement, boolean targeted) {
+		this.targetedReplacement = targetedReplacement;
+		this.varReplacement = varReplacement;
+		this.argReplacement = argReplacement;
+
 		this.targeted = targeted;
 		this.value = value;
 	}
 
 	@Override
 	public String get(LivingEntity caster, LivingEntity target, float power, String[] args) {
-		String ret = MagicSpells.doArgumentSubstitution(value, args);
+		String ret = value;
+
+		if (argReplacement) ret = MagicSpells.doArgumentSubstitution(ret, args);
 
 		Player playerCaster = caster instanceof Player ? (Player) caster : null;
 		Player playerTarget = target instanceof Player ? (Player) target : null;
 
-		ret = MagicSpells.doVariableReplacements(playerCaster, ret);
-		ret = MagicSpells.doTargetedVariableReplacements(playerCaster, playerTarget, ret);
+		if (varReplacement) ret = MagicSpells.doVariableReplacements(playerCaster, ret);
+		if (targetedReplacement) ret = MagicSpells.doTargetedVariableReplacements(playerCaster, playerTarget, ret);
 
 		return ret;
 	}
