@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.math3.util.Pair;
 
 import de.slikey.exp4j.Expression;
+import de.slikey.exp4j.ValidationResult;
 import de.slikey.exp4j.ExpressionBuilder;
 
 import org.bukkit.entity.Player;
@@ -71,9 +72,15 @@ public abstract class FunctionData<T> implements ConfigData<T> {
 					.variables(variables)
 					.build();
 
+			ValidationResult result = expression.validate(false);
+			if (!result.isValid()) {
+				MagicSpells.error("Invalid equation '" + expressionString + "': [" + String.join(", ", result.getErrors()) + "]");
+				return null;
+			}
+
 			return new Pair<>(expression, targeted);
 		} catch (IllegalArgumentException e) {
-			MagicSpells.error("Invalid expression '" + builder + "'.");
+			MagicSpells.error("Invalid expression '" + expressionString + "'.");
 			e.printStackTrace();
 			return null;
 		}
