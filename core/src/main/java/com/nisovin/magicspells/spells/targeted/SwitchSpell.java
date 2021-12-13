@@ -26,7 +26,7 @@ public class SwitchSpell extends TargetedSpell implements TargetedEntitySpell {
 			if (target == null) return noTarget(caster);
 			
 			playSpellEffects(caster, target.getTarget());
-			switchPlaces(caster, target.getTarget());
+			switchPlaces(caster, target.getTarget(), target.getPower(), args);
 			sendMessages(caster, target.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
 		}
@@ -34,10 +34,15 @@ public class SwitchSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		switchPlaces(caster, target);
+		switchPlaces(caster, target, power, args);
 		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
 	}
 
 	@Override
@@ -45,7 +50,7 @@ public class SwitchSpell extends TargetedSpell implements TargetedEntitySpell {
 		return false;
 	}
 
-	private void switchPlaces(LivingEntity player, final LivingEntity target) {
+	private void switchPlaces(LivingEntity player, final LivingEntity target, float power, String[] args) {
 		Location targetLoc = target.getLocation();
 		Location casterLoc = player.getLocation();
 		player.teleport(targetLoc);

@@ -102,7 +102,7 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
 
-			boolean drained = drain(caster, target.getTarget(), target.getPower());
+			boolean drained = drain(caster, target.getTarget(), target.getPower(), args);
 			if (!drained) return noTarget(caster);
 			sendMessages(caster, target.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
@@ -111,9 +111,14 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		return drain(caster, target, power);
+		return drain(caster, target, power, args);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
 	}
 
 	@Override
@@ -126,8 +131,8 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 		return spellDamageType;
 	}
 	
-	private boolean drain(LivingEntity livingEntity, LivingEntity target, float power) {
-		if (livingEntity == null) return false;
+	private boolean drain(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		if (caster == null) return false;
 		if (target == null) return false;
 
 		double take = takeAmt * power;
@@ -139,13 +144,13 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 		switch (takeType) {
 			case STR_HEALTH -> {
 				if (pl != null && checkPlugins) {
-					MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(livingEntity, pl, damageType, take, this);
+					MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(caster, pl, damageType, take, this);
 					EventUtil.call(event);
 					if (event.isCancelled()) return false;
 					if (!avoidDamageModification) take = event.getDamage();
-					livingEntity.setLastDamageCause(event);
+					caster.setLastDamageCause(event);
 				}
-				SpellApplyDamageEvent event = new SpellApplyDamageEvent(this, livingEntity, target, take, damageType, spellDamageType);
+				SpellApplyDamageEvent event = new SpellApplyDamageEvent(this, caster, target, take, damageType, spellDamageType);
 				EventUtil.call(event);
 				take = event.getFinalDamage();
 				if (ignoreArmor) {
@@ -154,10 +159,10 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 					health -= take;
 					if (health < MIN_HEALTH) health = MIN_HEALTH;
 					if (health > Util.getMaxHealth(target)) health = Util.getMaxHealth(target);
-					if (health == MIN_HEALTH && livingEntity instanceof Player) target.setKiller((Player) livingEntity);
+					if (health == MIN_HEALTH && caster instanceof Player) target.setKiller((Player) caster);
 					target.setHealth(health);
 					target.playEffect(EntityEffect.HURT);
-				} else target.damage(take, livingEntity);
+				} else target.damage(take, caster);
 			}
 			case STR_MANA -> {
 				if (pl == null) break;
@@ -181,11 +186,11 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 		}
 		
 		if (instant) {
-			giveToCaster(livingEntity, give);
-			playSpellEffects(livingEntity, target);
+			giveToCaster(caster, give);
+			playSpellEffects(caster, target);
 		} else playSpellEffects(EffectPosition.TARGET, target);
 		
-		if (showSpellEffect) new DrainAnimation(target.getLocation(), livingEntity, give, power);
+		if (showSpellEffect) new DrainAnimation(target.getLocation(), caster, give, power);
 		
 		return true;
 	}

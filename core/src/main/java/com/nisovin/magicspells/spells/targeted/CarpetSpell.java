@@ -100,26 +100,37 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 
 			if (loc == null) return noTarget(player);
 
-			layCarpet(player, loc, power);
+			layCarpet(player, loc, power, args);
 		}
 		return PostCastAction.ALREADY_HANDLED;
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		if (!(caster instanceof Player)) return false;
-		if (targetSelf) layCarpet((Player) caster, caster.getLocation(), power);
-		else layCarpet((Player) caster, target, power);
+		if (targetSelf) layCarpet((Player) caster, caster.getLocation(), power, args);
+		else layCarpet((Player) caster, target, power, args);
+		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		layCarpet(null, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		layCarpet(null, target, power);
+		layCarpet(null, target, power, null);
 		return true;
 	}
-	
-	private void layCarpet(Player player, Location loc, float power) {
+
+	private void layCarpet(Player player, Location loc, float power, String[] args) {
 		if (!loc.getBlock().getType().isOccluding()) {
 			int c = 0;
 			while (!loc.getBlock().getRelative(0, -1, 0).getType().isOccluding() && c <= 2) {

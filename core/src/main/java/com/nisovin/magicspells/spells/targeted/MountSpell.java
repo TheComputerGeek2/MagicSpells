@@ -38,15 +38,21 @@ public class MountSpell extends TargetedSpell implements TargetedEntitySpell {
 			if (targetInfo == null) return noTarget(caster);
 			LivingEntity target = targetInfo.getTarget();
 			if (target == null) return noTarget(caster);
-			mount(caster, target, args);
+			mount(caster, target, power, args);
 		}
 
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		mount(caster, target, power, args);
+		return true;
+	}
+
+	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		mount(caster, target, null);
+		mount(caster, target, power, null);
 		return true;
 	}
 
@@ -55,7 +61,7 @@ public class MountSpell extends TargetedSpell implements TargetedEntitySpell {
 		return false;
 	}
 
-	private void mount(LivingEntity caster, LivingEntity target, String[] args) {
+	private void mount(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (caster == null || target == null) return;
 
 		if (reverse) {

@@ -99,14 +99,15 @@ public abstract class FunctionData<T> implements ConfigData<T> {
 				String[] split = variable.split("\\.");
 
 				int index = Integer.parseInt(split[1]) - 1;
-				double value = Double.parseDouble(split[2]);
+				double value;
 
 				if (args != null && index < args.length) {
 					try {
 						value = Double.parseDouble(args[index]);
 					} catch (NumberFormatException ignored) {
+						value = Double.parseDouble(split[2]);
 					}
-				}
+				} else value = Double.parseDouble(split[2]);
 
 				expression.setVariable(variable, value);
 			} else if (variable.startsWith("target."))

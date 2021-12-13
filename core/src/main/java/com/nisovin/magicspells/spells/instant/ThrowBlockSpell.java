@@ -122,32 +122,42 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			Vector v = getVector(caster.getLocation(), power);
+			Vector v = getVector(caster, caster.getLocation(), power, args);
 			Location l = caster.getEyeLocation().add(v);
 			l.add(0, yOffset, 0);
-			spawnFallingBlock(caster, power, l, v);
+			spawnFallingBlock(caster, l, v, power, args);
 			playSpellEffects(EffectPosition.CASTER, caster);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		Vector v = getVector(caster, target, power, args);
+		spawnFallingBlock(caster, target.clone().add(0, yOffset, 0), v, power, args);
+		playSpellEffects(EffectPosition.CASTER, target);
+		return true;
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		Vector v = getVector(target, power);
-		spawnFallingBlock(caster, power, target.clone().add(0, yOffset, 0), v);
+		return castAtLocation(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		Vector v = getVector(null, target, power, args);
+		spawnFallingBlock(null, target.clone().add(0, yOffset, 0), v, power, args);
 		playSpellEffects(EffectPosition.CASTER, target);
 		return true;
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		Vector v = getVector(target, power);
-		spawnFallingBlock(null, power, target.clone().add(0, yOffset, 0), v);
-		playSpellEffects(EffectPosition.CASTER, target);
-		return true;
+		return castAtLocation(target, power, null);
 	}
 
-	private Vector getVector(Location loc, float power) {
+	private Vector getVector(LivingEntity caster, Location loc, float power, String[] args) {
 		Vector v = loc.getDirection();
 		if (verticalAdjustment != 0) v.setY(v.getY() + verticalAdjustment);
 		if (rotationOffset != 0) Util.rotateVector(v, rotationOffset);
@@ -156,15 +166,15 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 		return v;
 	}
 	
-	private void spawnFallingBlock(LivingEntity livingEntity, float power, Location location, Vector velocity) {
+	private void spawnFallingBlock(LivingEntity caster, Location location, Vector velocity, float power, String[] args) {
 		Entity entity = null;
-		FallingBlockInfo info = new FallingBlockInfo(livingEntity, power);
+		FallingBlockInfo info = new FallingBlockInfo(caster, power);
 
 		if (material != null) {
 			FallingBlock block = location.getWorld().spawnFallingBlock(location, material.createBlockData());
 			block.setGravity(projectileHasGravity);
 			playSpellEffects(EffectPosition.PROJECTILE, block);
-			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, livingEntity.getLocation(), block.getLocation(), livingEntity, block);
+			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, caster.getLocation(), block.getLocation(), caster, block);
 			block.setVelocity(velocity);
 			block.setDropItem(dropItem);
 			if (ensureSpellCast || stickyBlocks) new ThrowBlockMonitor(block, info);
@@ -173,7 +183,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 			TNTPrimed tnt = location.getWorld().spawn(location, TNTPrimed.class);
 			tnt.setGravity(projectileHasGravity);
 			playSpellEffects(EffectPosition.PROJECTILE, tnt);
-			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, livingEntity.getLocation(), tnt.getLocation(), livingEntity, tnt);
+			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, caster.getLocation(), tnt.getLocation(), caster, tnt);
 			tnt.setFuseTicks(tntFuse);
 			tnt.setVelocity(velocity);
 			entity = tnt;

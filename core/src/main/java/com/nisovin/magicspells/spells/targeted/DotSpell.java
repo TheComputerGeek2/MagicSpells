@@ -74,20 +74,32 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell, Dama
 		if (state == SpellCastState.NORMAL) {
 			TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power);
 			if (targetInfo == null) return noTarget(caster);
-			applyDot(caster, targetInfo.getTarget(), targetInfo.getPower());
+			applyDot(caster, targetInfo.getTarget(), targetInfo.getPower(), args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		applyDot(caster, target, power, args);
+		return true;
+	}
+
+	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		applyDot(caster, target, power);
+		applyDot(caster, target, power, null);
+		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		applyDot(null, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		applyDot(null, target, power);
+		applyDot(null, target, power, null);
 		return true;
 	}
 
@@ -106,13 +118,13 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell, Dama
 		dot.cancel();
 	}
 	
-	private void applyDot(LivingEntity caster, LivingEntity target, float power) {
+	private void applyDot(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		Dot dot = activeDots.get(target.getUniqueId());
 		if (dot != null) {
 			dot.dur = 0;
 			dot.power = power;
 		} else {
-			dot = new Dot(caster, target, power);
+			dot = new Dot(caster, target, power, args);
 			activeDots.put(target.getUniqueId(), dot);
 		}
 
@@ -130,15 +142,17 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell, Dama
 		
 		private LivingEntity caster;
 		private LivingEntity target;
+		private String[] args;
 		private float power;
 
 		private int taskId;
 		private int dur = 0;
 
-		private Dot(LivingEntity caster, LivingEntity target, float power) {
+		private Dot(LivingEntity caster, LivingEntity target, float power, String[] args) {
 			this.caster = caster;
 			this.target = target;
 			this.power = power;
+			this.args = args;
 			taskId = MagicSpells.scheduleRepeatingTask(this, delay, interval);
 		}
 		

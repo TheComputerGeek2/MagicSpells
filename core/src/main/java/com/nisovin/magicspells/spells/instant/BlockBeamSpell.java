@@ -170,16 +170,21 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			new BlockBeam(caster, caster.getLocation(), power);
+			new BlockBeam(caster, caster.getLocation(), power, args);
 		}
 
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		new BlockBeam(caster, caster.getLocation(), target, power);
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		new BlockBeam(caster, caster.getLocation(), target, power, args);
 		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
 	}
 
 	@Override
@@ -188,9 +193,14 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity livingEntity, Location location, float v) {
-		new BlockBeam(livingEntity, location, v);
+	public boolean castAtLocation(LivingEntity livingEntity, Location location, float v, String[] args) {
+		new BlockBeam(livingEntity, location, v, args);
 		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
 	}
 
 	@Override
@@ -199,9 +209,14 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 	}
 
 	@Override
-	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
-		new BlockBeam(caster, from, target, power);
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
+		new BlockBeam(caster, from, target, power, args);
 		return true;
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
+		return castAtEntityFromLocation(caster, from, target, power, null);
 	}
 
 	@Override
@@ -443,7 +458,7 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 		private final Set<Entity> immune;
 		private final List<LivingEntity> armorStandList;
 
-		private BlockBeam(LivingEntity caster, Location from, float power) {
+		private BlockBeam(LivingEntity caster, Location from, float power, String[] args) {
 			this.caster = caster;
 			this.power = power;
 			helmet = headItem;
@@ -456,7 +471,7 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 			shootBeam();
 		}
 
-		private BlockBeam(LivingEntity caster, Location from, LivingEntity target, float power) {
+		private BlockBeam(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
 			this.caster = caster;
 			this.target = target;
 			this.power = power;

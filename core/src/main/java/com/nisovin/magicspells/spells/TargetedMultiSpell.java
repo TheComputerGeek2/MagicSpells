@@ -117,10 +117,20 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		return runSpells(caster, null, target.clone().add(0, yOffset, 0), power);
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
 		return runSpells(caster, null, target.clone().add(0, yOffset, 0), power);
 	}
-	
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return runSpells(null, null, target.clone().add(0, yOffset, 0), power);
+	}
+
 	@Override
 	public boolean castAtLocation(Location location, float power) {
 		return runSpells(null, null, location.clone().add(0, yOffset, 0), power);
@@ -135,7 +145,7 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 	public boolean castAtEntity(LivingEntity target, float power) {
 		return runSpells(null, target, null, power);
 	}
-	
+
 	private boolean runSpells(LivingEntity livingEntity, LivingEntity entTarget, Location locTarget, float power) {
 		boolean somethingWasDone = false;
 		if (!castRandomSpellInstead) {

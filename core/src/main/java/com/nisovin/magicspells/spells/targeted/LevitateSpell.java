@@ -96,7 +96,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
 			
-			levitate(caster, target.getTarget());
+			levitate(caster, target.getTarget(), target.getPower(), args);
 			sendMessages(caster, target.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
 		}
@@ -104,8 +104,14 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 	}
 
 	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		levitate(caster, target, power, args);
+		return true;
+	}
+
+	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		levitate(caster, target);
+		levitate(caster, target, power, null);
 		return true;
 	}
 
@@ -138,7 +144,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 		return levitating.containsKey(entity.getUniqueId());
 	}
 
-	private void levitate(LivingEntity caster, Entity target) {
+	private void levitate(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		double distance = caster.getLocation().distance(target.getLocation());
 		Levitator lev = new Levitator(caster, target, duration / tickRate, distance);
 		levitating.put(caster.getUniqueId(), lev);

@@ -186,7 +186,7 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (requireEntityTarget && !validTargetList.canTarget(caster, target)) return false;
 		if (!(caster instanceof Player opener)) return false;
 		if (targetOpensMenuInstead) {
@@ -194,24 +194,39 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 			opener = player;
 			target = null;
 		}
-		open((Player) caster, opener, target, null, power, MagicSpells.NULL_ARGS);
+		open((Player) caster, opener, target, null, power, args);
+		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		if (!targetOpensMenuInstead) return false;
+		if (requireEntityTarget && !validTargetList.canTarget(target)) return false;
+		if (!(target instanceof Player player)) return false;
+		open(null, player, null, null, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		if (!targetOpensMenuInstead) return false;
-		if (requireEntityTarget && !validTargetList.canTarget(target)) return false;
-		if (!(target instanceof Player player)) return false;
-		open(null, player, null, null, power, MagicSpells.NULL_ARGS);
+		return castAtEntity(target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		if (!(caster instanceof Player player)) return false;
+		open(player, player, null, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		if (!(caster instanceof Player player)) return false;
-		open(player, player, null, target, power, MagicSpells.NULL_ARGS);
-		return true;
+		return castAtLocation(caster, target, power, null);
 	}
 
 	@Override

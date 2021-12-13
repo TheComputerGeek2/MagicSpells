@@ -186,7 +186,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			ValidTargetChecker checker = hitSpell != null ? hitSpell.getSpell().getValidTargetChecker() : null;
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power, checker);
 			if (target == null) return noTarget(caster);
-			new MissileTracker(caster, target.getTarget(), target.getPower());
+			new MissileTracker(caster, target.getTarget(), target.getPower(), args);
 			sendMessages(caster, target.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
 		}
@@ -194,31 +194,51 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		new MissileTracker(caster, target, power);
+		new MissileTracker(caster, target, power, args);
+		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		if (!validTargetList.canTarget(target)) return false;
+		new MissileTracker(null, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		if (!validTargetList.canTarget(target)) return false;
-		new MissileTracker(null, target, power);
+		return castAtEntity(target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
+		if (!validTargetList.canTarget(caster, target)) return false;
+		new MissileTracker(caster, from, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
-		if (!validTargetList.canTarget(caster, target)) return false;
-		new MissileTracker(caster, from, target, power);
+		return castAtEntityFromLocation(caster, from, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power, String[] args) {
+		if (!validTargetList.canTarget(target)) return false;
+		new MissileTracker(null, from, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power) {
-		if (!validTargetList.canTarget(target)) return false;
-		new MissileTracker(null, from, target, power);
-		return true;
+		return castAtEntityFromLocation(from, target, power, null);
 	}
 
 	private class MissileTracker implements Runnable {
@@ -238,24 +258,24 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 
 		int counter = 0;
 
-		private MissileTracker(LivingEntity caster, LivingEntity target, float power) {
+		private MissileTracker(LivingEntity caster, LivingEntity target, float power, String[] args) {
 			currentLocation = caster.getLocation().clone();
 			currentVelocity = currentLocation.getDirection();
-			init(caster, target, power);
+			init(caster, target, power, args);
 			playSpellEffects(EffectPosition.CASTER, caster);
 		}
 
-		private MissileTracker(LivingEntity caster, Location startLocation, LivingEntity target, float power) {
+		private MissileTracker(LivingEntity caster, Location startLocation, LivingEntity target, float power, String[] args) {
 			currentLocation = startLocation.clone();
 			if (Float.isNaN(currentLocation.getPitch())) currentLocation.setPitch(0);
 			currentVelocity = target.getLocation().clone().toVector().subtract(currentLocation.toVector()).normalize();
-			init(caster, target, power);
+			init(caster, target, power, args);
 
 			if (caster != null) playSpellEffects(EffectPosition.CASTER, caster);
 			else playSpellEffects(EffectPosition.CASTER, startLocation);
 		}
 
-		private void init(LivingEntity caster, LivingEntity target, float power) {
+		private void init(LivingEntity caster, LivingEntity target, float power, String[] args) {
 			this.caster = caster;
 			this.target = target;
 			this.power = power;

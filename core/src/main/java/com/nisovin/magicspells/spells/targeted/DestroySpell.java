@@ -113,7 +113,7 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 			}
 			if (b != null && !BlockUtils.isAir(b.getType())) {
 				Location loc = b.getLocation().add(0.5, 0.5, 0.5);
-				doIt(caster, caster.getLocation(), loc);
+				doIt(caster, caster.getLocation(), loc, power, args);
 				playSpellEffects(caster, loc);
 			}
 		}
@@ -121,10 +121,15 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		doIt(caster, caster.getLocation(), target);
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		doIt(caster, caster.getLocation(), target, power, args);
 		playSpellEffects(caster, target);
 		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
 	}
 
 	@Override
@@ -133,20 +138,30 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 	}
 
 	@Override
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
+		doIt(caster, from, target.getLocation(), power, args);
+		playSpellEffects(from, target);
+		return true;
+	}
+
+	@Override
 	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
-		doIt(caster, from, target.getLocation());
+		return castAtEntityFromLocation(caster, from, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power, String[] args) {
+		doIt(null, from, target.getLocation(), power, args);
 		playSpellEffects(from, target);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power) {
-		doIt(null, from, target.getLocation());
-		playSpellEffects(from, target);
-		return true;
+		return castAtEntityFromLocation(from, target, power, null);
 	}
 
-	private void doIt(LivingEntity caster, Location source, Location target) {
+	private void doIt(LivingEntity caster, Location source, Location target, float power, String[] args) {
 		int centerX = target.getBlockX();
 		int centerY = target.getBlockY();
 		int centerZ = target.getBlockZ();

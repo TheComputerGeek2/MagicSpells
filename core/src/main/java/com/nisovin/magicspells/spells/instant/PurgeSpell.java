@@ -45,7 +45,7 @@ public class PurgeSpell extends InstantSpell implements TargetedLocationSpell {
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			boolean killed = purge(caster.getLocation(), power);
+			boolean killed = purge(caster.getLocation(), power, args);
 			if (killed) playSpellEffects(EffectPosition.CASTER, caster);
 			else return PostCastAction.ALREADY_HANDLED;
 		}
@@ -53,18 +53,28 @@ public class PurgeSpell extends InstantSpell implements TargetedLocationSpell {
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		boolean killed = purge(target, power);
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		boolean killed = purge(target, power, args);
 		if (killed) playSpellEffects(EffectPosition.CASTER, caster);
 		return killed;
 	}
 
 	@Override
-	public boolean castAtLocation(Location target, float power) {
-		return castAtLocation(null, target, power);
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
 	}
 
-	private boolean purge(Location loc, float power) {
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return castAtLocation(null, target, power, args);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power) {
+		return castAtLocation(null, target, power, null);
+	}
+
+	private boolean purge(Location loc, float power, String[] args) {
 		double castingRange = radius * power;
 		Collection<Entity> entitiesNearby = loc.getWorld().getNearbyEntities(loc, castingRange, castingRange, castingRange);
 		boolean killed = false;

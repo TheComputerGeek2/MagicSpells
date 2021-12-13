@@ -258,62 +258,82 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			}
 			
 			if (loc == null) return noTarget(caster);
-			spawnMob(caster, caster.getLocation(), loc, target, power);
+			spawnMob(caster, caster.getLocation(), loc, target, power, args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 	
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		switch (location.toLowerCase()) {
-			case "target" -> spawnMob(caster, caster.getLocation(), target, null, power);
-			case "caster" -> spawnMob(caster, caster.getLocation(), caster.getLocation(), null, power);
+			case "target" -> spawnMob(caster, caster.getLocation(), target, null, power, args);
+			case "caster" -> spawnMob(caster, caster.getLocation(), caster.getLocation(), null, power, args);
 			case "random" -> {
 				Location loc = getRandomLocationFrom(target, getRange(power));
-				if (loc != null) spawnMob(caster, caster.getLocation(), loc, null, power);
+				if (loc != null) spawnMob(caster, caster.getLocation(), loc, null, power, args);
 			}
 			case "offset" -> {
 				String[] split = location.split(":");
 				float y = Float.parseFloat(split[1]);
 				Location loc = target.clone().add(0, y, 0);
 				loc.setPitch(0);
-				spawnMob(caster, caster.getLocation(), loc, null, power);
+				spawnMob(caster, caster.getLocation(), loc, null, power, args);
 			}
 		}
 		return true;
 	}
-	
+
 	@Override
-	public boolean castAtLocation(Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
 		switch (location.toLowerCase()) {
-			case "target", "caster" -> spawnMob(null, target, target, null, power);
+			case "target", "caster" -> spawnMob(null, target, target, null, power, args);
 			case "random" -> {
 				Location loc = getRandomLocationFrom(target, getRange(power));
-				if (loc != null) spawnMob(null, target, loc, null, power);
+				if (loc != null) spawnMob(null, target, loc, null, power, args);
 			}
 			case "offset" -> {
 				String[] split = location.split(":");
 				float y = Float.parseFloat(split[1]);
 				Location loc = target.clone().add(0, y, 0);
 				loc.setPitch(0);
-				spawnMob(null, target, loc, null, power);
+				spawnMob(null, target, loc, null, power, args);
 			}
 		}
+		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power) {
+		return castAtLocation(target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
+		if (location.equals("focus")) spawnMob(caster, from, from, target, power, args);
+		else castAtLocation(caster, from, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
-		if (location.equals("focus")) spawnMob(caster, from, from, target, power);
-		else castAtLocation(caster, from, power);
+		return castAtEntityFromLocation(caster, from, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power, String[] args) {
+		if (location.equals("focus")) spawnMob(null, from, from, target, power, args);
+		else castAtLocation(from, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power) {
-		if (location.equals("focus")) spawnMob(null, from, from, target, power);
-		else castAtLocation(from, power);
-		return true;
+		return castAtEntityFromLocation(from, target, power, null);
 	}
 
 	private Location getRandomLocationFrom(Location location, int range) {
@@ -348,7 +368,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		return null;
 	}
 
-	private void spawnMob(LivingEntity caster, Location source, Location loc, LivingEntity target, float power) {
+	private void spawnMob(LivingEntity caster, Location source, Location loc, LivingEntity target, float power, String[] args) {
 		if (entityData == null || entityData.getEntityType() == null) return;
 		if (entityData.isPlayer()) return;
 

@@ -149,7 +149,7 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		if (capPerPlayer > 0) {
 			int count = 0;
 			for (Pulser pulser : pulsers.values()) {
@@ -183,8 +183,18 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return castAtLocation(null, target, power, null);
+	}
+
+	@Override
 	public boolean castAtLocation(Location target, float power) {
-		return castAtLocation(null, target, power);
+		return castAtLocation(null, target, power, null);
 	}
 
 	private void createPulser(LivingEntity caster, Block block, float power, Location from) {

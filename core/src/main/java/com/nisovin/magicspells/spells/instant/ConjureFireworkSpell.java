@@ -132,13 +132,19 @@ public class ConjureFireworkSpell extends InstantSpell implements TargetedLocati
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		playSpellEffects(EffectPosition.CASTER, caster);
-		return castAtLocation(target, power);
+		return castAtLocation(target, power, args);
 	}
 
 	@Override
-	public boolean castAtLocation(Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		playSpellEffects(EffectPosition.CASTER, caster);
+		return castAtLocation(target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
 		ItemStack item = firework.clone();
 		Item dropped = target.getWorld().dropItem(target, item);
 		dropped.setItemStack(item);
@@ -146,6 +152,11 @@ public class ConjureFireworkSpell extends InstantSpell implements TargetedLocati
 		dropped.setGravity(gravity);
 		playSpellEffects(EffectPosition.SPECIAL, dropped);
 		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power) {
+		return castAtLocation(target, power, null);
 	}
 
 }

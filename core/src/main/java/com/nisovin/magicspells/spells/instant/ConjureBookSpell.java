@@ -83,19 +83,31 @@ public class ConjureBookSpell extends InstantSpell implements TargetedLocationSp
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		return castAtLocation(target, power);
-	}
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		Player player = caster instanceof Player p ? p : null;
 
-	@Override
-	public boolean castAtLocation(Location target, float power) {
-		ItemStack item = createBook(null, null);
+		ItemStack item = createBook(player, args);
 		Item dropped = target.getWorld().dropItem(target, item);
 		dropped.setItemStack(item);
 		dropped.setPickupDelay(pickupDelay);
 		dropped.setGravity(gravity);
 		playSpellEffects(EffectPosition.SPECIAL, dropped);
 		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return castAtLocation(null, target, power, args);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power) {
+		return castAtLocation(null, target, power, null);
 	}
 
 	private static Component createComponent(String raw, Player player, String displayName) {

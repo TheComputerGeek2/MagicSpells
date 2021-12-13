@@ -61,14 +61,24 @@ public class OffsetLocationSpell extends TargetedSpell implements TargetedLocati
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		if (spellToCast != null) spellToCast.castAtLocation(caster, Util.applyOffsets(target.clone(), relativeOffset, absoluteOffset), power);
 		return true;
 	}
 
 	@Override
-	public boolean castAtLocation(Location target, float power) {
-		return castAtLocation(null, target, power);
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
 	}
-	
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return castAtLocation(null, target, power, args);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power) {
+		return castAtLocation(null, target, power, null);
+	}
+
 }

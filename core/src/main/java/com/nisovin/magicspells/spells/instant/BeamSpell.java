@@ -135,14 +135,20 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			new Beam(caster, caster.getLocation(), power);
+			new Beam(caster, caster.getLocation(), power, args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity livingEntity, LivingEntity target, float power) {
-		new Beam(livingEntity, livingEntity.getLocation(), target, power);
+	public boolean castAtEntity(LivingEntity livingEntity, LivingEntity target, float power, String[] args) {
+		new Beam(livingEntity, livingEntity.getLocation(), target, power, args);
+		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		new Beam(caster, caster.getLocation(), target, power, null);
 		return true;
 	}
 
@@ -152,8 +158,14 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity livingEntity, Location location, float v) {
-		new Beam(livingEntity, location, v);
+	public boolean castAtLocation(LivingEntity livingEntity, Location location, float v, String[] args) {
+		new Beam(livingEntity, location, v, args);
+		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		new Beam(caster, target, power, null);
 		return true;
 	}
 
@@ -163,8 +175,14 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 	}
 
 	@Override
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
+		new Beam(caster, from, target, power, args);
+		return true;
+	}
+
+	@Override
 	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
-		new Beam(caster, from, target, power);
+		new Beam(caster, from, target, power, null);
 		return true;
 	}
 
@@ -345,7 +363,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 
 		private float power;
 
-		private Beam(LivingEntity caster, Location from, float power) {
+		private Beam(LivingEntity caster, Location from, float power, String[] args) {
 			this.caster = caster;
 			this.power = power;
 			startLoc = from.clone();
@@ -355,7 +373,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 			shootBeam();
 		}
 
-		private Beam(LivingEntity caster, Location from, LivingEntity target, float power) {
+		private Beam(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
 			this.caster = caster;
 			this.target = target;
 			this.power = power;

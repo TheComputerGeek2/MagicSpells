@@ -44,7 +44,7 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
 
-			boolean done = shadowstep(caster, target.getTarget());
+			boolean done = shadowstep(caster, target.getTarget(), target.getPower(), args);
 			if (!done) return noTarget(caster, strNoLandingSpot);
 			sendMessages(caster, target.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
@@ -53,9 +53,14 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		return shadowstep(caster, target);
+		return shadowstep(caster, target, power, args);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
 	}
 
 	@Override
@@ -63,7 +68,7 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 		return false;
 	}
 
-	private boolean shadowstep(LivingEntity caster, LivingEntity target) {
+	private boolean shadowstep(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		Location targetLoc = target.getLocation().clone();
 		targetLoc.setPitch(0);
 

@@ -41,31 +41,46 @@ public class RotateSpell extends TargetedSpell implements TargetedEntitySpell, T
 		if (state == SpellCastState.NORMAL) {
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
-			spin(caster, target.getTarget());
+			spinFace(caster, target.getTarget(), power, args);
 			playSpellEffects(caster, target.getTarget());
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		playSpellEffects(caster, target);
-		spin(caster, target);
+		spinFace(caster, target, power, args);
+		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		playSpellEffects(EffectPosition.TARGET, target);
+		spinTarget(null, target, power, null);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
+		return castAtEntity(target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		playSpellEffects(EffectPosition.TARGET, target);
-		spin(target);
+		spin(caster, target);
 		return true;
 	}
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		playSpellEffects(EffectPosition.TARGET, target);
-		spin(caster, target);
-		return true;
+		return castAtLocation(caster, target, power, null);
 	}
 
 	@Override
@@ -73,7 +88,7 @@ public class RotateSpell extends TargetedSpell implements TargetedEntitySpell, T
 		return false;
 	}
 
-	private void spin(LivingEntity target) {
+	private void spinTarget(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		Location loc = target.getLocation();
 		if (random) {
 			loc.setYaw(Util.getRandomInt(360));
@@ -85,12 +100,12 @@ public class RotateSpell extends TargetedSpell implements TargetedEntitySpell, T
 		target.teleport(loc);
 	}
 
-	private void spin(LivingEntity caster, LivingEntity target) {
+	private void spinFace(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		Location targetLoc = target.getLocation();
 		Location casterLoc = caster.getLocation();
 
 		if (face.isEmpty()) {
-			spin(target);
+			spinTarget(caster, target, power, args);
 			return;
 		}
 

@@ -78,7 +78,7 @@ public class PotionEffectSpell extends TargetedSpell implements TargetedEntitySp
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
 		int dur = spellPowerAffectsDuration ? Math.round(duration * power) : duration;
 		int str = spellPowerAffectsStrength ? Math.round(strength * power) : strength;
@@ -94,7 +94,12 @@ public class PotionEffectSpell extends TargetedSpell implements TargetedEntitySp
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(target)) return false;
 		int dur = spellPowerAffectsDuration ? Math.round(duration * power) : duration;
 		int str = spellPowerAffectsStrength ? Math.round(strength * power) : strength;
@@ -102,6 +107,11 @@ public class PotionEffectSpell extends TargetedSpell implements TargetedEntitySp
 		applyPotionEffect(null, target, effect);
 		playSpellEffects(EffectPosition.TARGET, target);
 		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power) {
+		return castAtEntity(target, power, null);
 	}
 
 	private void applyPotionEffect(LivingEntity caster, LivingEntity target, PotionEffect effect) {

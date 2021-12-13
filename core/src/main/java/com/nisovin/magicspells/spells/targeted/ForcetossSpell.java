@@ -46,7 +46,7 @@ public class ForcetossSpell extends TargetedSpell implements TargetedEntitySpell
 			TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power);
 			if (targetInfo == null) return noTarget(caster);
 
-			toss(caster, targetInfo.getTarget(), targetInfo.getPower());
+			toss(caster, targetInfo.getTarget(), targetInfo.getPower(), args);
 			sendMessages(caster, targetInfo.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
 		}
@@ -54,10 +54,15 @@ public class ForcetossSpell extends TargetedSpell implements TargetedEntitySpell
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		toss(caster, target, power);
+		toss(caster, target, power, args);
 		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
 	}
 
 	@Override
@@ -65,17 +70,17 @@ public class ForcetossSpell extends TargetedSpell implements TargetedEntitySpell
 		return false;
 	}
 
-	private void toss(LivingEntity livingEntity, LivingEntity target, float power) {
+	private void toss(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (target == null) return;
-		if (livingEntity == null) return;
-		if (!livingEntity.getLocation().getWorld().equals(target.getLocation().getWorld())) return;
+		if (caster == null) return;
+		if (!caster.getLocation().getWorld().equals(target.getLocation().getWorld())) return;
 
 		if (!powerAffectsForce) power = 1f;
 
 		if (damage > 0) {
 			double dmg = damage * power;
 			if (checkPlugins) {
-				MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(livingEntity, target, DamageCause.ENTITY_ATTACK, damage, this);
+				MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(caster, target, DamageCause.ENTITY_ATTACK, damage, this);
 				EventUtil.call(event);
 				if (!avoidDamageModification) dmg = event.getDamage();
 			}
@@ -83,8 +88,8 @@ public class ForcetossSpell extends TargetedSpell implements TargetedEntitySpell
 		}
 
 		Vector v;
-		if (livingEntity.equals(target)) v = livingEntity.getLocation().getDirection();
-		else v = target.getLocation().toVector().subtract(livingEntity.getLocation().toVector());
+		if (caster.equals(target)) v = caster.getLocation().getDirection();
+		else v = target.getLocation().toVector().subtract(caster.getLocation().toVector());
 
 		if (v == null) throw new NullPointerException("v");
 		v.setY(0).normalize().multiply(hForce * power).setY(vForce * power);
@@ -93,7 +98,7 @@ public class ForcetossSpell extends TargetedSpell implements TargetedEntitySpell
 		if (addVelocityInstead) target.setVelocity(target.getVelocity().add(v));
 		else target.setVelocity(v);
 
-		playSpellEffects(livingEntity, target);
+		playSpellEffects(caster, target);
 	}
 
 }
