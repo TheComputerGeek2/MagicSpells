@@ -51,7 +51,7 @@ public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 			LivingEntity target = targetInfo.getTarget();
 			power = targetInfo.getPower();
 			if (cancelIfFull && target.getHealth() == Util.getMaxHealth(target)) return noTarget(caster, formatMessage(strMaxHealth, "%t", getTargetName(target)));
-			boolean healed = heal(caster, target, power);
+			boolean healed = heal(caster, target, power, args);
 			if (!healed) return noTarget(caster);
 			sendMessages(caster, target, args);
 			return PostCastAction.NO_MESSAGES;
@@ -60,15 +60,29 @@ public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		if (validTargetList.canTarget(caster, target) && target.getHealth() < Util.getMaxHealth(target))
+			return heal(caster, target, power, args);
+
+		return false;
+	}
+
+	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		if (validTargetList.canTarget(caster, target) && target.getHealth() < Util.getMaxHealth(target)) return heal(caster, target, power);
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		if (validTargetList.canTarget(target) && target.getHealth() < Util.getMaxHealth(target))
+			return heal(null, target, power, args);
+
 		return false;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		if (validTargetList.canTarget(target) && target.getHealth() < Util.getMaxHealth(target)) return heal(null, target, power);
-		return false;
+		return castAtEntity(target, power, null);
 	}
 
 	@Override
@@ -76,12 +90,12 @@ public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 		return checker;
 	}
 
-	private boolean heal(LivingEntity livingEntity, LivingEntity target, float power) {
+	private boolean heal(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		double health = target.getHealth();
 		double amount;
 
 		if (healPercent == 0) amount = healAmount * power;
-		else amount = (Util.getMaxHealth(livingEntity) - health) * (healPercent / 100F);
+		else amount = (Util.getMaxHealth(caster) - health) * (healPercent / 100F);
 
 		if (checkPlugins) {
 			MagicSpellsEntityRegainHealthEvent event = new MagicSpellsEntityRegainHealthEvent(target, amount, RegainReason.CUSTOM);
@@ -94,8 +108,8 @@ public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 		if (health > Util.getMaxHealth(target)) health = Util.getMaxHealth(target);
 		target.setHealth(health);
 
-		if (livingEntity == null) playSpellEffects(EffectPosition.TARGET, target);
-		else playSpellEffects(livingEntity, target);
+		if (caster == null) playSpellEffects(EffectPosition.TARGET, target);
+		else playSpellEffects(caster, target);
 		return true;
 	}
 

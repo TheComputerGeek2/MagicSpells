@@ -63,7 +63,7 @@ public class GeyserSpell extends TargetedSpell implements TargetedEntitySpell {
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
 
-			boolean ok = geyser(caster, target.getTarget(), target.getPower());
+			boolean ok = geyser(caster, target.getTarget(), target.getPower(), args);
 			if (!ok) return noTarget(caster);
 
 			playSpellEffects(caster, target.getTarget());
@@ -73,7 +73,7 @@ public class GeyserSpell extends TargetedSpell implements TargetedEntitySpell {
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 	
-	private boolean geyser(LivingEntity caster, LivingEntity target, float power) {
+	private boolean geyser(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		double dam = damage * power;
 		
 		if (caster != null && checkPlugins && damage > 0) {
@@ -112,22 +112,31 @@ public class GeyserSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		geyser(caster, target, power);
+		geyser(caster, target, power, args);
 		playSpellEffects(caster, target);
 		return true;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(target)) return false;
-		
-		geyser(null, target, power);
+		geyser(null, target, power, args);
 		playSpellEffects(EffectPosition.TARGET, target);
 		return true;
 	}
-	
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power) {
+		return castAtEntity(target, power, null);
+	}
+
 	private class GeyserAnimation extends SpellAnimation {
 
 		private Location start;

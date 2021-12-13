@@ -47,7 +47,7 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 		if (state == SpellCastState.NORMAL) {
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
-			boolean combusted = combust(caster, target.getTarget(), target.getPower());
+			boolean combusted = combust(caster, target.getTarget(), target.getPower(), args);
 			if (!combusted) return noTarget(caster);
 
 			sendMessages(caster, target.getTarget(), args);
@@ -57,20 +57,30 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		return combust(caster, target, power);
+		return combust(caster, target, power, args);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		if (!validTargetList.canTarget(target)) return false;
+		return combust(null, target, power, args);
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		if (!validTargetList.canTarget(target)) return false;
-		return combust(null, target, power);
+		return castAtEntity(target, power, null);
 	}
-	
-	private boolean combust(LivingEntity livingEntity, final LivingEntity target, float power) {
-		if (checkPlugins && livingEntity != null) {
-			MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(livingEntity, target, DamageCause.ENTITY_ATTACK, 1, this);
+
+	private boolean combust(LivingEntity caster, final LivingEntity target, float power, String[] args) {
+		if (checkPlugins && caster != null) {
+			MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(caster, target, DamageCause.ENTITY_ATTACK, 1, this);
 			EventUtil.call(event);
 			if (event.isCancelled()) return false;
 		}
@@ -78,10 +88,10 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 		int duration = Math.round(fireTicks * power);
 		combusting.put(target.getUniqueId(), new CombustData(power));
 
-		EventUtil.call(new SpellApplyDamageEvent(this, livingEntity, target, fireTickDamage, DamageCause.FIRE_TICK, ""));
+		EventUtil.call(new SpellApplyDamageEvent(this, caster, target, fireTickDamage, DamageCause.FIRE_TICK, ""));
 		target.setFireTicks(duration);
 
-		if (livingEntity != null) playSpellEffects(livingEntity, target);
+		if (caster != null) playSpellEffects(caster, target);
 		else playSpellEffects(EffectPosition.TARGET, target);
 
 		MagicSpells.scheduleDelayedTask(() -> {

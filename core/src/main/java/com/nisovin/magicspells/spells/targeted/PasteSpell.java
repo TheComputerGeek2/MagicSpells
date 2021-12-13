@@ -93,15 +93,15 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 			if (target == null) return noTarget(caster);
 			Location loc = target.getLocation();
 			loc.add(0, yOffset, 0);
-			boolean ok = castAtLocation(loc, power);
+			boolean ok = castAtLocation(caster, loc, power, args);
 			if (!ok) return noTarget(caster);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		boolean ok = pasteInstant(target);
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		boolean ok = pasteInstant(target, args);
 		if (!ok) return false;
 		if (caster != null) playSpellEffects(caster, target);
 		else playSpellEffects(EffectPosition.TARGET, target);
@@ -109,11 +109,21 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 	}
 
 	@Override
-	public boolean castAtLocation(Location target, float power) {
-		return castAtLocation(null, target, power);
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
 	}
-	
-	private boolean pasteInstant(Location target) {
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return castAtLocation(null, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power) {
+		return castAtLocation(null, target, power, null);
+	}
+
+	private boolean pasteInstant(Location target, String[] args) {
 		if (clipboard == null) return false;
 
 		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(BukkitAdapter.adapt(target.getWorld()), -1)) {

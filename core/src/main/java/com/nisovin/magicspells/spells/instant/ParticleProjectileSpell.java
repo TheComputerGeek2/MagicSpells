@@ -343,7 +343,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
 			ParticleProjectileTracker tracker = new ParticleProjectileTracker(caster, power);
-			setupTracker(tracker);
+			setupTracker(tracker, caster, null, power, args);
 			tracker.start(caster.getLocation());
 			playSpellEffects(EffectPosition.CASTER, caster);
 		}
@@ -351,31 +351,58 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		ParticleProjectileTracker tracker = new ParticleProjectileTracker(caster, power);
-		setupTracker(tracker);
+		setupTracker(tracker, caster, null, power, args);
 		tracker.start(target);
 		playSpellEffects(EffectPosition.CASTER, caster);
 		return true;
 	}
 
 	@Override
-	public boolean castAtLocation(Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
 		Location targetLoc = target.clone();
 		if (Float.isNaN(targetLoc.getPitch())) targetLoc.setPitch(0);
 		ParticleProjectileTracker tracker = new ParticleProjectileTracker(null, power);
-		setupTracker(tracker);
+		setupTracker(tracker, null, null, power, args);
 		tracker.start(target);
 		return true;
 	}
 
 	@Override
-	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
+	public boolean castAtLocation(Location target, float power) {
+		return castAtLocation(target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
 		if (!caster.getLocation().getWorld().equals(target.getLocation().getWorld())) return false;
 		Location targetLoc = from.clone();
 		if (Float.isNaN(targetLoc.getPitch())) targetLoc.setPitch(0);
 		ParticleProjectileTracker tracker = new ParticleProjectileTracker(caster, power);
-		setupTracker(tracker);
+		setupTracker(tracker, caster, target, power, args);
+		tracker.startTarget(from, target);
+		playSpellEffects(from, target);
+		return true;
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
+		return castAtEntityFromLocation(caster, from, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power, String[] args) {
+		if (!from.getWorld().equals(target.getLocation().getWorld())) return false;
+		Location targetLoc = from.clone();
+		if (Float.isNaN(targetLoc.getPitch())) targetLoc.setPitch(0);
+		ParticleProjectileTracker tracker = new ParticleProjectileTracker(null, power);
+		setupTracker(tracker, null, target, power, args);
 		tracker.startTarget(from, target);
 		playSpellEffects(from, target);
 		return true;
@@ -383,24 +410,22 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 
 	@Override
 	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power) {
-		if (!from.getWorld().equals(target.getLocation().getWorld())) return false;
-		Location targetLoc = from.clone();
-		if (Float.isNaN(targetLoc.getPitch())) targetLoc.setPitch(0);
-		ParticleProjectileTracker tracker = new ParticleProjectileTracker(null, power);
-		setupTracker(tracker);
-		tracker.startTarget(from, target);
-		playSpellEffects(from, target);
+		return castAtEntityFromLocation(from, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		if (!caster.getLocation().getWorld().equals(target.getLocation().getWorld())) return false;
+		ParticleProjectileTracker tracker = new ParticleProjectileTracker(caster, power);
+		setupTracker(tracker, caster, target, power, args);
+		tracker.startTarget(caster.getLocation(), target);
+		playSpellEffects(caster, target);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		if (!caster.getLocation().getWorld().equals(target.getLocation().getWorld())) return false;
-		ParticleProjectileTracker tracker = new ParticleProjectileTracker(caster, power);
-		setupTracker(tracker);
-		tracker.startTarget(caster.getLocation(), target);
-		playSpellEffects(caster, target);
-		return true;
+		return castAtEntity(caster, target, power, null);
 	}
 
 	@Override
@@ -432,7 +457,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		return playSpellArmorStandEffects(position, location);
 	}
 
-	private void setupTracker(ParticleProjectileTracker tracker) {
+	private void setupTracker(ParticleProjectileTracker tracker, LivingEntity caster, LivingEntity target, float power, String[] args) {
 		tracker.setSpell(this);
 		tracker.setStartXOffset(startXOffset);
 		tracker.setStartYOffset(startYOffset);

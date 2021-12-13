@@ -38,26 +38,36 @@ public class ModifyCooldownSpell extends TargetedSpell implements TargetedEntity
 		if (state == SpellCastState.NORMAL) {
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
-			modifyCooldowns(target.getTarget(), target.getPower());
+			modifyCooldowns(caster, target.getTarget(), target.getPower(), args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		modifyCooldowns(target, power);
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		modifyCooldowns(caster, target, power, args);
 		playSpellEffects(caster, target);
 		return true;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity target, float power) {
-		modifyCooldowns(target, power);
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		modifyCooldowns(null, target, power, args);
 		playSpellEffects(EffectPosition.TARGET, target);
 		return true;
 	}
 
-	private void modifyCooldowns(LivingEntity target, float power) {
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power) {
+		return castAtEntity(target, power, null);
+	}
+
+	private void modifyCooldowns(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		float sec = seconds * power;
 		float mult = multiplier * (1F / power);
 

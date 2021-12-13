@@ -67,7 +67,7 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 			}
 
 			if (block != null) {
-				boolean farmed = farm(block, Math.round(radius * power));
+				boolean farmed = farm(block, power, args);
 				if (!farmed) return noTarget(caster);
 				playSpellEffects(EffectPosition.CASTER, caster);
 				if (targeted) playSpellEffects(EffectPosition.TARGET, block.getLocation());
@@ -78,16 +78,28 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		return farm(target.subtract(0, 1, 0).getBlock(), power, args);
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		return farm(target.subtract(0, 1, 0).getBlock(), Math.round(radius * power));
+		return farm(target.subtract(0, 1, 0).getBlock(), power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return farm(target.getBlock(), power, args);
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		return farm(target.getBlock(), Math.round(radius * power));
+		return farm(target.getBlock(), power, null);
 	}
-	
-	private boolean farm(Block center, int radius) {
+
+	private boolean farm(Block center, float power, String[] args) {
+		int radius = Math.round(this.radius * power);
+
 		int cx = center.getX();
 		int y = center.getY();
 		int cz = center.getZ();

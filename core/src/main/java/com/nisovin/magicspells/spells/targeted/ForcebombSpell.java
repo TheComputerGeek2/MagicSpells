@@ -61,24 +61,36 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 			}
 
 			if (block == null || BlockUtils.isAir(block.getType())) return noTarget(caster);
-			knockback(caster, block.getLocation().add(0.5, 0, 0.5), power);
+			knockback(caster, block.getLocation().add(0.5, 0, 0.5), power, args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		knockback(caster, target, power, args);
+		return true;
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		knockback(caster, target, power);
+		knockback(caster, target, power, null);
+		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		knockback(null, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		knockback(null, target, power);
+		knockback(null, target, power, null);
 		return true;
 	}
-	
-	private void knockback(LivingEntity caster, Location location, float basePower) {
+
+	private void knockback(LivingEntity caster, Location location, float basePower, String[] args) {
 		if (location == null) return;
 		if (location.getWorld() == null) return;
 
@@ -86,7 +98,7 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 
 		if (validTargetList.canTargetOnlyCaster()) {
 			if (caster == null) return;
-			bomb(caster, caster, location, basePower);
+			bomb(caster, caster, location, basePower, args);
 
 			playSpellEffects(EffectPosition.TARGET, caster);
 			playSpellEffects(EffectPosition.CASTER, caster);
@@ -99,7 +111,7 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 			if (caster == null && !validTargetList.canTarget(entity)) continue;
 			if (caster != null && !validTargetList.canTarget(caster, entity)) continue;
 
-			bomb(caster, entity, location, basePower);
+			bomb(caster, entity, location, basePower, args);
 			if (caster != null) playSpellEffectsTrail(caster.getLocation(), entity.getLocation());
 			playSpellEffects(EffectPosition.TARGET, entity);
 		}
@@ -108,7 +120,7 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 		if (caster != null) playSpellEffects(EffectPosition.CASTER, caster);
 	}
 
-	private void bomb(LivingEntity caster, LivingEntity target, Location location, float basePower) {
+	private void bomb(LivingEntity caster, LivingEntity target, Location location, float basePower, String[] args) {
 		if (!target.getLocation().getWorld().equals(location.getWorld())) return;
 		if (target.getLocation().distanceSquared(location) > radiusSquared) return;
 

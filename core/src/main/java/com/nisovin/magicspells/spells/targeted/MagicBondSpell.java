@@ -53,25 +53,29 @@ public class MagicBondSpell extends TargetedSpell implements TargetedEntitySpell
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
 
-			bond(caster, target.getTarget(), power);
+			bond(caster, target.getTarget(), target.getPower(), args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		bond(caster, target, power);
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		bond(caster, target, power, args);
 		playSpellEffects(caster, target);
 		return true;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity target, float power) {
-		playSpellEffects(EffectPosition.TARGET, target);
-		return true;
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
 	}
 
-	private void bond(LivingEntity caster, LivingEntity target, float power) {
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power) {
+		return false;
+	}
+
+	private void bond(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		bondTarget.put(caster, target);
 		playSpellEffects(caster, target);
 		SpellMonitor monitorBond = new SpellMonitor(caster, target, power);

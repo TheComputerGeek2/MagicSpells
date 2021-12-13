@@ -80,23 +80,33 @@ public class BombSpell extends TargetedSpell implements TargetedLocationSpell {
 			if (!blocks.get(1).getType().isSolid()) return noTarget(caster);
 
 			Block target = blocks.get(0);
-			boolean ok = bomb(caster, target.getLocation(), power);
+			boolean ok = bomb(caster, target.getLocation(), power, args);
 			if (!ok) return noTarget(caster);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		return bomb(caster, target, power, args);
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		return bomb(caster, target, power);
+		return bomb(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return bomb(null, target, power, args);
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		return bomb(null, target, power);
+		return bomb(null, target, power, null);
 	}
 
-	private boolean bomb(LivingEntity livingEntity, Location loc, float power) {
+	private boolean bomb(LivingEntity livingEntity, Location loc, float power, String[] args) {
 		if (material == null) return false;
 		Block block = loc.getBlock();
 		if (!BlockUtils.isAir(block.getType())) return false;

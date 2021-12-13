@@ -62,24 +62,34 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 			LivingEntity target = targetInfo.getTarget();
 
 			sendMessages(caster, target, args);
-			glow(caster, target, targetInfo.getPower());
+			glow(caster, target, targetInfo.getPower(), args);
 			return PostCastAction.NO_MESSAGES;
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		glow(caster instanceof Player ? (Player) caster : null, target, power);
+		glow(caster instanceof Player ? (Player) caster : null, target, power, args);
+		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		if (!validTargetList.canTarget(target)) return false;
+		glow(null, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		if (!validTargetList.canTarget(target)) return false;
-		glow(null, target, power);
-		return true;
+		return castAtEntity(target, power, null);
 	}
 
 	@Override
@@ -103,7 +113,7 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 		return glowing.containsValue(uuid) || glowingUnpaired.contains(uuid);
 	}
 
-	private void glow(Player caster, LivingEntity target, float power) {
+	private void glow(Player caster, LivingEntity target, float power, String[] args) {
 		int duration = Math.round(this.duration * power);
 		UUID uuid = target.getUniqueId();
 

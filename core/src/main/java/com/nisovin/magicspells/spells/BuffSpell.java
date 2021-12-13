@@ -210,8 +210,18 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 	}
 
 	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		return activate(caster, target, power, args, true) == PostCastAction.HANDLE_NORMALLY;
+	}
+
+	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
 		return activate(caster, target, power, MagicSpells.NULL_ARGS, true) == PostCastAction.HANDLE_NORMALLY;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		return activate(null, target, power, args, true) == PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override

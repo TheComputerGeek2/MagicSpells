@@ -77,18 +77,30 @@ public class SpawnTntSpell extends TargetedSpell implements TargetedLocationSpel
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		spawnTnt(caster, target.clone().add(0.5, 0.5, 0.5), power, args);
+		return true;
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		spawnTnt(caster, power, target.clone().add(0.5, 0.5, 0.5));
+		spawnTnt(caster, target.clone().add(0.5, 0.5, 0.5), power, null);
+		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		spawnTnt(null, target.clone().add(0.5, 0.5, 0.5), power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		spawnTnt(null, power, target.clone().add(0.5, 0.5, 0.5));
+		spawnTnt(null, target.clone().add(0.5, 0.5, 0.5), power, null);
 		return true;
 	}
 
-	private void spawnTnt(LivingEntity caster, float power, Location loc) {
+	private void spawnTnt(LivingEntity caster, Location loc, float power, String[] args) {
 		TNTPrimed tnt = loc.getWorld().spawn(loc, TNTPrimed.class);
 
 		if (cancelGravity) tnt.setGravity(false);

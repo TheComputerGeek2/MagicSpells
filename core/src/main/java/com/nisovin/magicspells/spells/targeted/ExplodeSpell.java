@@ -79,13 +79,13 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 			}
 
 			if (target == null || BlockUtils.isAir(target.getType())) return noTarget(caster);
-			boolean exploded = explode(caster, target.getLocation(), power);
+			boolean exploded = explode(caster, target.getLocation(), power, args);
 			if (!exploded && !ignoreCanceled) return noTarget(caster);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 	
-	private boolean explode(LivingEntity livingEntity, Location target, float power) {
+	private boolean explode(LivingEntity livingEntity, Location target, float power, String[] args) {
 		if (simulateTnt) {
 			boolean cancelled = MagicSpells.getVolatileCodeHandler().simulateTnt(target, livingEntity, explosionSize * power, addFire);
 			if (cancelled) return false;
@@ -106,8 +106,13 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		return explode(caster, target, power, args);
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		return explode(caster, target, power);
+		return explode(caster, target, power, null);
 	}
 
 	@Override

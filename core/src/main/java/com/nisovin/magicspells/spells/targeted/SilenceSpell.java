@@ -98,7 +98,7 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
 			
-			silence(target.getTarget(), target.getPower());
+			silence(caster, target.getTarget(), target.getPower(), args);
 			playSpellEffects(caster, target.getTarget());
 			sendMessages(caster, target.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
@@ -107,20 +107,30 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		silence(target, power);
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		silence(caster, target, power, args);
 		playSpellEffects(caster, target);
 		return true;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity target, float power) {
-		silence(target, power);
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		silence(null, target, power, args);
 		playSpellEffects(EffectPosition.TARGET, target);
 		return true;
 	}
 
-	private void silence(LivingEntity target, float power) {
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power) {
+		return castAtEntity(target, power, null);
+	}
+
+	private void silence(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		Unsilencer u = silenced.get(target.getUniqueId());
 		if (u != null) u.cancel();
 		silenced.put(target.getUniqueId(), new Unsilencer(target, Math.round(duration * power)));

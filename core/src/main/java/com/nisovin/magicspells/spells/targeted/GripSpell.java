@@ -44,7 +44,7 @@ public class GripSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 		if (state == SpellCastState.NORMAL) {
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
-			if (!grip(caster.getLocation(), target.getTarget())) return noTarget(caster, strCantGrip);
+			if (!grip(caster, target.getTarget(), caster.getLocation(), power, args)) return noTarget(caster, strCantGrip);
 
 			sendMessages(caster, target.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
@@ -53,9 +53,14 @@ public class GripSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		return grip(caster.getLocation(), target);
+		return grip(caster, target, caster.getLocation(), power, args);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
 	}
 
 	@Override
@@ -64,18 +69,28 @@ public class GripSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 	}
 
 	@Override
-	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		return grip(from, target);
+		return grip(caster, target, from, power, args);
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
+		return castAtEntityFromLocation(caster, from, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power, String[] args) {
+		if (!validTargetList.canTarget(target)) return false;
+		return grip(null, target, from, power, args);
 	}
 
 	@Override
 	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power) {
-		if (!validTargetList.canTarget(target)) return false;
-		return grip(from, target);
+		return castAtEntityFromLocation(from, target, power, null);
 	}
 
-	private boolean grip(Location from, LivingEntity target) {
+	private boolean grip(LivingEntity caster, LivingEntity target, Location from, float power, String[] args) {
 		Location loc = from.clone();
 
 		Vector startDir = loc.clone().getDirection().normalize();

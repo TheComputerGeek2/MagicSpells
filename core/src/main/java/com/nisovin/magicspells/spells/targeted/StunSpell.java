@@ -70,7 +70,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 			LivingEntity target = targetInfo.getTarget();
 			power = targetInfo.getPower();
 
-			stunLivingEntity(caster, target, Math.round(duration * power));
+			stunLivingEntity(caster, target, power, args);
 			sendMessages(caster, target, args);
 			return PostCastAction.NO_MESSAGES;
 		}
@@ -78,20 +78,32 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		stunLivingEntity(caster, target, Math.round(duration * power));
+		stunLivingEntity(caster, target, power, args);
+		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		if (!validTargetList.canTarget(target)) return false;
+		stunLivingEntity(null, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		if (!validTargetList.canTarget(target)) return false;
-		stunLivingEntity(null, target, Math.round(duration * power));
-		return true;
+		return castAtEntity(target, power, null);
 	}
 
-	private void stunLivingEntity(LivingEntity caster, LivingEntity target, int duration) {
+	private void stunLivingEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		int duration = Math.round(this.duration * power);
+
 		StunnedInfo info = new StunnedInfo(caster, target, System.currentTimeMillis() + duration, target.getLocation());
 		stunnedLivingEntities.put(target.getUniqueId(), info);
 

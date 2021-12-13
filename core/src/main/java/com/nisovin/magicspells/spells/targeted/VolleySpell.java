@@ -79,7 +79,7 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
 			if (noTarget) {
-				volley(caster, caster.getLocation(), null, power);
+				volley(caster, caster.getLocation(), null, power, args);
 				return PostCastAction.HANDLE_NORMALLY;
 			}
 
@@ -90,16 +90,21 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 				target = null;
 			}
 			if (target == null || BlockUtils.isAir(target.getType())) return noTarget(caster);
-			volley(caster, caster.getLocation(), target.getLocation(), power);
+			volley(caster, caster.getLocation(), target.getLocation(), power, args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 	
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		if (noTarget) return false;
-		volley(caster, caster.getLocation(), target, power);
+		volley(caster, caster.getLocation(), target, power, args);
 		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
 	}
 
 	@Override
@@ -108,20 +113,30 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 	}
 
 	@Override
-	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
 		if (noTarget) return false;
-		volley(caster, from, target.getLocation(), power);
+		volley(caster, from, target.getLocation(), power, args);
+		return true;
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
+		return castAtEntityFromLocation(caster, from, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power, String[] args) {
+		if (noTarget) return false;
+		volley(null, from, target.getLocation(), power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntityFromLocation(Location from, LivingEntity target, float power) {
-		if (noTarget) return false;
-		volley(null, from, target.getLocation(), power);
-		return true;
+		return castAtEntityFromLocation(from, target, power, null);
 	}
 
-	private void volley(LivingEntity caster, Location from, Location target, float power) {
+	private void volley(LivingEntity caster, Location from, Location target, float power, String[] args) {
 		Location spawn = from.clone().add(0, yOffset, 0);
 		Vector v;
 

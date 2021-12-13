@@ -61,24 +61,36 @@ public class RemoveMarksSpell extends TargetedSpell implements TargetedLocationS
 				if (b != null && !BlockUtils.isAir(b.getType())) loc = b.getLocation();
 			}
 			if (loc == null) return noTarget(caster);
-			removeMarks(caster, loc, power);
+			removeMarks(caster, loc, power, args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		removeMarks(caster, target, power, args);
+		return true;
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		removeMarks(caster, target, power);
+		removeMarks(caster, target, power, null);
+		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		removeMarks(null, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		removeMarks(null, target, power);
+		removeMarks(null, target, power, null);
 		return true;
 	}
 
-	private void removeMarks(LivingEntity caster, Location loc, float power) {
+	private void removeMarks(LivingEntity caster, Location loc, float power, String[] args) {
 		float rad = radius * power;
 		float radSq = rad * rad;
 

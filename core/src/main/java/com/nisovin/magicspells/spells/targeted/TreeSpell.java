@@ -55,7 +55,7 @@ public class TreeSpell extends TargetedSpell implements TargetedLocationSpell {
 			
 			if (target == null || BlockUtils.isAir(target.getType())) return noTarget(caster);
 			
-			boolean grown = growTree(target);
+			boolean grown = growTree(caster, target, power, args);
 			if (!grown) return noTarget(caster);
 
 			playSpellEffects(caster, target.getLocation());
@@ -63,7 +63,7 @@ public class TreeSpell extends TargetedSpell implements TargetedLocationSpell {
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
-	private boolean growTree(Block target) {
+	private boolean growTree(LivingEntity caster, Block target, float power, String[] args) {
 		target = target.getRelative(BlockFace.UP);
 		if (!BlockUtils.isAir(target.getType())) return false;
 		
@@ -81,17 +81,27 @@ public class TreeSpell extends TargetedSpell implements TargetedLocationSpell {
 	}
 	
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		boolean ret = growTree(target.getBlock());
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		boolean ret = growTree(caster, target.getBlock(), power, args);
 		if (ret) playSpellEffects(caster, target);
 		return ret;
 	}
 
 	@Override
-	public boolean castAtLocation(Location target, float power) {
-		return growTree(target.getBlock());
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
 	}
-	
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return growTree(null, target.getBlock(), power, args);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power) {
+		return castAtLocation(target, power, null);
+	}
+
 	private static class GrowAnimation extends SpellAnimation {
 		
 		private List<BlockState> blockStates;

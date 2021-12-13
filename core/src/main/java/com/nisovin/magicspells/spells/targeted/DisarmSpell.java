@@ -69,7 +69,7 @@ public class DisarmSpell extends TargetedSpell implements TargetedEntitySpell {
 			
 			LivingEntity realTarget = target.getTarget();
 			
-			boolean disarmed = disarm(realTarget);
+			boolean disarmed = disarm(caster, realTarget, power, args);
 			if (!disarmed) return noTarget(caster, strInvalidItem);
 
 			playSpellEffects(caster, realTarget);
@@ -80,22 +80,32 @@ public class DisarmSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		boolean disarmed =  disarm(target);
+		boolean disarmed =  disarm(caster, target, power, args);
 		if (disarmed) playSpellEffects(caster, target);
 		return disarmed;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(target)) return false;
-		boolean disarmed = disarm(target);
+		boolean disarmed = disarm(null, target, power, args);
 		if (disarmed) playSpellEffects(EffectPosition.TARGET, target);
 		return disarmed;
 	}
-	
-	private boolean disarm(LivingEntity target) {
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power) {
+		return castAtEntity(target, power, null);
+	}
+
+	private boolean disarm(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		final ItemStack inHand = getItemInHand(target);
 		if (inHand == null) return false;
 

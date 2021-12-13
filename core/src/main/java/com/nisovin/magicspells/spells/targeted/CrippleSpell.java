@@ -36,7 +36,7 @@ public class CrippleSpell extends TargetedSpell implements TargetedEntitySpell {
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
 
-			cripple(caster, target.getTarget(), power);
+			cripple(caster, target.getTarget(), power, args);
 			sendMessages(caster, target.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
 		}
@@ -44,20 +44,30 @@ public class CrippleSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		cripple(caster, target, power);
+		cripple(caster, target, power, args);
+		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		if (!validTargetList.canTarget(target)) return false;
+		cripple(null, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		if (!validTargetList.canTarget(target)) return false;
-		cripple(null, target, power);
-		return true;
+		return castAtEntity(target, power, null);
 	}
-	
-	private void cripple(LivingEntity caster, LivingEntity target, float power) {
+
+	private void cripple(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (target == null) return;
 
 		if (caster != null) playSpellEffects(caster, target);

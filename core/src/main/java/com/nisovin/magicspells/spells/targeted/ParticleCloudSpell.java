@@ -176,39 +176,59 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 			locToSpawn.setDirection(caster.getLocation().getDirection());
 
-			AreaEffectCloud cloud = spawnCloud(locToSpawn);
+			AreaEffectCloud cloud = spawnCloud(caster, locToSpawn, power, args);
 			cloud.setSource(caster);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		if (!canTargetLocation) return false;
-		AreaEffectCloud cloud = spawnCloud(target);
+		AreaEffectCloud cloud = spawnCloud(caster, target, power, args);
 		cloud.setSource(caster);
 		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return castAtLocation(null, target, power, args);
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		return castAtLocation(null, target, power);
+		return castAtLocation(null, target, power, null);
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!canTargetEntities) return false;
-		AreaEffectCloud cloud = spawnCloud(target.getLocation());
+		AreaEffectCloud cloud = spawnCloud(caster, target.getLocation(), power, args);
 		cloud.setSource(caster);
 		return true;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity target, float power) {
-		return castAtEntity(null, target, power);
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
 	}
 
-	private AreaEffectCloud spawnCloud(Location loc) {
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		return castAtEntity(null, target, power, args);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power) {
+		return castAtEntity(null, target, power, null);
+	}
+
+	private AreaEffectCloud spawnCloud(LivingEntity caster, Location loc, float power, String[] args) {
 		Location location = loc.clone();
 		Vector startDir = loc.getDirection().normalize();
 

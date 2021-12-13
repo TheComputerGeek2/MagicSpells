@@ -23,33 +23,42 @@ public class CloseInventorySpell extends TargetedSpell implements TargetedEntity
 		if (state == SpellCastState.NORMAL) {
 			TargetInfo<Player> targetInfo = getTargetedPlayer(caster, power);
 			if (targetInfo == null) return noTarget(caster);
+
 			Player target = targetInfo.getTarget();
 			if (target == null) return noTarget(caster);
-			close(target);
+
+			close(caster, target, target, power, args);
 			playSpellEffects(caster, target);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		if (!(target instanceof Player player)) return false;
+		close(caster, target, player, power, args);
+		return true;
+	}
+
+	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		return close(target);
+		return castAtEntity(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		return castAtEntity(null, target, power, args);
+
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		return close(target);
+		return castAtEntity(null, target, power, null);
 	}
 
-	private boolean close(LivingEntity target) {
-		if (!(target instanceof Player)) return false;
-		close((Player) target);
-		return true;
-	}
-
-	private void close(Player target) {
-		if (delay > 0) MagicSpells.scheduleDelayedTask(target::closeInventory, delay);
-		else target.closeInventory();
+	private void close(LivingEntity caster, LivingEntity target, Player playerTarget, float power, String[] args) {
+		if (delay > 0) MagicSpells.scheduleDelayedTask(playerTarget::closeInventory, delay);
+		else playerTarget.closeInventory();
 	}
 
 }

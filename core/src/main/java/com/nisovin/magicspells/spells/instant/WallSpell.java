@@ -120,14 +120,20 @@ public class WallSpell extends InstantSpell implements TargetedLocationSpell {
 				sendMessage(strNoTarget, caster, args);
 				return PostCastAction.ALREADY_HANDLED;
 			}
-			makeWall(caster, target.getLocation(), caster.getLocation().getDirection(), power);
+			makeWall(caster, target.getLocation(), caster.getLocation().getDirection(), power, args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		makeWall(caster, target, target.getDirection(), power, args);
+		return true;
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		makeWall(caster, target, target.getDirection(), power);
+		makeWall(caster, target, target.getDirection(), power, null);
 		return true;
 	}
 
@@ -136,7 +142,7 @@ public class WallSpell extends InstantSpell implements TargetedLocationSpell {
 		return false;
 	}
 
-	private void makeWall(LivingEntity livingEntity, Location location, Vector direction, float power) {
+	private void makeWall(LivingEntity livingEntity, Location location, Vector direction, float power, String[] args) {
 		if (blockSets.containsKey(livingEntity.getUniqueId())) return;
 		if (materials == null || materials.isEmpty()) return;
 		if (location == null || direction == null) return;

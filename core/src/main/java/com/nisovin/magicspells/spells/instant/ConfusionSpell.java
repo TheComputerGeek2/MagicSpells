@@ -29,14 +29,20 @@ public class ConfusionSpell extends InstantSpell implements TargetedLocationSpel
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			confuse(caster, caster.getLocation(), power);
+			confuse(caster, caster.getLocation(), power, args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		confuse(caster, target, power, args);
+		return true;
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		confuse(caster, target, power);
+		confuse(caster, target, power, null);
 		return true;
 	}
 
@@ -45,7 +51,7 @@ public class ConfusionSpell extends InstantSpell implements TargetedLocationSpel
 		return false;
 	}
 
-	private void confuse(LivingEntity caster, Location location, float power) {
+	private void confuse(LivingEntity caster, Location location, float power, String[] args) {
 		double castingRange = Math.round(radius * power);
 		Collection<Entity> entities = location.getWorld().getNearbyEntities(location, castingRange, castingRange, castingRange);
 		List<LivingEntity> monsters = new ArrayList<>();

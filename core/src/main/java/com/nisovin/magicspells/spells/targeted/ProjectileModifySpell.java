@@ -234,22 +234,32 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 			}
 			if (loc == null) return noTarget(caster);
 
-			modify(caster, loc);
+			modify(caster, loc, power, args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		return modify(caster, target, power, args);
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		return modify(caster, target);
+		return modify(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return modify(null, target, power, args);
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		return modify(null, target);
+		return modify(null, target, power, null);
 	}
 
-	private boolean modify(LivingEntity livingEntity, Location location) {
+	private boolean modify(LivingEntity livingEntity, Location location, float power, String[] args) {
 		int count = 0;
 
 		Vector facing = livingEntity != null ? livingEntity.getLocation().getDirection() : location.getDirection();

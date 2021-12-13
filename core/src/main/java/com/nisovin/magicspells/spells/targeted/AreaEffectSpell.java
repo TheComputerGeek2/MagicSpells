@@ -125,7 +125,7 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 
 			if (loc == null) return noTarget(caster);
 			
-			boolean done = doAoe(caster, loc, power);
+			boolean done = doAoe(caster, loc, power, args);
 			
 			if (!done && failIfNoTargets) return noTarget(caster);
 		}
@@ -133,16 +133,26 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		return doAoe(caster, target, power, args);
+	}
+
+	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		return doAoe(caster, target, power);
+		return doAoe(caster, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return doAoe(null, target, power, args);
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		return doAoe(null, target, power);
+		return doAoe(null, target, power, null);
 	}
-	
-	private boolean doAoe(LivingEntity caster, Location location, float basePower) {
+
+	private boolean doAoe(LivingEntity caster, Location location, float basePower, String[] args) {
 		int count = 0;
 
 		Location finalLoc = caster != null ? caster.getLocation() : location;

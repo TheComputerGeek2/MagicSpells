@@ -112,38 +112,50 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 			if (pointBlank) loc = caster.getLocation();
 			else loc = getTargetedBlock(caster, power).getLocation();
 			
-			createNova(caster, loc, power);
+			createNova(caster, loc, power, strings);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 	
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity livingEntity, float v) {
-		createNova(caster, livingEntity.getLocation(), v);
-		return false;
+	public boolean castAtEntity(LivingEntity caster, LivingEntity livingEntity, float v, String[] args) {
+		createNova(caster, livingEntity.getLocation(), v, args);
+		return true;
 	}
-	
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		createNova(caster, target.getLocation(), power, null);
+		return true;
+	}
+
 	@Override
 	public boolean castAtEntity(LivingEntity livingEntity, float v) {
 		return false;
 	}
 	
 	@Override
-	public boolean castAtLocation(LivingEntity livingEntity, Location location, float v) {
-		createNova(livingEntity, location, v);
-		return false;
+	public boolean castAtLocation(LivingEntity livingEntity, Location location, float v, String[] args) {
+		createNova(livingEntity, location, v, args);
+		return true;
 	}
-	
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		createNova(caster, target, power, null);
+		return true;
+	}
+
 	@Override
 	public boolean castAtLocation(Location location, float v) {
 		return false;
 	}
-	
-	private void createNova(LivingEntity livingEntity, Location loc, float power) {
+
+	private void createNova(LivingEntity caster, Location loc, float power, String[] args) {
 		if (material == null) return;
 		// Relative offset
 		Location startLoc = loc.clone();
-		Vector direction = livingEntity.getLocation().getDirection().normalize();
+		Vector direction = caster.getLocation().getDirection().normalize();
 		Vector horizOffset = new Vector(-direction.getZ(), 0.0, direction.getX()).normalize();
 		startLoc.add(horizOffset.multiply(relativeOffset.getZ())).getBlock().getLocation();
 		startLoc.add(direction.setY(0).normalize().multiply(relativeOffset.getX()));
@@ -158,8 +170,8 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 		}
 		
 		// Start tracker
-		if (!circleShape) new NovaTrackerSquare(nearby, startLoc.getBlock(), material, livingEntity, radius, novaTickInterval, expandingRadiusChange, power);
-		else new NovaTrackerCircle(nearby, startLoc.getBlock(), material, livingEntity, radius, novaTickInterval, expandingRadiusChange, power);
+		if (!circleShape) new NovaTrackerSquare(nearby, startLoc.getBlock(), material, caster, radius, novaTickInterval, expandingRadiusChange, power);
+		else new NovaTrackerCircle(nearby, startLoc.getBlock(), material, caster, radius, novaTickInterval, expandingRadiusChange, power);
 	}
 	
 	private class NovaTrackerSquare implements Runnable {

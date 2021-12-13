@@ -138,7 +138,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			if (requireEntityTarget) {
 				TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 				if (target == null) return noTarget(caster);
-				new OrbitTracker(caster, target.getTarget(), target.getPower());
+				new OrbitTracker(caster, target.getTarget(), target.getPower(), args);
 				playSpellEffects(caster, target.getTarget());
 				sendMessages(caster, target.getTarget(), args);
 				return PostCastAction.NO_MESSAGES;
@@ -157,17 +157,24 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 
 			if (block == null) return noTarget(caster);
 
-			new OrbitTracker(caster, block.getLocation().add(0.5, 0, 0.5), power);
+			new OrbitTracker(caster, block.getLocation().add(0.5, 0, 0.5), power, args);
 			return PostCastAction.HANDLE_NORMALLY;
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		new OrbitTracker(caster, target, power);
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		new OrbitTracker(caster, target, power, args);
 		playSpellEffects(caster, target);
 		return true;
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		new OrbitTracker(caster, target, power, null);
+		playSpellEffects(caster, target);
+		return false;
 	}
 
 	@Override
@@ -176,9 +183,15 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		new OrbitTracker(caster, target, power);
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		new OrbitTracker(caster, target, power, args);
 		return true;
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		new OrbitTracker(caster, target, power, null);
+		return false;
 	}
 
 	@Override
@@ -233,7 +246,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 
 		private long startTime;
 
-		private OrbitTracker(LivingEntity caster, LivingEntity target, float power) {
+		private OrbitTracker(LivingEntity caster, LivingEntity target, float power, String[] args) {
 			this.caster = caster;
 			this.target = target;
 			this.power = power;
@@ -242,7 +255,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			initialize();
 		}
 
-		private OrbitTracker(LivingEntity caster, Location targetLoc, float power) {
+		private OrbitTracker(LivingEntity caster, Location targetLoc, float power, String[] args) {
 			this.caster = caster;
 			this.targetLoc = targetLoc;
 			this.power = power;

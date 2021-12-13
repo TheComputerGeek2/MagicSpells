@@ -36,7 +36,7 @@ public class TeleportSpell extends TargetedSpell implements TargetedEntitySpell 
 		if (state == SpellCastState.NORMAL) {
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
-			if (!teleport(caster, target.getTarget())) return noTarget(caster, strCantTeleport);
+			if (!teleport(caster, target.getTarget(), target.getPower(), args)) return noTarget(caster, strCantTeleport);
 
 			sendMessages(caster, target.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
@@ -45,9 +45,14 @@ public class TeleportSpell extends TargetedSpell implements TargetedEntitySpell 
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		return teleport(caster, target);
+		return teleport(caster, target, power, args);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
+		return castAtEntity(caster, target, power, null);
 	}
 
 	@Override
@@ -55,7 +60,7 @@ public class TeleportSpell extends TargetedSpell implements TargetedEntitySpell 
 		return false;
 	}
 
-	private boolean teleport(LivingEntity caster, LivingEntity target) {
+	private boolean teleport(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		Location targetLoc = target.getLocation();
 		Location startLoc = caster.getLocation();
 

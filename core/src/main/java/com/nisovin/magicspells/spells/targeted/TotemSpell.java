@@ -216,13 +216,13 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
 				target = event.getTargetLocation().getBlock();
 				power = event.getPower();
 			}
-			createTotem(caster, target.getLocation(), power);
+			createTotem(caster, target.getLocation(), power, args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		Block block = target.getBlock();
 		if (yOffset > 0) block = block.getRelative(BlockFace.UP, yOffset);
 		else if (yOffset < 0) block = block.getRelative(BlockFace.DOWN, yOffset);
@@ -230,27 +230,37 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
 		if (BlockUtils.isAir(block.getType()) || block.getType() == Material.SNOW || block.getType() == Material.TALL_GRASS) {
 			if (!centerStand) {
 				Location loc = target.clone();
-				createTotem(caster, loc, power);
-			} else createTotem(caster, block.getLocation(), power);
+				createTotem(caster, loc, power, args);
+			} else createTotem(caster, block.getLocation(), power, args);
 			return true;
 		}
 		block = block.getRelative(BlockFace.UP);
 		if (BlockUtils.isAir(block.getType()) || block.getType() == Material.SNOW || block.getType() == Material.TALL_GRASS) {
 			if (!centerStand) {
 				Location loc = target.clone();
-				createTotem(caster, loc, power);
-			} else createTotem(caster, block.getLocation(), power);
+				createTotem(caster, loc, power, args);
+			} else createTotem(caster, block.getLocation(), power, args);
 			return true;
 		}
 		return false;
 	}
 
 	@Override
-	public boolean castAtLocation(Location target, float power) {
-		return castAtLocation(null, target, power);
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return castAtLocation(null, target, power, args);
 	}
 
-	private void createTotem(LivingEntity caster, Location loc, float power) {
+	@Override
+	public boolean castAtLocation(Location target, float power) {
+		return castAtLocation(null, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		return castAtLocation(caster, target, power, null);
+	}
+
+	private void createTotem(LivingEntity caster, Location loc, float power, String[] args) {
 		Location loc2 = loc.clone();
 		if (centerStand) loc2 = loc.clone().add(0.5, 0, 0.5);
 
