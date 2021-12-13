@@ -1,5 +1,7 @@
 package com.nisovin.magicspells.util.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Set;
 import java.util.HashSet;
 import java.util.regex.Matcher;
@@ -26,12 +28,21 @@ public abstract class FunctionData<T> implements ConfigData<T> {
 	private final Expression expression;
 	private final boolean targeted;
 
+	protected final ConfigData<T> dataDef;
 	protected final T def;
 
-	public FunctionData(Expression expression, T def, boolean targeted) {
+	public FunctionData(@NotNull Expression expression, @NotNull T def, boolean targeted) {
 		this.expression = expression;
 		this.targeted = targeted;
+		this.dataDef = null;
 		this.def = def;
+	}
+
+	public FunctionData(@NotNull Expression expression, @NotNull ConfigData<T> def, boolean targeted) {
+		this.expression = expression;
+		this.targeted = targeted;
+		this.dataDef = def;
+		this.def = null;
 	}
 
 	public static Pair<Expression, Boolean> buildExpression(String expressionString) {
@@ -137,42 +148,72 @@ public abstract class FunctionData<T> implements ConfigData<T> {
 
 	public static class DoubleData extends FunctionData<Double> {
 
-		public DoubleData(Expression expression, Double def, boolean targeted) {
+		public DoubleData(@NotNull Expression expression, @NotNull Double def, boolean targeted) {
+			super(expression, def, targeted);
+		}
+
+		public DoubleData(@NotNull Expression expression, @NotNull ConfigData<Double> def, boolean targeted) {
 			super(expression, def, targeted);
 		}
 
 		@Override
 		public Double get(LivingEntity caster, LivingEntity target, float power, String[] args) {
-			Double value = getValue(caster, target, power, args);
-			return value == null ? def : value;
+			Double ret = getValue(caster, target, power, args);
+
+			if (ret == null) {
+				if (dataDef != null) ret = dataDef.get(caster, target, power, args);
+				else ret = def;
+			}
+
+			return ret;
 		}
 
 	}
 
 	public static class FloatData extends FunctionData<Float> {
 
-		public FloatData(Expression expression, Float def, boolean targeted) {
+		public FloatData(@NotNull Expression expression, @NotNull Float def, boolean targeted) {
+			super(expression, def, targeted);
+		}
+
+		public FloatData(@NotNull Expression expression, @NotNull ConfigData<Float> def, boolean targeted) {
 			super(expression, def, targeted);
 		}
 
 		@Override
 		public Float get(LivingEntity caster, LivingEntity target, float power, String[] args) {
 			Double value = getValue(caster, target, power, args);
-			return value == null ? def : value.floatValue();
+			Float ret;
+
+			if (value != null) ret = value.floatValue();
+			else if (dataDef != null) ret = dataDef.get(caster, target, power, args);
+			else ret = def;
+
+			return ret;
 		}
 
 	}
 
 	public static class IntegerData extends FunctionData<Integer> {
 
-		public IntegerData(Expression expression, Integer def, boolean targeted) {
+		public IntegerData(@NotNull Expression expression, @NotNull Integer def, boolean targeted) {
+			super(expression, def, targeted);
+		}
+
+		public IntegerData(@NotNull Expression expression, @NotNull ConfigData<Integer> def, boolean targeted) {
 			super(expression, def, targeted);
 		}
 
 		@Override
 		public Integer get(LivingEntity caster, LivingEntity target, float power, String[] args) {
 			Double value = getValue(caster, target, power, args);
-			return value == null ? def : value.intValue();
+			Integer ret;
+
+			if (value != null) ret = value.intValue();
+			else if (dataDef != null) ret = dataDef.get(caster, target, power, args);
+			else ret = def;
+
+			return ret;
 		}
 
 	}

@@ -161,6 +161,10 @@ public class MagicConfig {
 		return mainConfig.isInt(path);
 	}
 
+	public int getInt(String path) {
+		return mainConfig.getInt(path);
+	}
+
 	public int getInt(String path, int def) {
 		return mainConfig.getInt(path, def);
 	}
@@ -175,6 +179,11 @@ public class MagicConfig {
 
 	public boolean isDouble(String path) {
 		return mainConfig.isInt(path) || mainConfig.isDouble(path);
+	}
+
+	public double getDouble(String path) {
+		if (mainConfig.contains(path) && mainConfig.isInt(path)) return mainConfig.getInt(path);
+		return mainConfig.getDouble(path);
 	}
 
 	public double getDouble(String path, double def) {
