@@ -5,21 +5,21 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
 public class TimeSpell extends InstantSpell implements TargetedLocationSpell {
 
-	private int timeToSet;
+	private ConfigData<Integer> timeToSet;
 
 	private String strAnnounce;
 		
 	public TimeSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
-		timeToSet = getConfigInt("time-to-set", 0);
+		timeToSet = getConfigDataInt("time-to-set", 0);
 		strAnnounce = getConfigString("str-announce", "The sun suddenly appears in the sky.");
 	}
 
@@ -57,16 +57,8 @@ public class TimeSpell extends InstantSpell implements TargetedLocationSpell {
 	}
 
 	private void setTime(LivingEntity caster, World world, float power, String[] args) {
-		world.setTime(timeToSet);
+		world.setTime(timeToSet.get(caster, null, power, args));
 		for (Player p : world.getPlayers()) sendMessage(strAnnounce, p, args);
-	}
-
-	public int getTimeToSet() {
-		return timeToSet;
-	}
-
-	public void setTimeToSet(int timeToSet) {
-		this.timeToSet = timeToSet;
 	}
 
 	public String getStrAnnounce() {

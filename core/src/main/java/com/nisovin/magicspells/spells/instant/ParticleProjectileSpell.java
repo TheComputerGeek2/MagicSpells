@@ -17,6 +17,7 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -31,48 +32,47 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 
 	private static Set<ParticleProjectileTracker> trackerSet;
 
-	private float targetYOffset;
-	private float startXOffset;
-	private float startYOffset;
-	private float startZOffset;
+	private ConfigData<Float> targetYOffset;
+	private ConfigData<Float> startXOffset;
+	private ConfigData<Float> startYOffset;
+	private ConfigData<Float> startZOffset;
 	private Vector relativeOffset;
 	private Vector effectOffset;
 
-	private float acceleration;
-	private int accelerationDelay;
-	private float projectileTurn;
-	private float projectileVelocity;
-	private float projectileVertOffset;
-	private float projectileHorizOffset;
-	private double verticalRotation;
-	private double horizontalRotation;
-	private double xRotation;
-	private float projectileVertSpread;
-	private float projectileHorizSpread;
-	private float projectileVertGravity;
-	private float projectileHorizGravity;
+	private ConfigData<Float> acceleration;
+	private ConfigData<Integer> accelerationDelay;
+	private ConfigData<Float> projectileTurn;
+	private ConfigData<Float> projectileVelocity;
+	private ConfigData<Float> projectileVertOffset;
+	private ConfigData<Float> projectileHorizOffset;
+	private ConfigData<Double> verticalRotation;
+	private ConfigData<Double> horizontalRotation;
+	private ConfigData<Double> xRotation;
+	private ConfigData<Float> projectileVertSpread;
+	private ConfigData<Float> projectileHorizSpread;
+	private ConfigData<Float> projectileVertGravity;
+	private ConfigData<Float> projectileHorizGravity;
 
-	private int tickInterval;
-	private float ticksPerSecond;
-	private int spellInterval;
-	private int intermediateEffects;
-	private int specialEffectInterval;
+	private ConfigData<Integer> tickInterval;
+	private ConfigData<Integer> spellInterval;
+	private ConfigData<Integer> intermediateEffects;
+	private ConfigData<Integer> specialEffectInterval;
 
-	private int tickSpellLimit;
-	private int intermediateHitboxes;
-	private int maxEntitiesHit;
-	private float hitRadius;
-	private float verticalHitRadius;
-	private int groundHitRadius;
-	private int groundVerticalHitRadius;
+	private ConfigData<Integer> tickSpellLimit;
+	private ConfigData<Integer> intermediateHitboxes;
+	private ConfigData<Integer> maxEntitiesHit;
+	private ConfigData<Float> hitRadius;
+	private ConfigData<Float> verticalHitRadius;
+	private ConfigData<Integer> groundHitRadius;
+	private ConfigData<Integer> groundVerticalHitRadius;
 	private Set<Material> groundMaterials;
 	private Set<Material> disallowedGroundMaterials;
 
-	private double maxDuration;
-	private double maxDistanceSquared;
+	private ConfigData<Double> maxDuration;
+	private ConfigData<Double> maxDistance;
 
 	private boolean hugSurface;
-	private float heightFromSurface;
+	private ConfigData<Float> heightFromSurface;
 
 	private boolean controllable;
 	private boolean checkPlugins;
@@ -121,55 +121,49 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		trackerSet = new HashSet<>();
 
 		// Compatibility with start-forward-offset
-		float startForwardOffset = getConfigFloat("start-forward-offset", 1F);
-		startXOffset = getConfigFloat("start-x-offset", 1F);
-		if (startForwardOffset != 1F) startXOffset = startForwardOffset;
-		startYOffset = getConfigFloat("start-y-offset", 1F);
-		startZOffset = getConfigFloat("start-z-offset", 0F);
-		targetYOffset = getConfigFloat("target-y-offset", 0F);
+		ConfigData<Float> startForwardOffset = getConfigDataFloat("start-forward-offset", 1F);
+		startXOffset = getConfigDataFloat("start-x-offset", startForwardOffset);
+		startYOffset = getConfigDataFloat("start-y-offset", 1F);
+		startZOffset = getConfigDataFloat("start-z-offset", 0F);
+		targetYOffset = getConfigDataFloat("target-y-offset", 0F);
 
-		// If relative-offset contains different values than the offsets above, override them
 		relativeOffset = getConfigVector("relative-offset", "1,1,0");
-		if (relativeOffset.getX() != 1F) startXOffset = (float) relativeOffset.getX();
-		if (relativeOffset.getY() != 1F) startYOffset = (float) relativeOffset.getY();
-		if (relativeOffset.getZ() != 0F) startZOffset = (float) relativeOffset.getZ();
-
 		effectOffset = getConfigVector("effect-offset", "0,0,0");
 
-		acceleration = getConfigFloat("projectile-acceleration", 0F);
-		accelerationDelay = getConfigInt("projectile-acceleration-delay", 0);
+		acceleration = getConfigDataFloat("projectile-acceleration", 0F);
+		accelerationDelay = getConfigDataInt("projectile-acceleration-delay", 0);
 
-		projectileTurn = getConfigFloat("projectile-turn", 0);
-		projectileVelocity = getConfigFloat("projectile-velocity", 10F);
-		projectileVertOffset = getConfigFloat("projectile-vert-offset", 0F);
-		projectileHorizOffset = getConfigFloat("projectile-horiz-offset", 0F);
-		verticalRotation = getConfigFloat("vertical-rotation", 0F);
-		horizontalRotation = getConfigFloat("horizontal-rotation", 0F);
-		xRotation = getConfigFloat("x-rotation", 0F);
-		float projectileGravity = getConfigFloat("projectile-gravity", 0F);
-		projectileVertGravity = getConfigFloat("projectile-vert-gravity", projectileGravity);
-		projectileHorizGravity = getConfigFloat("projectile-horiz-gravity", 0F);
-		float projectileSpread = getConfigFloat("projectile-spread", 0F);
-		projectileVertSpread = getConfigFloat("projectile-vertical-spread", projectileSpread);
-		projectileHorizSpread = getConfigFloat("projectile-horizontal-spread", projectileSpread);
+		projectileTurn = getConfigDataFloat("projectile-turn", 0);
+		projectileVelocity = getConfigDataFloat("projectile-velocity", 10F);
+		projectileVertOffset = getConfigDataFloat("projectile-vert-offset", 0F);
+		projectileHorizOffset = getConfigDataFloat("projectile-horiz-offset", 0F);
+		verticalRotation = getConfigDataDouble("vertical-rotation", 0F);
+		horizontalRotation = getConfigDataDouble("horizontal-rotation", 0F);
+		xRotation = getConfigDataDouble("x-rotation", 0F);
 
-		tickInterval = getConfigInt("tick-interval", 2);
-		ticksPerSecond = 20F / (float) tickInterval;
-		spellInterval = getConfigInt("spell-interval", 20);
-		intermediateEffects = getConfigInt("intermediate-effects", 0);
-		specialEffectInterval = getConfigInt("special-effect-interval", 1);
+		ConfigData<Float> projectileGravity = getConfigDataFloat("projectile-gravity", 0F);
+		projectileVertGravity = getConfigDataFloat("projectile-vert-gravity", projectileGravity);
+		projectileHorizGravity = getConfigDataFloat("projectile-horiz-gravity", 0F);
 
-		maxDistanceSquared = getConfigDouble("max-distance", 15);
-		maxDistanceSquared *= maxDistanceSquared;
-		maxDuration = getConfigDouble("max-duration", 0) * TimeUtil.MILLISECONDS_PER_SECOND;
+		ConfigData<Float> projectileSpread = getConfigDataFloat("projectile-spread", 0F);
+		projectileVertSpread = getConfigDataFloat("projectile-vertical-spread", projectileSpread);
+		projectileHorizSpread = getConfigDataFloat("projectile-horizontal-spread", projectileSpread);
 
-		tickSpellLimit = getConfigInt("tick-spell-limit", 0);
-		intermediateHitboxes = getConfigInt("intermediate-hitboxes", 0);
-		maxEntitiesHit = getConfigInt("max-entities-hit", 0);
-		hitRadius = getConfigFloat("hit-radius", 1.5F);
-		verticalHitRadius = getConfigFloat("vertical-hit-radius", hitRadius);
-		groundHitRadius = getConfigInt("ground-hit-radius", 0);
-		groundVerticalHitRadius = getConfigInt("ground-vertical-hit-radius", groundHitRadius);
+		tickInterval = getConfigDataInt("tick-interval", 2);
+		spellInterval = getConfigDataInt("spell-interval", 20);
+		intermediateEffects = getConfigDataInt("intermediate-effects", 0);
+		specialEffectInterval = getConfigDataInt("special-effect-interval", 1);
+
+		maxDistance = getConfigDataDouble("max-distance", 15);
+		maxDuration = getConfigDataDouble("max-duration", 0);
+
+		tickSpellLimit = getConfigDataInt("tick-spell-limit", 0);
+		intermediateHitboxes = getConfigDataInt("intermediate-hitboxes", 0);
+		maxEntitiesHit = getConfigDataInt("max-entities-hit", 0);
+		hitRadius = getConfigDataFloat("hit-radius", 1.5F);
+		verticalHitRadius = getConfigDataFloat("vertical-hit-radius", hitRadius);
+		groundHitRadius = getConfigDataInt("ground-hit-radius", 0);
+		groundVerticalHitRadius = getConfigDataInt("ground-vertical-hit-radius", groundHitRadius);
 		groundMaterials = new HashSet<>();
 		List<String> groundMaterialNames = getConfigStringList("ground-materials", null);
 		if (groundMaterialNames != null) {
@@ -197,7 +191,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		}
 
 		hugSurface = getConfigBoolean("hug-surface", false);
-		if (hugSurface) heightFromSurface = getConfigFloat("height-from-surface", 0.6F);
+		if (hugSurface) heightFromSurface = getConfigDataFloat("height-from-surface", 0.6F);
 
 		controllable = getConfigBoolean("controllable", false);
 		checkPlugins = getConfigBoolean("check-plugins", true);
@@ -214,7 +208,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		stopOnModifierFail = getConfigBoolean("stop-on-modifier-fail", true);
 		allowCasterInteract = getConfigBoolean("allow-caster-interact", true);
 		powerAffectsVelocity = getConfigBoolean("power-affects-velocity", true);
-		if (stopOnHitEntity) maxEntitiesHit = 1;
+		if (stopOnHitEntity) maxEntitiesHit = (caster, target, power, args) -> 1;
 
 		// Target List
 		validTargetList.enforce(ValidTargetList.TargetingElement.TARGET_SELF, hitSelf);
@@ -459,48 +453,57 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 
 	private void setupTracker(ParticleProjectileTracker tracker, LivingEntity caster, LivingEntity target, float power, String[] args) {
 		tracker.setSpell(this);
+
+		float startXOffset = relativeOffset.getX() != 1f ? (float) relativeOffset.getX() : this.startXOffset.get(caster, target, power, args);
+		float startYOffset = relativeOffset.getY() != 1f ? (float) relativeOffset.getY() : this.startYOffset.get(caster, target, power, args);
+		float startZOffset = relativeOffset.getZ() != 1f ? (float) relativeOffset.getZ() : this.startZOffset.get(caster, target, power, args);
+
 		tracker.setStartXOffset(startXOffset);
 		tracker.setStartYOffset(startYOffset);
 		tracker.setStartZOffset(startZOffset);
-		tracker.setTargetYOffset(targetYOffset);
+		tracker.setTargetYOffset(targetYOffset.get(caster, target, power, args));
 		tracker.setEffectOffset(effectOffset);
 
-		tracker.setAcceleration(acceleration);
-		tracker.setAccelerationDelay(accelerationDelay);
+		tracker.setAcceleration(acceleration.get(caster, target, power, args));
+		tracker.setAccelerationDelay(accelerationDelay.get(caster, target, power, args));
 
-		tracker.setProjectileTurn(projectileTurn);
-		tracker.setProjectileVelocity(projectileVelocity);
-		tracker.setVerticalRotation(FastMath.toRadians(verticalRotation));
-		tracker.setHorizontalRotation(FastMath.toRadians(horizontalRotation));
-		tracker.setXRotation(FastMath.toRadians(xRotation));
-		tracker.setProjectileVertOffset(projectileVertOffset);
-		tracker.setProjectileHorizOffset(projectileHorizOffset);
-		tracker.setProjectileVertGravity(projectileVertGravity);
-		tracker.setProjectileHorizGravity(projectileHorizGravity);
-		tracker.setProjectileVertSpread(projectileVertSpread);
-		tracker.setProjectileHorizSpread(projectileHorizSpread);
+		tracker.setProjectileTurn(projectileTurn.get(caster, target, power, args));
+		tracker.setProjectileVelocity(projectileVelocity.get(caster, target, power, args));
+		tracker.setVerticalRotation(FastMath.toRadians(verticalRotation.get(caster, target, power, args)));
+		tracker.setHorizontalRotation(FastMath.toRadians(horizontalRotation.get(caster, target, power, args)));
+		tracker.setXRotation(FastMath.toRadians(xRotation.get(caster, target, power, args)));
+		tracker.setProjectileVertOffset(projectileVertOffset.get(caster, target, power, args));
+		tracker.setProjectileHorizOffset(projectileHorizOffset.get(caster, target, power, args));
+		tracker.setProjectileVertGravity(projectileVertGravity.get(caster, target, power, args));
+		tracker.setProjectileHorizGravity(projectileHorizGravity.get(caster, target, power, args));
+		tracker.setProjectileVertSpread(projectileVertSpread.get(caster, target, power, args));
+		tracker.setProjectileHorizSpread(projectileHorizSpread.get(caster, target, power, args));
 
+		int tickInterval = this.tickInterval.get(caster, target, power, args);
 		tracker.setTickInterval(tickInterval);
-		tracker.setTicksPerSecond(ticksPerSecond);
-		tracker.setSpellInterval(spellInterval);
-		tracker.setIntermediateEffects(intermediateEffects);
-		tracker.setIntermediateHitboxes(intermediateHitboxes);
-		tracker.setSpecialEffectInterval(specialEffectInterval);
+		tracker.setTicksPerSecond(20f / tickInterval);
 
-		tracker.setMaxDistanceSquared(maxDistanceSquared);
-		tracker.setMaxDuration(maxDuration);
+		tracker.setSpellInterval(spellInterval.get(caster, target, power, args));
+		tracker.setIntermediateEffects(intermediateEffects.get(caster, target, power, args));
+		tracker.setIntermediateHitboxes(intermediateHitboxes.get(caster, target, power, args));
+		tracker.setSpecialEffectInterval(specialEffectInterval.get(caster, target, power, args));
 
-		tracker.setTickSpellLimit(tickSpellLimit);
-		tracker.setMaxEntitiesHit(maxEntitiesHit);
-		tracker.setHorizontalHitRadius(hitRadius);
-		tracker.setVerticalHitRadius(verticalHitRadius);
-		tracker.setGroundHorizontalHitRadius(groundHitRadius);
-		tracker.setGroundVerticalHitRadius(groundVerticalHitRadius);
+		double maxDistance = this.maxDistance.get(caster, target, power, args);
+		tracker.setMaxDistanceSquared(maxDistance * maxDistance);
+
+		tracker.setMaxDuration(maxDuration.get(caster, target, power, args) * TimeUtil.MILLISECONDS_PER_SECOND);
+
+		tracker.setTickSpellLimit(tickSpellLimit.get(caster, target, power, args));
+		tracker.setMaxEntitiesHit(maxEntitiesHit.get(caster, target, power, args));
+		tracker.setHorizontalHitRadius(hitRadius.get(caster, target, power, args));
+		tracker.setVerticalHitRadius(verticalHitRadius.get(caster, target, power, args));
+		tracker.setGroundHorizontalHitRadius(groundHitRadius.get(caster, target, power, args));
+		tracker.setGroundVerticalHitRadius(groundVerticalHitRadius.get(caster, target, power, args));
 		tracker.setGroundMaterials(groundMaterials);
 		tracker.setDisallowedGroundMaterials(disallowedGroundMaterials);
 
 		tracker.setHugSurface(hugSurface);
-		tracker.setHeightFromSurface(heightFromSurface);
+		tracker.setHeightFromSurface(heightFromSurface.get(caster, target, power, args));
 
 		tracker.setControllable(controllable);
 		tracker.setCallEvents(true);
@@ -528,38 +531,6 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		tracker.setEntityLocationSpell(entityLocationSpell);
 	}
 
-	public float getTargetYOffset() {
-		return targetYOffset;
-	}
-
-	public void setTargetYOffset(float targetYOffset) {
-		this.targetYOffset = targetYOffset;
-	}
-
-	public float getStartXOffset() {
-		return startXOffset;
-	}
-
-	public void setStartXOffset(float startXOffset) {
-		this.startXOffset = startXOffset;
-	}
-
-	public float getStartYOffset() {
-		return startYOffset;
-	}
-
-	public void setStartYOffset(float startYOffset) {
-		this.startYOffset = startYOffset;
-	}
-
-	public float getStartZOffset() {
-		return startZOffset;
-	}
-
-	public void setStartZOffset(float startZOffset) {
-		this.startZOffset = startZOffset;
-	}
-
 	public Vector getRelativeOffset() {
 		return relativeOffset;
 	}
@@ -576,206 +547,6 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		this.effectOffset = effectOffset;
 	}
 
-	public float getAcceleration() {
-		return acceleration;
-	}
-
-	public void setAcceleration(float acceleration) {
-		this.acceleration = acceleration;
-	}
-
-	public int getAccelerationDelay() {
-		return accelerationDelay;
-	}
-
-	public void setAccelerationDelay(int accelerationDelay) {
-		this.accelerationDelay = accelerationDelay;
-	}
-
-	public float getProjectileTurn() {
-		return projectileTurn;
-	}
-
-	public void setProjectileTurn(float projectileTurn) {
-		this.projectileTurn = projectileTurn;
-	}
-
-	public float getProjectileVelocity() {
-		return projectileVelocity;
-	}
-
-	public void setProjectileVelocity(float projectileVelocity) {
-		this.projectileVelocity = projectileVelocity;
-	}
-
-	public void setVerticalRotation(float verticalRotation) {
-		this.verticalRotation = verticalRotation;
-	}
-
-	public double getVerticalRotation() {
-		return verticalRotation;
-	}
-
-	public void setHorizontalRotation(double horizontalRotation) {
-		this.horizontalRotation = horizontalRotation;
-	}
-
-	public double getHorizontalRotation() {
-		return horizontalRotation;
-	}
-
-	public void setXRotation(double xRotation) {
-		this.xRotation = xRotation;
-	}
-
-	public double getXRotation() {
-		return xRotation;
-	}
-
-	public float getProjectileVertOffset() {
-		return projectileVertOffset;
-	}
-
-	public void setProjectileVertOffset(float projectileVertOffset) {
-		this.projectileVertOffset = projectileVertOffset;
-	}
-
-	public float getProjectileVertSpread() {
-		return projectileVertSpread;
-	}
-
-	public void setProjectileVertSpread(float projectileVertSpread) {
-		this.projectileVertSpread = projectileVertSpread;
-	}
-
-	public float getProjectileHorizOffset() {
-		return projectileHorizOffset;
-	}
-
-	public void setProjectileHorizOffset(float projectileHorizOffset) {
-		this.projectileHorizOffset = projectileHorizOffset;
-	}
-
-	public float getProjectileHorizSpread() {
-		return projectileHorizSpread;
-	}
-
-	public void setProjectileHorizSpread(float projectileHorizSpread) {
-		this.projectileHorizSpread = projectileHorizSpread;
-	}
-
-	public float getProjectileVertGravity() {
-		return projectileVertGravity;
-	}
-
-	public void setProjectileVertGravity(float projectileVertGravity) {
-		this.projectileVertGravity = projectileVertGravity;
-	}
-
-	public float getProjectileHorizGravity() {
-		return projectileHorizGravity;
-	}
-
-	public void setProjectileHorizGravity(float projectileHorizGravity) {
-		this.projectileHorizGravity = projectileHorizGravity;
-	}
-
-	public int getTickInterval() {
-		return tickInterval;
-	}
-
-	public void setTickInterval(int tickInterval) {
-		this.tickInterval = tickInterval;
-	}
-
-	public float getTicksPerSecond() {
-		return ticksPerSecond;
-	}
-
-	public void setTicksPerSecond(float ticksPerSecond) {
-		this.ticksPerSecond = ticksPerSecond;
-	}
-
-	public int getSpellInterval() {
-		return spellInterval;
-	}
-
-	public void setSpellInterval(int spellInterval) {
-		this.spellInterval = spellInterval;
-	}
-
-	public int getIntermediateEffects() {
-		return intermediateEffects;
-	}
-
-	public void setIntermediateEffects(int intermediateEffects) {
-		this.intermediateEffects = intermediateEffects;
-	}
-
-	public int getSpecialEffectInterval() {
-		return specialEffectInterval;
-	}
-
-	public void setSpecialEffectInterval(int specialEffectInterval) {
-		this.specialEffectInterval = specialEffectInterval;
-	}
-
-	public int getTickSpellLimit() {
-		return tickSpellLimit;
-	}
-
-	public void setTickSpellLimit(int tickSpellLimit) {
-		this.tickSpellLimit = tickSpellLimit;
-	}
-
-	public int getIntermediateHitboxes() {
-		return intermediateHitboxes;
-	}
-
-	public void setIntermediateHitboxes(int intermediateHitboxes) {
-		this.intermediateHitboxes = intermediateHitboxes;
-	}
-
-	public int getMaxEntitiesHit() {
-		return maxEntitiesHit;
-	}
-
-	public void setMaxEntitiesHit(int maxEntitiesHit) {
-		this.maxEntitiesHit = maxEntitiesHit;
-	}
-
-	public float getVerticalHitRadius() {
-		return verticalHitRadius;
-	}
-
-	public void setVerticalHitRadius(float verticalHitRadius) {
-		this.verticalHitRadius = verticalHitRadius;
-	}
-
-	public float getHitRadius() {
-		return hitRadius;
-	}
-
-	public void setHitRadius(float hitRadius) {
-		this.hitRadius = hitRadius;
-	}
-
-	public int getGroundVerticalHitRadius() {
-		return groundVerticalHitRadius;
-	}
-
-	public void setGroundVerticalHitRadius(int groundVerticalHitRadius) {
-		this.groundVerticalHitRadius = groundVerticalHitRadius;
-	}
-
-	public int getGroundHitRadius() {
-		return groundHitRadius;
-	}
-
-	public void setGroundHitRadius(int groundHitRadius) {
-		this.groundHitRadius = groundHitRadius;
-	}
-
 	public Set<Material> getGroundMaterials() {
 		return groundMaterials;
 	}
@@ -784,36 +555,12 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		return disallowedGroundMaterials;
 	}
 
-	public double getMaxDuration() {
-		return maxDuration;
-	}
-
-	public void setMaxDuration(double maxDuration) {
-		this.maxDuration = maxDuration;
-	}
-
-	public double getMaxDistanceSquared() {
-		return maxDistanceSquared;
-	}
-
-	public void setMaxDistanceSquared(double maxDistanceSquared) {
-		this.maxDistanceSquared = maxDistanceSquared;
-	}
-
 	public boolean shouldHugSurface() {
 		return hugSurface;
 	}
 
 	public void setHugSurface(boolean hugSurface) {
 		this.hugSurface = hugSurface;
-	}
-
-	public float getHeightFromSurface() {
-		return heightFromSurface;
-	}
-
-	public void setHeightFromSurface(float heightFromSurface) {
-		this.heightFromSurface = heightFromSurface;
 	}
 
 	public boolean isControllable() {

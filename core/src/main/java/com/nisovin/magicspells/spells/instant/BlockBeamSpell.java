@@ -24,6 +24,7 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.BoundingBox;
 import com.nisovin.magicspells.spells.InstantSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
@@ -42,26 +43,25 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 	private Vector relativeOffset;
 	private Vector targetRelativeOffset;
 
-	private int removeDelay;
+	private ConfigData<Integer> removeDelay;
 
-	private double health;
-	private double hitRadius;
-	private double maxDistance;
-	private double verticalHitRadius;
+	private ConfigData<Double> health;
+	private ConfigData<Double> hitRadius;
+	private ConfigData<Double> maxDistance;
+	private ConfigData<Double> verticalHitRadius;
 
-	private float gravity;
-	private float yOffset;
-	private float interval;
-	private float rotation;
-	private float rotationX;
-	private float rotationY;
-	private float rotationZ;
-	private float beamVertOffset;
-	private float beamHorizOffset;
+	private ConfigData<Float> gravity;
+	private ConfigData<Float> yOffset;
+	private ConfigData<Float> interval;
+	private ConfigData<Float> rotation;
+	private ConfigData<Float> rotationX;
+	private ConfigData<Float> rotationY;
+	private ConfigData<Float> rotationZ;
+	private ConfigData<Float> beamVertOffset;
+	private ConfigData<Float> beamHorizOffset;
 
-	private float beamSpread;
-	private float beamVerticalSpread;
-	private float beamHorizontalSpread;
+	private ConfigData<Float> beamVerticalSpread;
+	private ConfigData<Float> beamHorizontalSpread;
 
 	private boolean small;
 	private boolean hpFix;
@@ -96,26 +96,26 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 		relativeOffset = getConfigVector("relative-offset", "0,0.5,0");
 		targetRelativeOffset = getConfigVector("target-relative-offset", "0,0.5,0");
 
-		removeDelay = getConfigInt("remove-delay", 40);
+		removeDelay = getConfigDataInt("remove-delay", 40);
 
-		health = getConfigDouble("health", 2000);
-		hitRadius = getConfigDouble("hit-radius", 2);
-		maxDistance = getConfigDouble("max-distance", 30);
-		verticalHitRadius = getConfigDouble("vertical-hit-radius", 2);
+		health = getConfigDataDouble("health", 2000);
+		hitRadius = getConfigDataDouble("hit-radius", 2);
+		maxDistance = getConfigDataDouble("max-distance", 30);
+		verticalHitRadius = getConfigDataDouble("vertical-hit-radius", 2);
 
-		gravity = getConfigFloat("gravity", 0F);
-		yOffset = getConfigFloat("y-offset", 0F);
-		interval = getConfigFloat("interval", 1F);
-		rotation = getConfigFloat("rotation", 0F);
-		rotationX = getConfigFloat("rotation-x", 0F);
-		rotationY = getConfigFloat("rotation-y", 0F);
-		rotationZ = getConfigFloat("rotation-z", 0F);
-		beamVertOffset = getConfigFloat("beam-vert-offset", 0F);
-		beamHorizOffset = getConfigFloat("beam-horiz-offset", 0F);
+		gravity = getConfigDataFloat("gravity", 0F);
+		yOffset = getConfigDataFloat("y-offset", 0F);
+		interval = getConfigDataFloat("interval", 1F);
+		rotation = getConfigDataFloat("rotation", 0F);
+		rotationX = getConfigDataFloat("rotation-x", 0F);
+		rotationY = getConfigDataFloat("rotation-y", 0F);
+		rotationZ = getConfigDataFloat("rotation-z", 0F);
+		beamVertOffset = getConfigDataFloat("beam-vert-offset", 0F);
+		beamHorizOffset = getConfigDataFloat("beam-horiz-offset", 0F);
 
-		beamSpread = getConfigFloat("beam-spread", 0F);
-		beamVerticalSpread = getConfigFloat("beam-vertical-spread", beamSpread);
-		beamHorizontalSpread = getConfigFloat("beam-horizontal-spread", beamSpread);
+		ConfigData<Float> beamSpread = getConfigDataFloat("beam-spread", 0F);
+		beamVerticalSpread = getConfigDataFloat("beam-vertical-spread", beamSpread);
+		beamHorizontalSpread = getConfigDataFloat("beam-horizontal-spread", beamSpread);
 
 		small = getConfigBoolean("small", false);
 		hpFix = getConfigBoolean("use-hp-fix", false);
@@ -126,10 +126,6 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 		hitSpellName = getConfigString("spell", "");
 		endSpellName = getConfigString("spell-on-end", "");
 		groundSpellName = getConfigString("spell-on-hit-ground", "");
-
-		gravity *= -1;
-		if (interval < 0.01) interval = 0.01F;
-		if (yOffset != 0) relativeOffset.setY(yOffset);
 	}
 
 	@Override
@@ -246,142 +242,6 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 		this.targetRelativeOffset = targetRelativeOffset;
 	}
 
-	public int getRemoveDelay() {
-		return removeDelay;
-	}
-
-	public void setRemoveDelay(int removeDelay) {
-		this.removeDelay = removeDelay;
-	}
-
-	public double getHealth() {
-		return health;
-	}
-
-	public void setHealth(double health) {
-		this.health = health;
-	}
-
-	public double getHitRadius() {
-		return hitRadius;
-	}
-
-	public void setHitRadius(double hitRadius) {
-		this.hitRadius = hitRadius;
-	}
-
-	public double getMaxDistance() {
-		return maxDistance;
-	}
-
-	public void setMaxDistance(double maxDistance) {
-		this.maxDistance = maxDistance;
-	}
-
-	public double getVerticalHitRadius() {
-		return verticalHitRadius;
-	}
-
-	public void setVerticalHitRadius(double verticalHitRadius) {
-		this.verticalHitRadius = verticalHitRadius;
-	}
-
-	public float getGravity() {
-		return gravity;
-	}
-
-	public void setGravity(float gravity) {
-		this.gravity = gravity;
-	}
-
-	public float getYOffset() {
-		return yOffset;
-	}
-
-	public void setYOffset(float yOffset) {
-		this.yOffset = yOffset;
-	}
-
-	public float getInterval() {
-		return interval;
-	}
-
-	public void setInterval(float interval) {
-		this.interval = interval;
-	}
-
-	public float getRotation() {
-		return rotation;
-	}
-
-	public void setRotation(float rotation) {
-		this.rotation = rotation;
-	}
-
-	public float getRotationX() {
-		return rotationX;
-	}
-
-	public void setRotationX(float rotationX) {
-		this.rotationX = rotationX;
-	}
-
-	public float getRotationY() {
-		return rotationY;
-	}
-
-	public void setRotationY(float rotationY) {
-		this.rotationY = rotationY;
-	}
-
-	public float getRotationZ() {
-		return rotationZ;
-	}
-
-	public void setRotationZ(float rotationZ) {
-		this.rotationZ = rotationZ;
-	}
-
-	public float getBeamVerticalOffset() {
-		return beamVertOffset;
-	}
-
-	public void setBeamVerticalOffset(float beamVertOffset) {
-		this.beamVertOffset = beamVertOffset;
-	}
-
-	public float getBeamHorizontalOffset() {
-		return beamHorizOffset;
-	}
-
-	public void setBeamHorizontalOffset(float beamHorizOffset) {
-		this.beamHorizOffset = beamHorizOffset;
-	}
-
-	public float getBeamSpread() {
-		return beamSpread;
-	}
-
-	public void setBeamSpread(float beamSpread) {
-		this.beamSpread = beamSpread;
-	}
-
-	public float getBeamVerticalSpread() {
-		return beamVerticalSpread;
-	}
-
-	public void setBeamVerticalSpread(float beamVerticalSpread) {
-		this.beamVerticalSpread = beamVerticalSpread;
-	}
-
-	public float getBeamHorizontalSpread() {
-		return beamHorizontalSpread;
-	}
-
-	public void setBeamHorizontalSpread(float beamHorizontalSpread) {
-		this.beamHorizontalSpread = beamHorizontalSpread;
-	}
-
 	public boolean isSmall() {
 		return small;
 	}
@@ -448,26 +308,49 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 
 	private class BlockBeam {
 
-		private LivingEntity caster;
-		private LivingEntity target;
-		private float power;
-		private Location startLoc;
-		private Location currentLoc;
-		private ItemStack helmet;
+		private final LivingEntity caster;
+		private final LivingEntity target;
+		private final Location startLoc;
+		private final ItemStack helmet;
+		private final float power;
 
-		private final Set<Entity> immune;
 		private final List<LivingEntity> armorStandList;
+		private final Set<Entity> immune;
+
+		private int removeDelay;
+
+		private double health;
+		private double hitRadius;
+		private double maxDistance;
+		private double verticalHitRadius;
+
+		private float gravity;
+		private float interval;
+		private float rotation;
+		private float rotationX;
+		private float rotationY;
+		private float rotationZ;
+		private float beamVertOffset;
+		private float beamHorizOffset;
+
+		private float beamVerticalSpread;
+		private float beamHorizontalSpread;
+
+		private Vector relativeOffset;
 
 		private BlockBeam(LivingEntity caster, Location from, float power, String[] args) {
 			this.caster = caster;
+			this.target = null;
 			this.power = power;
 			helmet = headItem;
+
 			startLoc = from.clone();
 			if (!changePitch) startLoc.setPitch(0F);
 
-			immune = new HashSet<>();
 			armorStandList = new ArrayList<>();
+			immune = new HashSet<>();
 
+			init(caster, target, power, args);
 			shootBeam();
 		}
 
@@ -476,13 +359,42 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 			this.target = target;
 			this.power = power;
 			helmet = headItem;
+
 			startLoc = from.clone();
 			if (!changePitch) startLoc.setPitch(0F);
 
-			immune = new HashSet<>();
 			armorStandList = new ArrayList<>();
+			immune = new HashSet<>();
 
+			init(caster, target, power, args);
 			shootBeam();
+		}
+
+		private void init(LivingEntity caster, LivingEntity target, float power, String[] args) {
+			if (helmet == null) return;
+
+			removeDelay = BlockBeamSpell.this.removeDelay.get(caster, target, power, args);
+
+			health = BlockBeamSpell.this.health.get(caster, target, power, args);
+			hitRadius = BlockBeamSpell.this.hitRadius.get(caster, target, power, args);
+			maxDistance = BlockBeamSpell.this.maxDistance.get(caster, target, power, args);
+			verticalHitRadius = BlockBeamSpell.this.verticalHitRadius.get(caster, target, power, args);
+
+			gravity = BlockBeamSpell.this.gravity.get(caster, target, power, args);
+			interval = BlockBeamSpell.this.interval.get(caster, target, power, args);
+			rotation = BlockBeamSpell.this.rotation.get(caster, target, power, args);
+			rotationX = BlockBeamSpell.this.rotationX.get(caster, target, power, args);
+			rotationY = BlockBeamSpell.this.rotationY.get(caster, target, power, args);
+			rotationZ = BlockBeamSpell.this.rotationZ.get(caster, target, power, args);
+			beamVertOffset = BlockBeamSpell.this.beamVertOffset.get(caster, target, power, args);
+			beamHorizOffset = BlockBeamSpell.this.beamHorizOffset.get(caster, target, power, args);
+
+			beamVerticalSpread = BlockBeamSpell.this.beamVerticalSpread.get(caster, target, power, args);
+			beamHorizontalSpread = BlockBeamSpell.this.beamHorizontalSpread.get(caster, target, power, args);
+
+			double yOffset = BlockBeamSpell.this.yOffset.get(caster, target, power, args);
+			if (yOffset != 0) relativeOffset = BlockBeamSpell.this.relativeOffset.clone().setY(yOffset);
+			else relativeOffset = BlockBeamSpell.this.relativeOffset;
 		}
 
 		private void shootBeam() {
@@ -502,7 +414,7 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 			startLoc.add(startLoc.getDirection().clone().multiply(relativeOffset.getX()));
 			startLoc.setY(startLoc.getY() + relativeOffset.getY());
 
-			currentLoc = startLoc.clone();
+			Location currentLoc = startLoc.clone();
 
 			//apply target relative offset
 			Location targetLoc = null;
