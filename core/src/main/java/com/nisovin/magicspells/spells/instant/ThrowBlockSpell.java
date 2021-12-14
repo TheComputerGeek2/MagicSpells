@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.commons.math3.util.Pair;
+
 import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -19,6 +21,8 @@ import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
+import de.slikey.exp4j.Expression;
+
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
@@ -27,7 +31,9 @@ import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
+import com.nisovin.magicspells.util.config.FunctionData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.events.MagicSpellsEntityDamageByEntityEvent;
@@ -38,12 +44,12 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 
 	private Material material;
 
-	private int tntFuse;
+	private ConfigData<Integer> tntFuse;
 
-	private float yOffset;
-	private float velocity;
-	private float rotationOffset;
-	private float verticalAdjustment;
+	private ConfigData<Float> yOffset;
+	private ConfigData<Float> velocity;
+	private ConfigData<Float> rotationOffset;
+	private ConfigData<Float> verticalAdjustment;
 
 	private boolean dropItem;
 	private boolean stickyBlocks;
@@ -66,19 +72,31 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 
 		String materialName = getConfigString("block-type", "stone");
 		if (materialName.toLowerCase().startsWith("primedtnt:")) {
-			String[] split = materialName.split(":");
+			String[] split = materialName.split(":", 2);
 			material = null;
-			tntFuse = Integer.parseInt(split[1]);
+
+			try {
+				int fuse = Integer.parseInt(split[1]);
+				tntFuse = (caster, target, power, args) -> fuse;
+			} catch (NumberFormatException e) {
+				Pair<Expression, Boolean> ex = FunctionData.buildExpression(split[1]);
+
+				if (ex != null) tntFuse = new FunctionData.IntegerData(ex.getFirst(), 0, ex.getSecond());
+				else {
+					MagicSpells.error("Invalid tnt fuse '" + split[1] + "' for ThrowBlockSpell '" + internalName + "'.");
+					tntFuse = null;
+				}
+			}
 		} else {
 			material = Util.getMaterial(materialName);
-			tntFuse = 0;
+			tntFuse = null;
 		}
 
-		rotationOffset = getConfigFloat("rotation-offset", 0F);
+		rotationOffset = getConfigDataFloat("rotation-offset", 0F);
 
-		yOffset = getConfigFloat("y-offset", 0F);
-		velocity = getConfigFloat("velocity", 1);
-		verticalAdjustment = getConfigFloat("vertical-adjustment", 0.5F);
+		yOffset = getConfigDataFloat("y-offset", 0F);
+		velocity = getConfigDataFloat("velocity", 1);
+		verticalAdjustment = getConfigDataFloat("vertical-adjustment", 0.5F);
 
 		dropItem = getConfigBoolean("drop-item", false);
 		stickyBlocks = getConfigBoolean("sticky-blocks", false);
@@ -97,7 +115,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 	public void initialize() {
 		super.initialize();
 
-		if (material == null || !material.isBlock() && tntFuse == 0) {
+		if (material == null || !material.isBlock() && tntFuse == null) {
 			MagicSpells.error("ThrowBlockSpell '" + internalName + "' has an invalid block-type defined!");
 		}
 
@@ -110,7 +128,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 		if (removeBlocks || preventBlocks || spellOnLand != null || ensureSpellCast || stickyBlocks) {
 			fallingBlocks = new HashMap<>();
 			if (material != null) registerEvents(new ThrowBlockListener(this));
-			else if (tntFuse > 0) registerEvents(new TntListener());
+			else if (tntFuse != null) registerEvents(new TntListener());
 		}
 	}
 
@@ -124,7 +142,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 		if (state == SpellCastState.NORMAL) {
 			Vector v = getVector(caster, caster.getLocation(), power, args);
 			Location l = caster.getEyeLocation().add(v);
-			l.add(0, yOffset, 0);
+			l.add(0, yOffset.get(caster, null, power, args), 0);
 			spawnFallingBlock(caster, l, v, power, args);
 			playSpellEffects(EffectPosition.CASTER, caster);
 		}
@@ -134,7 +152,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		Vector v = getVector(caster, target, power, args);
-		spawnFallingBlock(caster, target.clone().add(0, yOffset, 0), v, power, args);
+		spawnFallingBlock(caster, target.clone().add(0, yOffset.get(caster, null, power, args), 0), v, power, args);
 		playSpellEffects(EffectPosition.CASTER, target);
 		return true;
 	}
@@ -147,7 +165,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 	@Override
 	public boolean castAtLocation(Location target, float power, String[] args) {
 		Vector v = getVector(null, target, power, args);
-		spawnFallingBlock(null, target.clone().add(0, yOffset, 0), v, power, args);
+		spawnFallingBlock(null, target.clone().add(0, yOffset.get(null, null, power, args), 0), v, power, args);
 		playSpellEffects(EffectPosition.CASTER, target);
 		return true;
 	}
@@ -159,11 +177,17 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 
 	private Vector getVector(LivingEntity caster, Location loc, float power, String[] args) {
 		Vector v = loc.getDirection();
+
+		float verticalAdjustment = this.verticalAdjustment.get(caster, null, power, args);
 		if (verticalAdjustment != 0) v.setY(v.getY() + verticalAdjustment);
+
+		float rotationOffset = this.rotationOffset.get(caster, null, power, args);
 		if (rotationOffset != 0) Util.rotateVector(v, rotationOffset);
-		v.normalize().multiply(velocity);
-		if (applySpellPowerToVelocity) v.multiply(power);
-		return v;
+
+		float velocity = this.velocity.get(caster, null, power, args);
+		if (applySpellPowerToVelocity) velocity *= power;
+
+		return v.normalize().multiply(velocity);
 	}
 	
 	private void spawnFallingBlock(LivingEntity caster, Location location, Vector velocity, float power, String[] args) {
@@ -179,11 +203,13 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 			block.setDropItem(dropItem);
 			if (ensureSpellCast || stickyBlocks) new ThrowBlockMonitor(block, info);
 			entity = block;
-		} else if (tntFuse > 0) {
+		} else if (tntFuse != null) {
 			TNTPrimed tnt = location.getWorld().spawn(location, TNTPrimed.class);
 			tnt.setGravity(projectileHasGravity);
 			playSpellEffects(EffectPosition.PROJECTILE, tnt);
 			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, caster.getLocation(), tnt.getLocation(), caster, tnt);
+
+			int tntFuse = this.tntFuse.get(caster, null, power, args);
 			tnt.setFuseTicks(tntFuse);
 			tnt.setVelocity(velocity);
 			entity = tnt;
@@ -367,46 +393,6 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 
 	public void setMaterial(Material material) {
 		this.material = material;
-	}
-
-	public int getTntFuse() {
-		return tntFuse;
-	}
-
-	public void setTntFuse(int tntFuse) {
-		this.tntFuse = tntFuse;
-	}
-
-	public float getRotationOffset() {
-		return rotationOffset;
-	}
-
-	public void setRotationOffset(float rotationOffset) {
-		this.rotationOffset = rotationOffset;
-	}
-
-	public float getYOffset() {
-		return yOffset;
-	}
-
-	public void setYOffset(float yOffset) {
-		this.yOffset = yOffset;
-	}
-
-	public float getVelocity() {
-		return velocity;
-	}
-
-	public void setVelocity(float velocity) {
-		this.velocity = velocity;
-	}
-
-	public float getVerticalAdjustment() {
-		return verticalAdjustment;
-	}
-
-	public void setVerticalAdjustment(float verticalAdjustment) {
-		this.verticalAdjustment = verticalAdjustment;
 	}
 
 	public Subspell getSpellOnLand() {

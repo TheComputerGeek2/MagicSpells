@@ -11,15 +11,17 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class VelocitySpell extends InstantSpell {
 
 	private final Set<UUID> jumping;
 
-	private double speed;
+	private ConfigData<Double> speed;
 
 	private boolean cancelDamage;
+	private boolean powerAffectsSpeed;
 	private boolean addVelocityInstead;
 
 	public VelocitySpell(MagicConfig config, String spellName) {
@@ -27,18 +29,23 @@ public class VelocitySpell extends InstantSpell {
 
 		jumping = new HashSet<>();
 
-		speed = getConfigFloat("speed", 40) / 10F;
+		speed = getConfigDataDouble("speed", 40);
 
 		cancelDamage = getConfigBoolean("cancel-damage", true);
 		addVelocityInstead = getConfigBoolean("add-velocity-instead", false);
+		powerAffectsSpeed = getConfigBoolean("power-affects-speed", true);
 	}
 
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			Vector v = caster.getEyeLocation().getDirection().normalize().multiply(speed * power);
+			double speed = this.speed.get(caster, null, power, args) / 10;
+			if (powerAffectsSpeed) speed *= power;
+
+			Vector v = caster.getEyeLocation().getDirection().normalize().multiply(speed);
 			if (addVelocityInstead) caster.setVelocity(caster.getVelocity().add(v));
 			else caster.setVelocity(v);
+
 			jumping.add(caster.getUniqueId());
 			playSpellEffects(EffectPosition.CASTER, caster);
 		}
@@ -56,14 +63,6 @@ public class VelocitySpell extends InstantSpell {
 
 	public Set<UUID> getJumping() {
 		return jumping;
-	}
-
-	public double getSpeed() {
-		return speed;
-	}
-
-	public void setSpeed(double speed) {
-		this.speed = speed;
 	}
 
 	public boolean shouldCancelDamage() {

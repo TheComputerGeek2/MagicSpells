@@ -20,6 +20,7 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
 import com.nisovin.magicspells.util.PlayerNameUtils;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
@@ -32,11 +33,12 @@ public class DowseSpell extends InstantSpell {
 	private String playerName;
 	private String strNotFound;
 
-	private int radius;
+	private ConfigData<Integer> radius;
 
 	private boolean setCompass;
 	private boolean getDistance;
 	private boolean rotatePlayer;
+	private boolean powerAffectsRadius;
 
 	public DowseSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -58,21 +60,25 @@ public class DowseSpell extends InstantSpell {
 
 		strNotFound = getConfigString("str-not-found", "No dowsing target found.");
 
-		radius = getConfigInt("radius", 4);
+		radius = getConfigDataInt("radius", 4);
 
 		setCompass = getConfigBoolean("set-compass", true);
 		rotatePlayer = getConfigBoolean("rotate-player", true);
+		powerAffectsRadius = getConfigBoolean("power-affects-radius", true);
 
 		getDistance = strCastSelf != null && strCastSelf.contains("%d");
 
 		if (material == null && entityType == null) MagicSpells.error("DowseSpell '" + internalName + "' has no dowse target (block or entity) defined!");
-
-		if (radius > MagicSpells.getGlobalRadius()) radius = MagicSpells.getGlobalRadius();
 	}
 
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL && caster instanceof Player player) {
+			double radius = this.radius.get(caster, null, power, args);
+			if (powerAffectsRadius) radius *= power;
+
+			radius = Math.min(radius, MagicSpells.getGlobalRadius());
+
 			int distance = -1;
 			if (material != null) {
 				Block foundBlock = null;
@@ -85,7 +91,7 @@ public class DowseSpell extends InstantSpell {
 				
 				// Label to exit the search
 				search:
-				for (int r = 1; r <= Math.round(radius * power); r++) {
+				for (int r = 1; r <= radius; r++) {
 					for (int x = -r; x <= r; x++) {
 						for (int y = -r; y <= r; y++) {
 							for (int z = -r; z <= r; z++) {
@@ -206,14 +212,6 @@ public class DowseSpell extends InstantSpell {
 
 	public void setStrNotFound(String strNotFound) {
 		this.strNotFound = strNotFound;
-	}
-
-	public int getRadius() {
-		return radius;
-	}
-
-	public void setRadius(int radius) {
-		this.radius = radius;
 	}
 
 	public boolean shouldUpdateCompass() {

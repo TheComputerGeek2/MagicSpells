@@ -15,6 +15,7 @@ import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
@@ -34,23 +35,22 @@ public class ItemProjectileSpell extends InstantSpell implements TargetedLocatio
 
 	private ItemStack item;
 
-	private int spellDelay;
-	private int pickupDelay;
-	private int removeDelay;
-	private int tickInterval;
-	private int spellInterval;
-	private int itemNameDelay;
-	private int specialEffectInterval;
+	private ConfigData<Integer> spellDelay;
+	private ConfigData<Integer> pickupDelay;
+	private ConfigData<Integer> removeDelay;
+	private ConfigData<Integer> tickInterval;
+	private ConfigData<Integer> spellInterval;
+	private ConfigData<Integer> itemNameDelay;
+	private ConfigData<Integer> specialEffectInterval;
 
-	private float speed;
-	private float yOffset;
-	private float hitRadius;
-	private float vertSpeed;
-	private float vertHitRadius;
-	private float rotationOffset;
+	private ConfigData<Float> speed;
+	private ConfigData<Float> yOffset;
+	private ConfigData<Float> hitRadius;
+	private ConfigData<Float> vertSpeed;
+	private ConfigData<Float> vertHitRadius;
+	private ConfigData<Float> rotationOffset;
 
 	private boolean checkPlugins;
-	private boolean vertSpeedUsed;
 	private boolean stopOnHitGround;
 	private boolean stopOnHitEntity;
 	private boolean projectileHasGravity;
@@ -72,29 +72,27 @@ public class ItemProjectileSpell extends InstantSpell implements TargetedLocatio
 		MagicItem magicItem = MagicItems.getMagicItemFromString(getConfigString("item", "iron_sword"));
 		if (magicItem != null) item = magicItem.getItemStack();
 
-		spellDelay = getConfigInt("spell-delay", 40);
-		pickupDelay = getConfigInt("pickup-delay", 100);
-		removeDelay = getConfigInt("remove-delay", 100);
-		tickInterval = getConfigInt("tick-interval", 1);
-		spellInterval = getConfigInt("spell-interval", 2);
-		itemNameDelay = getConfigInt("item-name-delay", 10);
-		specialEffectInterval = getConfigInt("special-effect-interval", 2);
+		spellDelay = getConfigDataInt("spell-delay", 40);
+		pickupDelay = getConfigDataInt("pickup-delay", 100);
+		removeDelay = getConfigDataInt("remove-delay", 100);
+		tickInterval = getConfigDataInt("tick-interval", 1);
+		spellInterval = getConfigDataInt("spell-interval", 2);
+		itemNameDelay = getConfigDataInt("item-name-delay", 10);
+		specialEffectInterval = getConfigDataInt("special-effect-interval", 2);
 
-		speed = getConfigFloat("speed", 1F);
-		yOffset = getConfigFloat("y-offset", 0F);
-		hitRadius = getConfigFloat("hit-radius", 1F);
-		vertSpeed = getConfigFloat("vert-speed", 0F);
-		vertHitRadius = getConfigFloat("vertical-hit-radius", 1.5F);
-		rotationOffset = getConfigFloat("rotation-offset", 0F);
+		speed = getConfigDataFloat("speed", 1F);
+		yOffset = getConfigDataFloat("y-offset", 0F);
+		hitRadius = getConfigDataFloat("hit-radius", 1F);
+		vertSpeed = getConfigDataFloat("vert-speed", 0F);
+		vertHitRadius = getConfigDataFloat("vertical-hit-radius", 1.5F);
+		rotationOffset = getConfigDataFloat("rotation-offset", 0F);
 
-		if (vertSpeed != 0) vertSpeedUsed = true;
 		checkPlugins = getConfigBoolean("check-plugins", true);
 		stopOnHitGround = getConfigBoolean("stop-on-hit-ground", true);
 		stopOnHitEntity = getConfigBoolean("stop-on-hit-entity", true);
 		projectileHasGravity = getConfigBoolean("gravity", true);
 
 		relativeOffset = getConfigVector("relative-offset", "0,0,0");
-		if (yOffset != 0) relativeOffset.setY(yOffset);
 
 		itemName = Util.colorize(getConfigString("item-name", ""));
 		spellOnTickName = getConfigString("spell-on-tick", "");
@@ -176,27 +174,33 @@ public class ItemProjectileSpell extends InstantSpell implements TargetedLocatio
 		tracker.setItemName(itemName);
 		tracker.setItem(item);
 
-		tracker.setSpellDelay(spellDelay);
-		tracker.setPickupDelay(pickupDelay);
-		tracker.setRemoveDelay(removeDelay);
-		tracker.setTickInterval(tickInterval);
-		tracker.setSpellInterval(spellInterval);
-		tracker.setItemNameDelay(itemNameDelay);
-		tracker.setSpecialEffectInterval(specialEffectInterval);
+		tracker.setSpellDelay(spellDelay.get(caster, null, power, args));
+		tracker.setPickupDelay(pickupDelay.get(caster, null, power, args));
+		tracker.setRemoveDelay(removeDelay.get(caster, null, power, args));
+		tracker.setTickInterval(tickInterval.get(caster, null, power, args));
+		tracker.setSpellInterval(spellInterval.get(caster, null, power, args));
+		tracker.setItemNameDelay(itemNameDelay.get(caster, null, power, args));
+		tracker.setSpecialEffectInterval(specialEffectInterval.get(caster, null, power, args));
 
-		tracker.setSpeed(speed);
+		tracker.setSpeed(speed.get(caster, null, power, args));
+
+		float yOffset = this.yOffset.get(caster, null, power, args);
 		tracker.setYOffset(yOffset);
-		tracker.setHitRadius(hitRadius);
+
+		float vertSpeed = this.vertSpeed.get(caster, null, power, args);
 		tracker.setVertSpeed(vertSpeed);
-		tracker.setVertHitRadius(vertHitRadius);
-		tracker.setRotationOffset(rotationOffset);
+
+		tracker.setHitRadius(hitRadius.get(caster, null, power, args));
+		tracker.setVertHitRadius(vertHitRadius.get(caster, null, power, args));
+		tracker.setRotationOffset(rotationOffset.get(caster, null, power, args));
 
 		tracker.setCallEvents(checkPlugins);
-		tracker.setVertSpeedUsed(vertSpeedUsed);
+		tracker.setVertSpeedUsed(vertSpeed != 0);
 		tracker.setStopOnHitGround(stopOnHitGround);
 		tracker.setStopOnHitEntity(stopOnHitEntity);
 		tracker.setProjectileHasGravity(projectileHasGravity);
 
+		Vector relativeOffset = yOffset != 0 ? this.relativeOffset.clone().setY(yOffset) : this.relativeOffset;
 		tracker.setRelativeOffset(relativeOffset);
 
 		tracker.setSpellOnTick(spellOnTick);
@@ -225,118 +229,6 @@ public class ItemProjectileSpell extends InstantSpell implements TargetedLocatio
 
 	public void setCheckPlugins(boolean checkPlugins) {
 		this.checkPlugins = checkPlugins;
-	}
-
-	public int getSpellDelay() {
-		return spellDelay;
-	}
-
-	public void setSpellDelay(int spellDelay) {
-		this.spellDelay = spellDelay;
-	}
-
-	public int getPickupDelay() {
-		return pickupDelay;
-	}
-
-	public void setPickupDelay(int pickupDelay) {
-		this.pickupDelay = pickupDelay;
-	}
-
-	public int getRemoveDelay() {
-		return removeDelay;
-	}
-
-	public void setRemoveDelay(int removeDelay) {
-		this.removeDelay = removeDelay;
-	}
-
-	public int getTickInterval() {
-		return tickInterval;
-	}
-
-	public void setTickInterval(int tickInterval) {
-		this.tickInterval = tickInterval;
-	}
-
-	public int getSpellInterval() {
-		return spellInterval;
-	}
-
-	public void setSpellInterval(int spellInterval) {
-		this.spellInterval = spellInterval;
-	}
-
-	public int getItemNameDelay() {
-		return itemNameDelay;
-	}
-
-	public void setItemNameDelay(int itemNameDelay) {
-		this.itemNameDelay = itemNameDelay;
-	}
-
-	public int getSpecialEffectInterval() {
-		return specialEffectInterval;
-	}
-
-	public void setSpecialEffectInterval(int specialEffectInterval) {
-		this.specialEffectInterval = specialEffectInterval;
-	}
-
-	public float getSpeed() {
-		return speed;
-	}
-
-	public void setSpeed(float speed) {
-		this.speed = speed;
-	}
-
-	public float getYOffset() {
-		return yOffset;
-	}
-
-	public void setYOffset(float yOffset) {
-		this.yOffset = yOffset;
-	}
-
-	public float getHitRadius() {
-		return hitRadius;
-	}
-
-	public void setHitRadius(float hitRadius) {
-		this.hitRadius = hitRadius;
-	}
-
-	public float getVertSpeed() {
-		return vertSpeed;
-	}
-
-	public void setVertSpeed(float vertSpeed) {
-		this.vertSpeed = vertSpeed;
-	}
-
-	public float getVertHitRadius() {
-		return vertHitRadius;
-	}
-
-	public void setVertHitRadius(float vertHitRadius) {
-		this.vertHitRadius = vertHitRadius;
-	}
-
-	public float getRotationOffset() {
-		return rotationOffset;
-	}
-
-	public void setRotationOffset(float rotationOffset) {
-		this.rotationOffset = rotationOffset;
-	}
-
-	public boolean isVertSpeedUsed() {
-		return vertSpeedUsed;
-	}
-
-	public void setVertSpeedUsed(boolean vertSpeedUsed) {
-		this.vertSpeedUsed = vertSpeedUsed;
 	}
 
 	public boolean shouldStopOnHitGround() {

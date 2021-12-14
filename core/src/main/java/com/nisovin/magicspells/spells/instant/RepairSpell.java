@@ -17,6 +17,7 @@ import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class RepairSpell extends InstantSpell {
@@ -29,7 +30,7 @@ public class RepairSpell extends InstantSpell {
 	private static final String REPAIR_SELECTOR_KEY_LEGGINGS = "leggings";
 	private static final String REPAIR_SELECTOR_KEY_BOOTS = "boots";
 	
-	private int repairAmt;
+	private ConfigData<Integer> repairAmt;
 
 	private String strNothingToRepair;
 
@@ -41,7 +42,7 @@ public class RepairSpell extends InstantSpell {
 	public RepairSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
-		repairAmt = getConfigInt("repair-amount", 300);
+		repairAmt = getConfigDataInt("repair-amount", 300);
 
 		strNothingToRepair = getConfigString("str-nothing-to-repair", "Nothing to repair.");
 
@@ -95,7 +96,7 @@ public class RepairSpell extends InstantSpell {
 			for (String s : toRepair) {
 				if (s.equals(REPAIR_SELECTOR_KEY_HELD)) {
 					ItemStack item = player.getInventory().getItemInMainHand();
-					item = repair(item);
+					item = repair(caster, item, power, args);
 					if (item == null) continue;
 					repaired = true;
 					player.getInventory().setItemInMainHand(item);
@@ -115,7 +116,7 @@ public class RepairSpell extends InstantSpell {
 					}
 					for (int i = start; i < end; i++) {
 						ItemStack item = items[i];
-						item = repair(item);
+						item = repair(caster, item, power, args);
 						if (item == null) continue;
 						items[i] = item;
 						repaired = true;
@@ -126,7 +127,7 @@ public class RepairSpell extends InstantSpell {
 
 				if (s.equals(REPAIR_SELECTOR_KEY_HELMET)) {
 					ItemStack item = player.getInventory().getHelmet();
-					item = repair(item);
+					item = repair(caster, item, power, args);
 					if (item == null) continue;
 					repaired = true;
 					player.getInventory().setHelmet(item);
@@ -135,7 +136,7 @@ public class RepairSpell extends InstantSpell {
 
 				if (s.equals(REPAIR_SELECTOR_KEY_CHESTPLATE)) {
 					ItemStack item = player.getInventory().getChestplate();
-					item = repair(item);
+					item = repair(caster, item, power, args);
 					if (item == null) continue;
 					repaired = true;
 					player.getInventory().setChestplate(item);
@@ -144,7 +145,7 @@ public class RepairSpell extends InstantSpell {
 
 				if (s.equals(REPAIR_SELECTOR_KEY_LEGGINGS)) {
 					ItemStack item = player.getInventory().getLeggings();
-					item = repair(item);
+					item = repair(caster, item, power, args);
 					if (item == null) continue;
 					repaired = true;
 					player.getInventory().setLeggings(item);
@@ -153,7 +154,7 @@ public class RepairSpell extends InstantSpell {
 
 				if (s.equals(REPAIR_SELECTOR_KEY_BOOTS)) {
 					ItemStack item = player.getInventory().getBoots();
-					item = repair(item);
+					item = repair(caster, item, power, args);
 					if (item == null) continue;
 					repaired = true;
 					player.getInventory().setBoots(item);
@@ -170,13 +171,13 @@ public class RepairSpell extends InstantSpell {
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
-	private ItemStack repair(ItemStack item) {
+	private ItemStack repair(LivingEntity caster, ItemStack item, float power, String[] args) {
 		if (item == null) return null;
 		if (!isRepairable(item)) return null;
 		Damageable meta = (Damageable) item.getItemMeta();
 		if (meta.getDamage() > 0) {
-			meta.setDamage(newDurability(item));
-			item.setItemMeta((ItemMeta) meta);
+			meta.setDamage(newDurability(caster, item, power, args));
+			item.setItemMeta(meta);
 			return item;
 		}
 		return null;
@@ -186,15 +187,16 @@ public class RepairSpell extends InstantSpell {
 		ItemMeta meta = item.getItemMeta();
 		if (!(meta instanceof Damageable)) return false;
 		if (ignoredItems != null && ignoredItems.contains(item.getType())) return false;
-		if (allowedItems != null && !allowedItems.contains(item.getType())) return false;
-		return true;
+		return allowedItems == null || allowedItems.contains(item.getType());
 	}
 
-	private int newDurability(ItemStack item) {
+	private int newDurability(LivingEntity caster, ItemStack item, float power, String[] args) {
 		Damageable meta = (Damageable) item.getItemMeta();
-		int durability = meta.getDamage();
-		durability -= repairAmt;
-		if (durability < 0) durability = 0;
+
+		int durability = meta.getDamage() - repairAmt.get(caster, null, power, args);
+		durability = Math.min(durability, item.getType().getMaxDurability());
+		durability = Math.max(durability, 0);
+
 		return durability;
 	}
 
@@ -224,14 +226,6 @@ public class RepairSpell extends InstantSpell {
 
 	public static String getRepairSelectorKeyBoots() {
 		return REPAIR_SELECTOR_KEY_BOOTS;
-	}
-
-	public int getRepairAmount() {
-		return repairAmt;
-	}
-
-	public void setRepairAmount(int repairAmt) {
-		this.repairAmt = repairAmt;
 	}
 
 	public String getStrNothingToRepair() {

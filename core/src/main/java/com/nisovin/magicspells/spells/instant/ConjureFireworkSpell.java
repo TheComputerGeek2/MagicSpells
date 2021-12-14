@@ -12,12 +12,14 @@ import org.bukkit.FireworkEffect;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.FireworkMeta;
 
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.RegexUtil;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
@@ -26,9 +28,9 @@ public class ConjureFireworkSpell extends InstantSpell implements TargetedLocati
 
 	private static final Pattern COLORS_PATTERN = Pattern.compile("^[A-Fa-f0-9]{6}(,[A-Fa-f0-9]{6})*$");
 
-	private int count;
-	private int flight;
-	private int pickupDelay;
+	private ConfigData<Integer> count;
+	private ConfigData<Integer> flight;
+	private ConfigData<Integer> pickupDelay;
 
 	private boolean gravity;
 	private boolean addToInventory;
@@ -40,19 +42,18 @@ public class ConjureFireworkSpell extends InstantSpell implements TargetedLocati
 	public ConjureFireworkSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		count = getConfigInt("count", 1);
-		flight = getConfigInt("flight", 2);
-		pickupDelay = getConfigInt("pickup-delay", 0);
+		count = getConfigDataInt("count", 1);
+		flight = getConfigDataInt("flight", 2);
+		pickupDelay = getConfigDataInt("pickup-delay", 0);
 
 		gravity = getConfigBoolean("gravity", true);
 		addToInventory = getConfigBoolean("add-to-inventory", true);
 
 		fireworkName = getConfigString("firework-name", "");
 
-		firework = new ItemStack(Material.FIREWORK_ROCKET, count);
+		firework = new ItemStack(Material.FIREWORK_ROCKET);
 		FireworkMeta meta = (FireworkMeta) firework.getItemMeta();
 		
-		meta.setPower(flight);
 		if (!fireworkName.isEmpty()) meta.displayName(Util.getMiniMessage(fireworkName));
 		
 		List<String> fireworkEffects = getConfigStringList("firework-effects", null);
@@ -118,12 +119,20 @@ public class ConjureFireworkSpell extends InstantSpell implements TargetedLocati
 		if (state == SpellCastState.NORMAL && caster instanceof Player player) {
 			boolean added = false;
 			ItemStack item = firework.clone();
+			item.setAmount(count.get(caster, null, power, args));
+
+			ItemMeta meta = item.getItemMeta();
+			if (meta instanceof FireworkMeta fMeta) fMeta.setPower(flight.get(caster, null, power, args));
+
 			if (addToInventory) added = Util.addToInventory(player.getInventory(), item, true, false);
 			if (!added) {
 				Item dropped = player.getWorld().dropItem(player.getLocation(), item);
 				dropped.setItemStack(item);
-				dropped.setPickupDelay(pickupDelay);
 				dropped.setGravity(gravity);
+
+				int delay = Math.max(pickupDelay.get(caster, null, power, args), 0);
+				dropped.setPickupDelay(delay);
+
 				playSpellEffects(EffectPosition.SPECIAL, dropped);
 			}
 			playSpellEffects(EffectPosition.CASTER, player);
@@ -134,29 +143,39 @@ public class ConjureFireworkSpell extends InstantSpell implements TargetedLocati
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		playSpellEffects(EffectPosition.CASTER, caster);
-		return castAtLocation(target, power, args);
-	}
 
-	@Override
-	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		playSpellEffects(EffectPosition.CASTER, caster);
-		return castAtLocation(target, power, null);
-	}
-
-	@Override
-	public boolean castAtLocation(Location target, float power, String[] args) {
 		ItemStack item = firework.clone();
+		item.setAmount(count.get(caster, null, power, args));
+
+		ItemMeta meta = item.getItemMeta();
+		if (meta instanceof FireworkMeta fMeta) fMeta.setPower(flight.get(caster, null, power, args));
+
 		Item dropped = target.getWorld().dropItem(target, item);
 		dropped.setItemStack(item);
-		dropped.setPickupDelay(pickupDelay);
 		dropped.setGravity(gravity);
+
+		int delay = Math.max(pickupDelay.get(caster, null, power, args), 0);
+		dropped.setPickupDelay(delay);
+
 		playSpellEffects(EffectPosition.SPECIAL, dropped);
 		return true;
 	}
 
 	@Override
+	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
+		playSpellEffects(EffectPosition.CASTER, caster);
+		return castAtLocation(null, target, power, null);
+	}
+
+	@Override
+	public boolean castAtLocation(Location target, float power, String[] args) {
+		return castAtLocation(null, target, power, args);
+
+	}
+
+	@Override
 	public boolean castAtLocation(Location target, float power) {
-		return castAtLocation(target, power, null);
+		return castAtLocation(null, target, power, null);
 	}
 
 }

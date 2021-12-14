@@ -14,6 +14,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class PhaseSpell extends InstantSpell {
@@ -21,14 +22,16 @@ public class PhaseSpell extends InstantSpell {
 	private final List<Material> phasableBlocks;
 	private final List<Material> nonPhasableBlocks;
 
-	private int maxDistance;
+	private ConfigData<Integer> maxDistance;
+	private boolean powerAffectsMaxDistance;
 	private String strCantPhase;
 
 	public PhaseSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		maxDistance = getConfigInt("max-distance", 15);
+		maxDistance = getConfigDataInt("max-distance", 15);
 		strCantPhase = getConfigString("str-cant-phase", "Unable to find place to phase to.");
+		powerAffectsMaxDistance = getConfigBoolean("power-affects-max-distance", true);
 
 		phasableBlocks = new ArrayList<>();
 		nonPhasableBlocks = new ArrayList<>();
@@ -54,7 +57,9 @@ public class PhaseSpell extends InstantSpell {
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
 			int r = Math.round(range * power);
-			int distance = Math.round(maxDistance * power);
+
+			int distance = maxDistance.get(caster, null, power, args);
+			if (powerAffectsMaxDistance) distance = Math.round(distance * power);
 
 			BlockIterator iter;
 			try {
@@ -117,14 +122,6 @@ public class PhaseSpell extends InstantSpell {
 
 	public List<Material> getNonPhasableBlocks() {
 		return nonPhasableBlocks;
-	}
-
-	public int getMaxDistance() {
-		return maxDistance;
-	}
-
-	public void setMaxDistance(int maxDistance) {
-		this.maxDistance = maxDistance;
 	}
 
 	public String getStrCantPhase() {

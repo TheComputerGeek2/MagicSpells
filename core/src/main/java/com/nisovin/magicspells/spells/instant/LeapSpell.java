@@ -15,6 +15,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class LeapSpell extends InstantSpell {
@@ -23,13 +24,14 @@ public class LeapSpell extends InstantSpell {
 
 	private final String landSpellName;
 
-	private float rotation;
-	private float upwardVelocity;
-	private float forwardVelocity;
+	private ConfigData<Float> rotation;
+	private ConfigData<Float> upwardVelocity;
+	private ConfigData<Float> forwardVelocity;
 
 	private boolean clientOnly;
 	private boolean cancelDamage;
 	private boolean addVelocityInstead;
+	private boolean powerAffectsVelocity;
 
 	private Subspell landSpell;
 
@@ -38,13 +40,14 @@ public class LeapSpell extends InstantSpell {
 
 		jumping = new HashSet<>();
 
-		rotation = getConfigFloat("rotation", 0F);
-		upwardVelocity = getConfigFloat("upward-velocity", 15F) / 10F;
-		forwardVelocity = getConfigFloat("forward-velocity", 40F) / 10F;
+		rotation = getConfigDataFloat("rotation", 0F);
+		upwardVelocity = getConfigDataFloat("upward-velocity", 15F);
+		forwardVelocity = getConfigDataFloat("forward-velocity", 40F);
 
 		clientOnly = getConfigBoolean("client-only", false);
 		cancelDamage = getConfigBoolean("cancel-damage", true);
 		addVelocityInstead = getConfigBoolean("add-velocity-instead", false);
+		powerAffectsVelocity = getConfigBoolean("power-affects-velocity", true);
 
 		landSpellName = getConfigString("land-spell", "");
 	}
@@ -68,7 +71,16 @@ public class LeapSpell extends InstantSpell {
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
 			Vector v = caster.getLocation().getDirection();
-			v.setY(0).normalize().multiply(forwardVelocity * power).setY(upwardVelocity * power);
+
+			float forwardVelocity = this.forwardVelocity.get(caster, null, power, args) / 10;
+			if (powerAffectsVelocity) forwardVelocity *= power;
+
+			float upwardVelocity = this.upwardVelocity.get(caster, null, power, args) / 10;
+			if (powerAffectsVelocity) upwardVelocity *= power;
+
+			float rotation = this.rotation.get(caster, null, power, args);
+
+			v.setY(0).normalize().multiply(forwardVelocity).setY(upwardVelocity);
 			if (rotation != 0) Util.rotateVector(v, rotation);
 			v = Util.makeFinite(v);
 
@@ -96,30 +108,6 @@ public class LeapSpell extends InstantSpell {
 
 	public Set<UUID> getJumping() {
 		return jumping;
-	}
-
-	public float getRotation() {
-		return rotation;
-	}
-
-	public void setRotation(float rotation) {
-		this.rotation = rotation;
-	}
-
-	public float getUpwardVelocity() {
-		return upwardVelocity;
-	}
-
-	public void setUpwardVelocity(float upwardVelocity) {
-		this.upwardVelocity = upwardVelocity;
-	}
-
-	public float getForwardVelocity() {
-		return forwardVelocity;
-	}
-
-	public void setForwardVelocity(float forwardVelocity) {
-		this.forwardVelocity = forwardVelocity;
 	}
 
 	public boolean isClientOnly() {

@@ -15,6 +15,7 @@ import com.nisovin.magicspells.util.BoundingBox;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
@@ -27,19 +28,19 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 	private Vector relativeOffset;
 	private Vector targetRelativeOffset;
 
-	private double hitRadius;
-	private double maxDistance;
-	private double verticalHitRadius;
+	private final ConfigData<Double> yOffset;
+	private final ConfigData<Double> hitRadius;
+	private final ConfigData<Double> maxDistance;
+	private final ConfigData<Double> verticalHitRadius;
 
-	private float gravity;
-	private float interval;
-	private float rotation;
-	private float beamVertOffset;
-	private float beamHorizOffset;
+	private final ConfigData<Float> gravity;
+	private final ConfigData<Float> interval;
+	private final ConfigData<Float> rotation;
+	private final ConfigData<Float> beamVertOffset;
+	private final ConfigData<Float> beamHorizOffset;
 
-	private float beamSpread;
-	private float beamVerticalSpread;
-	private float beamHorizontalSpread;
+	private final ConfigData<Float> beamVerticalSpread;
+	private final ConfigData<Float> beamHorizontalSpread;
 
 	private boolean changePitch;
 	private boolean stopOnHitEntity;
@@ -65,20 +66,20 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 		relativeOffset = getConfigVector("relative-offset", "0,0.5,0");
 		targetRelativeOffset = getConfigVector("target-relative-offset", "0,0.5,0");
 
-		hitRadius = getConfigDouble("hit-radius", 2);
-		maxDistance = getConfigDouble("max-distance", 30);
-		verticalHitRadius = getConfigDouble("vertical-hit-radius", 2);
+		yOffset = getConfigDataDouble("y-offset", 0F);
+		hitRadius = getConfigDataDouble("hit-radius", 2);
+		maxDistance = getConfigDataDouble("max-distance", 30);
+		verticalHitRadius = getConfigDataDouble("vertical-hit-radius", 2);
 
-		float yOffset = getConfigFloat("y-offset", 0F);
-		gravity = getConfigFloat("gravity", 0F);
-		interval = getConfigFloat("interval", 1F);
-		rotation = getConfigFloat("rotation", 0F);
-		beamVertOffset = getConfigFloat("beam-vert-offset", 0F);
-		beamHorizOffset = getConfigFloat("beam-horiz-offset", 0F);
+		gravity = getConfigDataFloat("gravity", 0F);
+		interval = getConfigDataFloat("interval", 1F);
+		rotation = getConfigDataFloat("rotation", 0F);
+		beamVertOffset = getConfigDataFloat("beam-vert-offset", 0F);
+		beamHorizOffset = getConfigDataFloat("beam-horiz-offset", 0F);
 
-		beamSpread = getConfigFloat("beam-spread", 0F);
-		beamVerticalSpread = getConfigFloat("beam-vertical-spread", beamSpread);
-		beamHorizontalSpread = getConfigFloat("beam-horizontal-spread", beamSpread);
+		ConfigData<Float> beamSpread = getConfigDataFloat("beam-spread", 0F);
+		beamVerticalSpread = getConfigDataFloat("beam-vertical-spread", beamSpread);
+		beamHorizontalSpread = getConfigDataFloat("beam-horizontal-spread", beamSpread);
 
 		changePitch = getConfigBoolean("change-pitch", true);
 		stopOnHitEntity = getConfigBoolean("stop-on-hit-entity", false);
@@ -89,10 +90,6 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 		travelSpellName = getConfigString("spell-on-travel", "");
 		groundSpellName = getConfigString("spell-on-hit-ground", "");
 		entityLocationSpellName = getConfigString("spell-on-entity-location", "");
-
-		gravity *= -1;
-		if (interval < 0.01) interval = 0.01F;
-		if (yOffset != 0) relativeOffset.setY(yOffset);
 	}
 
 	@Override
@@ -101,31 +98,41 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 
 		hitSpell = new Subspell(hitSpellName);
 		if (!hitSpell.process()) {
-			if (!hitSpellName.isEmpty()) MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell defined!");
+			if (!hitSpellName.isEmpty())
+				MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell defined!");
+
 			hitSpell = null;
 		}
 
 		endSpell = new Subspell(endSpellName);
 		if (!endSpell.process() || !endSpell.isTargetedLocationSpell()) {
-			if (!endSpellName.isEmpty()) MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-end defined!");
+			if (!endSpellName.isEmpty())
+				MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-end defined!");
+
 			endSpell = null;
 		}
 
 		travelSpell = new Subspell(travelSpellName);
 		if (!travelSpell.process() || !travelSpell.isTargetedLocationSpell()) {
-			if (!travelSpellName.isEmpty()) MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-travel defined!");
+			if (!travelSpellName.isEmpty())
+				MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-travel defined!");
+
 			travelSpell = null;
 		}
 
 		groundSpell = new Subspell(groundSpellName);
 		if (!groundSpell.process() || !groundSpell.isTargetedLocationSpell()) {
-			if (!groundSpellName.isEmpty()) MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-hit-ground defined!");
+			if (!groundSpellName.isEmpty())
+				MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-hit-ground defined!");
+
 			groundSpell = null;
 		}
 
 		entityLocationSpell = new Subspell(entityLocationSpellName);
 		if (!entityLocationSpell.process() || !entityLocationSpell.isTargetedLocationSpell()) {
-			if (!entityLocationSpellName.isEmpty()) MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-entity-location defined!");
+			if (!entityLocationSpellName.isEmpty())
+				MagicSpells.error("BeamSpell '" + internalName + "' has an invalid spell-on-entity-location defined!");
+
 			entityLocationSpell = null;
 		}
 
@@ -207,94 +214,6 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 		this.targetRelativeOffset = targetRelativeOffset;
 	}
 
-	public double getHitRadius() {
-		return hitRadius;
-	}
-
-	public void setHitRadius(double hitRadius) {
-		this.hitRadius = hitRadius;
-	}
-
-	public double getMaxDistance() {
-		return maxDistance;
-	}
-
-	public void setMaxDistance(double maxDistance) {
-		this.maxDistance = maxDistance;
-	}
-
-	public double getVerticalHitRadius() {
-		return verticalHitRadius;
-	}
-
-	public void setVerticalHitRadius(double verticalHitRadius) {
-		this.verticalHitRadius = verticalHitRadius;
-	}
-
-	public float getGravity() {
-		return gravity;
-	}
-
-	public void setGravity(float gravity) {
-		this.gravity = gravity;
-	}
-
-	public float getInterval() {
-		return interval;
-	}
-
-	public void setInterval(float interval) {
-		this.interval = interval;
-	}
-
-	public float getRotation() {
-		return rotation;
-	}
-
-	public void setRotation(float rotation) {
-		this.rotation = rotation;
-	}
-
-	public float getBeamVerticalOffset() {
-		return beamVertOffset;
-	}
-
-	public void setBeamVerticalOffset(float beamVertOffset) {
-		this.beamVertOffset = beamVertOffset;
-	}
-
-	public float getBeamHorizontalOffset() {
-		return beamHorizOffset;
-	}
-
-	public void setBeamHorizontalOffset(float beamHorizOffset) {
-		this.beamHorizOffset = beamHorizOffset;
-	}
-
-	public float getBeamSpread() {
-		return beamSpread;
-	}
-
-	public void setBeamSpread(float beamSpread) {
-		this.beamSpread = beamSpread;
-	}
-
-	public float getBeamVerticalSpread() {
-		return beamVerticalSpread;
-	}
-
-	public void setBeamVerticalSpread(float beamVerticalSpread) {
-		this.beamVerticalSpread = beamVerticalSpread;
-	}
-
-	public float getBeamHorizontalSpread() {
-		return beamHorizontalSpread;
-	}
-
-	public void setBeamHorizontalSpread(float beamHorizontalSpread) {
-		this.beamHorizontalSpread = beamHorizontalSpread;
-	}
-
 	public boolean shouldChangePitch() {
 		return changePitch;
 	}
@@ -355,21 +274,37 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 
 		private final Set<Entity> immune;
 
-		private LivingEntity caster;
-		private LivingEntity target;
+		private final LivingEntity caster;
+		private final LivingEntity target;
+		private final Location startLoc;
+		private final float power;
 
-		private Location startLoc;
-		private Location currentLoc;
+		private double hitRadius;
+		private double maxDistance;
+		private double verticalHitRadius;
 
-		private float power;
+		private float gravity;
+		private float interval;
+		private float rotation;
+		private float beamVertOffset;
+		private float beamHorizOffset;
+
+		private float beamVerticalSpread;
+		private float beamHorizontalSpread;
+
+		private Vector relativeOffset;
 
 		private Beam(LivingEntity caster, Location from, float power, String[] args) {
 			this.caster = caster;
+			this.target = null;
 			this.power = power;
+
 			startLoc = from.clone();
 			if (!changePitch) startLoc.setPitch(0F);
+
 			immune = new HashSet<>();
 
+			init(caster, null, power, args);
 			shootBeam();
 		}
 
@@ -377,11 +312,35 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 			this.caster = caster;
 			this.target = target;
 			this.power = power;
+
 			startLoc = from.clone();
 			if (!changePitch) startLoc.setPitch(0F);
+
 			immune = new HashSet<>();
 
+			init(caster, target, power, args);
 			shootBeam();
+		}
+
+		private void init(LivingEntity caster, LivingEntity target, float power, String[] args) {
+			hitRadius = BeamSpell.this.hitRadius.get(caster, target, power, args);
+			maxDistance = BeamSpell.this.maxDistance.get(caster, target, power, args);
+			verticalHitRadius = BeamSpell.this.verticalHitRadius.get(caster, target, power, args);
+
+			gravity = -BeamSpell.this.gravity.get(caster, target, power, args);
+			interval = BeamSpell.this.interval.get(caster, target, power, args);
+			rotation = BeamSpell.this.rotation.get(caster, target, power, args);
+			beamVertOffset = BeamSpell.this.beamVertOffset.get(caster, target, power, args);
+			beamHorizOffset = BeamSpell.this.beamHorizOffset.get(caster, target, power, args);
+
+			beamVerticalSpread = BeamSpell.this.beamVerticalSpread.get(caster, target, power, args);
+			beamHorizontalSpread = BeamSpell.this.beamHorizontalSpread.get(caster, target, power, args);
+
+			if (interval < 0.01) interval = 0.01f;
+
+			double yOffset = BeamSpell.this.yOffset.get(caster, target, power, args);
+			if (yOffset != 0) relativeOffset = BeamSpell.this.relativeOffset.clone().setY(yOffset);
+			else relativeOffset = BeamSpell.this.relativeOffset;
 		}
 
 		private void shootBeam() {
@@ -400,7 +359,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 			startLoc.add(startLoc.getDirection().clone().multiply(relativeOffset.getX()));
 			startLoc.setY(startLoc.getY() + relativeOffset.getY());
 
-			currentLoc = startLoc.clone();
+			Location currentLoc = startLoc.clone();
 
 			//apply target relative offset
 			Location targetLoc = null;
@@ -434,7 +393,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 				currentLoc.add(dir);
 
 				if (rotation != 0) Util.rotateVector(dir, rotation);
-				if (gravity != 0) dir.add(new Vector(0, gravity,0));
+				if (gravity != 0) dir.add(new Vector(0, gravity, 0));
 				if (rotation != 0 || gravity != 0) currentLoc.setDirection(dir);
 
 				if (zoneManager.willFizzle(currentLoc, BeamSpell.this)) {

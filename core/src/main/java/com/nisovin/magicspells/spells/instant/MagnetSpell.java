@@ -14,36 +14,41 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.InventoryUtil;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
 public class MagnetSpell extends InstantSpell implements TargetedLocationSpell {
 
-	private double radius;
-	private double velocity;
+	private ConfigData<Double> radius;
+	private ConfigData<Double> velocity;
 
 	private boolean teleport;
 	private boolean forcePickup;
 	private boolean removeItemGravity;
+	private boolean powerAffectsRadius;
+	private boolean powerAffectsVelocity;
 
 	public MagnetSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		radius = getConfigDouble("radius", 5);
-		velocity = getConfigDouble("velocity", 1);
+		radius = getConfigDataDouble("radius", 5);
+		velocity = getConfigDataDouble("velocity", 1);
 
 		teleport = getConfigBoolean("teleport-items", false);
 		forcePickup = getConfigBoolean("force-pickup", false);
 		removeItemGravity = getConfigBoolean("remove-item-gravity", false);
-
-		if (radius > MagicSpells.getGlobalRadius()) radius = MagicSpells.getGlobalRadius();
+		powerAffectsRadius = getConfigBoolean("power-affects-radius", true);
+		powerAffectsVelocity = getConfigBoolean("power-affects-velocity", true);
 	}
 
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			List<Item> items = getNearbyItems(caster.getLocation(), radius * power);
-			magnet(caster.getLocation(), items, power);
+			Location location = caster.getLocation();
+
+			List<Item> items = getNearbyItems(caster, location, power, args);
+			magnet(caster, location, items, power, args);
 
 			playSpellEffects(EffectPosition.CASTER, caster);
 		}
@@ -53,8 +58,9 @@ public class MagnetSpell extends InstantSpell implements TargetedLocationSpell {
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
-		Collection<Item> targetItems = getNearbyItems(target, radius * power);
-		magnet(target, targetItems, power);
+		Collection<Item> targetItems = getNearbyItems(caster, target, power, args);
+		magnet(caster, target, targetItems, power, args);
+
 		return true;
 	}
 
@@ -68,7 +74,11 @@ public class MagnetSpell extends InstantSpell implements TargetedLocationSpell {
 		return false;
 	}
 
-	private List<Item> getNearbyItems(Location center, double radius) {
+	private List<Item> getNearbyItems(LivingEntity caster, Location center, float power, String[] args) {
+		double radius = this.radius.get(caster, null, power, args);
+		if (powerAffectsRadius) radius *= power;
+		radius = Math.min(radius, MagicSpells.getGlobalRadius());
+
 		Collection<Entity> entities = center.getWorld().getNearbyEntities(center, radius, radius, radius);
 		List<Item> ret = new ArrayList<>();
 		for (Entity e : entities) {
@@ -87,31 +97,20 @@ public class MagnetSpell extends InstantSpell implements TargetedLocationSpell {
 		return ret;
 	}
 
-	private void magnet(Location location, Collection<Item> items, float power) {
-		for (Item i : items) magnet(location, i, power);
+	private void magnet(LivingEntity caster, Location location, Collection<Item> items, float power, String[] args) {
+		for (Item i : items) magnet(caster, location, i, power, args);
 	}
 
-	private void magnet(Location origin, Item item, float power) {
+	private void magnet(LivingEntity caster, Location origin, Item item, float power, String[] args) {
 		if (removeItemGravity) item.setGravity(false);
 		if (teleport) item.teleport(origin);
-		else item.setVelocity(origin.toVector().subtract(item.getLocation().toVector()).normalize().multiply(velocity * power));
+		else {
+			double velocity = this.velocity.get(caster, null, power, args);
+			if (powerAffectsVelocity) velocity *= power;
+
+			item.setVelocity(origin.toVector().subtract(item.getLocation().toVector()).normalize().multiply(velocity));
+		}
 		playSpellEffects(EffectPosition.PROJECTILE, item);
-	}
-
-	public double getRadius() {
-		return radius;
-	}
-
-	public void setRadius(double radius) {
-		this.radius = radius;
-	}
-
-	public double getVelocity() {
-		return velocity;
-	}
-
-	public void setVelocity(double velocity) {
-		this.velocity = velocity;
 	}
 
 	public boolean shouldTeleport() {
