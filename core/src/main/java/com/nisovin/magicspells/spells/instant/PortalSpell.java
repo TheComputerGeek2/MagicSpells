@@ -260,8 +260,6 @@ public class PortalSpell extends InstantSpell {
 		private final BoundingBox box1;
 		private final BoundingBox box2;
 
-		private final int teleportCooldown;
-
 		private final Map<UUID, Long> cooldownUntil;
 		private int taskId1 = -1;
 		private int taskId2 = -1;
@@ -280,9 +278,8 @@ public class PortalSpell extends InstantSpell {
 			box1 = new BoundingBox(loc1, horizRadius, vertRadius);
 			box2 = new BoundingBox(loc2, horizRadius, vertRadius);
 
-			teleportCooldown = PortalSpell.this.teleportCooldown.get(caster, null, power, args) * 1000;
-
 			cooldownUntil = new HashMap<>();
+			int teleportCooldown = PortalSpell.this.teleportCooldown.get(caster, caster, power, args) * 1000;
 			cooldownUntil.put(caster.getUniqueId(), System.currentTimeMillis() + teleportCooldown);
 
 			registerEvents(this);
@@ -345,6 +342,7 @@ public class PortalSpell extends InstantSpell {
 				return false;
 			}
 
+			int teleportCooldown = PortalSpell.this.teleportCooldown.get(caster, target, power, args) * 1000;
 			cooldownUntil.put(target.getUniqueId(), System.currentTimeMillis() + teleportCooldown);
 
 			LivingEntity payer = null;
