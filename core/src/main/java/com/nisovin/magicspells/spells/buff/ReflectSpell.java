@@ -11,20 +11,22 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.events.SpellPreImpactEvent;
 
 // NO API CHANGES - NEEDS TOTAL REWORK
 public class ReflectSpell extends BuffSpell {
 
-	private Map<UUID, Float> reflectors;
+	private Map<UUID, SpellData> reflectors;
 	private Set<String> shieldBreakerNames;
 	private Set<String> delayedReflectionSpells;
 
-	private float reflectedSpellPowerMultiplier;
+	private ConfigData<Float> reflectedSpellPowerMultiplier;
 
 	private boolean spellPowerAffectsReflectedPower;
 	private boolean delayedReflectionSpellsUsePayloadShieldBreaker;
@@ -39,7 +41,7 @@ public class ReflectSpell extends BuffSpell {
 		shieldBreakerNames.addAll(getConfigStringList("shield-breakers", new ArrayList<>()));
 		delayedReflectionSpells.addAll(getConfigStringList("delayed-reflection-spells", new ArrayList<>()));
 
-		reflectedSpellPowerMultiplier = (float) getConfigDouble("reflected-spell-power-multiplier", 1F);
+		reflectedSpellPowerMultiplier = getConfigDataFloat("reflected-spell-power-multiplier", 1F);
 
 		spellPowerAffectsReflectedPower = getConfigBoolean("spell-power-affects-reflected-power", false);
 		delayedReflectionSpellsUsePayloadShieldBreaker = getConfigBoolean("delayed-reflection-spells-use-payload-shield-breaker", true);
@@ -47,7 +49,7 @@ public class ReflectSpell extends BuffSpell {
 
 	@Override
 	public boolean castBuff(LivingEntity entity, float power, String[] args) {
-		reflectors.put(entity.getUniqueId(), power);
+		reflectors.put(entity.getUniqueId(), new SpellData(power, args));
 		return true;
 	}
 
@@ -73,7 +75,6 @@ public class ReflectSpell extends BuffSpell {
 		if (!target.isValid()) return;
 		if (!isActive(target)) return;
 
-		float power = reflectors.get(target.getUniqueId());
 		if (shieldBreakerNames != null && shieldBreakerNames.contains(event.getSpell().getInternalName())) {
 			turnOff(target);
 			return;
@@ -88,21 +89,15 @@ public class ReflectSpell extends BuffSpell {
 
 		addUse(target);
 		event.setTarget(event.getCaster());
-		event.setPower(event.getPower() * reflectedSpellPowerMultiplier * (spellPowerAffectsReflectedPower ? power : 1));
+
+		SpellData data = reflectors.get(target.getUniqueId());
+		event.setPower(event.getPower() * reflectedSpellPowerMultiplier.get(target, event.getCaster(), data.power(), data.args()) * (spellPowerAffectsReflectedPower ? data.power() : 1));
 	}
 
 	@EventHandler
 	public void onSpellPreImpact(SpellPreImpactEvent event) {
 		LivingEntity target = event.getTarget();
 
-		if (event == null) {
-			if (DebugHandler.isNullCheckEnabled()) {
-				NullPointerException e = new NullPointerException("SpellPreImpactEvent was null!");
-				e.fillInStackTrace();
-				DebugHandler.nullCheck(e);
-			}
-			return;
-		}
 		if (target == null) {
 			MagicSpells.plugin.getLogger().warning("Spell preimpact event had a null target, the spell cannot be reflected.");
 			if (DebugHandler.isNullCheckEnabled()) {
@@ -112,6 +107,7 @@ public class ReflectSpell extends BuffSpell {
 			}
 			return;
 		}
+
 		if (event.getCaster() == null) {
 			if (DebugHandler.isNullCheckEnabled()) {
 				NullPointerException e = new NullPointerException("SpellPreImpactEvent had a null caster!");
@@ -129,10 +125,9 @@ public class ReflectSpell extends BuffSpell {
 
 		addUse(target);
 		event.setRedirected(true);
-		float powerMultiplier = 1.0F;
-		powerMultiplier *= reflectedSpellPowerMultiplier * (spellPowerAffectsReflectedPower ? (reflectors.get(target.getUniqueId()) == null ? 1.0: reflectors.get(target.getUniqueId())) : 1.0);
-		event.setPower(event.getPower() * powerMultiplier);
 
+		SpellData data = reflectors.get(target.getUniqueId());
+		event.setPower(event.getPower() * reflectedSpellPowerMultiplier.get(target, event.getCaster(), data.power(), data.args()) * (spellPowerAffectsReflectedPower ? data.power() : 1));
 	}
 
 }

@@ -19,19 +19,20 @@ import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.BlockPlatform;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class FrostwalkSpell extends BuffSpell {
 
 	private final Map<UUID, BlockPlatform> entities;
 
-	private int size;
+	private ConfigData<Integer> size;
 
 	private boolean leaveFrozen;
 
 	public FrostwalkSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
-		size = getConfigInt("size", 2);
+		size = getConfigDataInt("size", 2);
 
 		leaveFrozen = getConfigBoolean("leave-frozen", false);
 		
@@ -40,7 +41,7 @@ public class FrostwalkSpell extends BuffSpell {
 
 	@Override
 	public boolean castBuff(LivingEntity entity, float power, String[] args) {
-		entities.put(entity.getUniqueId(), new BlockPlatform(Material.ICE, Material.WATER, entity.getLocation().getBlock().getRelative(0, -1, 0), size, !leaveFrozen, "square"));
+		entities.put(entity.getUniqueId(), new BlockPlatform(Material.ICE, Material.WATER, entity.getLocation().getBlock().getRelative(0, -1, 0), size.get(entity, null, power, args), !leaveFrozen, "square"));
 		return true;
 	}
 
@@ -113,14 +114,6 @@ public class FrostwalkSpell extends BuffSpell {
 
 	public Map<UUID, BlockPlatform> getEntities() {
 		return entities;
-	}
-
-	public int getSize() {
-		return size;
-	}
-
-	public void setSize(int size) {
-		this.size = size;
 	}
 
 	public boolean isLeaveFrozen() {

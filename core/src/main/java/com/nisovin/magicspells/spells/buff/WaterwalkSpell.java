@@ -1,8 +1,8 @@
 package com.nisovin.magicspells.spells.buff;
 
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
-import java.util.HashSet;
+import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -14,51 +14,56 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class WaterwalkSpell extends BuffSpell {
 
-	private final Set<UUID> entities;
+	private final Map<UUID, SpellData> entities;
 
-	private float speed;
-	
+	private ConfigData<Float> speed;
+
 	private Ticker ticker;
-	
+
 	public WaterwalkSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
-		speed = getConfigFloat("speed", 0.05F);
-		
-		entities = new HashSet<>();
+
+		speed = getConfigDataFloat("speed", 0.05F);
+
+		entities = new HashMap<>();
 	}
 
 	@Override
 	public boolean castBuff(LivingEntity entity, float power, String[] args) {
 		if (!(entity instanceof Player)) return true;
-		entities.add(entity.getUniqueId());
+		entities.put(entity.getUniqueId(), new SpellData(power, args));
 		startTicker();
 		return true;
 	}
 
 	@Override
 	public boolean isActive(LivingEntity entity) {
-		return entities.contains(entity.getUniqueId());
+		return entities.containsKey(entity.getUniqueId());
 	}
 
 	@Override
 	public void turnOffBuff(LivingEntity entity) {
 		entities.remove(entity.getUniqueId());
-		((Player) entity).setFlying(false);
-		if (((Player) entity).getGameMode() != GameMode.CREATIVE) ((Player) entity).setAllowFlight(false);
+		Player player = (Player) entity;
+
+		player.setFlying(false);
+		if (player.getGameMode() != GameMode.CREATIVE) player.setAllowFlight(false);
+		player.setFlySpeed(0.1F);
 
 		if (entities.isEmpty()) stopTicker();
 	}
-	
+
 	@Override
 	protected void turnOff() {
-		for (UUID id : entities) {
+		for (UUID id : entities.keySet()) {
 			Player pl = Bukkit.getPlayer(id);
 			if (pl == null) continue;
 			if (!pl.isValid()) continue;
@@ -70,40 +75,32 @@ public class WaterwalkSpell extends BuffSpell {
 		entities.clear();
 		stopTicker();
 	}
-	
+
 	private void startTicker() {
 		if (ticker != null) return;
 		ticker = new Ticker();
 	}
-	
+
 	private void stopTicker() {
 		if (ticker == null) return;
 		ticker.stop();
 		ticker = null;
 	}
 
-	public Set<UUID> getEntities() {
+	public Map<UUID, SpellData> getEntities() {
 		return entities;
 	}
 
-	public float getSpeed() {
-		return speed;
-	}
-
-	public void setSpeed(float speed) {
-		this.speed = speed;
-	}
-
 	private class Ticker implements Runnable {
-		
+
 		private final int taskId;
-		
+
 		private int count = 0;
-		
+
 		private Ticker() {
 			taskId = MagicSpells.scheduleRepeatingTask(this, 5, 5);
 		}
-		
+
 		@Override
 		public void run() {
 			count++;
@@ -113,7 +110,7 @@ public class WaterwalkSpell extends BuffSpell {
 			Block underfeet;
 			Location loc;
 
-			for (UUID id : entities) {
+			for (UUID id : entities.keySet()) {
 				Player pl = Bukkit.getPlayer(id);
 				if (pl == null) continue;
 				if (!pl.isValid()) continue;
@@ -134,11 +131,12 @@ public class WaterwalkSpell extends BuffSpell {
 				feet = pl.getLocation().getBlock();
 				underfeet = feet.getRelative(BlockFace.DOWN);
 
+				SpellData data = entities.get(id);
 				if (BlockUtils.isAir(feet.getType()) && underfeet.getType() == Material.WATER) {
 					if (!pl.isFlying()) {
 						pl.setAllowFlight(true);
 						pl.setFlying(true);
-						pl.setFlySpeed(speed);
+						pl.setFlySpeed(speed.get(pl, null, data.power(), data.args()));
 					}
 					if (count == 0) addUseAndChargeCost(pl);
 				} else if (pl.isFlying()) {
@@ -148,11 +146,11 @@ public class WaterwalkSpell extends BuffSpell {
 				}
 			}
 		}
-		
+
 		public void stop() {
 			MagicSpells.cancelTask(taskId);
 		}
-		
+
 	}
 
 }

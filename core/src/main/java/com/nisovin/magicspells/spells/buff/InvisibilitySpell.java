@@ -19,23 +19,22 @@ import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class InvisibilitySpell extends BuffSpell {
 
 	private final Set<UUID> entities;
 
-	private double mobRadius;
+	private ConfigData<Double> mobRadius;
 
 	private boolean preventPickups;
 
 	public InvisibilitySpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		mobRadius = getConfigDouble("mob-radius", 30);
+		mobRadius = getConfigDataDouble("mob-radius", 30);
 
 		preventPickups = getConfigBoolean("prevent-pickups", true);
-
-		if (mobRadius > MagicSpells.getGlobalRadius()) mobRadius = MagicSpells.getGlobalRadius();
 
 		entities = new HashSet<>();
 	}
@@ -48,7 +47,7 @@ public class InvisibilitySpell extends BuffSpell {
 	@Override
 	public boolean castBuff(LivingEntity entity, float power, String[] args) {
 		if (!(entity instanceof Player player)) return false;
-		makeInvisible(player);
+		makeInvisible(player, power, args);
 		entities.add(entity.getUniqueId());
 		return true;
 	}
@@ -70,10 +69,11 @@ public class InvisibilitySpell extends BuffSpell {
 		entities.clear();
 	}
 
-	private void makeInvisible(Player player) {
+	private void makeInvisible(Player player, float power, String[] args) {
 		Util.forEachPlayerOnline(p -> p.hidePlayer(MagicSpells.getInstance(), player));
 
-		for (Entity entity : player.getNearbyEntities(mobRadius, mobRadius, mobRadius)) {
+		double radius = Math.min(mobRadius.get(player, null, power, args), MagicSpells.getGlobalRadius());
+		for (Entity entity : player.getNearbyEntities(radius, radius, radius)) {
 			if (!(entity instanceof Creature creature)) continue;
 			LivingEntity target = creature.getTarget();
 			if (target == null) continue;
@@ -118,14 +118,6 @@ public class InvisibilitySpell extends BuffSpell {
 
 	public Set<UUID> getEntities() {
 		return entities;
-	}
-
-	public double getMobRadius() {
-		return mobRadius;
-	}
-
-	public void setMobRadius(double mobRadius) {
-		this.mobRadius = mobRadius;
 	}
 
 	public boolean shouldPreventPickups() {

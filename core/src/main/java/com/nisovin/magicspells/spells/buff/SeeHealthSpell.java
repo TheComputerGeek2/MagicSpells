@@ -1,11 +1,9 @@
 package com.nisovin.magicspells.spells.buff;
 
-import java.util.Set;
-import java.util.UUID;
-import java.util.Random;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.nisovin.magicspells.Spell;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -13,19 +11,21 @@ import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class SeeHealthSpell extends BuffSpell {
 
 	private final static String COLORS = "01234567890abcdef";
 
-	private final Set<UUID> entities;
+	private final Map<UUID, SpellData> entities;
 
 	private final Random random = ThreadLocalRandom.current();
 
-	private int barSize;
+	private ConfigData<Integer> barSize;
 	private int interval;
 
 	private String symbol;
@@ -35,24 +35,25 @@ public class SeeHealthSpell extends BuffSpell {
 	public SeeHealthSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		barSize = getConfigInt("bar-size", 20);
+		barSize = getConfigDataInt("bar-size", 20);
 		interval = getConfigInt("update-interval", 5);
 		symbol = getConfigString("symbol", "=");
 
-		entities = new HashSet<>();
+		entities = new HashMap<>();
 	}
 
 	@Override
 	public boolean castBuff(LivingEntity entity, float power, String[] args) {
 		if (!(entity instanceof Player)) return true;
-		entities.add(entity.getUniqueId());
-		updater = new Updater();
+		entities.put(entity.getUniqueId(), new SpellData(power, args));
+
+		if (updater == null) updater = new Updater();
 		return true;
 	}
 
 	@Override
 	public boolean isActive(LivingEntity entity) {
-		return entities.contains(entity.getUniqueId());
+		return entities.containsKey(entity.getUniqueId());
 	}
 
 	@Override
@@ -67,7 +68,7 @@ public class SeeHealthSpell extends BuffSpell {
 
 	@Override
 	protected void turnOff() {
-		for (UUID id : entities) {
+		for (UUID id : entities.keySet()) {
 			Player player = Bukkit.getPlayer(id);
 			if (player == null) continue;
 			if (!player.isValid()) continue;
@@ -84,7 +85,7 @@ public class SeeHealthSpell extends BuffSpell {
 	private ChatColor getRandomColor() {
 		return ChatColor.getByChar(COLORS.charAt(random.nextInt(COLORS.length())));
 	}
-	
+
 	private void showHealthBar(Player player, LivingEntity entity) {
 		double pct = entity.getHealth() / Util.getMaxHealth(entity);
 
@@ -93,6 +94,9 @@ public class SeeHealthSpell extends BuffSpell {
 		else if (pct <= 0.4) color = ChatColor.RED;
 		else if (pct <= 0.6) color = ChatColor.GOLD;
 		else if (pct <= 0.8) color = ChatColor.YELLOW;
+
+		SpellData data = entities.get(player.getUniqueId());
+		int barSize = this.barSize.get(player, entity, data.power(), data.args());
 
 		StringBuilder sb = new StringBuilder(barSize);
 		sb.append(getRandomColor().toString());
@@ -112,16 +116,8 @@ public class SeeHealthSpell extends BuffSpell {
 		return COLORS;
 	}
 
-	public Set<UUID> getEntities() {
+	public Map<UUID, SpellData> getEntities() {
 		return entities;
-	}
-
-	public int getBarSize() {
-		return barSize;
-	}
-
-	public void setBarSize(int barSize) {
-		this.barSize = barSize;
 	}
 
 	public int getInterval() {
@@ -139,7 +135,7 @@ public class SeeHealthSpell extends BuffSpell {
 	public void setSymbol(String symbol) {
 		this.symbol = symbol;
 	}
-	
+
 	private class Updater implements Runnable {
 
 		private final int taskId;
@@ -147,10 +143,10 @@ public class SeeHealthSpell extends BuffSpell {
 		private Updater() {
 			taskId = MagicSpells.scheduleRepeatingTask(this, 0, interval);
 		}
-		
+
 		@Override
 		public void run() {
-			for (UUID id : entities) {
+			for (UUID id : entities.keySet()) {
 				Player player = Bukkit.getPlayer(id);
 				if (player == null) continue;
 				if (!player.isValid()) continue;
@@ -158,11 +154,11 @@ public class SeeHealthSpell extends BuffSpell {
 				if (target != null) showHealthBar(player, target.getTarget());
 			}
 		}
-		
+
 		public void stop() {
 			MagicSpells.cancelTask(taskId);
 		}
-		
+
 	}
 
 }

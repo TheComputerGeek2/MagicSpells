@@ -9,26 +9,32 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.entity.LivingEntity;
 
+import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.SpellFilter;
 import com.nisovin.magicspells.events.SpellCastEvent;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class EmpowerSpell extends BuffSpell {
 
-	private final Map<UUID, Float> entities;
+	private final Map<UUID, SpellData> entities;
 
-	private float maxPower;
-	private float extraPower;
+	private ConfigData<Float> maxPower;
+	private ConfigData<Float> extraPower;
+
+	private boolean powerAffectsMultiplier;
 
 	private SpellFilter filter;
 
 	public EmpowerSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		maxPower = getConfigFloat("max-power-multiplier", 1.5F);
-		extraPower = getConfigFloat("power-multiplier", 1.5F);
-		
+		maxPower = getConfigDataFloat("max-power-multiplier", 1.5F);
+		extraPower = getConfigDataFloat("power-multiplier", 1.5F);
+
+		powerAffectsMultiplier = getConfigBoolean("power-affects-multiplier", true);
+
 		List<String> spells = getConfigStringList("spells", null);
 		List<String> deniedSpells = getConfigStringList("denied-spells", null);
 		List<String> tagList = getConfigStringList("spell-tags", null);
@@ -40,9 +46,7 @@ public class EmpowerSpell extends BuffSpell {
 
 	@Override
 	public boolean castBuff(LivingEntity entity, float power, String[] args) {
-		float p = power * extraPower;
-		if (p > maxPower) p = maxPower;
-		entities.put(entity.getUniqueId(), p);
+		entities.put(entity.getUniqueId(), new SpellData(power, args));
 		return true;
 	}
 
@@ -66,35 +70,25 @@ public class EmpowerSpell extends BuffSpell {
 		entities.clear();
 	}
 
-	@EventHandler(priority=EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onSpellCast(SpellCastEvent event) {
-		LivingEntity player = event.getCaster();
-		if (player == null) return;
-		if (!isActive(player)) return;
+		LivingEntity caster = event.getCaster();
+		if (caster == null) return;
+		if (!isActive(caster)) return;
 		if (!filter.check(event.getSpell())) return;
 
-		addUseAndChargeCost(player);
-		event.increasePower(entities.get(player.getUniqueId()));
+		SpellData data = entities.get(caster.getUniqueId());
+
+		float p = extraPower.get(caster, null, data.power(), data.args());
+		if (powerAffectsMultiplier) p *= data.power();
+		p = Math.min(p, maxPower.get(caster, null, data.power(), data.args()));
+
+		addUseAndChargeCost(caster);
+		event.increasePower(p);
 	}
 
-	public Map<UUID, Float> getEntities() {
+	public Map<UUID, SpellData> getEntities() {
 		return entities;
-	}
-
-	public float getMaxPower() {
-		return maxPower;
-	}
-
-	public void setMaxPower(float maxPower) {
-		this.maxPower = maxPower;
-	}
-
-	public float getExtraPower() {
-		return extraPower;
-	}
-
-	public void setExtraPower(float extraPower) {
-		this.extraPower = extraPower;
 	}
 
 	public SpellFilter getFilter() {

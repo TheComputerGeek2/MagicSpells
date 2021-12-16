@@ -1,10 +1,11 @@
 package com.nisovin.magicspells.spells.buff;
 
-import java.util.Set;
-import java.util.UUID;
+import java.util.Map;
 import java.util.List;
-import java.util.HashSet;
+import java.util.UUID;
+import java.util.HashMap;
 
+import com.nisovin.magicspells.util.SpellData;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.entity.LivingEntity;
@@ -12,20 +13,21 @@ import org.bukkit.entity.LivingEntity;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.SpellFilter;
 import com.nisovin.magicspells.spells.BuffSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellApplyDamageEvent;
 
 public class DamageEmpowerSpell extends BuffSpell {
 
-	private final Set<UUID> entities;
+	private final Map<UUID, SpellData> entities;
 
 	private SpellFilter filter;
 
-	private float damageMultiplier;
+	private ConfigData<Float> damageMultiplier;
 
 	public DamageEmpowerSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		damageMultiplier = getConfigFloat("damage-multiplier", 1.5F);
+		damageMultiplier = getConfigDataFloat("damage-multiplier", 1.5F);
 
 		List<String> spells = getConfigStringList("spells", null);
 		List<String> deniedSpells = getConfigStringList("denied-spells", null);
@@ -34,18 +36,18 @@ public class DamageEmpowerSpell extends BuffSpell {
 
 		filter = new SpellFilter(spells, deniedSpells, tagList, deniedTagList);
 
-		entities = new HashSet<>();
+		entities = new HashMap<>();
 	}
 
 	@Override
 	public boolean castBuff(LivingEntity entity, float power, String[] args) {
-		entities.add(entity.getUniqueId());
+		entities.put(entity.getUniqueId(), new SpellData(power, args));
 		return true;
 	}
 
 	@Override
 	public boolean isActive(LivingEntity entity) {
-		return entities.contains(entity.getUniqueId());
+		return entities.containsKey(entity.getUniqueId());
 	}
 
 	@Override
@@ -65,19 +67,14 @@ public class DamageEmpowerSpell extends BuffSpell {
 		if (!filter.check(event.getSpell())) return;
 
 		addUseAndChargeCost(caster);
+
+		SpellData data = entities.get(caster.getUniqueId());
+		float damageMultiplier = this.damageMultiplier.get(caster, event.getTarget(), data.power(), data.args());
 		event.applyDamageModifier(damageMultiplier);
 	}
 
-	public Set<UUID> getEntities() {
+	public Map<UUID, SpellData> getEntities() {
 		return entities;
-	}
-
-	public float getDamageMultiplier() {
-		return damageMultiplier;
-	}
-
-	public void setDamageMultiplier(float damageMultiplier) {
-		this.damageMultiplier = damageMultiplier;
 	}
 
 	public SpellFilter getFilter() {

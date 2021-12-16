@@ -24,6 +24,7 @@ import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.PlayerNameUtils;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class StonevisionSpell extends BuffSpell {
 
@@ -31,7 +32,7 @@ public class StonevisionSpell extends BuffSpell {
 
 	private final Set<Material> transparentTypes;
 
-	private int radius;
+	private ConfigData<Integer> radius;
 
 	private boolean unobfuscate;
 
@@ -39,16 +40,16 @@ public class StonevisionSpell extends BuffSpell {
 
 	public StonevisionSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
-		radius = getConfigInt("radius", 4);
+
+		radius = getConfigDataInt("radius", 4);
 		unobfuscate = getConfigBoolean("unobfuscate", false);
-		
+
 		transparentTypes = new HashSet<>();
 
 		String replaceMaterialName = getConfigString("material", "BARRIER");
 		material = Util.getMaterial(replaceMaterialName);
 		if (material == null || !material.isBlock()) {
-			MagicSpells.error("StonevisionSpell '" + internalName + "' has an invalid material defined!");
+			MagicSpells.error("StonevisionSpell '" + internalName + "' has an invalid material '" + replaceMaterialName + "' defined!");
 			material = null;
 		}
 
@@ -60,17 +61,20 @@ public class StonevisionSpell extends BuffSpell {
 			}
 		}
 
-		if (transparentTypes.isEmpty()) MagicSpells.error("StonevisionSpell '" + internalName + "' does not define any transparent types");
-
-		if (radius > MagicSpells.getGlobalRadius()) radius = MagicSpells.getGlobalRadius();
+		if (transparentTypes.isEmpty())
+			MagicSpells.error("StonevisionSpell '" + internalName + "' does not define any transparent types");
 
 		entities = new HashMap<>();
 	}
 
 	@Override
 	public boolean castBuff(LivingEntity entity, float power, String[] args) {
-		if (!(entity instanceof Player)) return true;
-		entities.put(entity.getUniqueId(), new TransparentBlockSet((Player) entity, radius, transparentTypes));
+		if (!(entity instanceof Player player)) return true;
+
+		int radius = this.radius.get(entity, null, power, args);
+		radius = Math.min(radius, MagicSpells.getGlobalRadius());
+
+		entities.put(entity.getUniqueId(), new TransparentBlockSet(player, radius, transparentTypes));
 		return true;
 	}
 
@@ -94,7 +98,7 @@ public class StonevisionSpell extends BuffSpell {
 		entities.clear();
 	}
 
-	@EventHandler(priority=EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerMove(PlayerMoveEvent event) {
 		Player pl = event.getPlayer();
 		if (!isActive(pl)) return;
@@ -114,14 +118,6 @@ public class StonevisionSpell extends BuffSpell {
 
 	public Set<Material> getTransparentTypes() {
 		return transparentTypes;
-	}
-
-	public int getRadius() {
-		return radius;
-	}
-
-	public void setRadius(int radius) {
-		this.radius = radius;
 	}
 
 	public boolean shouldUnobfuscate() {
@@ -174,7 +170,7 @@ public class StonevisionSpell extends BuffSpell {
 				for (int x = px - radius; x <= px + radius; x++) {
 					for (int y = py - radius; y <= py + radius; y++) {
 						for (int z = pz - radius; z <= pz + radius; z++) {
-							block = center.getWorld().getBlockAt(x,y,z);
+							block = center.getWorld().getBlockAt(x, y, z);
 							if (types.contains(block.getType())) {
 								player.sendBlockChange(block.getLocation(), material.createBlockData());
 								newBlocks.add(block);
