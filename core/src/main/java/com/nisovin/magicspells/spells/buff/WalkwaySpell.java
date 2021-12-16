@@ -23,6 +23,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class WalkwaySpell extends BuffSpell {
 
@@ -30,10 +31,10 @@ public class WalkwaySpell extends BuffSpell {
 
 	private Material material;
 
-	private int size;
+	private ConfigData<Integer> size;
 
 	private WalkwayListener listener;
-	
+
 	public WalkwaySpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
@@ -44,14 +45,14 @@ public class WalkwaySpell extends BuffSpell {
 			material = null;
 		}
 
-		size = getConfigInt("size", 6);
+		size = getConfigDataInt("size", 6);
 
 		entities = new HashMap<>();
 	}
-	
+
 	@Override
 	public boolean castBuff(LivingEntity entity, float power, String[] args) {
-		entities.put(entity.getUniqueId(), new Platform(entity, material, size));
+		entities.put(entity.getUniqueId(), new Platform(entity, material, size.get(entity, null, power, args)));
 		registerListener();
 		return true;
 	}
@@ -77,13 +78,13 @@ public class WalkwaySpell extends BuffSpell {
 		entities.clear();
 		unregisterListener();
 	}
-	
+
 	private void registerListener() {
 		if (listener != null) return;
 		listener = new WalkwayListener();
 		registerEvents(listener);
 	}
-	
+
 	private void unregisterListener() {
 		if (listener == null || !entities.isEmpty()) return;
 		unregisterEvents(listener);
@@ -102,17 +103,9 @@ public class WalkwaySpell extends BuffSpell {
 		this.material = material;
 	}
 
-	public int getSize() {
-		return size;
-	}
-
-	public void setSize(int size) {
-		this.size = size;
-	}
-
 	public class WalkwayListener implements Listener {
-	
-		@EventHandler(priority=EventPriority.MONITOR)
+
+		@EventHandler(priority = EventPriority.MONITOR)
 		public void onPlayerMove(PlayerMoveEvent event) {
 			Player player = event.getPlayer();
 			Platform carpet = entities.get(player.getUniqueId());
@@ -120,8 +113,8 @@ public class WalkwaySpell extends BuffSpell {
 			boolean moved = carpet.move();
 			if (moved) addUseAndChargeCost(player);
 		}
-	
-		@EventHandler(ignoreCancelled=true)
+
+		@EventHandler(ignoreCancelled = true)
 		public void onBlockBreak(BlockBreakEvent event) {
 			Block block = event.getBlock();
 			for (Platform platform : entities.values()) {
@@ -131,28 +124,28 @@ public class WalkwaySpell extends BuffSpell {
 				return;
 			}
 		}
-		
+
 	}
-	
+
 	private static class Platform {
-		
+
 		private LivingEntity entity;
 		private Material materialPlatform;
 		private int sizePlatform;
 		private List<Block> platform;
-		
+
 		private int prevX;
 		private int prevZ;
 		private int prevDirX;
 		private int prevDirY;
 		private int prevDirZ;
-		
+
 		private Platform(LivingEntity entity, Material material, int size) {
 			this.entity = entity;
 			this.materialPlatform = material;
 			this.sizePlatform = size;
 			this.platform = new ArrayList<>();
-			
+
 			move();
 		}
 
@@ -180,11 +173,10 @@ public class WalkwaySpell extends BuffSpell {
 				if (pitch < -40) dirY = 1;
 				else if (pitch > 40) dirY = -1;
 				else dirY = prevDirY;
-			}
-			else if (prevDirY == 1 && pitch > -10) dirY = 0;
+			} else if (prevDirY == 1 && pitch > -10) dirY = 0;
 			else if (prevDirY == -1 && pitch < 10) dirY = 0;
 			else dirY = prevDirY;
-			
+
 			if (x != prevX || z != prevZ || dirX != prevDirX || dirY != prevDirY || dirZ != prevDirZ) {
 
 				if (BlockUtils.isAir(origin.getType())) {
@@ -192,21 +184,21 @@ public class WalkwaySpell extends BuffSpell {
 					Block up = origin.getRelative(0, 1, 0);
 					if (up != null && ((materialPlatform == Material.OAK_WOOD && up.getType() == Material.OAK_STAIRS) || (materialPlatform == Material.COBBLESTONE && up.getType() == Material.COBBLESTONE_STAIRS))) {
 						origin = up;
-					} else {					
+					} else {
 						// Allow down movement when stepping out over an edge
 						Block down = origin.getRelative(0, -1, 0);
 						if (down != null && !BlockUtils.isAir(down.getType())) origin = down;
 					}
 				}
-				
+
 				drawCarpet(origin, dirX, dirY, dirZ);
-				
+
 				prevX = x;
 				prevZ = z;
 				prevDirX = dirX;
 				prevDirY = dirY;
 				prevDirZ = dirZ;
-				
+
 				return true;
 			}
 			return false;
@@ -215,7 +207,7 @@ public class WalkwaySpell extends BuffSpell {
 		private boolean blockInPlatform(Block block) {
 			return platform.contains(block);
 		}
-		
+
 		public void remove() {
 			platform.stream().forEachOrdered(b -> b.setType(Material.AIR));
 		}
@@ -227,7 +219,7 @@ public class WalkwaySpell extends BuffSpell {
 				if (materialPlatform == Material.OAK_WOOD) mat = Material.OAK_STAIRS;
 				else if (materialPlatform == Material.COBBLESTONE) mat = Material.COBBLESTONE_STAIRS;
 			}
-			
+
 			// Get platform blocks
 			List<Block> blocks = new ArrayList<>();
 			blocks.add(origin); // Add standing block
@@ -236,7 +228,7 @@ public class WalkwaySpell extends BuffSpell {
 				if (b == null) continue;
 				blocks.add(b);
 			}
-			
+
 			// Remove old blocks
 			Iterator<Block> iter = platform.iterator();
 			while (iter.hasNext()) {
@@ -246,7 +238,7 @@ public class WalkwaySpell extends BuffSpell {
 					iter.remove();
 				}
 			}
-			
+
 			// Set new blocks
 			for (Block b : blocks) {
 				if (platform.contains(b) || BlockUtils.isAir(b.getType())) {
@@ -255,7 +247,7 @@ public class WalkwaySpell extends BuffSpell {
 				}
 			}
 		}
-		
+
 	}
 
 }

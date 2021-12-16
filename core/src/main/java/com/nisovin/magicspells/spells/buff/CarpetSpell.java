@@ -22,6 +22,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.BlockPlatform;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class CarpetSpell extends BuffSpell {
 
@@ -31,7 +32,7 @@ public class CarpetSpell extends BuffSpell {
 
 	private Material platformMaterial;
 
-	private int platformSize;
+	private ConfigData<Integer> platformSize;
 
 	public CarpetSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -44,7 +45,7 @@ public class CarpetSpell extends BuffSpell {
 			MagicSpells.error("CarpetSpell " + internalName + " has an invalid platform-block defined! '" + materialName + "'");
 		}
 
-		platformSize = getConfigInt("size", 2);
+		platformSize = getConfigDataInt("size", 2);
 
 		entities = new HashMap<>();
 		falling = new HashSet<>();
@@ -52,7 +53,7 @@ public class CarpetSpell extends BuffSpell {
 	
 	@Override
 	public boolean castBuff(LivingEntity entity, float power, String[] args) {
-		entities.put(entity.getUniqueId(), new BlockPlatform(platformMaterial, Material.AIR, entity.getLocation().getBlock().getRelative(0, -1, 0), platformSize, true, "square"));
+		entities.put(entity.getUniqueId(), new BlockPlatform(platformMaterial, Material.AIR, entity.getLocation().getBlock().getRelative(0, -1, 0), platformSize.get(entity, null, power, args), true, "square"));
 		return true;
 	}
 
@@ -143,14 +144,6 @@ public class CarpetSpell extends BuffSpell {
 
 	public void setPlatformMaterial(Material platformMaterial) {
 		this.platformMaterial = platformMaterial;
-	}
-
-	public int getPlatformSize() {
-		return platformSize;
-	}
-
-	public void setPlatformSize(int platformSize) {
-		this.platformSize = platformSize;
 	}
 
 }
