@@ -10,30 +10,31 @@ import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.events.SpellApplyDamageEvent;
 
 public class PotionEffectSpell extends TargetedSpell implements TargetedEntitySpell {
-	
+
 	private PotionEffectType type;
 
-	private int duration;
-	private int strength;
+	private ConfigData<Integer> duration;
+	private ConfigData<Integer> strength;
 
 	private boolean hidden;
 	private boolean ambient;
 	private boolean targeted;
 	private boolean spellPowerAffectsDuration;
 	private boolean spellPowerAffectsStrength;
-	
+
 	public PotionEffectSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
+
 		type = Util.getPotionEffectType(getConfigString("type", "1"));
 
-		duration = getConfigInt("duration", 0);
-		strength = getConfigInt("strength", 0);
+		duration = getConfigDataInt("duration", 0);
+		strength = getConfigDataInt("strength", 0);
 
 		hidden = getConfigBoolean("hidden", false);
 		ambient = getConfigBoolean("ambient", false);
@@ -41,13 +42,9 @@ public class PotionEffectSpell extends TargetedSpell implements TargetedEntitySp
 		spellPowerAffectsDuration = getConfigBoolean("spell-power-affects-duration", true);
 		spellPowerAffectsStrength = getConfigBoolean("spell-power-affects-strength", true);
 	}
-	
+
 	public PotionEffectType getPotionType() {
 		return type;
-	}
-	
-	public int getDuration() {
-		return duration;
 	}
 
 	@Override
@@ -64,24 +61,32 @@ public class PotionEffectSpell extends TargetedSpell implements TargetedEntitySp
 
 			if (target == null) return noTarget(caster);
 
-			int dur = spellPowerAffectsDuration ? Math.round(duration * power) : duration;
-			int str = spellPowerAffectsStrength ? Math.round(strength * power) : strength;
-			
+			int dur = duration.get(caster, target, power, args);
+			if (spellPowerAffectsDuration) dur *= power;
+
+			int str = strength.get(caster, target, power, args);
+			if (spellPowerAffectsStrength) str *= power;
+
 			applyPotionEffect(caster, target, new PotionEffect(type, dur, str, ambient, !hidden));
 			if (targeted) playSpellEffects(caster, target);
 			else playSpellEffects(EffectPosition.CASTER, caster);
 
 			sendMessages(caster, target, args);
 			return PostCastAction.NO_MESSAGES;
-		}		
+		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(caster, target)) return false;
-		int dur = spellPowerAffectsDuration ? Math.round(duration * power) : duration;
-		int str = spellPowerAffectsStrength ? Math.round(strength * power) : strength;
+
+		int dur = duration.get(caster, target, power, args);
+		if (spellPowerAffectsDuration) dur *= power;
+
+		int str = strength.get(caster, target, power, args);
+		if (spellPowerAffectsStrength) str *= power;
+
 		PotionEffect effect = new PotionEffect(type, dur, str, ambient, !hidden);
 		if (targeted) {
 			applyPotionEffect(caster, target, effect);
@@ -101,8 +106,13 @@ public class PotionEffectSpell extends TargetedSpell implements TargetedEntitySp
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
 		if (!validTargetList.canTarget(target)) return false;
-		int dur = spellPowerAffectsDuration ? Math.round(duration * power) : duration;
-		int str = spellPowerAffectsStrength ? Math.round(strength * power) : strength;
+
+		int dur = duration.get(null, target, power, args);
+		if (spellPowerAffectsDuration) dur *= power;
+
+		int str = strength.get(null, target, power, args);
+		if (spellPowerAffectsStrength) str *= power;
+
 		PotionEffect effect = new PotionEffect(type, dur, str, ambient, !hidden);
 		applyPotionEffect(null, target, effect);
 		playSpellEffects(EffectPosition.TARGET, target);

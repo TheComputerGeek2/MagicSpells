@@ -16,6 +16,7 @@ import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.SpellAnimation;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
@@ -26,8 +27,8 @@ public class BombSpell extends TargetedSpell implements TargetedLocationSpell {
 	private Material material;
 	private String materialName;
 
-	private int fuse;
-	private int interval;
+	private ConfigData<Integer> fuse;
+	private ConfigData<Integer> interval;
 
 	private Subspell targetSpell;
 	private String targetSpellName;
@@ -42,8 +43,8 @@ public class BombSpell extends TargetedSpell implements TargetedLocationSpell {
 			material = null;
 		}
 
-		fuse = getConfigInt("fuse", 100);
-		interval = getConfigInt("interval", 20);
+		fuse = getConfigDataInt("fuse", 100);
+		interval = getConfigDataInt("interval", 20);
 
 		targetSpellName = getConfigString("spell", "");
 
@@ -116,10 +117,13 @@ public class BombSpell extends TargetedSpell implements TargetedLocationSpell {
 		if (livingEntity != null) playSpellEffects(livingEntity, loc.add(0.5, 0, 0.5));
 		else playSpellEffects(EffectPosition.TARGET, loc.add(0.5, 0, 0.5));
 
+		final int interval = this.interval.get(livingEntity, null, power, args);
+		final int fuse = this.fuse.get(livingEntity, null, power, args);
 		new SpellAnimation(interval, interval, true) {
-				
+
+			final Location l = block.getLocation().add(0.5, 0, 0.5);
 			int time = 0;
-			Location l = block.getLocation().add(0.5, 0, 0.5);
+
 			@Override
 			protected void onTick(int tick) {
 				time += interval;

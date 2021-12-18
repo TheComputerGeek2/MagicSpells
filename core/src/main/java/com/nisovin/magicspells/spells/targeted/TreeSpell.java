@@ -19,6 +19,7 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.SpellAnimation;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.events.SpellTargetLocationEvent;
 
@@ -26,7 +27,7 @@ public class TreeSpell extends TargetedSpell implements TargetedLocationSpell {
 
 	private TreeType treeType;
 
-	private int speed;
+	private ConfigData<Integer> speed;
 	
 	public TreeSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -38,7 +39,7 @@ public class TreeSpell extends TargetedSpell implements TargetedLocationSpell {
 			treeType = TreeType.TREE;
 		}
 
-		speed = getConfigInt("animation-speed", 20);
+		speed = getConfigDataInt("animation-speed", 20);
 	}
 
 	@Override
@@ -68,6 +69,8 @@ public class TreeSpell extends TargetedSpell implements TargetedLocationSpell {
 		if (!BlockUtils.isAir(target.getType())) return false;
 		
 		Location loc = target.getLocation();
+
+		int speed = this.speed.get(caster, null, power, args);
 		if (speed > 0) {
 			List<BlockState> blockStates = new ArrayList<>();
 			target.getWorld().generateTree(loc, treeType, new TreeWatch(loc, blockStates));
@@ -77,6 +80,7 @@ public class TreeSpell extends TargetedSpell implements TargetedLocationSpell {
 			}
 			return false;
 		}
+
 		return target.getWorld().generateTree(loc, treeType);
 	}
 	

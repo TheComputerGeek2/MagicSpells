@@ -15,15 +15,17 @@ import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.MagicLocation;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.instant.MarkSpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
 public class RemoveMarksSpell extends TargetedSpell implements TargetedLocationSpell {
 
-	private float radius;
+	private ConfigData<Float> radius;
 
 	private boolean pointBlank;
+	private boolean powerAffectsRadius;
 
 	private MarkSpell markSpell;
 	private String markSpellName;
@@ -31,9 +33,10 @@ public class RemoveMarksSpell extends TargetedSpell implements TargetedLocationS
 	public RemoveMarksSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		radius = getConfigFloat("radius", 10F);
+		radius = getConfigDataFloat("radius", 10F);
 
 		pointBlank = getConfigBoolean("point-blank", false);
+		powerAffectsRadius = getConfigBoolean("power-affects-radius", true);
 
 		markSpellName = getConfigString("mark-spell", "");
 	}
@@ -91,8 +94,10 @@ public class RemoveMarksSpell extends TargetedSpell implements TargetedLocationS
 	}
 
 	private void removeMarks(LivingEntity caster, Location loc, float power, String[] args) {
-		float rad = radius * power;
-		float radSq = rad * rad;
+		float radSq = radius.get(caster, null, power, args);
+		if (powerAffectsRadius) radSq *= power;
+
+		radSq *= radSq;
 
 		Map<UUID, MagicLocation> marks = markSpell.getMarks();
 		Iterator<UUID> iter = marks.keySet().iterator();
@@ -108,5 +113,5 @@ public class RemoveMarksSpell extends TargetedSpell implements TargetedLocationS
 		playSpellEffects(EffectPosition.TARGET, loc);
 		if (caster != null) playSpellEffects(EffectPosition.CASTER, caster);
 	}
-	
+
 }

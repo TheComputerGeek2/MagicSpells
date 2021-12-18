@@ -7,15 +7,16 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
 public class CloseInventorySpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private final int delay;
+	private final ConfigData<Integer> delay;
 
 	public CloseInventorySpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		delay = getConfigInt("delay", 0);
+		delay = getConfigDataInt("delay", 0);
 	}
 
 	@Override
@@ -57,6 +58,8 @@ public class CloseInventorySpell extends TargetedSpell implements TargetedEntity
 	}
 
 	private void close(LivingEntity caster, LivingEntity target, Player playerTarget, float power, String[] args) {
+		int delay = this.delay.get(caster, target, power, args);
+
 		if (delay > 0) MagicSpells.scheduleDelayedTask(playerTarget::closeInventory, delay);
 		else playerTarget.closeInventory();
 	}

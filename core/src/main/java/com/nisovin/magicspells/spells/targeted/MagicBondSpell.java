@@ -18,6 +18,7 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.SpellFilter;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.events.SpellCastEvent;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
@@ -25,7 +26,7 @@ public class MagicBondSpell extends TargetedSpell implements TargetedEntitySpell
 
 	private Map<LivingEntity, LivingEntity> bondTarget;
 
-	private int duration;
+	private ConfigData<Integer> duration;
 
 	private String strDurationEnd;
 
@@ -34,7 +35,7 @@ public class MagicBondSpell extends TargetedSpell implements TargetedEntitySpell
 	public MagicBondSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		duration = getConfigInt("duration", 200);
+		duration = getConfigDataInt("duration", 200);
 
 		strDurationEnd = getConfigString("str-duration", "");
 
@@ -89,7 +90,7 @@ public class MagicBondSpell extends TargetedSpell implements TargetedEntitySpell
 			bondTarget.remove(caster);
 
 			HandlerList.unregisterAll(monitorBond);
-		}, duration);
+		}, duration.get(caster, target, power, args));
 	}
 
 	private class SpellMonitor implements Listener {

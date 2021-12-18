@@ -12,6 +12,7 @@ import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.events.SpellTargetLocationEvent;
@@ -21,8 +22,8 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 	private Material cropType;
 	private String materialName;
 
-	private int radius;
-	private int growth;
+	private ConfigData<Integer> radius;
+	private ConfigData<Integer> growth;
 
 	private boolean targeted;
 	private boolean growWart;
@@ -30,6 +31,8 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 	private boolean growCarrots;
 	private boolean growPotatoes;
 	private boolean growBeetroot;
+	private boolean powerAffectsRadius;
+	private boolean resolveGrowthPerCrop;
 
 	public FarmSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -38,8 +41,8 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 		cropType = Util.getMaterial(materialName);
 		if (cropType == null) MagicSpells.error("FarmSpell '" + internalName + "' has an invalid crop-type defined!");
 
-		radius = getConfigInt("radius", 3);
-		growth = getConfigInt("growth", 1);
+		radius = getConfigDataInt("radius", 3);
+		growth = getConfigDataInt("growth", 1);
 
 		targeted = getConfigBoolean("targeted", false);
 		growWart = getConfigBoolean("grow-wart", false);
@@ -47,6 +50,8 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 		growCarrots = getConfigBoolean("grow-carrots", true);
 		growPotatoes = getConfigBoolean("grow-potatoes", true);
 		growBeetroot = getConfigBoolean("grow-beetroot", false);
+		powerAffectsRadius = getConfigBoolean("power-affects-radius", true);
+		resolveGrowthPerCrop = getConfigBoolean("resolve-growth-per-crop", false);
 	}
 
 	@Override
@@ -67,7 +72,7 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 			}
 
 			if (block != null) {
-				boolean farmed = farm(block, power, args);
+				boolean farmed = farm(caster, block, power, args);
 				if (!farmed) return noTarget(caster);
 				playSpellEffects(EffectPosition.CASTER, caster);
 				if (targeted) playSpellEffects(EffectPosition.TARGET, block.getLocation());
@@ -79,30 +84,33 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
-		return farm(target.subtract(0, 1, 0).getBlock(), power, args);
+		return farm(caster, target.subtract(0, 1, 0).getBlock(), power, args);
 	}
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		return farm(target.subtract(0, 1, 0).getBlock(), power, null);
+		return farm(caster, target.subtract(0, 1, 0).getBlock(), power, null);
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power, String[] args) {
-		return farm(target.getBlock(), power, args);
+		return farm(null, target.getBlock(), power, args);
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power) {
-		return farm(target.getBlock(), power, null);
+		return farm(null, target.getBlock(), power, null);
 	}
 
-	private boolean farm(Block center, float power, String[] args) {
-		int radius = Math.round(this.radius * power);
+	private boolean farm(LivingEntity caster, Block center, float power, String[] args) {
+		int radius = this.radius.get(caster, null, power, args);
+		if (powerAffectsRadius) radius = Math.round(radius * power);
 
 		int cx = center.getX();
 		int y = center.getY();
 		int cz = center.getZ();
+
+		int growth = resolveGrowthPerCrop ? 0 : this.growth.get(caster, null, power, args);
 
 		int count = 0;
 		for (int x = cx - radius; x <= cx + radius; x++) {
@@ -116,16 +124,22 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 				b = b.getRelative(BlockFace.UP);
 				if (BlockUtils.isAir(b.getType())) {
 					if (cropType != null) {
+						if (resolveGrowthPerCrop) growth = this.growth.get(caster, null, power, args);
+
 						b.setType(cropType);
 						if (growth > 1) BlockUtils.setGrowthLevel(b, growth - 1);
 						count++;
 					}
 				} else if ((isWheat(b) || isCarrot(b) || isPotato(b)) && BlockUtils.getGrowthLevel(b) < 7) {
+					if (resolveGrowthPerCrop) growth = this.growth.get(caster, null, power, args);
+
 					int newGrowth = BlockUtils.getGrowthLevel(b) + growth;
 					if (newGrowth > 7) newGrowth = 7;
 					BlockUtils.setGrowthLevel(b, newGrowth);
 					count++;
 				} else if ((isBeetroot(b) || isWart(b)) && BlockUtils.getGrowthLevel(b) < 3) {
+					if (resolveGrowthPerCrop) growth = this.growth.get(caster, null, power, args);
+
 					int newGrowth = BlockUtils.getGrowthLevel(b) + growth;
 					if (newGrowth > 3) newGrowth = 3;
 					BlockUtils.setGrowthLevel(b, newGrowth);

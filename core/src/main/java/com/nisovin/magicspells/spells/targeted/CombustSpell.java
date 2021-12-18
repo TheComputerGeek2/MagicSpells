@@ -15,6 +15,7 @@ import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.events.SpellApplyDamageEvent;
@@ -24,24 +25,28 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private Map<UUID, CombustData> combusting;
 
-	private int fireTicks;
-	private double fireTickDamage;
+	private ConfigData<Integer> fireTicks;
+	private ConfigData<Double> fireTickDamage;
 
 	private boolean checkPlugins;
 	private boolean preventImmunity;
+	private boolean powerAffectsFireTicks;
+	private boolean powerAffectsFireTickDamage;
 
 	public CombustSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
-		fireTicks = getConfigInt("fire-ticks", 100);
-		fireTickDamage = getConfigDouble("fire-tick-damage", 1);
+
+		fireTicks = getConfigDataInt("fire-ticks", 100);
+		fireTickDamage = getConfigDataDouble("fire-tick-damage", 1);
 
 		checkPlugins = getConfigBoolean("check-plugins", true);
 		preventImmunity = getConfigBoolean("prevent-immunity", true);
+		powerAffectsFireTicks = getConfigBoolean("power-affects-fire-ticks", true);
+		powerAffectsFireTickDamage = getConfigBoolean("power-affects-fire-tick-damage", true);
 
 		combusting = new HashMap<>();
 	}
-	
+
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
@@ -84,40 +89,40 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 			EventUtil.call(event);
 			if (event.isCancelled()) return false;
 		}
-		
-		int duration = Math.round(fireTicks * power);
-		combusting.put(target.getUniqueId(), new CombustData(power));
 
-		EventUtil.call(new SpellApplyDamageEvent(this, caster, target, fireTickDamage, DamageCause.FIRE_TICK, ""));
+		int duration = fireTicks.get(caster, target, power, args);
+		if (powerAffectsFireTicks) duration = Math.round(duration * power);
 		target.setFireTicks(duration);
+
+		combusting.put(target.getUniqueId(), new CombustData(caster, power, args));
 
 		if (caster != null) playSpellEffects(caster, target);
 		else playSpellEffects(EffectPosition.TARGET, target);
 
-		MagicSpells.scheduleDelayedTask(() -> {
-			CombustData data = combusting.get(target.getUniqueId());
-			if (data != null) combusting.remove(target.getUniqueId());
-		}, duration + 2);
+		MagicSpells.scheduleDelayedTask(() -> combusting.remove(target.getUniqueId()), duration + 2);
 
 		return true;
 	}
-	
+
 	@EventHandler(ignoreCancelled = true)
-	public void onEntityDamage(final EntityDamageEvent event) {
+	public void onEntityDamage(EntityDamageEvent event) {
 		if (event.getCause() != DamageCause.FIRE_TICK) return;
-		
-		final Entity entity = event.getEntity();
-		CombustData data = combusting.get(entity.getUniqueId());
+
+		Entity entity = event.getEntity();
+		if (!(entity instanceof LivingEntity target)) return;
+
+		CombustData data = combusting.get(target.getUniqueId());
 		if (data == null) return;
-		
-		event.setDamage(fireTickDamage * data.power);
-		if (preventImmunity) MagicSpells.scheduleDelayedTask(() -> ((LivingEntity) entity).setNoDamageTicks(0), 0);
+
+		double fireTickDamage = this.fireTickDamage.get(data.caster, target, data.power, data.args);
+		if (powerAffectsFireTickDamage) fireTickDamage = fireTickDamage * data.power;
+
+		EventUtil.call(new SpellApplyDamageEvent(this, data.caster, target, fireTickDamage, DamageCause.FIRE_TICK, ""));
+		event.setDamage(fireTickDamage);
+
+		if (preventImmunity) MagicSpells.scheduleDelayedTask(() -> target.setNoDamageTicks(0), 0);
 	}
 
-	public int getDuration() {
-		return fireTicks;
-	}
+	private record CombustData(LivingEntity caster, float power, String[] args) {}
 
-	private record CombustData(float power) {}
-	
 }

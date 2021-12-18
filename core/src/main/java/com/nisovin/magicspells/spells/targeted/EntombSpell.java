@@ -18,6 +18,7 @@ import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
@@ -28,7 +29,7 @@ public class EntombSpell extends TargetedSpell implements TargetedEntitySpell {
 	private Material material;
 	private String materialName;
 	
-	private int duration;
+	private ConfigData<Integer> duration;
 
 	private boolean allowBreaking;
 	private boolean closeTopAndBottom;
@@ -45,7 +46,7 @@ public class EntombSpell extends TargetedSpell implements TargetedEntitySpell {
 			material = null;
 		}
 		
-		duration = getConfigInt("duration", 20);
+		duration = getConfigDataInt("duration", 20);
 
 		allowBreaking = getConfigBoolean("allow-breaking", true);
 		closeTopAndBottom = getConfigBoolean("close-top-and-bottom", true);
@@ -143,7 +144,8 @@ public class EntombSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 		
 		blocks.addAll(tombBlocks);
-		
+
+		int duration = this.duration.get(caster, target, power, args);
 		if (duration > 0 && !tombBlocks.isEmpty()) {
 			MagicSpells.scheduleDelayedTask(() -> removeTomb(tombBlocks), Math.round(duration * power));
 		}

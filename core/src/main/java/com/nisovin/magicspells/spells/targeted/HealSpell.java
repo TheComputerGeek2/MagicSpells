@@ -4,11 +4,11 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 
 import com.nisovin.magicspells.util.Util;
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.ValidTargetChecker;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -16,11 +16,12 @@ import com.nisovin.magicspells.events.MagicSpellsEntityRegainHealthEvent;
 
 public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private final double healAmount;
-	private final int healPercent;
+	private final ConfigData<Double> healAmount;
+	private final ConfigData<Double> healPercent;
 
 	private final boolean checkPlugins;
 	private final boolean cancelIfFull;
+	private final boolean powerAffectsHealAmount;
 
 	private final String strMaxHealth;
 
@@ -29,14 +30,12 @@ public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 	public HealSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		healAmount = getConfigFloat("heal-amount", 10);
-		healPercent = getConfigInt("heal-percent", 0);
-		if (healPercent < 0 || healPercent > 100) {
-			MagicSpells.error("HealSpell '" + internalName + "' uses heal-percent outside bounds 0-100.");
-		}
+		healAmount = getConfigDataDouble("heal-amount", 10);
+		healPercent = getConfigDataDouble("heal-percent", 0);
 
 		checkPlugins = getConfigBoolean("check-plugins", true);
 		cancelIfFull = getConfigBoolean("cancel-if-full", true);
+		powerAffectsHealAmount = getConfigBoolean("power-affects-heal-amount", true);
 
 		strMaxHealth = getConfigString("str-max-health", "%t is already at max health.");
 
@@ -94,8 +93,11 @@ public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 		double health = target.getHealth();
 		double amount;
 
-		if (healPercent == 0) amount = healAmount * power;
-		else amount = (Util.getMaxHealth(caster) - health) * (healPercent / 100F);
+		double healPercent = this.healPercent.get(caster, target, power, args);
+		if (healPercent == 0) {
+			amount = this.healAmount.get(caster, target, power, args);
+			if (powerAffectsHealAmount) amount *= power;
+		} else amount = (Util.getMaxHealth(caster) - health) * (healPercent / 100);
 
 		if (checkPlugins) {
 			MagicSpellsEntityRegainHealthEvent event = new MagicSpellsEntityRegainHealthEvent(target, amount, RegainReason.CUSTOM);

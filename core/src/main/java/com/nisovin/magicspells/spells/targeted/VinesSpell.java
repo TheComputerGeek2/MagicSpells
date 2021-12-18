@@ -14,21 +14,22 @@ import org.bukkit.block.data.MultipleFacing;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.SpellAnimation;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class VinesSpell extends TargetedSpell {
 
-	private int up;
-	private int down;
-	private int width;
-	private int animateInterval;
+	private ConfigData<Integer> up;
+	private ConfigData<Integer> down;
+	private ConfigData<Integer> width;
+	private ConfigData<Integer> animateInterval;
 	
 	public VinesSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
-		up = getConfigInt("up", 3);
-		down = getConfigInt("down", 1);
-		width = getConfigInt("width", 1);
-		animateInterval = getConfigInt("animate-interval", 0);
+		up = getConfigDataInt("up", 3);
+		down = getConfigDataInt("down", 1);
+		width = getConfigDataInt("width", 1);
+		animateInterval = getConfigDataInt("animate-interval", 0);
 	}
 
 	@Override
@@ -38,13 +39,13 @@ public class VinesSpell extends TargetedSpell {
 			if (target == null || target.size() != 2) return noTarget(caster);
 			if (target.get(0).getType() != Material.AIR || !target.get(1).getType().isSolid()) return noTarget(caster);
 
-			boolean success = growVines(target.get(0), target.get(1));
+			boolean success = growVines(caster, target.get(0), target.get(1), power, args);
 			if (!success) return noTarget(caster);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 	
-	private boolean growVines(final Block air, Block solid) {
+	private boolean growVines(LivingEntity caster, Block air, Block solid, float power, String[] args) {
 		BlockFace face = air.getFace(solid);
 		int x = 0;
 		int z = 0;
@@ -56,14 +57,18 @@ public class VinesSpell extends TargetedSpell {
 		TreeSet<VineBlock> blocks = new TreeSet<>();
 
 		blocks.add(new VineBlock(air, air));
-		growVinesVert(blocks, air, solid, air);
+		int up = this.up.get(caster, null, power, args);
+		int down = this.down.get(caster, null, power, args);
+		growVinesVert(blocks, air, solid, air, up, down);
+
+		int width = this.width.get(caster, null, power, args);
 		if (width > 1) {
 			for (int i = 1; i <= width / 2; i++) {
 				Block a = air.getRelative(x * i, 0, z * i);
 				Block s = solid.getRelative(x * i, 0, z * i);
 				if (a.getType() == Material.AIR && s.getType().isSolid()) {
 					blocks.add(new VineBlock(a, air));
-					growVinesVert(blocks, a, s, air);
+					growVinesVert(blocks, a, s, air, up, down);
 				} else break;
 			}
 			for (int i = 1; i <= width / 2; i++) {
@@ -71,16 +76,17 @@ public class VinesSpell extends TargetedSpell {
 				Block s = solid.getRelative(x * -i, 0, z * -i);
 				if (a.getType() == Material.AIR && s.getType().isSolid()) {
 					blocks.add(new VineBlock(a, air));
-					growVinesVert(blocks, a, s, air);
+					growVinesVert(blocks, a, s, air, up, down);
 				} else break;
 			}
 		}
 		
 		if (blocks.isEmpty()) return false;
-		
+
+		int animateInterval = this.animateInterval.get(caster, null, power, args);
 		if (animateInterval <= 0) {
 			for (VineBlock vine : blocks) setBlockToVine(vine.block, face);
-		} else new VineAnimation(face, blocks);
+		} else new VineAnimation(face, blocks, animateInterval);
 
 		return true;
 	}
@@ -96,7 +102,7 @@ public class VinesSpell extends TargetedSpell {
 		state.update(true, false);
 	}
 	
-	private void growVinesVert(Set<VineBlock> blocks, Block air, Block solid, Block center) {
+	private void growVinesVert(Set<VineBlock> blocks, Block air, Block solid, Block center, int up, int down) {
 		Block b;
 		for (int i = 1; i <= up; i++) {
 			b = air.getRelative(0, i, 0);
@@ -136,7 +142,7 @@ public class VinesSpell extends TargetedSpell {
 		private BlockFace face;
 		private TreeSet<VineBlock> blocks;
 
-		private VineAnimation(BlockFace face, TreeSet<VineBlock> blocks) {
+		private VineAnimation(BlockFace face, TreeSet<VineBlock> blocks, int animateInterval) {
 			super(animateInterval, true);
 			this.face = face;
 			this.blocks = blocks;

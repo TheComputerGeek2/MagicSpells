@@ -8,14 +8,15 @@ import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 
 public class GripSpell extends TargetedSpell implements TargetedEntitySpell, TargetedEntityFromLocationSpell {
 
-	private float yOffset;
-	private float locationOffset;
+	private ConfigData<Double> yOffset;
+	private ConfigData<Double> locationOffset;
 
 	private boolean checkGround;
 
@@ -26,17 +27,14 @@ public class GripSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 	public GripSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		yOffset = getConfigFloat("y-offset", 0);
-		locationOffset = getConfigFloat("location-offset", 0);
+		yOffset = getConfigDataDouble("y-offset", 0);
+		locationOffset = getConfigDataDouble("location-offset", 0);
 
 		checkGround = getConfigBoolean("check-ground", true);
 
 		relativeOffset = getConfigVector("relative-offset", "1,1,0");
 
 		strCantGrip = getConfigString("str-cant-grip", "");
-
-		if (locationOffset != 0) relativeOffset.setX(locationOffset);
-		if (yOffset != 0) relativeOffset.setY(yOffset);
 	}
 
 	@Override
@@ -44,7 +42,8 @@ public class GripSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 		if (state == SpellCastState.NORMAL) {
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return noTarget(caster);
-			if (!grip(caster, target.getTarget(), caster.getLocation(), power, args)) return noTarget(caster, strCantGrip);
+			if (!grip(caster, target.getTarget(), caster.getLocation(), power, args))
+				return noTarget(caster, strCantGrip);
 
 			sendMessages(caster, target.getTarget(), args);
 			return PostCastAction.NO_MESSAGES;
@@ -95,6 +94,15 @@ public class GripSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 
 		Vector startDir = loc.clone().getDirection().normalize();
 		Vector horizOffset = new Vector(-startDir.getZ(), 0.0, startDir.getX()).normalize();
+
+		Vector relativeOffset = this.relativeOffset.clone();
+
+		double yOffset = this.yOffset.get(caster, target, power, args);
+		if (yOffset != 0) relativeOffset.setY(yOffset);
+
+		double locationOffset = this.locationOffset.get(caster, target, power, args);
+		if (locationOffset != 0) relativeOffset.setX(locationOffset);
+
 		loc.add(horizOffset.multiply(relativeOffset.getZ())).getBlock().getLocation();
 		loc.add(loc.getDirection().clone().multiply(relativeOffset.getX()));
 		loc.setY(loc.getY() + relativeOffset.getY());

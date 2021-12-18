@@ -21,15 +21,16 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.events.SpellTargetLocationEvent;
 
 public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell {
 	
-	private int explosionSize;
-	private int backfireChance;
+	private ConfigData<Integer> explosionSize;
+	private ConfigData<Integer> backfireChance;
 
-	private float damageMultiplier;
+	private ConfigData<Float> damageMultiplier;
 
 	private boolean addFire;
 	private boolean simulateTnt;
@@ -37,17 +38,20 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 	private boolean preventBlockDamage;
 	private boolean preventPlayerDamage;
 	private boolean preventAnimalDamage;
+	private boolean powerAffectsDamageMultiplier;
 
 	private long currentTick = 0;
+	private String[] currentArgs;
 	private float currentPower = 0;
-	
+	private LivingEntity currentCaster;
+
 	public ExplodeSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
-		explosionSize = getConfigInt("explosion-size", 4);
-		backfireChance = getConfigInt("backfire-chance", 0);
+		explosionSize = getConfigDataInt("explosion-size", 4);
+		backfireChance = getConfigDataInt("backfire-chance", 0);
 
-		damageMultiplier = getConfigFloat("damage-multiplier", 0);
+		damageMultiplier = getConfigDataFloat("damage-multiplier", 0);
 
 		addFire = getConfigBoolean("add-fire", false);
 		simulateTnt = getConfigBoolean("simulate-tnt", true);
@@ -55,6 +59,7 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 		preventBlockDamage = getConfigBoolean("prevent-block-damage", false);
 		preventPlayerDamage = getConfigBoolean("prevent-player-damage", false);
 		preventAnimalDamage = getConfigBoolean("prevent-animal-damage", false);
+		powerAffectsDamageMultiplier = getConfigBoolean("power-affects-damage-multiplier", true);
 	}
 	
 	@Override
@@ -86,18 +91,22 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 	}
 	
 	private boolean explode(LivingEntity livingEntity, Location target, float power, String[] args) {
+		int explosionSize = this.explosionSize.get(livingEntity, null, power, args);
 		if (simulateTnt) {
 			boolean cancelled = MagicSpells.getVolatileCodeHandler().simulateTnt(target, livingEntity, explosionSize * power, addFire);
 			if (cancelled) return false;
 		}
 
+		int backfireChance = this.backfireChance.get(livingEntity, null, power, args);
 		if (backfireChance > 0) {
 			Random rand = ThreadLocalRandom.current();
 			if (rand.nextInt(10000) < backfireChance) target = livingEntity.getLocation();
 		}
 
 		currentTick = Bukkit.getWorlds().get(0).getFullTime();
+		currentCaster = livingEntity;
 		currentPower = power;
+		currentArgs = args;
 
 		boolean ret = target.getWorld().createExplosion(target, explosionSize * power, addFire, !preventBlockDamage, livingEntity);
 		if (ret) playSpellEffects(livingEntity, target);
@@ -122,13 +131,18 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 
 	@EventHandler(priority=EventPriority.HIGH, ignoreCancelled = true)
 	public void onEntityDamage(EntityDamageEvent event) {
-		if (!(damageMultiplier > 0 || preventPlayerDamage)) return;
 		if (!(event.getCause() == DamageCause.BLOCK_EXPLOSION || event.getCause() == DamageCause.ENTITY_EXPLOSION)) return;
 		if (currentTick != Bukkit.getWorlds().get(0).getFullTime()) return;
 
+		float damageMultiplier = this.damageMultiplier.get(currentCaster, event.getEntity() instanceof LivingEntity le ? le : null, currentPower, currentArgs);
+		if (!(damageMultiplier > 0 || preventPlayerDamage || preventAnimalDamage)) return;
+
 		if (preventPlayerDamage && event.getEntity() instanceof Player) event.setCancelled(true);
 		else if (preventAnimalDamage && event.getEntity() instanceof Animals) event.setCancelled(true);
-		else if (damageMultiplier > 0) event.setDamage(Math.round(event.getDamage() * damageMultiplier * currentPower));
+		else if (damageMultiplier > 0) {
+			if (powerAffectsDamageMultiplier) damageMultiplier *= currentPower;
+			event.setDamage(damageMultiplier);
+		}
 	}
 	
 	@EventHandler

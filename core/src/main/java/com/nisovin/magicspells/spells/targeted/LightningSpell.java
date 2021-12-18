@@ -19,6 +19,7 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.events.SpellTargetLocationEvent;
@@ -26,7 +27,7 @@ import com.nisovin.magicspells.events.MagicSpellsEntityDamageByEntityEvent;
 
 public class LightningSpell extends TargetedSpell implements TargetedLocationSpell {
 
-	private double additionalDamage;
+	private ConfigData<Double> additionalDamage;
 
 	private boolean zapPigs;
 	private boolean noDamage;
@@ -37,7 +38,7 @@ public class LightningSpell extends TargetedSpell implements TargetedLocationSpe
 	public LightningSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		additionalDamage = getConfigFloat("additional-damage", 0F);
+		additionalDamage = getConfigDataDouble("additional-damage", 0F);
 
 		zapPigs = getConfigBoolean("zap-pigs", true);
 		noDamage = getConfigBoolean("no-damage", false);
@@ -57,6 +58,9 @@ public class LightningSpell extends TargetedSpell implements TargetedLocationSpe
 					entityTarget = targetInfo.getTarget();
 					power = targetInfo.getPower();
 				}
+
+				double additionalDamage = this.additionalDamage.get(caster, entityTarget, power, args);
+
 				if (checkPlugins) {
 					MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(caster, entityTarget, DamageCause.ENTITY_ATTACK, 1 + additionalDamage, this);
 					EventUtil.call(event);

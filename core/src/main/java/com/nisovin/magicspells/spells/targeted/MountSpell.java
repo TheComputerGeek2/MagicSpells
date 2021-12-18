@@ -13,22 +13,21 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
 public class MountSpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private int duration;
+	private ConfigData<Integer> duration;
 
 	private boolean reverse;
 
 	public MountSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		duration = getConfigInt("duration", 0);
+		duration = getConfigDataInt("duration", 0);
 
 		reverse = getConfigBoolean("reverse", false);
-
-		if (duration < 0) duration = 0;
 	}
 
 	@Override
@@ -63,6 +62,8 @@ public class MountSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private void mount(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (caster == null || target == null) return;
+
+		int duration = this.duration.get(caster, target, power, args);
 
 		if (reverse) {
 			if (!caster.getPassengers().isEmpty()) caster.eject();

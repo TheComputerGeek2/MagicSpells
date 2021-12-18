@@ -8,14 +8,15 @@ import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
 public class RotateSpell extends TargetedSpell implements TargetedEntitySpell, TargetedLocationSpell {
 
-	private int rotationYaw;
-	private int rotationPitch;
+	private ConfigData<Integer> rotationYaw;
+	private ConfigData<Integer> rotationPitch;
 
 	private boolean random;
 	private boolean affectPitch;
@@ -26,8 +27,8 @@ public class RotateSpell extends TargetedSpell implements TargetedEntitySpell, T
 	public RotateSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		rotationYaw = getConfigInt("rotation-yaw", 10);
-		rotationPitch = getConfigInt("rotation-pitch", 0);
+		rotationYaw = getConfigDataInt("rotation-yaw", 10);
+		rotationPitch = getConfigDataInt("rotation-pitch", 0);
 
 		random = getConfigBoolean("random", false);
 		affectPitch = getConfigBoolean("affect-pitch", false);
@@ -94,8 +95,8 @@ public class RotateSpell extends TargetedSpell implements TargetedEntitySpell, T
 			loc.setYaw(Util.getRandomInt(360));
 			if (affectPitch) loc.setPitch(Util.getRandomInt(181) - 90);
 		} else {
-			loc.setYaw(loc.getYaw() + rotationYaw);
-			if (affectPitch) loc.setPitch(loc.getPitch() + rotationPitch);
+			loc.setYaw(loc.getYaw() + rotationYaw.get(caster, target, power, args));
+			if (affectPitch) loc.setPitch(loc.getPitch() + rotationPitch.get(caster, target, power, args));
 		}
 		target.teleport(loc);
 	}
