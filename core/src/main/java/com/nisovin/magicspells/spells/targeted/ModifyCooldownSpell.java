@@ -10,21 +10,28 @@ import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.SpellFilter;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class ModifyCooldownSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private final SpellFilter filter;
-	
-	private final float seconds;
-	private final float multiplier;
-	
+
+	private final ConfigData<Float> seconds;
+	private final ConfigData<Float> multiplier;
+
+	private final boolean powerAffectsSeconds;
+	private final boolean powerAffectsMultiplier;
+
 	public ModifyCooldownSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		seconds = getConfigFloat("seconds", 1F);
-		multiplier = getConfigFloat("multiplier", 0F);
+		seconds = getConfigDataFloat("seconds", 1F);
+		multiplier = getConfigDataFloat("multiplier", 0F);
+
+		powerAffectsSeconds = getConfigBoolean("power-affects-seconds", true);
+		powerAffectsMultiplier = getConfigBoolean("power-affects-multiplier", true);
 
 		List<String> spells = getConfigStringList("spells", null);
 		List<String> deniedSpells = getConfigStringList("denied-spells", null);
@@ -68,8 +75,11 @@ public class ModifyCooldownSpell extends TargetedSpell implements TargetedEntity
 	}
 
 	private void modifyCooldowns(LivingEntity caster, LivingEntity target, float power, String[] args) {
-		float sec = seconds * power;
-		float mult = multiplier * (1F / power);
+		float sec = seconds.get(caster, target, power, args);
+		if (powerAffectsSeconds) sec *= power;
+
+		float mult = multiplier.get(caster, target, power, args);
+		if (powerAffectsMultiplier) mult /= power;
 
 		for (Spell spell : MagicSpells.spells()) {
 			if (!spell.onCooldown(target)) continue;

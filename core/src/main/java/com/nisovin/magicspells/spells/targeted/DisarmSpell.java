@@ -20,6 +20,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -33,7 +34,7 @@ public class DisarmSpell extends TargetedSpell implements TargetedEntitySpell {
 	private boolean dontDrop;
 	private boolean preventTheft;
 
-	private int disarmDuration;
+	private ConfigData<Integer> disarmDuration;
 
 	private String strInvalidItem;
 	
@@ -53,7 +54,7 @@ public class DisarmSpell extends TargetedSpell implements TargetedEntitySpell {
 		dontDrop = getConfigBoolean("dont-drop", false);
 		preventTheft = getConfigBoolean("prevent-theft", true);
 
-		disarmDuration = getConfigInt("disarm-duration", 100);
+		disarmDuration = getConfigDataInt("disarm-duration", 100);
 
 		strInvalidItem = getConfigString("str-invalid-item", "Your target could not be disarmed.");
 		
@@ -114,6 +115,7 @@ public class DisarmSpell extends TargetedSpell implements TargetedEntitySpell {
 			if (itemData == null || !contains(itemData)) return false;
 		}
 
+		int disarmDuration = this.disarmDuration.get(caster, target, power, args);
 		if (!dontDrop) {
 			setItemInHand(target, null);
 			Item item = target.getWorld().dropItemNaturally(target.getLocation(), inHand.clone());

@@ -17,6 +17,7 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.events.MagicSpellsEntityDamageByEntityEvent;
@@ -26,14 +27,15 @@ public class GeyserSpell extends TargetedSpell implements TargetedEntitySpell {
 	private Material blockType;
 	private String blockTypeName;
 
-	private double damage;
-	private double velocity;
+	private ConfigData<Double> damage;
+	private ConfigData<Double> velocity;
 
-	private int geyserHeight;
-	private int animationSpeed;
+	private ConfigData<Integer> geyserHeight;
+	private ConfigData<Integer> animationSpeed;
 
 	private boolean ignoreArmor;
 	private boolean checkPlugins;
+	private boolean powerAffectsDamage;
 	private boolean avoidDamageModification;
 
 	public GeyserSpell(MagicConfig config, String spellName) {
@@ -46,14 +48,15 @@ public class GeyserSpell extends TargetedSpell implements TargetedEntitySpell {
 			blockType = null;
 		}
 
-		damage = getConfigFloat("damage", 0);
-		velocity = getConfigInt("velocity", 10) / 10.0F;
+		damage = getConfigDataDouble("damage", 0);
+		velocity = getConfigDataDouble("velocity", 10);
 
-		geyserHeight = getConfigInt("geyser-height", 4);
-		animationSpeed = getConfigInt("animation-speed", 2);
+		geyserHeight = getConfigDataInt("geyser-height", 4);
+		animationSpeed = getConfigDataInt("animation-speed", 2);
 
 		ignoreArmor = getConfigBoolean("ignore-armor", false);
 		checkPlugins = getConfigBoolean("check-plugins", true);
+		powerAffectsDamage = getConfigBoolean("power-affects-damage", true);
 		avoidDamageModification = getConfigBoolean("avoid-damage-modification", false);
 	}
 
@@ -74,29 +77,32 @@ public class GeyserSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 	
 	private boolean geyser(LivingEntity caster, LivingEntity target, float power, String[] args) {
-		double dam = damage * power;
+		double damage = this.damage.get(caster, target, power, args);
+		if (powerAffectsDamage) damage *= power;
 		
 		if (caster != null && checkPlugins && damage > 0) {
-			MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(caster, target, DamageCause.ENTITY_ATTACK, dam, this);
+			MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(caster, target, DamageCause.ENTITY_ATTACK, damage, this);
 			EventUtil.call(event);
 			if (event.isCancelled()) return false;
-			if (!avoidDamageModification) dam = event.getDamage();
+			if (!avoidDamageModification) damage = event.getDamage();
 		}
 		
-		if (dam > 0) {
+		if (damage > 0) {
 			if (ignoreArmor) {
-				double health = target.getHealth() - dam;
+				double health = target.getHealth() - damage;
 				if (health < 0) health = 0;
 				target.setHealth(health);
 				target.playEffect(EntityEffect.HURT);
 			} else {
-				if (caster != null) target.damage(dam, caster);
-				else target.damage(dam);
+				if (caster != null) target.damage(damage, caster);
+				else target.damage(damage);
 			}
 		}
 		
+		double velocity = this.velocity.get(caster, target, power, args) / 10;
 		if (velocity > 0) target.setVelocity(new Vector(0, velocity * power, 0));
 		
+		int geyserHeight = this.geyserHeight.get(caster, target, power, args);
 		if (geyserHeight > 0) {
 			List<Entity> allNearby = target.getNearbyEntities(50, 50, 50);
 			allNearby.add(target);
@@ -105,7 +111,9 @@ public class GeyserSpell extends TargetedSpell implements TargetedEntitySpell {
 				if (!(e instanceof Player)) continue;
 				playersNearby.add((Player) e);
 			}
-			new GeyserAnimation(target.getLocation(), playersNearby);
+
+			int animationSpeed = this.animationSpeed.get(caster, target, power, args);
+			new GeyserAnimation(target.getLocation(), playersNearby, animationSpeed, geyserHeight);
 		}
 		
 		return true;
@@ -139,14 +147,16 @@ public class GeyserSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private class GeyserAnimation extends SpellAnimation {
 
-		private Location start;
-		private List<Player> nearby;
-		
-		private GeyserAnimation(Location start, List<Player> nearby) {
+		private final List<Player> nearby;
+		private final int geyserHeight;
+		private final Location start;
+
+		private GeyserAnimation(Location start, List<Player> nearby, int animationSpeed, int geyserHeight) {
 			super(0, animationSpeed, true);
 
 			this.start = start;
 			this.nearby = nearby;
+			this.geyserHeight = geyserHeight;
 		}
 
 		@Override

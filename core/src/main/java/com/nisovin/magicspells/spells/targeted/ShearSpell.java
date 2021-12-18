@@ -11,6 +11,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
 //This spell currently support the shearing of sheep at the moment.
@@ -24,10 +25,10 @@ public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private String requestedColor;
 
-	private int minWool;
-	private int maxWool;
+	private ConfigData<Integer> minWool;
+	private ConfigData<Integer> maxWool;
 
-	private double dropOffset;
+	private ConfigData<Double> dropOffset;
 
 	private boolean forceWoolColor;
 	private boolean randomWoolColor;
@@ -38,10 +39,10 @@ public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		requestedColor = getConfigString("wool-color", "");
 
-		minWool = getConfigInt("min-wool-drop", 1);
-		maxWool = getConfigInt("max-wool-drop", 3);
+		minWool = getConfigDataInt("min-wool-drop", 1);
+		maxWool = getConfigDataInt("max-wool-drop", 3);
 
-		dropOffset = getConfigDouble("drop-offset", 1);
+		dropOffset = getConfigDataDouble("drop-offset", 1);
 
 		forceWoolColor = getConfigBoolean("force-wool-color", false);
 		randomWoolColor = getConfigBoolean("random-wool-color", false);
@@ -60,9 +61,9 @@ public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 		if (state == SpellCastState.NORMAL) {
 			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
 			if (target == null) return PostCastAction.ALREADY_HANDLED;
-			if (!(target.getTarget() instanceof Sheep)) return PostCastAction.ALREADY_HANDLED;
+			if (!(target.getTarget() instanceof Sheep sheep)) return PostCastAction.ALREADY_HANDLED;
 
-			boolean done = shear((Sheep) target.getTarget());
+			boolean done = shear(caster, sheep, power, args);
 			if (!done) return noTarget(caster);
 
 			sendMessages(caster, target.getTarget(), args);
@@ -72,21 +73,29 @@ public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	@Override
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		return target instanceof Sheep sheep && shear(caster, sheep, power, args);
+	}
+
+	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		if (!(target instanceof Sheep)) return false;
-		return shear((Sheep) target);
+		return target instanceof Sheep sheep && shear(caster, sheep, power, null);
+	}
+
+	@Override
+	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
+		return target instanceof Sheep sheep && shear(null, sheep, power, args);
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power) {
-		if (!(target instanceof Sheep)) return false;
-		return shear((Sheep) target);
+		return target instanceof Sheep sheep && shear(null, sheep, power, null);
 	}
 
 	private boolean parseSpell() {
 		if (forceWoolColor && requestedColor != null) {
 			try {
-			  dye = DyeColor.valueOf(requestedColor.toUpperCase());
+				dye = DyeColor.valueOf(requestedColor.toUpperCase());
 			} catch (IllegalArgumentException e) {
 				MagicSpells.error("Invalid wool color defined. Will use sheep's color instead.");
 				requestedColor = null;
@@ -96,7 +105,7 @@ public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 		return true;
 	}
 
-	private boolean shear(Sheep sheep) {
+	private boolean shear(LivingEntity caster, Sheep sheep, float power, String[] args) {
 		if (!configuredCorrectly) return false;
 		if (sheep.isSheared()) return false;
 		if (!sheep.isAdult()) return false;
@@ -105,18 +114,19 @@ public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 		if (forceWoolColor) {
 			if (randomWoolColor) color = colors[Util.getRandomInt(colors.length)];
 			else if (dye != null) color = dye;
-		}
-		else color = sheep.getColor();
+		} else color = sheep.getColor();
 		if (color == null) color = DyeColor.WHITE;
 		Material woolColor = Material.getMaterial(color.name() + "_WOOL");
 		if (woolColor == null) woolColor = Material.WHITE_WOOL;
 
+		int maxWool = this.maxWool.get(caster, sheep, power, args);
+		int minWool = this.minWool.get(caster, sheep, power, args);
 		int count;
 		if (maxWool != 0) count = random.nextInt((maxWool - minWool) + 1) + minWool;
 		else count = random.nextInt(minWool + 1);
 
 		sheep.setSheared(true);
-		sheep.getWorld().dropItemNaturally(sheep.getLocation().add(0, dropOffset, 0), new ItemStack(woolColor, count));
+		sheep.getWorld().dropItemNaturally(sheep.getLocation().add(0, dropOffset.get(caster, sheep, power, args), 0), new ItemStack(woolColor, count));
 		return true;
 	}
 

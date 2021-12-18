@@ -19,6 +19,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.events.MagicSpellsBlockBreakEvent;
@@ -33,11 +34,11 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 	private List<BlockData> replaceWith;
 	private List<BlockData> replaceBlacklist;
 
-	private int yOffset;
-	private int radiusUp;
-	private int radiusDown;
-	private int radiusHoriz;
-	private int replaceDuration;
+	private ConfigData<Integer> yOffset;
+	private ConfigData<Integer> radiusUp;
+	private ConfigData<Integer> radiusDown;
+	private ConfigData<Integer> radiusHoriz;
+	private ConfigData<Integer> replaceDuration;
 
 	private boolean pointBlank;
 	private boolean replaceRandom;
@@ -52,12 +53,11 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 		replaceWith = new ArrayList<>();
 		replaceBlacklist = new ArrayList<>();
 
-		yOffset = getConfigInt("y-offset", 0);
-		radiusUp = getConfigInt("radius-up", 1);
-		radiusDown = getConfigInt("radius-down", 1);
-		radiusHoriz = getConfigInt("radius-horiz", 1);
-		replaceDuration = getConfigInt("duration", 0);
-		if (replaceDuration < 0) replaceDuration = 0;
+		yOffset = getConfigDataInt("y-offset", 0);
+		radiusUp = getConfigDataInt("radius-up", 1);
+		radiusDown = getConfigDataInt("radius-down", 1);
+		radiusHoriz = getConfigDataInt("radius-horiz", 1);
+		replaceDuration = getConfigDataInt("duration", 0);
 
 		pointBlank = getConfigBoolean("point-blank", false);
 		replaceRandom = getConfigBoolean("replace-random", true);
@@ -119,12 +119,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 
 	@Override
 	public void turnOff() {
-		if (replaceDuration > 0) {
-			for (Block b : blocks.keySet()) {
-				b.setBlockData(blocks.get(b));
-			}
-		}
-
+		for (Block b : blocks.keySet()) b.setBlockData(blocks.get(b));
 		blocks.clear();
 	}
 
@@ -162,9 +157,16 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 		boolean replaced = false;
 		Block block;
 
-		int d = powerAffectsRadius ? Math.round(radiusDown * power) : radiusDown;
-		int u = powerAffectsRadius ? Math.round(radiusUp * power) : radiusUp;
-		int h = powerAffectsRadius ? Math.round(radiusHoriz * power) : radiusHoriz;
+		int d = radiusDown.get(caster, null, power, args);
+		int u = radiusUp.get(caster, null, power, args);
+		int h = radiusHoriz.get(caster, null, power, args);
+		if (powerAffectsRadius) {
+			d *= power;
+			u *= power;
+			h *= power;
+		}
+
+		int yOffset = this.yOffset.get(caster, null, power, args);
 
 		for (int y = target.getBlockY() - d + yOffset; y <= target.getBlockY() + u + yOffset; y++) {
 			for (int x = target.getBlockX() - h; x <= target.getBlockX() + h; x++) {
@@ -180,7 +182,6 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 
 						if (replaceBlacklisted(data)) continue;
 
-						blocks.put(block, data);
 						Block finalBlock = block;
 						BlockState previousState = block.getState();
 
@@ -201,7 +202,10 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 						playSpellEffects(EffectPosition.SPECIAL, finalBlock.getLocation());
 
 						// Break block.
+						int replaceDuration = this.replaceDuration.get(caster, null, power, args);
 						if (replaceDuration > 0) {
+							blocks.put(block, data);
+
 							MagicSpells.scheduleDelayedTask(() -> {
 								BlockData previous = blocks.remove(finalBlock);
 								if (previous == null) return;

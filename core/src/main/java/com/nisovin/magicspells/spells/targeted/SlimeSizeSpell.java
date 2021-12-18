@@ -11,28 +11,26 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.ValidTargetChecker;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class SlimeSizeSpell extends TargetedSpell implements TargetedEntitySpell {
-	
+
 	private VariableMod variableMod;
 
 	private String size;
 
-	private int minSize;
-	private int maxSize;
-	
+	private ConfigData<Integer> minSize;
+	private ConfigData<Integer> maxSize;
+
 	private static ValidTargetChecker isSlimeChecker = (LivingEntity entity) -> entity instanceof Slime;
-	
+
 	public SlimeSizeSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
-		size = getConfigString("size", "=5");
-		
-		minSize = getConfigInt("min-size", 0);
-		maxSize = getConfigInt("max-size", 20);
 
-		if (minSize < 0) minSize = 0;
-		if (maxSize < minSize) maxSize = minSize;
+		size = getConfigString("size", "=5");
+
+		minSize = getConfigDataInt("min-size", 0);
+		maxSize = getConfigDataInt("max-size", 20);
 	}
 
 	@Override
@@ -41,7 +39,7 @@ public class SlimeSizeSpell extends TargetedSpell implements TargetedEntitySpell
 
 		variableMod = new VariableMod(size);
 	}
-	
+
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
@@ -85,6 +83,13 @@ public class SlimeSizeSpell extends TargetedSpell implements TargetedEntitySpell
 	private void setSize(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!(target instanceof Slime slime)) return;
 		if (!(caster instanceof Player player)) return;
+
+		int minSize = this.minSize.get(caster, target, power, args);
+		int maxSize = this.maxSize.get(caster, target, power, args);
+
+		if (minSize < 0) minSize = 0;
+		if (maxSize < minSize) maxSize = minSize;
+
 		double rawOutputValue = variableMod.getValue(player, null, slime.getSize());
 		int finalSize = Util.clampValue(minSize, maxSize, (int) rawOutputValue);
 		slime.setSize(finalSize);

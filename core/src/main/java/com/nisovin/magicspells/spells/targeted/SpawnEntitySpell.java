@@ -37,6 +37,7 @@ import com.nisovin.magicspells.util.EntityData;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.ai.LookAtEntityGoal;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
@@ -57,20 +58,20 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	private ItemStack leggings;
 	private ItemStack boots;
 
-	private float mainHandItemDropChance;
-	private float offHandItemDropChance;
-	private float helmetDropChance;
-	private float chestplateDropChance;
-	private float leggingsDropChance;
-	private float bootsDropChance;
-	private float yOffset;
+	private ConfigData<Float> mainHandItemDropChance;
+	private ConfigData<Float> offHandItemDropChance;
+	private ConfigData<Float> helmetDropChance;
+	private ConfigData<Float> chestplateDropChance;
+	private ConfigData<Float> leggingsDropChance;
+	private ConfigData<Float> bootsDropChance;
+	private ConfigData<Float> yOffset;
 
-	private int duration;
-	private int fireTicks;
-	private int targetInterval;
+	private ConfigData<Integer> duration;
+	private ConfigData<Integer> fireTicks;
+	private ConfigData<Integer> targetInterval;
 
-	private double targetRange;
-	private double retargetRange;
+	private ConfigData<Double> targetRange;
+	private ConfigData<Double> retargetRange;
 
 	private String location;
 	private String nameplateText;
@@ -91,7 +92,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	private Set<AttributeManager.AttributeInfo> attributes;
 
 	private Random random = ThreadLocalRandom.current();
-	
+
 	// DEBUG INFO: level 2, invalid potion effect on internalname spell data
 	public SpawnEntitySpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -145,20 +146,20 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		if (leggings != null) leggings.setAmount(1);
 		if (boots != null) boots.setAmount(1);
 
-		mainHandItemDropChance = getConfigFloat("main-hand-drop-chance", 0) / 100F;
-		offHandItemDropChance = getConfigFloat("off-hand-drop-chance", 0) / 100F;
-		helmetDropChance = getConfigFloat("helmet-drop-chance", 0) / 100F;
-		chestplateDropChance = getConfigFloat("chestplate-drop-chance", 0) / 100F;
-		leggingsDropChance = getConfigFloat("leggings-drop-chance", 0) / 100F;
-		bootsDropChance = getConfigFloat("boots-drop-chance", 0) / 100F;
-		yOffset = getConfigFloat("y-offset", 0.1F);
+		mainHandItemDropChance = getConfigDataFloat("main-hand-drop-chance", 0);
+		offHandItemDropChance = getConfigDataFloat("off-hand-drop-chance", 0);
+		helmetDropChance = getConfigDataFloat("helmet-drop-chance", 0);
+		chestplateDropChance = getConfigDataFloat("chestplate-drop-chance", 0);
+		leggingsDropChance = getConfigDataFloat("leggings-drop-chance", 0);
+		bootsDropChance = getConfigDataFloat("boots-drop-chance", 0);
+		yOffset = getConfigDataFloat("y-offset", 0.1F);
 
-		duration = getConfigInt("duration", 0);
-		fireTicks = getConfigInt("fire-ticks", 0);
-		targetInterval = getConfigInt("target-interval", -1);
+		duration = getConfigDataInt("duration", 0);
+		fireTicks = getConfigDataInt("fire-ticks", 0);
+		targetInterval = getConfigDataInt("target-interval", -1);
 
-		targetRange = getConfigDouble("target-range", 20);
-		retargetRange = getConfigDouble("retarget-range", 50);
+		targetRange = getConfigDataDouble("target-range", 20);
+		retargetRange = getConfigDataDouble("retarget-range", 50);
 
 		location = getConfigString("location", "target");
 		nameplateText = getConfigString("nameplate-text", "");
@@ -200,7 +201,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			}
 		}
 	}
-	
+
 	@Override
 	public void initialize() {
 		super.initialize();
@@ -256,13 +257,13 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 					loc.setPitch(0);
 				}
 			}
-			
+
 			if (loc == null) return noTarget(caster);
 			spawnMob(caster, caster.getLocation(), loc, target, power, args);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
-	
+
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		switch (location.toLowerCase()) {
@@ -373,10 +374,11 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		if (entityData.isPlayer()) return;
 
 		loc.setYaw((float) (Math.random() * 360));
-		LivingEntity entity = (LivingEntity) entityData.spawn(loc.add(0.5, yOffset, 0.5));
+		LivingEntity entity = (LivingEntity) entityData.spawn(loc.add(0.5, yOffset.get(caster, target, power, args), 0.5));
 
-		prepMob(caster, entity);
+		prepMob(caster, target, entity, power, args);
 
+		int fireTicks = this.fireTicks.get(caster, target, power, args);
 		if (fireTicks > 0) entity.setFireTicks(fireTicks);
 		if (potionEffects != null) entity.addPotionEffects(potionEffects);
 
@@ -397,11 +399,15 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		if (noAI) entity.setAI(false);
 
 		if (target != null) MobUtil.setTarget(entity, target);
-		if (targetInterval > 0) new Targeter(caster, entity);
 
+		int targetInterval = this.targetInterval.get(caster, null, power, args);
+		if (targetInterval > 0) new Targeter(caster, entity, power, args);
+
+		int duration = this.duration.get(caster, target, power, args);
 		if (attackSpell != null) {
-			AttackMonitor monitor = new AttackMonitor(caster, entity, target, power);
+			AttackMonitor monitor = new AttackMonitor(caster, entity, target, power, args);
 			MagicSpells.registerEvents(monitor);
+
 			MagicSpells.scheduleDelayedTask(() -> HandlerList.unregisterAll(monitor), duration > 0 ? duration : 12000);
 		}
 
@@ -417,7 +423,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		}
 	}
 
-	private void prepMob(LivingEntity caster, Entity entity) {
+	private void prepMob(LivingEntity caster, LivingEntity target, Entity entity, float power, String[] args) {
 		entity.setGravity(gravity);
 
 		if (entityData.isTamed() && entity instanceof Tameable && caster != null && caster instanceof Player) {
@@ -432,11 +438,11 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			EntityEquipment entityEquipment = ((LivingEntity) entity).getEquipment();
 			if (mainHandItem != null && !BlockUtils.isAir(mainHandItem.getType())) {
 				entityEquipment.setItemInMainHand(mainHandItem);
-				entityEquipment.setItemInMainHandDropChance(mainHandItemDropChance);
+				entityEquipment.setItemInMainHandDropChance(mainHandItemDropChance.get(caster, target, power, args) / 100f);
 			}
 			if (offHandItem != null && !BlockUtils.isAir(offHandItem.getType())) {
 				entityEquipment.setItemInOffHand(offHandItem);
-				entityEquipment.setItemInOffHandDropChance(offHandItemDropChance);
+				entityEquipment.setItemInOffHandDropChance(offHandItemDropChance.get(caster, target, power, args) / 100f);
 			}
 		}
 
@@ -446,14 +452,15 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		equip.setLeggings(leggings);
 		equip.setBoots(boots);
 		if (!(entity instanceof ArmorStand)) {
-			equip.setHelmetDropChance(helmetDropChance);
-			equip.setChestplateDropChance(chestplateDropChance);
-			equip.setLeggingsDropChance(leggingsDropChance);
-			equip.setBootsDropChance(bootsDropChance);
+			equip.setHelmetDropChance(helmetDropChance.get(caster, target, power, args) / 100f);
+			equip.setChestplateDropChance(chestplateDropChance.get(caster, target, power, args) / 100f);
+			equip.setLeggingsDropChance(leggingsDropChance.get(caster, target, power, args) / 100f);
+			equip.setBootsDropChance(bootsDropChance.get(caster, target, power, args) / 100f);
 		}
 
 		if (useCasterName && caster != null) {
-			if (caster instanceof Player player) entity.setCustomName(Util.getStringFromComponent(player.displayName()));
+			if (caster instanceof Player player)
+				entity.setCustomName(Util.getStringFromComponent(player.displayName()));
 			else entity.setCustomName(caster.getName());
 			entity.setCustomNameVisible(true);
 		} else if (nameplateText != null && !nameplateText.isEmpty()) {
@@ -470,22 +477,26 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	}
 
 	private class AttackMonitor implements Listener {
-		
-		private LivingEntity caster;
-		private LivingEntity monster;
-		private LivingEntity target;
-		private float power;
 
-		private AttackMonitor(LivingEntity caster, LivingEntity monster, LivingEntity target, float power) {
+		private final LivingEntity caster;
+		private final LivingEntity monster;
+		private final String[] args;
+		private final float power;
+
+		private LivingEntity target;
+
+		private AttackMonitor(LivingEntity caster, LivingEntity monster, LivingEntity target, float power, String[] args) {
 			this.caster = caster;
 			this.monster = monster;
 			this.target = target;
 			this.power = power;
+			this.args = args;
 		}
-		
+
 		@EventHandler(ignoreCancelled = true)
 		private void onDamage(EntityDamageByEntityEvent event) {
-			if (attackSpell == null || attackSpell.getSpell() == null || attackSpell.getSpell().onCooldown(caster)) return;
+			if (attackSpell == null || attackSpell.getSpell() == null || attackSpell.getSpell().onCooldown(caster))
+				return;
 
 			Entity damager = event.getDamager();
 			if (damager instanceof Projectile) {
@@ -506,30 +517,33 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 				event.setCancelled(true);
 			}
 		}
-		
+
 		@EventHandler
 		private void onTarget(EntityTargetEvent event) {
 			if (event.getEntity() == monster && event.getTarget() == caster) event.setCancelled(true);
 			else if (event.getTarget() == null) retarget(null);
 			else if (target != null && event.getTarget() != target) event.setTarget(target);
 		}
-		
+
 		@EventHandler
 		private void onDeath(EntityDeathEvent event) {
 			if (event.getEntity() != target) return;
 			target = null;
 			retarget(event.getEntity());
 		}
-		
+
 		private void retarget(LivingEntity ignore) {
 			LivingEntity t = null;
+
+			double retargetRange = SpawnEntitySpell.this.retargetRange.get(caster, null, power, args);
 			double r = retargetRange * retargetRange;
+
 			for (Entity e : monster.getNearbyEntities(retargetRange, retargetRange, retargetRange)) {
 				if (!(e instanceof LivingEntity)) continue;
 				if (!validTargetList.canTarget(caster, e)) continue;
 				if (e == caster) continue;
 				if (e == ignore) continue;
-				
+
 				if (e instanceof Player p) {
 					GameMode gamemode = p.getGameMode();
 					if (gamemode == GameMode.CREATIVE || gamemode == GameMode.SPECTATOR) continue;
@@ -537,7 +551,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 				int distanceSquared = (int) monster.getLocation().distanceSquared(e.getLocation());
 				if (distanceSquared < r) {
 					r = distanceSquared;
-					t = (LivingEntity)e;
+					t = (LivingEntity) e;
 					if (r < 25) break;
 				}
 			}
@@ -545,41 +559,47 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			if (t == null) return;
 			MobUtil.setTarget(monster, t);
 		}
-		
+
 	}
-	
+
 	private class Targeter implements Runnable {
 
-		private LivingEntity caster;
-		private LivingEntity entity;
-		private int taskId;
-		
-		private Targeter(LivingEntity caster, LivingEntity entity) {
+		private final LivingEntity caster;
+		private final LivingEntity entity;
+		private final String[] args;
+		private final float power;
+		private final int taskId;
+
+		private Targeter(LivingEntity caster, LivingEntity entity, float power, String[] args) {
 			this.caster = caster;
 			this.entity = entity;
-			this.taskId = MagicSpells.scheduleRepeatingTask(this, 1, targetInterval);
+			this.power = power;
+			this.args = args;
+
+			this.taskId = MagicSpells.scheduleRepeatingTask(this, 1, targetInterval.get(caster, null, power, args));
 		}
-		
+
 		@Override
 		public void run() {
 			if (entity.isDead() || !entity.isValid()) {
 				MagicSpells.cancelTask(taskId);
 				return;
 			}
-			
+
+			double targetRange = SpawnEntitySpell.this.targetRange.get(caster, null, power, args);
 			List<Entity> list = entity.getNearbyEntities(targetRange, targetRange, targetRange);
 			List<LivingEntity> targetable = new ArrayList<>();
 			for (Entity e : list) {
 				if (!(e instanceof LivingEntity)) continue;
 				if (!validTargetList.canTarget(caster, e)) continue;
-				targetable.add((LivingEntity)e);
+				targetable.add((LivingEntity) e);
 			}
 
 			if (targetable.isEmpty()) return;
 			LivingEntity target = targetable.get(random.nextInt(targetable.size()));
 			MobUtil.setTarget(entity, target);
 		}
-		
+
 	}
-	
+
 }

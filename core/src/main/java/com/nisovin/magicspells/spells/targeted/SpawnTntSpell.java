@@ -17,6 +17,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TimeUtil;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
@@ -24,10 +25,10 @@ public class SpawnTntSpell extends TargetedSpell implements TargetedLocationSpel
 
 	private Map<Integer, TntInfo> tnts;
 
-	private int fuse;
+	private ConfigData<Integer> fuse;
 
-	private float velocity;
-	private float upVelocity;
+	private ConfigData<Float> velocity;
+	private ConfigData<Float> upVelocity;
 
 	private boolean cancelGravity;
 	private boolean cancelExplosion;
@@ -35,14 +36,14 @@ public class SpawnTntSpell extends TargetedSpell implements TargetedLocationSpel
 
 	private String spellToCastName;
 	private Subspell spellToCast;
-	
+
 	public SpawnTntSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
-		fuse = getConfigInt("fuse", TimeUtil.TICKS_PER_SECOND);
 
-		velocity = getConfigFloat("velocity", 0F);
-		upVelocity = getConfigFloat("up-velocity", velocity);
+		fuse = getConfigDataInt("fuse", TimeUtil.TICKS_PER_SECOND);
+
+		velocity = getConfigDataFloat("velocity", 0F);
+		upVelocity = getConfigDataFloat("up-velocity", velocity);
 
 		cancelGravity = getConfigBoolean("cancel-gravity", false);
 		cancelExplosion = getConfigBoolean("cancel-explosion", false);
@@ -52,14 +53,15 @@ public class SpawnTntSpell extends TargetedSpell implements TargetedLocationSpel
 
 		tnts = new HashMap<>();
 	}
-	
+
 	@Override
 	public void initialize() {
 		super.initialize();
 
 		spellToCast = new Subspell(spellToCastName);
 		if (!spellToCast.process() || !spellToCast.isTargetedLocationSpell()) {
-			if (!spellToCastName.isEmpty()) MagicSpells.error("SpawnTntSpell '" + internalName + "' has an invalid spell defined!");
+			if (!spellToCastName.isEmpty())
+				MagicSpells.error("SpawnTntSpell '" + internalName + "' has an invalid spell defined!");
 			spellToCast = null;
 		}
 	}
@@ -102,12 +104,15 @@ public class SpawnTntSpell extends TargetedSpell implements TargetedLocationSpel
 
 	private void spawnTnt(LivingEntity caster, Location loc, float power, String[] args) {
 		TNTPrimed tnt = loc.getWorld().spawn(loc, TNTPrimed.class);
-
 		if (cancelGravity) tnt.setGravity(false);
 
 		playSpellEffects(EffectPosition.PROJECTILE, tnt);
-		playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, caster.getLocation(), tnt.getLocation(), caster, tnt);
-		tnt.setFuseTicks(fuse);
+		if (caster != null) playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, caster.getLocation(), tnt.getLocation(), caster, tnt);
+
+		tnt.setFuseTicks(fuse.get(caster, null, power, args));
+
+		float velocity = this.velocity.get(caster, null, power, args);
+		float upVelocity = this.upVelocity.get(caster, null, power, args);
 
 		if (velocity > 0) tnt.setVelocity(loc.getDirection().normalize().setY(0).multiply(velocity).setY(upVelocity));
 		else if (upVelocity > 0) tnt.setVelocity(new Vector(0, upVelocity, 0));
@@ -130,7 +135,7 @@ public class SpawnTntSpell extends TargetedSpell implements TargetedLocationSpel
 			event.setYield(0F);
 		}
 
-		for (Block b: event.blockList()) playSpellEffects(EffectPosition.BLOCK_DESTRUCTION, b.getLocation());
+		for (Block b : event.blockList()) playSpellEffects(EffectPosition.BLOCK_DESTRUCTION, b.getLocation());
 
 		if (spellToCast == null) return;
 		if (info.caster == null) return;
@@ -140,6 +145,7 @@ public class SpawnTntSpell extends TargetedSpell implements TargetedLocationSpel
 		spellToCast.castAtLocation(info.caster, event.getEntity().getLocation(), info.power);
 	}
 
-	private record TntInfo(LivingEntity caster, float power) {}
+	private record TntInfo(LivingEntity caster, float power) {
+	}
 
 }

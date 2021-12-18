@@ -26,6 +26,7 @@ import com.nisovin.magicspells.util.ColorUtil;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
@@ -54,15 +55,15 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	private boolean dust = false;
 	private boolean block = false;
 
-	private int color;
-	private int waitTime;
-	private int ticksDuration;
-	private int durationOnUse;
-	private int reapplicationDelay;
+	private ConfigData<Integer> color;
+	private ConfigData<Integer> waitTime;
+	private ConfigData<Integer> ticksDuration;
+	private ConfigData<Integer> durationOnUse;
+	private ConfigData<Integer> reapplicationDelay;
 
-	private float radius;
-	private float radiusOnUse;
-	private float radiusPerTick;
+	private ConfigData<Float> radius;
+	private ConfigData<Float> radiusOnUse;
+	private ConfigData<Float> radiusPerTick;
 
 	private boolean useGravity;
 	private boolean canTargetEntities;
@@ -119,15 +120,15 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 			MagicSpells.error("ParticleCloudSpell '" + internalName + "' has a wrong dust-color defined! '" + colorHex + "'");
 		}
 
-		color = getConfigInt("color", 0xFF0000);
-		waitTime = getConfigInt("wait-time-ticks", 10);
-		ticksDuration = getConfigInt("duration-ticks", 3 * TimeUtil.TICKS_PER_SECOND);
-		durationOnUse = getConfigInt("duration-ticks-on-use", 0);
-		reapplicationDelay = getConfigInt("reapplication-delay-ticks", 3 * TimeUtil.TICKS_PER_SECOND);
+		color = getConfigDataInt("color", 0xFF0000);
+		waitTime = getConfigDataInt("wait-time-ticks", 10);
+		ticksDuration = getConfigDataInt("duration-ticks", 3 * TimeUtil.TICKS_PER_SECOND);
+		durationOnUse = getConfigDataInt("duration-ticks-on-use", 0);
+		reapplicationDelay = getConfigDataInt("reapplication-delay-ticks", 3 * TimeUtil.TICKS_PER_SECOND);
 
-		radius = getConfigFloat("radius", 5F);
-		radiusOnUse = getConfigFloat("radius-on-use", 0F);
-		radiusPerTick = getConfigFloat("radius-per-tick", 0F);
+		radius = getConfigDataFloat("radius", 5F);
+		radiusOnUse = getConfigDataFloat("radius-on-use", 0F);
+		radiusPerTick = getConfigDataFloat("radius-per-tick", 0F);
 
 		useGravity = getConfigBoolean("use-gravity", false);
 		canTargetEntities = getConfigBoolean("can-target-entities", true);
@@ -244,15 +245,15 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 		else if (dust) cloud.setParticle(particle, dustOptions);
 		else if (none) cloud.setParticle(particle);
 
-		cloud.setColor(Color.fromRGB(color));
-		cloud.setRadius(radius);
+		cloud.setColor(Color.fromRGB(color.get(caster, null, power, args)));
+		cloud.setRadius(radius.get(caster, null, power, args));
 		cloud.setGravity(useGravity);
-		cloud.setWaitTime(waitTime);
-		cloud.setDuration(ticksDuration);
-		cloud.setDurationOnUse(durationOnUse);
-		cloud.setRadiusOnUse(radiusOnUse);
-		cloud.setRadiusPerTick(radiusPerTick);
-		cloud.setReapplicationDelay(reapplicationDelay);
+		cloud.setWaitTime(waitTime.get(caster, null, power, args));
+		cloud.setDuration(ticksDuration.get(caster, null, power, args));
+		cloud.setDurationOnUse(durationOnUse.get(caster, null, power, args));
+		cloud.setRadiusOnUse(radiusOnUse.get(caster, null, power, args));
+		cloud.setRadiusPerTick(radiusPerTick.get(caster, null, power, args));
+		cloud.setReapplicationDelay(reapplicationDelay.get(caster, null, power, args));
 
 		for (PotionEffect eff : potionEffects) {
 			cloud.addCustomEffect(eff, true);

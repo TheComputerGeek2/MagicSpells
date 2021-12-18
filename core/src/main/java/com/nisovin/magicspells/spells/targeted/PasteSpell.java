@@ -13,6 +13,7 @@ import org.bukkit.entity.LivingEntity;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
@@ -36,8 +37,8 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 	private File file;
 	private Clipboard clipboard;
 
-	private int yOffset;
-	private int undoDelay;
+	private ConfigData<Integer> yOffset;
+	private ConfigData<Integer> undoDelay;
 
 	private boolean pasteAir;
 	private boolean removePaste;
@@ -52,9 +53,8 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 		file = new File(folder, schematic);
 		if (!file.exists()) MagicSpells.error("PasteSpell " + spellName + " has non-existant schematic: " + schematic);
 		
-		yOffset = getConfigInt("y-offset", 0);
-		undoDelay = getConfigInt("undo-delay", 0);
-		if (undoDelay < 0) undoDelay = 0;
+		yOffset = getConfigDataInt("y-offset", 0);
+		undoDelay = getConfigDataInt("undo-delay", 0);
 
 		pasteAir = getConfigBoolean("paste-air", false);
 		removePaste = getConfigBoolean("remove-paste", true);
@@ -92,7 +92,7 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 			Block target = pasteAtCaster ? caster.getLocation().getBlock() : getTargetedBlock(caster, power);
 			if (target == null) return noTarget(caster);
 			Location loc = target.getLocation();
-			loc.add(0, yOffset, 0);
+			loc.add(0, yOffset.get(caster, null, power, args), 0);
 			boolean ok = castAtLocation(caster, loc, power, args);
 			if (!ok) return noTarget(caster);
 		}
@@ -101,7 +101,7 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
-		boolean ok = pasteInstant(target, args);
+		boolean ok = pasteInstant(caster, target, power, args);
 		if (!ok) return false;
 		if (caster != null) playSpellEffects(caster, target);
 		else playSpellEffects(EffectPosition.TARGET, target);
@@ -123,7 +123,7 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 		return castAtLocation(null, target, power, null);
 	}
 
-	private boolean pasteInstant(Location target, String[] args) {
+	private boolean pasteInstant(LivingEntity caster, Location target, float power, String[] args) {
 		if (clipboard == null) return false;
 
 		try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(BukkitAdapter.adapt(target.getWorld()), -1)) {
@@ -135,6 +135,7 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 			Operations.complete(operation);
 			if (removePaste) sessions.add(editSession);
 
+			int undoDelay = this.undoDelay.get(caster, null, power, args);
 			if (undoDelay > 0) {
 				MagicSpells.scheduleDelayedTask(() -> {
 					editSession.undo(editSession);

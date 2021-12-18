@@ -7,16 +7,17 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
 public class SwitchSpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private int switchBack;
+	private ConfigData<Integer> switchBack;
 	
 	public SwitchSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 		
-		switchBack = getConfigInt("switch-back", 0);
+		switchBack = getConfigDataInt("switch-back", 0);
 	}
 
 	@Override
@@ -46,23 +47,24 @@ public class SwitchSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity target, float power) {
+	public boolean castAtEntity(LivingEntity caster, float power) {
 		return false;
 	}
 
-	private void switchPlaces(LivingEntity player, final LivingEntity target, float power, String[] args) {
+	private void switchPlaces(LivingEntity caster, final LivingEntity target, float power, String[] args) {
 		Location targetLoc = target.getLocation();
-		Location casterLoc = player.getLocation();
-		player.teleport(targetLoc);
+		Location casterLoc = caster.getLocation();
+		caster.teleport(targetLoc);
 		target.teleport(casterLoc);
 
+		int switchBack = this.switchBack.get(caster, target, power, args);
 		if (switchBack <= 0) return;
 
 		MagicSpells.scheduleDelayedTask(() -> {
-			if (player.isDead() || target.isDead()) return;
+			if (caster.isDead() || target.isDead()) return;
 			Location targetLoc1 = target.getLocation();
-			Location casterLoc1 = player.getLocation();
-			player.teleport(targetLoc1);
+			Location casterLoc1 = caster.getLocation();
+			caster.teleport(targetLoc1);
 			target.teleport(casterLoc1);
 		}, switchBack);
 	}

@@ -13,6 +13,7 @@ import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -20,10 +21,10 @@ import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 
 public class ChainSpell extends TargetedSpell implements TargetedEntitySpell, TargetedEntityFromLocationSpell {
 
-	private int bounces;
-	private int interval;
+	private ConfigData<Integer> bounces;
+	private ConfigData<Integer> interval;
 
-	private double bounceRange;
+	private ConfigData<Double> bounceRange;
 
 	private String spellToCastName;
 	private Subspell spellToCast;
@@ -31,14 +32,12 @@ public class ChainSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 	public ChainSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		bounces = getConfigInt("bounces", 3);
-		interval = getConfigInt("interval", 10);
+		bounces = getConfigDataInt("bounces", 3);
+		interval = getConfigDataInt("interval", 10);
 
-		bounceRange = getConfigDouble("bounce-range", 8);
+		bounceRange = getConfigDataDouble("bounce-range", 8);
 
 		spellToCastName = getConfigString("spell", "");
-
-		if (bounceRange > MagicSpells.getGlobalRadius()) bounceRange = MagicSpells.getGlobalRadius();
 	}
 
 	@Override
@@ -118,6 +117,10 @@ public class ChainSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 		targets.add(target);
 		targetPowers.add(power);
 
+		int bounces = this.bounces.get(caster, target, power, args);
+		int interval = this.interval.get(caster, target, power, args);
+		double bounceRange = Math.min(this.bounceRange.get(caster, target, power, args), MagicSpells.getGlobalRadius());
+
 		// Get targets
 		LivingEntity current = target;
 		int attempts = 0;
@@ -156,33 +159,42 @@ public class ChainSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 
 				castSpellAt(caster, from, targets.get(i), targetPowers.get(i));
 				if (i > 0) playSpellEffectsTrail(targets.get(i - 1).getLocation(), targets.get(i).getLocation());
-				else if (i == 0 && caster != null) playSpellEffectsTrail(caster.getLocation(), targets.get(i).getLocation());
+				else if (i == 0 && caster != null)
+					playSpellEffectsTrail(caster.getLocation(), targets.get(i).getLocation());
 				playSpellEffects(EffectPosition.TARGET, targets.get(i));
 			}
-		} else new ChainBouncer(caster, start, targets, power);
+		} else new ChainBouncer(caster, start, targets, targetPowers, interval);
 	}
 
 	private boolean castSpellAt(LivingEntity caster, Location from, LivingEntity target, float power) {
-		if (spellToCast.isTargetedEntityFromLocationSpell() && from != null) return spellToCast.castAtEntityFromLocation(caster, from, target, power);
-		if (spellToCast.isTargetedEntitySpell()) return spellToCast.castAtEntity(caster, target, power);
-		if (spellToCast.isTargetedLocationSpell()) return spellToCast.castAtLocation(caster, target.getLocation(), power);
+		if (spellToCast.isTargetedEntityFromLocationSpell() && from != null)
+			return spellToCast.castAtEntityFromLocation(caster, from, target, power);
+		if (spellToCast.isTargetedEntitySpell())
+			return spellToCast.castAtEntity(caster, target, power);
+		if (spellToCast.isTargetedLocationSpell())
+			return spellToCast.castAtLocation(caster, target.getLocation(), power);
+
 		return true;
 	}
 
 	private class ChainBouncer implements Runnable {
 
-		private LivingEntity caster;
-		private Location start;
-		private List<LivingEntity> targets;
-		private float power;
-		private int current = 0;
-		private int taskId;
+		private final LivingEntity caster;
+		private final Location start;
+		private final int taskId;
 
-		private ChainBouncer(LivingEntity caster, Location start, List<LivingEntity> targets, float power) {
+		private final List<LivingEntity> targets;
+		private final List<Float> targetPowers;
+
+		private int current = 0;
+
+		private ChainBouncer(LivingEntity caster, Location start, List<LivingEntity> targets, List<Float> targetPowers, int interval) {
 			this.caster = caster;
 			this.start = start;
+
+			this.targetPowers = targetPowers;
 			this.targets = targets;
-			this.power = power;
+
 			taskId = MagicSpells.scheduleRepeatingTask(this, 0, interval);
 		}
 
@@ -192,7 +204,7 @@ public class ChainSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			if (current == 0) from = start;
 			else from = targets.get(current - 1).getLocation();
 
-			castSpellAt(caster, from, targets.get(current), power);
+			castSpellAt(caster, from, targets.get(current), targetPowers.get(current));
 			if (current > 0) {
 				playSpellEffectsTrail(targets.get(current - 1).getLocation().add(0, 0.5, 0), targets.get(current).getLocation().add(0, 0.5, 0));
 			} else if (current == 0 && caster != null) {

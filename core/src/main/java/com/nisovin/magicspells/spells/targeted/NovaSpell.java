@@ -21,6 +21,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
@@ -38,13 +39,13 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 	private String locationSpellName;
 	private String spellOnWaveRemoveName;
 
-	private int radius;
-	private int startRadius;
-	private int heightPerTick;
-	private int novaTickInterval;
-	private int expandingRadiusChange;
+	private ConfigData<Integer> radius;
+	private ConfigData<Integer> startRadius;
+	private ConfigData<Integer> heightPerTick;
+	private ConfigData<Integer> novaTickInterval;
+	private ConfigData<Integer> expandingRadiusChange;
 
-	private double visibleRange;
+	private ConfigData<Double> visibleRange;
 
 	private boolean pointBlank;
 	private boolean circleShape;
@@ -66,15 +67,13 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 		locationSpellName = getConfigString("spell", "");
 		spellOnWaveRemoveName = getConfigString("spell-on-wave-remove", "");
 		
-		radius = getConfigInt("radius", 3);
-		startRadius = getConfigInt("start-radius", 0);
-		heightPerTick = getConfigInt("height-per-tick", 0);
-		novaTickInterval = getConfigInt("expand-interval", 5);
-		expandingRadiusChange = getConfigInt("expanding-radius-change", 1);
-		if (expandingRadiusChange < 1) expandingRadiusChange = 1;
-		
-		visibleRange = Math.max(getConfigDouble("visible-range", 20), 20);
-		if (visibleRange > MagicSpells.getGlobalRadius()) visibleRange = MagicSpells.getGlobalRadius();
+		radius = getConfigDataInt("radius", 3);
+		startRadius = getConfigDataInt("start-radius", 0);
+		heightPerTick = getConfigDataInt("height-per-tick", 0);
+		novaTickInterval = getConfigDataInt("expand-interval", 5);
+		expandingRadiusChange = getConfigDataInt("expanding-radius-change", 1);
+
+		visibleRange = getConfigDataDouble("visible-range", 20);
 
 		pointBlank = getConfigBoolean("point-blank", true);
 		circleShape = getConfigBoolean("circle-shape", false);
@@ -162,16 +161,25 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 		startLoc.add(0, relativeOffset.getY(), 0);
 		
 		// Get nearby players
+		double visibleRange = Math.min(Math.max(this.visibleRange.get(caster, null, power, args), 20), MagicSpells.getGlobalRadius());
+
 		Collection<Entity> nearbyEntities = startLoc.getWorld().getNearbyEntities(startLoc, visibleRange, visibleRange, visibleRange);
 		List<Player> nearby = new ArrayList<>();
 		for (Entity e : nearbyEntities) {
 			if (!(e instanceof Player)) continue;
 			nearby.add((Player) e);
 		}
-		
+
+		int radius = this.radius.get(caster, null, power, args);
+		int startRadius = this.startRadius.get(caster, null, power, args);
+		int heightPerTick = this.heightPerTick.get(caster, null, power, args);
+		int novaTickInterval = this.novaTickInterval.get(caster, null, power, args);
+		int expandingRadiusChange = this.expandingRadiusChange.get(caster, null, power, args);
+		if (expandingRadiusChange < 1) expandingRadiusChange = 1;
+
 		// Start tracker
-		if (!circleShape) new NovaTrackerSquare(nearby, startLoc.getBlock(), material, caster, radius, novaTickInterval, expandingRadiusChange, power);
-		else new NovaTrackerCircle(nearby, startLoc.getBlock(), material, caster, radius, novaTickInterval, expandingRadiusChange, power);
+		if (!circleShape) new NovaTrackerSquare(nearby, startLoc.getBlock(), material, caster, radius, startRadius, heightPerTick, novaTickInterval, expandingRadiusChange, power);
+		else new NovaTrackerCircle(nearby, startLoc.getBlock(), material, caster, radius, startRadius, heightPerTick, novaTickInterval, expandingRadiusChange, power);
 	}
 	
 	private class NovaTrackerSquare implements Runnable {
@@ -183,12 +191,14 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 		private Block center;
 		private float power;
 		private int radiusNova;
+		private int startRadius;
+		private int heightPerTick;
 		private int radiusChange;
 		private int taskId;
 		private int count;
 		private int temp;
 
-		private NovaTrackerSquare(List<Player> nearby, Block center, Material mat, LivingEntity caster, int radius, int tickInterval, int activeRadiusChange, float power) {
+		private NovaTrackerSquare(List<Player> nearby, Block center, Material mat, LivingEntity caster, int radius, int startRadius, int heightPerTick, int tickInterval, int activeRadiusChange, float power) {
 			this.nearby = nearby;
 			this.center = center;
 			this.matNova = mat;
@@ -197,6 +207,8 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 			this.radiusNova = radius;
 			this.blocks = new HashSet<>();
 			this.radiusChange = activeRadiusChange;
+			this.startRadius = startRadius;
+			this.heightPerTick = heightPerTick;
 			this.taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
 			
 			this.count = 0;
@@ -273,12 +285,14 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 		private Block center;
 		private float power;
 		private int radiusNova;
+		private int startRadius;
+		private int heightPerTick;
 		private int radiusChange;
 		private int taskId;
 		private int count;
 		private int temp;
 
-		private NovaTrackerCircle(List<Player> nearby, Block center, Material mat, LivingEntity caster, int radius, int tickInterval, int activeRadiusChange, float power) {
+		private NovaTrackerCircle(List<Player> nearby, Block center, Material mat, LivingEntity caster, int radius, int startRadius, int heightPerTick, int tickInterval, int activeRadiusChange, float power) {
 			this.nearby = nearby;
 			this.center = center;
 			this.matNova = mat;
@@ -286,6 +300,8 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 			this.power = power;
 			this.radiusNova = radius;
 			this.blocks = new HashSet<>();
+			this.startRadius = startRadius;
+			this.heightPerTick = heightPerTick;
 			this.radiusChange = activeRadiusChange;
 			this.taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
 			

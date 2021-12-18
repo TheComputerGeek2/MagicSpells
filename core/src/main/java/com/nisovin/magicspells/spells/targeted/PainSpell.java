@@ -27,6 +27,7 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell, Dam
 
 	private boolean ignoreArmor;
 	private boolean checkPlugins;
+	private boolean powerAffectsDamage;
 	private boolean avoidDamageModification;
 	private boolean tryAvoidingAntiCheatPlugins;
 	
@@ -46,6 +47,7 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell, Dam
 
 		ignoreArmor = getConfigBoolean("ignore-armor", false);
 		checkPlugins = getConfigBoolean("check-plugins", true);
+		powerAffectsDamage = getConfigBoolean("power-affects-damage", true);
 		avoidDamageModification = getConfigBoolean("avoid-damage-modification", true);
 		tryAvoidingAntiCheatPlugins = getConfigBoolean("try-avoiding-anticheat-plugins", false);
 	}
@@ -97,7 +99,9 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell, Dam
 	private boolean causePain(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (target == null) return false;
 		if (target.isDead()) return false;
-		double localDamage = damage.get(caster, target, power, args) * power;
+
+		double localDamage = damage.get(caster, target, power, args);
+		if (powerAffectsDamage) localDamage *= power;
 
 		if (checkPlugins) {
 			MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(caster, target, damageType, localDamage, this);

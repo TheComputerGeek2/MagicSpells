@@ -18,6 +18,7 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.BoundingBox;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.ValidTargetChecker;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
@@ -66,20 +67,18 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 	private Subspell durationSpell;
 	private Subspell entityLocationSpell;
 
-	private double maxDuration;
+	private ConfigData<Double> maxDuration;
 
-	private float yOffset;
-	private float hitRadius;
-	private float ticksPerSecond;
-	private float velocityPerTick;
-	private float verticalHitRadius;
-	private float projectileInertia;
-	private float projectileVelocity;
+	private ConfigData<Float> yOffset;
+	private ConfigData<Float> hitRadius;
+	private ConfigData<Float> verticalHitRadius;
+	private ConfigData<Float> projectileInertia;
+	private ConfigData<Float> projectileVelocity;
 
-	private int tickInterval;
-	private int airSpellInterval;
-	private int specialEffectInterval;
-	private int intermediateSpecialEffects;
+	private ConfigData<Integer> tickInterval;
+	private ConfigData<Integer> airSpellInterval;
+	private ConfigData<Integer> specialEffectInterval;
+	private ConfigData<Integer> intermediateSpecialEffects;
 
 	public HomingMissileSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -106,25 +105,18 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 		durationSpellName = getConfigString("spell-after-duration", "");
 		entityLocationSpellName = getConfigString("spell-on-entity-location", "");
 
-		maxDuration = getConfigDouble("max-duration", 20) * (double) TimeUtil.MILLISECONDS_PER_SECOND;
+		maxDuration = getConfigDataDouble("max-duration", 20);
 
-		yOffset = getConfigFloat("y-offset", 0.6F);
-		hitRadius = getConfigFloat("hit-radius", 1.5F);
-		verticalHitRadius = getConfigFloat("vertical-hit-radius", hitRadius);
-		projectileInertia = getConfigFloat("projectile-inertia", 1.5F);
-		projectileVelocity = getConfigFloat("projectile-velocity", 5F);
+		yOffset = getConfigDataFloat("y-offset", 0.6F);
+		hitRadius = getConfigDataFloat("hit-radius", 1.5F);
+		verticalHitRadius = getConfigDataFloat("vertical-hit-radius", hitRadius);
+		projectileInertia = getConfigDataFloat("projectile-inertia", 1.5F);
+		projectileVelocity = getConfigDataFloat("projectile-velocity", 5F);
 
-		tickInterval = getConfigInt("tick-interval", 2);
-		airSpellInterval = getConfigInt("spell-interval", 20);
-		specialEffectInterval = getConfigInt("special-effect-interval", 2);
-		intermediateSpecialEffects = getConfigInt("intermediate-special-effect-locations", 0);
-
-		ticksPerSecond = 20F / (float) tickInterval;
-		velocityPerTick = projectileVelocity / ticksPerSecond;
-
-		if (airSpellInterval <= 0) hitAirDuring = false;
-		if (yOffset != 0.6F) relativeOffset.setY(yOffset);
-		if (intermediateSpecialEffects < 0) intermediateSpecialEffects = 0;
+		tickInterval = getConfigDataInt("tick-interval", 2);
+		airSpellInterval = getConfigDataInt("spell-interval", 20);
+		specialEffectInterval = getConfigDataInt("special-effect-interval", 2);
+		intermediateSpecialEffects = getConfigDataInt("intermediate-special-effect-locations", 0);
 	}
 
 	@Override
@@ -243,20 +235,31 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 
 	private class MissileTracker implements Runnable {
 
-		Set<EffectlibSpellEffect> effectSet;
-		Set<Entity> entitySet;
-		Set<ArmorStand> armorStandSet;
+		private Set<EffectlibSpellEffect> effectSet;
+		private Set<Entity> entitySet;
+		private Set<ArmorStand> armorStandSet;
 
-		LivingEntity caster;
-		LivingEntity target;
-		Location currentLocation;
-		Vector currentVelocity;
-		BoundingBox hitBox;
-		float power;
-		long startTime;
-		int taskId;
+		private LivingEntity caster;
+		private LivingEntity target;
+		private Location currentLocation;
+		private Vector currentVelocity;
+		private BoundingBox hitBox;
+		private float power;
+		private long startTime;
+		private int taskId;
 
-		int counter = 0;
+		private Vector relativeOffset;
+
+		private double maxDuration;
+
+		private float velocityPerTick;
+		private float projectileInertia;
+
+		private int airSpellInterval;
+		private int specialEffectInterval;
+		private int intermediateSpecialEffects;
+
+		private int counter = 0;
 
 		private MissileTracker(LivingEntity caster, LivingEntity target, float power, String[] args) {
 			currentLocation = caster.getLocation().clone();
@@ -280,9 +283,27 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			this.target = target;
 			this.power = power;
 
-			currentVelocity.multiply(velocityPerTick);
 			startTime = System.currentTimeMillis();
+
+			int tickInterval = HomingMissileSpell.this.tickInterval.get(caster, target, power, args);
 			taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
+
+			maxDuration = HomingMissileSpell.this.maxDuration.get(caster, target, power, args) * TimeUtil.MILLISECONDS_PER_SECOND;
+
+			projectileInertia = HomingMissileSpell.this.projectileInertia.get(caster, target, power, args);
+
+			airSpellInterval = HomingMissileSpell.this.airSpellInterval.get(caster, target, power, args);
+			specialEffectInterval = HomingMissileSpell.this.specialEffectInterval.get(caster, target, power, args);
+
+			intermediateSpecialEffects = HomingMissileSpell.this.intermediateSpecialEffects.get(caster, target, power, args);
+			if (intermediateSpecialEffects < 0) intermediateSpecialEffects = 0;
+
+			float yOffset = HomingMissileSpell.this.yOffset.get(caster, target, power, args);
+			relativeOffset = yOffset != 0.6f ? relativeOffset.clone().setY(yOffset) : relativeOffset;
+
+			float projectileVelocity = HomingMissileSpell.this.projectileVelocity.get(caster, target, power, args);
+			velocityPerTick = projectileVelocity * tickInterval / 20;
+			currentVelocity.multiply(velocityPerTick);
 
 			Vector startDir = caster.getLocation().clone().getDirection().normalize();
 			Vector horizOffset = new Vector(-startDir.getZ(), 0.0, startDir.getX()).normalize();
@@ -290,6 +311,8 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			currentLocation.add(currentLocation.getDirection().multiply(relativeOffset.getX()));
 			currentLocation.setY(currentLocation.getY() + relativeOffset.getY());
 
+			float hitRadius = HomingMissileSpell.this.hitRadius.get(caster, target, power, args);
+			float verticalHitRadius = HomingMissileSpell.this.verticalHitRadius.get(caster, target, power, args);
 			hitBox = new BoundingBox(currentLocation, hitRadius, verticalHitRadius);
 
 			effectSet = playSpellEffectLibEffects(EffectPosition.PROJECTILE, currentLocation);
@@ -371,7 +394,8 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 				return;
 			}
 
-			if (hitAirDuring && counter % airSpellInterval == 0 && airSpell != null) airSpell.castAtLocation(caster, currentLocation, power);
+			if (hitAirDuring && airSpellInterval > 0 && counter % airSpellInterval == 0 && airSpell != null)
+				airSpell.castAtLocation(caster, currentLocation, power);
 
 			if (intermediateSpecialEffects > 0) playIntermediateEffectLocations(oldLocation, oldVelocity);
 

@@ -21,6 +21,7 @@ import com.nisovin.magicspells.util.TimeUtil;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
@@ -29,21 +30,25 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 	private final Map<UUID, StunnedInfo> stunnedLivingEntities;
 
 	private final int interval;
-	private final int duration;
-	private final boolean stunMonitor;
-	private final boolean stunBody;
-	private final boolean useTargetLocation;
+	private final ConfigData<Integer> duration;
 
-	private final Listener listener;
+	private final boolean stunBody;
+	private final boolean stunMonitor;
+	private final boolean useTargetLocation;
+	private final boolean powerAffectsDuration;
+
+	private final StunListener listener;
 
 	public StunSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
 		interval = getConfigInt("interval", 5);
-		duration = (int) (getConfigInt("duration", 200) * TimeUtil.MILLISECONDS_PER_SECOND / 20);
-		stunMonitor = getConfigBoolean("stun-monitor", true);
+		duration = getConfigDataInt("duration", 200);
+
 		stunBody = getConfigBoolean("stun-body", true);
+		stunMonitor = getConfigBoolean("stun-monitor", true);
 		useTargetLocation = getConfigBoolean("use-target-location", true);
+		powerAffectsDuration = getConfigBoolean("power-affects-duration", true);
 
 		listener = new StunListener();
 		stunnedLivingEntities = new HashMap<>();
@@ -102,7 +107,8 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 	}
 
 	private void stunLivingEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
-		int duration = Math.round(this.duration * power);
+		long duration = this.duration.get(caster, target, power, args) * TimeUtil.MILLISECONDS_PER_SECOND / 20;
+		if (powerAffectsDuration) duration = Math.round(duration * power);
 
 		StunnedInfo info = new StunnedInfo(caster, target, System.currentTimeMillis() + duration, target.getLocation());
 		stunnedLivingEntities.put(target.getUniqueId(), info);
@@ -125,7 +131,8 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 		stunnedLivingEntities.remove(entity.getUniqueId());
 	}
 
-	private record StunnedInfo(LivingEntity caster, LivingEntity target, Long until, Location targetLocation) {}
+	private record StunnedInfo(LivingEntity caster, LivingEntity target, Long until, Location targetLocation) {
+	}
 
 	private class StunListener implements Listener {
 

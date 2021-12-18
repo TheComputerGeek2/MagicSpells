@@ -22,6 +22,7 @@ import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 
 public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell {
 
@@ -30,12 +31,13 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 	private Material material;
 	private String materialName;
 
-	private int radius;
-	private int duration;
 	private int touchCheckInterval;
+	private ConfigData<Integer> radius;
+	private ConfigData<Integer> duration;
 
 	private boolean circle;
 	private boolean removeOnTouch;
+	private boolean powerAffectsRadius;
 
 	private String spellOnTouchName;
 	private Subspell spellOnTouch;
@@ -52,12 +54,13 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 			material = null;
 		}
 
-		radius = getConfigInt("radius", 1);
-		duration = getConfigInt("duration", 0);
+		radius = getConfigDataInt("radius", 1);
+		duration = getConfigDataInt("duration", 0);
 		touchCheckInterval = getConfigInt("touch-check-interval", 3);
 
 		circle = getConfigBoolean("circle", false);
 		removeOnTouch = getConfigBoolean("remove-on-touch", true);
+		powerAffectsRadius = getConfigBoolean("power-affects-radius", true);
 
 		spellOnTouchName = getConfigString("spell-on-touch", "");
 
@@ -147,13 +150,15 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 
 		Block b;
 		int y = loc.getBlockY();
-		int rad = Math.round(radius * power);
+
+		int rad = this.radius.get(player, null, power, args);
+		if (powerAffectsRadius) rad = Math.round(rad * power);
 
 		final List<Block> blockList = new ArrayList<>();
 		for (int x = loc.getBlockX() - rad; x <= loc.getBlockX() + rad; x++) {
 			for (int z = loc.getBlockZ() - rad; z <= loc.getBlockZ() + rad; z++) {
 				b = loc.getWorld().getBlockAt(x, y, z);
-				if (circle && loc.getBlock().getLocation().distanceSquared(b.getLocation()) > radius * radius) continue;
+				if (circle && loc.getBlock().getLocation().distanceSquared(b.getLocation()) > rad * rad) continue;
 
 				if (b.getType().isOccluding()) b = b.getRelative(0, 1, 0);
 				else if (!b.getRelative(0, -1, 0).getType().isOccluding()) b = b.getRelative(0, -1, 0);
@@ -167,6 +172,7 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 			}
 		}
 
+		int duration = this.duration.get(player, null, power, args);
 		if (duration > 0 && !blockList.isEmpty()) {
 			MagicSpells.scheduleDelayedTask(() -> {
 				for (Block b1 : blockList) {

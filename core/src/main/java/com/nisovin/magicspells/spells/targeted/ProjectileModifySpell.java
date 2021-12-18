@@ -18,6 +18,7 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.BoundingBox;
 import com.nisovin.magicspells.util.SpellFilter;
 import com.nisovin.magicspells.spells.TargetedSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
@@ -26,43 +27,43 @@ import com.nisovin.magicspells.util.trackers.ParticleProjectileTracker;
 
 public class ProjectileModifySpell extends TargetedSpell implements TargetedLocationSpell {
 
-	private int cone;
-	private int vRadius;
-	private int hRadius;
-	private int maxTargets;
+	private ConfigData<Integer> cone;
+	private ConfigData<Integer> vRadius;
+	private ConfigData<Integer> hRadius;
+	private ConfigData<Integer> maxTargets;
 
 	private boolean pointBlank;
 	private boolean claimProjectiles;
 
 	private SpellFilter filter;
 
-	private float velocity;
+	private ConfigData<Float> velocity;
 
-	private float acceleration;
-	private int accelerationDelay;
+	private ConfigData<Float> acceleration;
+	private ConfigData<Integer> accelerationDelay;
 
-	private float projectileTurn;
-	private float projectileVertGravity;
-	private float projectileHorizGravity;
+	private ConfigData<Float> projectileTurn;
+	private ConfigData<Float> projectileVertGravity;
+	private ConfigData<Float> projectileHorizGravity;
 
-	private int tickInterval;
-	private int spellInterval;
-	private int tickSpellLimit;
-	private int maxEntitiesHit;
-	private int intermediateEffects;
-	private int intermediateHitboxes;
-	private int specialEffectInterval;
+	private ConfigData<Integer> tickInterval;
+	private ConfigData<Integer> spellInterval;
+	private ConfigData<Integer> tickSpellLimit;
+	private ConfigData<Integer> maxEntitiesHit;
+	private ConfigData<Integer> intermediateEffects;
+	private ConfigData<Integer> intermediateHitboxes;
+	private ConfigData<Integer> specialEffectInterval;
 
-	private float hitRadius;
-	private float verticalHitRadius;
-	private int groundHitRadius;
-	private int groundVerticalHitRadius;
+	private ConfigData<Float> hitRadius;
+	private ConfigData<Float> verticalHitRadius;
+	private ConfigData<Integer> groundHitRadius;
+	private ConfigData<Integer> groundVerticalHitRadius;
 
-	private double maxDuration;
-	private double maxDistanceSquared;
+	private ConfigData<Double> maxDuration;
+	private ConfigData<Double> maxDistance;
 
 	private boolean hugSurface;
-	private float heightFromSurface;
+	private ConfigData<Float> heightFromSurface;
 
 	private boolean controllable;
 	private boolean hitGround;
@@ -95,10 +96,10 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 	public ProjectileModifySpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		cone = getConfigInt("cone", 0);
-		vRadius = getConfigInt("vertical-radius", 5);
-		hRadius = getConfigInt("horizontal-radius", 10);
-		maxTargets = getConfigInt("max-targets", 0);
+		cone = getConfigDataInt("cone", 0);
+		vRadius = getConfigDataInt("vertical-radius", 5);
+		hRadius = getConfigDataInt("horizontal-radius", 10);
+		maxTargets = getConfigDataInt("max-targets", 0);
 
 		pointBlank = getConfigBoolean("point-blank", true);
 		claimProjectiles = getConfigBoolean("claim-projectiles", false);
@@ -110,33 +111,31 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 
 		filter = new SpellFilter(spells, deniedSpells, spellTags, deniedSpellTags);
 
-		velocity = getConfigFloat("projectile-velocity", 1F);
-		acceleration = getConfigFloat("projectile-acceleration", 0F);
-		accelerationDelay = getConfigInt("projectile-acceleration-delay", 0);
+		velocity = getConfigDataFloat("projectile-velocity", 1F);
+		acceleration = getConfigDataFloat("projectile-acceleration", 0F);
+		accelerationDelay = getConfigDataInt("projectile-acceleration-delay", 0);
 
-		projectileTurn = getConfigFloat("projectile-turn", 0);
-		projectileVertGravity = getConfigFloat("projectile-vert-gravity", 0F);
-		projectileHorizGravity = getConfigFloat("projectile-horiz-gravity", 0F);
+		projectileTurn = getConfigDataFloat("projectile-turn", 0);
+		projectileVertGravity = getConfigDataFloat("projectile-vert-gravity", 0F);
+		projectileHorizGravity = getConfigDataFloat("projectile-horiz-gravity", 0F);
 
-		tickInterval = getConfigInt("tick-interval", 2);
-		spellInterval = getConfigInt("spell-interval", 20);
-		intermediateEffects = getConfigInt("intermediate-effects", 0);
-		specialEffectInterval = getConfigInt("special-effect-interval", 1);
+		tickInterval = getConfigDataInt("tick-interval", 2);
+		spellInterval = getConfigDataInt("spell-interval", 20);
+		intermediateEffects = getConfigDataInt("intermediate-effects", 0);
+		specialEffectInterval = getConfigDataInt("special-effect-interval", 1);
 
-		maxDistanceSquared = getConfigDouble("max-distance", 15);
-		maxDistanceSquared *= maxDistanceSquared;
-		maxDuration = getConfigDouble("max-duration", 0) * TimeUtil.MILLISECONDS_PER_SECOND;
+		maxDistance = getConfigDataDouble("max-distance", 15);
 
-		intermediateHitboxes = getConfigInt("intermediate-hitboxes", 0);
-		tickSpellLimit = getConfigInt("tick-spell-limit", 0);
-		maxEntitiesHit = getConfigInt("max-entities-hit", 0);
-		hitRadius = getConfigFloat("hit-radius", 1.5F);
-		verticalHitRadius = getConfigFloat("vertical-hit-radius", hitRadius);
-		groundHitRadius = getConfigInt("ground-hit-radius", 1);
-		groundVerticalHitRadius = getConfigInt("ground-vertical-hit-radius", groundHitRadius);
+		intermediateHitboxes = getConfigDataInt("intermediate-hitboxes", 0);
+		tickSpellLimit = getConfigDataInt("tick-spell-limit", 0);
+		maxEntitiesHit = getConfigDataInt("max-entities-hit", 0);
+		hitRadius = getConfigDataFloat("hit-radius", 1.5F);
+		verticalHitRadius = getConfigDataFloat("vertical-hit-radius", hitRadius);
+		groundHitRadius = getConfigDataInt("ground-hit-radius", 1);
+		groundVerticalHitRadius = getConfigDataInt("ground-vertical-hit-radius", groundHitRadius);
 
 		hugSurface = getConfigBoolean("hug-surface", false);
-		if (hugSurface) heightFromSurface = getConfigFloat("height-from-surface", 0.6F);
+		if (hugSurface) heightFromSurface = getConfigDataFloat("height-from-surface", 0.6F);
 
 		controllable = getConfigBoolean("controllable", false);
 		hitGround = getConfigBoolean("hit-ground", true);
@@ -259,49 +258,52 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 		return modify(null, target, power, null);
 	}
 
-	private boolean modify(LivingEntity livingEntity, Location location, float power, String[] args) {
+	private boolean modify(LivingEntity caster, Location location, float power, String[] args) {
 		int count = 0;
 
-		Vector facing = livingEntity != null ? livingEntity.getLocation().getDirection() : location.getDirection();
-		Vector vLoc = livingEntity != null ? livingEntity.getLocation().toVector() : location.toVector();
+		Vector facing = caster != null ? caster.getLocation().getDirection() : location.getDirection();
+		Vector vLoc = caster != null ? caster.getLocation().toVector() : location.toVector();
 
-		BoundingBox box = new BoundingBox(location, hRadius, vRadius);
+		BoundingBox box = new BoundingBox(location, hRadius.get(caster, null, power, args), vRadius.get(caster, null, power, args));
 
 		Set<ParticleProjectileTracker> trackerSet = ParticleProjectileSpell.getProjectileTrackers();
 
+		int maxTargets = this.maxTargets.get(caster, null, power, args);
 		for (ParticleProjectileTracker tracker : trackerSet) {
 			if (tracker == null) continue;
 			if (!tracker.getCurrentLocation().getWorld().equals(location.getWorld())) continue;
 			if (!box.contains(tracker.getCurrentLocation())) continue;
 			if (tracker.getSpell() != null && !filter.check(tracker.getSpell())) continue;
 
+			int cone = this.cone.get(caster, null, power, args);
 			if (pointBlank && cone > 0) {
 				Vector dir = tracker.getCurrentLocation().toVector().subtract(vLoc);
 				if (FastMath.abs(dir.angle(facing)) > cone) continue;
 			}
 
-			if (claimProjectiles) tracker.setCaster(livingEntity);
+			if (claimProjectiles) tracker.setCaster(caster);
 
-			tracker.setAcceleration(acceleration);
-			tracker.setAccelerationDelay(accelerationDelay);
+			tracker.setAcceleration(acceleration.get(caster, null, power, args));
+			tracker.setAccelerationDelay(accelerationDelay.get(caster, null, power, args));
 
-			tracker.setProjectileTurn(projectileTurn);
-			tracker.setProjectileVertGravity(projectileVertGravity);
-			tracker.setProjectileHorizGravity(projectileHorizGravity);
-			tracker.setTickInterval(tickInterval);
-			tracker.setSpellInterval(spellInterval);
-			tracker.setIntermediateEffects(intermediateEffects);
-			tracker.setIntermediateHitboxes(intermediateHitboxes);
-			tracker.setSpecialEffectInterval(specialEffectInterval);
-			tracker.setMaxDistanceSquared(maxDistanceSquared);
-			tracker.setMaxDuration(maxDuration);
-			tracker.setMaxEntitiesHit(maxEntitiesHit);
-			tracker.setHorizontalHitRadius(hitRadius);
-			tracker.setVerticalHitRadius(verticalHitRadius);
-			tracker.setGroundHorizontalHitRadius(groundHitRadius);
-			tracker.setGroundVerticalHitRadius(groundVerticalHitRadius);
+			tracker.setProjectileTurn(projectileTurn.get(caster, null, power, args));
+			tracker.setProjectileVertGravity(projectileVertGravity.get(caster, null, power, args));
+			tracker.setProjectileHorizGravity(projectileHorizGravity.get(caster, null, power, args));
+			tracker.setTickInterval(tickInterval.get(caster, null, power, args));
+			tracker.setSpellInterval(spellInterval.get(caster, null, power, args));
+			tracker.setIntermediateEffects(intermediateEffects.get(caster, null, power, args));
+			tracker.setIntermediateHitboxes(intermediateHitboxes.get(caster, null, power, args));
+			tracker.setSpecialEffectInterval(specialEffectInterval.get(caster, null, power, args));
+			double maxDistance = this.maxDistance.get(caster, null, power, args);
+			tracker.setMaxDistanceSquared(maxDistance * maxDistance);
+			tracker.setMaxDuration(maxDuration.get(caster, null, power, args) * TimeUtil.MILLISECONDS_PER_SECOND);
+			tracker.setMaxEntitiesHit(maxEntitiesHit.get(caster, null, power, args));
+			tracker.setHorizontalHitRadius(hitRadius.get(caster, null, power, args));
+			tracker.setVerticalHitRadius(verticalHitRadius.get(caster, null, power, args));
+			tracker.setGroundHorizontalHitRadius(groundHitRadius.get(caster, null, power, args));
+			tracker.setGroundVerticalHitRadius(groundVerticalHitRadius.get(caster, null, power, args));
 			tracker.setHugSurface(hugSurface);
-			tracker.setHeightFromSurface(heightFromSurface);
+			tracker.setHeightFromSurface(heightFromSurface.get(caster, null, power, args));
 			tracker.setControllable(controllable);
 			tracker.setHitGround(hitGround);
 			tracker.setHitAirAtEnd(hitAirAtEnd);
@@ -310,7 +312,7 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 			tracker.setStopOnHitGround(stopOnHitGround);
 			tracker.setStopOnModifierFail(stopOnModifierFail);
 			tracker.setProjectileModifiers(projModifiers);
-			tracker.setTickSpellLimit(tickSpellLimit);
+			tracker.setTickSpellLimit(tickSpellLimit.get(caster, null, power, args));
 			if (airSpell != null) tracker.setAirSpell(airSpell);
 			if (tickSpell != null) tracker.setTickSpell(tickSpell);
 			if (selfSpell != null) tracker.setCasterSpell(selfSpell);
@@ -320,19 +322,18 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 			if (modifierSpell != null) tracker.setModifierSpell(modifierSpell);
 			if (entityLocationSpell != null) tracker.setEntityLocationSpell(entityLocationSpell);
 
-			tracker.getCurrentVelocity().multiply(velocity);
+			tracker.getCurrentVelocity().multiply(velocity.get(caster, null, power, args));
 
 			playSpellEffects(EffectPosition.TARGET, tracker.getCurrentLocation());
 			playSpellEffectsTrail(location, tracker.getCurrentLocation());
-			if (livingEntity != null) playSpellEffectsTrail(livingEntity.getLocation(), tracker.getCurrentLocation());
+			if (caster != null) playSpellEffectsTrail(caster.getLocation(), tracker.getCurrentLocation());
 
 			count++;
 
 			if (maxTargets > 0 && count >= maxTargets) break;
-
 		}
 
-		if (livingEntity != null) playSpellEffects(EffectPosition.CASTER, livingEntity);
+		if (caster != null) playSpellEffects(EffectPosition.CASTER, caster);
 		playSpellEffects(EffectPosition.SPECIAL, location);
 
 		return count > 0;
