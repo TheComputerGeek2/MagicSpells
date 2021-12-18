@@ -17,6 +17,7 @@ import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public final class TargetedMultiSpell extends TargetedSpell implements TargetedEntitySpell, TargetedLocationSpell {
@@ -28,7 +29,7 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 	private List<Action> actions;
 	private List<String> spellList;
 
-	private float yOffset;
+	private ConfigData<Float> yOffset;
 
 	private boolean pointBlank;
 	private boolean stopOnFail;
@@ -44,7 +45,7 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 		actions = new ArrayList<>();
 		spellList = getConfigStringList("spells", null);
 
-		yOffset = getConfigFloat("y-offset", 0F);
+		yOffset = getConfigDataFloat("y-offset", 0F);
 
 		pointBlank = getConfigBoolean("point-blank", false);
 		stopOnFail = getConfigBoolean("stop-on-fail", true);
@@ -101,7 +102,7 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 			}
 			if (locTarget == null && entTarget == null) return noTarget(caster);
 			if (locTarget != null) {
-				locTarget.setY(locTarget.getY() + yOffset);
+				locTarget.setY(locTarget.getY() + yOffset.get(caster, null, power, args));
 				locTarget.setDirection(caster.getLocation().getDirection());
 			}
 			
@@ -118,22 +119,22 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
-		return runSpells(caster, null, target.clone().add(0, yOffset, 0), power);
+		return runSpells(caster, null, target.clone().add(0, yOffset.get(caster, null, power, args), 0), power);
 	}
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		return runSpells(caster, null, target.clone().add(0, yOffset, 0), power);
+		return runSpells(caster, null, target.clone().add(0, yOffset.get(caster, null, power, null), 0), power);
 	}
 
 	@Override
 	public boolean castAtLocation(Location target, float power, String[] args) {
-		return runSpells(null, null, target.clone().add(0, yOffset, 0), power);
+		return runSpells(null, null, target.clone().add(0, yOffset.get(null, null, power, args), 0), power);
 	}
 
 	@Override
 	public boolean castAtLocation(Location location, float power) {
-		return runSpells(null, null, location.clone().add(0, yOffset, 0), power);
+		return runSpells(null, null, location.clone().add(0, yOffset.get(null, null, power, null), 0), power);
 	}
 
 	@Override
