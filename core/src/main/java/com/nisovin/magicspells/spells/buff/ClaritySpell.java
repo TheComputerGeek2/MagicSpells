@@ -91,6 +91,4 @@ public class ClaritySpell extends BuffSpell {
 		this.filter = filter;
 	}
 
-	public record ClarityData(float power, String[] args) {}
-
 }
