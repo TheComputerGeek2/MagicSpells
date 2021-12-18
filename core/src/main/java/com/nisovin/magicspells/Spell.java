@@ -66,7 +66,6 @@ import com.nisovin.magicspells.handlers.MoneyHandler;
 import com.nisovin.magicspells.events.SpellCastedEvent;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.util.ValidTargetChecker;
-import com.nisovin.magicspells.util.config.FunctionData;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
 import com.nisovin.magicspells.spelleffects.effecttypes.*;
@@ -191,9 +190,10 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 
 	protected double targetDamageAmount;
 
-	protected int range;
+	protected ConfigData<Integer> range;
+	protected ConfigData<Integer> minRange;
+
 	protected int charges;
-	protected int minRange;
 	protected int castTime;
 	protected int experience;
 	protected int broadcastRange;
@@ -319,8 +319,8 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		spellNameOnInterrupt = config.getString(path + "spell-on-interrupt", null);
 
 		// Targeting
-		minRange = config.getInt(path + "min-range", 0);
-		range = config.getInt(path + "range", 20);
+		minRange = getConfigDataInt("min-range", 0);
+		range = getConfigDataInt("range", 20);
 		spellPowerAffectsRange = config.getBoolean(path + "spell-power-affects-range", false);
 		obeyLos = config.getBoolean(path + "obey-los", true);
 		if (config.contains(path + "can-target")) {
@@ -1442,6 +1442,11 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	}
 
 	protected int getRange(float power) {
+		return getRange(null, power, null);
+	}
+
+	protected int getRange(LivingEntity caster, float power, String[] args) {
+		int range = this.range.get(caster, null, power, args);
 		return spellPowerAffectsRange ? Math.round(range * power) : range;
 	}
 
@@ -1483,6 +1488,10 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	}
 
 	protected TargetInfo<LivingEntity> getTargetedEntity(LivingEntity caster, float power, boolean forceTargetPlayers, ValidTargetChecker checker) {
+		return getTargetedEntity(caster, power, forceTargetPlayers, checker, null);
+	}
+
+	protected TargetInfo<LivingEntity> getTargetedEntity(LivingEntity caster, float power, boolean forceTargetPlayers, ValidTargetChecker checker, String[] args) {
 		int currentRange = getRange(power);
 		List<Entity> nearbyEntities = caster.getNearbyEntities(currentRange, currentRange, currentRange);
 
@@ -1525,7 +1534,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		double zUpper = 1.75;
 
 		// Do min range
-		for (int i = 0; i < minRange && blockIterator.hasNext(); i++) {
+		for (int i = 0; i < minRange.get(caster, null, power, args) && blockIterator.hasNext(); i++) {
 			blockIterator.next();
 		}
 
@@ -1622,11 +1631,19 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	}
 
 	protected Block getTargetedBlock(LivingEntity entity, float power) {
-		return BlockUtils.getTargetBlock(this, entity, spellPowerAffectsRange ? Math.round(range * power) : range);
+		return BlockUtils.getTargetBlock(this, entity, getRange(entity, power, null));
+	}
+
+	protected Block getTargetedBlock(LivingEntity entity, float power, String[] args) {
+		return BlockUtils.getTargetBlock(this, entity, getRange(entity, power, args));
 	}
 
 	protected List<Block> getLastTwoTargetedBlocks(LivingEntity entity, float power) {
-		return BlockUtils.getLastTwoTargetBlock(this, entity, spellPowerAffectsRange ? Math.round(range * power) : range);
+		return BlockUtils.getLastTwoTargetBlock(this, entity, getRange(entity, power, null));
+	}
+
+	protected List<Block> getLastTwoTargetedBlocks(LivingEntity entity, float power, String[] args) {
+		return BlockUtils.getLastTwoTargetBlock(this, entity, getRange(entity, power, args));
 	}
 
 	public Set<Material> getLosTransparentBlocks() {

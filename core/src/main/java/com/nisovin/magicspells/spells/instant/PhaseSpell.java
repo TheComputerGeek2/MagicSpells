@@ -56,7 +56,7 @@ public class PhaseSpell extends InstantSpell {
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			int r = Math.round(range * power);
+			int r = getRange(caster, power, args);
 
 			int distance = maxDistance.get(caster, null, power, args);
 			if (powerAffectsMaxDistance) distance = Math.round(distance * power);
