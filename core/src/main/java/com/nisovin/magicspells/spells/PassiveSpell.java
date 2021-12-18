@@ -20,6 +20,7 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.ValidTargetList;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellCastEvent;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellCastedEvent;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -37,9 +38,9 @@ public class PassiveSpell extends Spell {
 
 	private final ValidTargetList triggerList;
 
-	private final int delay;
+	private final ConfigData<Integer> delay;
 
-	private final float chance;
+	private final ConfigData<Float> chance;
 
 	private boolean disabled = false;
 	private final boolean ignoreCancelled;
@@ -63,9 +64,9 @@ public class PassiveSpell extends Spell {
 			triggerList = new ValidTargetList(this, defaultTargets);
 		} else triggerList = new ValidTargetList(this, getConfigString("can-trigger", "players"));
 
-		delay = getConfigInt("delay", -1);
+		delay = getConfigDataInt("delay", -1);
 
-		chance = getConfigFloat("chance", 100F) / 100F;
+		chance = getConfigDataFloat("chance", 100F);
 
 		ignoreCancelled = getConfigBoolean("ignore-cancelled", true);
 		castWithoutTarget = getConfigBoolean("cast-without-target", false);
@@ -222,6 +223,7 @@ public class PassiveSpell extends Spell {
 	}
 	
 	public boolean activate(final LivingEntity caster, final LivingEntity target, final Location location, final float power) {
+		int delay = this.delay.get(caster, target, power, null);
 		if (delay < 0) return activateSpells(caster, target, location, power);
 		MagicSpells.scheduleDelayedTask(() -> activateSpells(caster, target, location, power), delay);
 		return false;
@@ -262,7 +264,10 @@ public class PassiveSpell extends Spell {
 			return false;
 		}
 
-		if (disabled || (chance < 0.999 && random.nextFloat() > chance) || state != SpellCastState.NORMAL) return false;
+		if (disabled || state != SpellCastState.NORMAL) return false;
+
+		float chance = this.chance.get(caster, target, basePower, null) / 100;
+		if (chance < 1 && random.nextFloat() > chance) return false;
 
 		disabled = true;
 		SpellCastEvent castEvent = new SpellCastEvent(this, caster, SpellCastState.NORMAL, basePower, null, cooldown, reagents.clone(), 0);
