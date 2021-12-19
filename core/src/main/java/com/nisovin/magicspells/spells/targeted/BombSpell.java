@@ -121,8 +121,8 @@ public class BombSpell extends TargetedSpell implements TargetedLocationSpell {
 		final int fuse = this.fuse.get(livingEntity, null, power, args);
 		new SpellAnimation(interval, interval, true) {
 
-			final Location l = block.getLocation().add(0.5, 0, 0.5);
-			int time = 0;
+			private final Location l = block.getLocation().add(0.5, 0, 0.5);
+			private int time = 0;
 
 			@Override
 			protected void onTick(int tick) {

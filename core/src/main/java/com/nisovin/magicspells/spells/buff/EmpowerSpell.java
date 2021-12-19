@@ -73,8 +73,7 @@ public class EmpowerSpell extends BuffSpell {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onSpellCast(SpellCastEvent event) {
 		LivingEntity caster = event.getCaster();
-		if (caster == null) return;
-		if (!isActive(caster)) return;
+		if (caster == null || !isActive(caster)) return;
 		if (!filter.check(event.getSpell())) return;
 
 		SpellData data = entities.get(caster.getUniqueId());

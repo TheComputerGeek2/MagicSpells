@@ -97,7 +97,6 @@ public class SpellHasteSpell extends BuffSpell {
 
 			event.setCooldown(newCD);
 		}
-
 	}
 
 	public Map<UUID, SpellData> getEntities() {

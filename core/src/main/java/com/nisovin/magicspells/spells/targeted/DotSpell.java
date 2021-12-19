@@ -160,6 +160,8 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell, Dama
 			this.target = target;
 			this.power = power;
 			this.args = args;
+
+			init();
 		}
 
 		private void init() {
