@@ -105,8 +105,7 @@ public class HasteSpell extends BuffSpell {
 			addUseAndChargeCost(pl);
 			playSpellEffects(EffectPosition.CASTER, pl);
 
-			int boostDuration = this.boostDuration.get(pl, null, data.power, data.args);
-			pl.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, boostDuration, amplifier, false, !hidden));
+			pl.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, data.boostDuration, amplifier, false, !hidden));
 
 			if (data.acceleration) {
 				data.task = MagicSpells.scheduleRepeatingTask(() -> {
@@ -115,7 +114,7 @@ public class HasteSpell extends BuffSpell {
 						return;
 					}
 					data.count++;
-					pl.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, boostDuration, amplifier + (data.count * data.accelerationIncrease), false, !hidden));
+					pl.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, data.boostDuration, amplifier + (data.count * data.accelerationIncrease), false, !hidden));
 				}, data.accelerationDelay, data.accelerationInterval);
 			}
 		} else {
@@ -154,15 +153,12 @@ public class HasteSpell extends BuffSpell {
 
 	private class HasteData {
 
-		private final String[] args;
-		private final int strength;
-		private final float power;
-
 		private final int accelerationIncrease;
 		private final int accelerationInterval;
 		private final int accelerationAmount;
 		private final int accelerationDelay;
 		private final int boostDuration;
+		private final int strength;
 
 		private final boolean acceleration;
 
@@ -170,9 +166,6 @@ public class HasteSpell extends BuffSpell {
 		private int task;
 
 		private HasteData(LivingEntity entity, float power, String[] args) {
-			this.power = power;
-			this.args = args;
-
 			int strength = HasteSpell.this.strength.get(entity, null, power, args);
 			if (powerAffectsStrength) strength = FastMath.round(strength * power);
 			this.strength = strength;

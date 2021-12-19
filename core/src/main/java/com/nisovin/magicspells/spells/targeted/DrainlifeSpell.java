@@ -147,18 +147,17 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 			give *= power;
 		}
 
-		Player pl = null;
-		if (target instanceof Player) pl = (Player) target;
+		Player playerTarget = target instanceof Player p ? p : null;
 
 		switch (takeType) {
 			case STR_HEALTH -> {
-				if (pl != null && checkPlugins) {
-					MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(caster, pl, damageType, take, this);
-					EventUtil.call(event);
-					if (event.isCancelled()) return false;
+				if (checkPlugins) {
+					MagicSpellsEntityDamageByEntityEvent event = new MagicSpellsEntityDamageByEntityEvent(caster, target, damageType, take, this);
+					if (!event.callEvent()) return false;
 					if (!avoidDamageModification) take = event.getDamage();
-					caster.setLastDamageCause(event);
+					target.setLastDamageCause(event);
 				}
+
 				SpellApplyDamageEvent event = new SpellApplyDamageEvent(this, caster, target, take, damageType, spellDamageType);
 				EventUtil.call(event);
 				take = event.getFinalDamage();
@@ -174,23 +173,23 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 				} else target.damage(take, caster);
 			}
 			case STR_MANA -> {
-				if (pl == null) break;
-				boolean removed = MagicSpells.getManaHandler().removeMana(pl, (int) Math.round(take), ManaChangeReason.OTHER);
+				if (playerTarget == null) break;
+				boolean removed = MagicSpells.getManaHandler().removeMana(playerTarget, (int) Math.round(take), ManaChangeReason.OTHER);
 				if (!removed) give = 0;
 			}
 			case STR_HUNGER -> {
-				if (pl == null) break;
-				int food = pl.getFoodLevel();
+				if (playerTarget == null) break;
+				int food = playerTarget.getFoodLevel();
 				if (give > food) give = food;
 				food -= take;
 				if (food < MIN_FOOD_LEVEL) food = MIN_FOOD_LEVEL;
-				pl.setFoodLevel(food);
+				playerTarget.setFoodLevel(food);
 			}
 			case STR_EXPERIENCE -> {
-				if (pl == null) break;
-				int exp = ExperienceUtils.getCurrentExp(pl);
+				if (playerTarget == null) break;
+				int exp = ExperienceUtils.getCurrentExp(playerTarget);
 				if (give > exp) give = exp;
-				ExperienceUtils.changeExp(pl, (int) Math.round(-take));
+				ExperienceUtils.changeExp(playerTarget, (int) Math.round(-take));
 			}
 		}
 		
@@ -204,12 +203,12 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 		return true;
 	}
 	
-	private boolean giveToCaster(LivingEntity caster, double give) {
+	private void giveToCaster(LivingEntity caster, double give) {
 		switch (giveType) {
 			case STR_HEALTH -> {
 				if (checkPlugins) {
 					MagicSpellsEntityRegainHealthEvent event = new MagicSpellsEntityRegainHealthEvent(caster, give, EntityRegainHealthEvent.RegainReason.CUSTOM);
-					if (!event.callEvent()) return false;
+					if (!event.callEvent()) return;
 
 					give = event.getAmount();
 				}
@@ -233,8 +232,6 @@ public class DrainlifeSpell extends TargetedSpell implements TargetedEntitySpell
 				if (caster instanceof Player) ExperienceUtils.changeExp((Player) caster, (int) give);
 			}
 		}
-
-		return true;
 	}
 
 	private class DrainAnimation extends SpellAnimation {

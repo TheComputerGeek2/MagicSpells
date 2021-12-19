@@ -27,9 +27,9 @@ import com.nisovin.magicspells.events.SpellTargetLocationEvent;
 
 public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell {
 	
-	private ConfigData<Integer> explosionSize;
 	private ConfigData<Integer> backfireChance;
 
+	private ConfigData<Float> explosionSize;
 	private ConfigData<Float> damageMultiplier;
 
 	private boolean addFire;
@@ -38,6 +38,7 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 	private boolean preventBlockDamage;
 	private boolean preventPlayerDamage;
 	private boolean preventAnimalDamage;
+	private boolean powerAffectsExplosionSize;
 	private boolean powerAffectsDamageMultiplier;
 
 	private long currentTick = 0;
@@ -47,10 +48,10 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 
 	public ExplodeSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-		
-		explosionSize = getConfigDataInt("explosion-size", 4);
+
 		backfireChance = getConfigDataInt("backfire-chance", 0);
 
+		explosionSize = getConfigDataFloat("explosion-size", 4);
 		damageMultiplier = getConfigDataFloat("damage-multiplier", 0);
 
 		addFire = getConfigBoolean("add-fire", false);
@@ -59,6 +60,7 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 		preventBlockDamage = getConfigBoolean("prevent-block-damage", false);
 		preventPlayerDamage = getConfigBoolean("prevent-player-damage", false);
 		preventAnimalDamage = getConfigBoolean("prevent-animal-damage", false);
+		powerAffectsExplosionSize = getConfigBoolean("power-affects-explosion-size", true);
 		powerAffectsDamageMultiplier = getConfigBoolean("power-affects-damage-multiplier", true);
 	}
 	
@@ -90,26 +92,28 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 	
-	private boolean explode(LivingEntity livingEntity, Location target, float power, String[] args) {
-		int explosionSize = this.explosionSize.get(livingEntity, null, power, args);
+	private boolean explode(LivingEntity caster, Location target, float power, String[] args) {
+		float explosionSize = this.explosionSize.get(caster, null, power, args);
+		if (powerAffectsExplosionSize) explosionSize *= power;
+
 		if (simulateTnt) {
-			boolean cancelled = MagicSpells.getVolatileCodeHandler().simulateTnt(target, livingEntity, explosionSize * power, addFire);
+			boolean cancelled = MagicSpells.getVolatileCodeHandler().simulateTnt(target, caster, explosionSize, addFire);
 			if (cancelled) return false;
 		}
 
-		int backfireChance = this.backfireChance.get(livingEntity, null, power, args);
+		int backfireChance = this.backfireChance.get(caster, null, power, args);
 		if (backfireChance > 0) {
 			Random rand = ThreadLocalRandom.current();
-			if (rand.nextInt(10000) < backfireChance) target = livingEntity.getLocation();
+			if (rand.nextInt(10000) < backfireChance) target = caster.getLocation();
 		}
 
 		currentTick = Bukkit.getWorlds().get(0).getFullTime();
-		currentCaster = livingEntity;
+		currentCaster = caster;
 		currentPower = power;
 		currentArgs = args;
 
-		boolean ret = target.getWorld().createExplosion(target, explosionSize * power, addFire, !preventBlockDamage, livingEntity);
-		if (ret) playSpellEffects(livingEntity, target);
+		boolean ret = target.getWorld().createExplosion(target, explosionSize, addFire, !preventBlockDamage, caster);
+		if (ret) playSpellEffects(caster, target);
 
 		return ret;
 	}

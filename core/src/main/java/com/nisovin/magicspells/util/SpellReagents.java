@@ -186,7 +186,7 @@ public class SpellReagents {
 			}
 		}
 		other.mana = Math.round(mana * x);
-		other.health = Math.round(health * x);
+		other.health = health * x;
 		other.hunger = Math.round(hunger * x);
 		other.experience = Math.round(experience * x);
 		other.levels = Math.round(levels * x);
