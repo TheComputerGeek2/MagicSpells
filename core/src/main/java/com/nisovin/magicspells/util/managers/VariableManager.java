@@ -589,7 +589,7 @@ public class VariableManager {
 		variables.clear();
 	}
 
-	public String processVariableMods(String var, VariableMod mod, Player playerToMod, Player caster, Player target) {
+	public String processVariableMods(String var, VariableMod mod, Player playerToMod, Player caster, Player target, float power, String[] args) {
 		if (mod == null) return 0 + "";
 		if (playerToMod == null) return 0 + "";
 
@@ -598,19 +598,37 @@ public class VariableManager {
 
 		VariableMod.Operation op = mod.getOperation();
 
-		if (op.equals(VariableMod.Operation.SET) && (variable instanceof PlayerStringVariable || variable instanceof GlobalStringVariable)) {
-			String value = mod.getStringValue(caster, target);
+		if (variable instanceof PlayerStringVariable || variable instanceof GlobalStringVariable) {
+			switch (op) {
+				case SET -> {
+					String value = mod.getStringValue(caster, target, args);
 
-			if (value.equals(variable.getDefaultStringValue())) {
-				reset(variable, playerToMod);
-			} else {
-				set(variable, playerToMod.getName(), value);
+					if (value.equals(variable.getDefaultStringValue())) reset(variable, playerToMod);
+					else set(variable, playerToMod.getName(), value);
+
+					return value;
+				}
+				case ADD -> {
+					String value = variable.getStringValue(caster) + mod.getStringValue(caster, target, args);
+
+					if (value.equals(variable.getDefaultStringValue())) reset(variable, playerToMod);
+					else set(variable, playerToMod.getName(), value);
+
+					return value;
+				}
+				case MULTIPLY -> {
+					int count = (int) mod.getValue(caster, target, power, args);
+					String value = variable.getStringValue(caster).repeat(count);
+
+					if (value.equals(variable.getDefaultStringValue())) reset(variable, playerToMod);
+					else set(variable, playerToMod.getName(), value);
+
+					return value;
+				}
 			}
-
-			return value;
 		}
 
-		double value = op.applyTo(variable.getValue(playerToMod), mod.getValue(caster, target));
+		double value = op.applyTo(variable.getValue(playerToMod), mod.getValue(caster, target, power, args));
 
 		if (value == variable.getDefaultValue() && !(variable instanceof MetaVariable)) {
 			reset(variable, playerToMod);

@@ -71,7 +71,7 @@ public class BlinkSpell extends TargetedSpell implements TargetedLocationSpell {
 				loc = prev.getLocation();
 			}
 			if (loc != null) {
-				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, loc, power);
+				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, loc, power, args);
 				EventUtil.call(event);
 
 				if (event.isCancelled()) loc = null;

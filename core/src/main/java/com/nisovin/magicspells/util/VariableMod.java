@@ -1,24 +1,29 @@
 package com.nisovin.magicspells.util;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.function.BinaryOperator;
 import java.util.concurrent.ThreadLocalRandom;
 
+import de.slikey.exp4j.Expression;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Pair;
 
 import org.bukkit.entity.Player;
 
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.config.ConfigData;
+import com.nisovin.magicspells.util.config.FunctionData;
 
 public class VariableMod {
-	
+
 	public enum VariableOwner {
 		CASTER,
 		TARGET
 	}
-	
+
 	public enum Operation {
-		
+
 		SET((a, b) -> b),
 		ADD(Double::sum),
 		MULTIPLY((a, b) -> a * b),
@@ -28,15 +33,15 @@ public class VariableMod {
 		RANDOM((a, b) -> ThreadLocalRandom.current().nextDouble() * b);
 
 		private final BinaryOperator<Double> operator;
-		
+
 		Operation(BinaryOperator<Double> operator) {
 			this.operator = operator;
 		}
-		
+
 		public double applyTo(double arg1, double arg2) {
 			return operator.apply(arg1, arg2);
 		}
-		
+
 		static Operation fromPrefix(String s) {
 			char c = s.charAt(0);
 			return switch (c) {
@@ -49,13 +54,15 @@ public class VariableMod {
 				default -> ADD;
 			};
 		}
-		
+
 	}
 
+	private static final Pattern VARIABLE_MATCHER = Pattern.compile("-?(caster:|target:)?(\\w+)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern OPERATION_MATCHER = Pattern.compile("^[=+*/^%?]");
 
 	private VariableOwner variableOwner = VariableOwner.CASTER;
 	private String modifyingVariableName = null;
+	private ConfigData<Double> functionModifier;
 	private double constantModifier;
 	private boolean negate = false;
 	private String value;
@@ -64,38 +71,57 @@ public class VariableMod {
 	public VariableMod(String data) {
 		op = Operation.fromPrefix(data);
 		data = OPERATION_MATCHER.matcher(data).replaceFirst("");
-		if (data.startsWith("-")) {
-			data = data.substring(1);
-			negate = true;
-		}
 
 		value = data;
 
-		if (RegexUtil.matches(RegexUtil.DOUBLE_PATTERN, data)) constantModifier = Double.parseDouble(data);
-		else {
-			// If it isn't a double, then let's match it as a variable
-			String varName = data;
-			if (data.contains(":")) {
-				// Then there is an explicit statement of who's variable it is
-				String[] dataSplits = data.split(":");
-				if (dataSplits[0].equalsIgnoreCase("target")) variableOwner = VariableOwner.TARGET;
-				varName = dataSplits[1];
+		if (RegexUtil.matches(RegexUtil.DOUBLE_PATTERN, data)) {
+			if (data.startsWith("-")) {
+				data = data.substring(1);
+				negate = true;
 			}
-			modifyingVariableName = varName;
+
+			constantModifier = Double.parseDouble(data);
+		} else {
+			// If it isn't a double, then let's match it as a variable
+			Matcher matcher = VARIABLE_MATCHER.matcher(data);
+			if (matcher.matches()) {
+				if (data.startsWith("-")) negate = true;
+
+				String owner = matcher.group(1);
+				if (owner != null && owner.equalsIgnoreCase("target:")) variableOwner = VariableOwner.TARGET;
+
+				modifyingVariableName = matcher.group(2);
+			} else {
+				Pair<Expression, Boolean> ex = FunctionData.buildExpression(data, true);
+				if (ex == null) return;
+
+				functionModifier = new FunctionData.DoubleData(ex.getFirst(), 0d, ex.getSecond());
+			}
 		}
 	}
-	
+
 	public double getValue(Player caster, Player target) {
+		return getValue(caster, target, 1f, null);
+	}
+
+	public double getValue(Player caster, Player target, float power, String[] args) {
 		int negationFactor = negate ? -1 : 1;
 		if (modifyingVariableName != null) {
 			Player variableHolder = variableOwner == VariableOwner.CASTER ? caster : target;
 			return MagicSpells.getVariableManager().getValue(modifyingVariableName, variableHolder) * negationFactor;
 		}
+
+		if (functionModifier != null) return functionModifier.get(caster, target, power, args);
+
 		return constantModifier * negationFactor;
 	}
-	
+
 	public double getValue(Player caster, Player target, double baseValue) {
-		double secondValue = getValue(caster, target);
+		return getValue(caster, target, baseValue, 1f, null);
+	}
+
+	public double getValue(Player caster, Player target, double baseValue, float power, String[] args) {
+		double secondValue = getValue(caster, target, power, args);
 		return getOperation().applyTo(baseValue, secondValue);
 	}
 
@@ -104,18 +130,23 @@ public class VariableMod {
 		return MagicSpells.doVariableReplacements(caster, ret);
 	}
 
+	public String getStringValue(Player caster, Player target, String[] args) {
+		String ret = MagicSpells.doTargetedVariableReplacements(caster, target, value);
+		return MagicSpells.doArgumentAndVariableSubstitution(ret, caster, args);
+	}
+
 	public String getValue() {
 		return value;
 	}
-	
+
 	public boolean isConstantValue() {
-		return modifyingVariableName == null;
+		return modifyingVariableName == null && functionModifier == null;
 	}
-	
+
 	public Operation getOperation() {
 		return op;
 	}
-	
+
 	public VariableOwner getVariableOwner() {
 		return variableOwner;
 	}

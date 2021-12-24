@@ -48,6 +48,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 	private Set<ArmorStand> armorStandSet;
 
 	private LivingEntity caster;
+	private String[] args;
 	private float power;
 	private long startTime;
 	private Location startLocation;
@@ -140,9 +141,10 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 
 	private static final double ANGLE_Y = FastMath.toRadians(-90);
 
-	public ParticleProjectileTracker(LivingEntity caster, float power) {
+	public ParticleProjectileTracker(LivingEntity caster, float power, String[] args) {
 		this.caster = caster;
 		this.power = power;
+		this.args = args;
 	}
 
 	public void start(Location from) {
@@ -550,7 +552,10 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 					inRange.remove(i);
 					break;
 				}
-				SpellTargetEvent event = new SpellTargetEvent(spell, caster, e, power);
+
+				float power = this.power;
+
+				SpellTargetEvent event = new SpellTargetEvent(spell, caster, e, power, args);
 				EventUtil.call(event);
 				if (event.isCancelled()) {
 					inRange.remove(i);
@@ -1238,4 +1243,11 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 		this.entityLocationSpell = entityLocationSpell;
 	}
 
+	public String[] getArgs() {
+		return args;
+	}
+
+	public void setArgs(String[] args) {
+		this.args = args;
+	}
 }

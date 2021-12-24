@@ -78,11 +78,10 @@ public class LightningSpell extends TargetedSpell implements TargetedLocationSpe
 					target = null;
 				}
 				if (target != null) {
-					SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, target.getLocation(), power);
+					SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, target.getLocation(), power, args);
 					EventUtil.call(event);
-					if (event.isCancelled()) {
-						target = null;
-					} else target = event.getTargetLocation().getBlock();
+
+					target = event.isCancelled() ? null : event.getTargetLocation().getBlock();
 				}
 			}
 			if (target != null) {

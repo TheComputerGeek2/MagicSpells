@@ -143,7 +143,7 @@ public class DowseSpell extends InstantSpell {
 					if (!ordered.isEmpty()) {
 						for (NearbyEntity ne : ordered) {
 							if (ne.entity instanceof LivingEntity) {
-								SpellTargetEvent event = new SpellTargetEvent(this, player, (LivingEntity) ne.entity, power);
+								SpellTargetEvent event = new SpellTargetEvent(this, player, (LivingEntity) ne.entity, power, args);
 								EventUtil.call(event);
 								if (!event.isCancelled()) {
 									foundEntity = ne.entity;

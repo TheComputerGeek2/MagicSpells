@@ -46,6 +46,10 @@ public abstract class FunctionData<T> implements ConfigData<T> {
 	}
 
 	public static Pair<Expression, Boolean> buildExpression(String expressionString) {
+		return buildExpression(expressionString, false);
+	}
+
+	public static Pair<Expression, Boolean> buildExpression(String expressionString, boolean silent) {
 		if (expressionString.isEmpty()) return null;
 
 		Set<String> variables = new HashSet<>();
@@ -80,19 +84,22 @@ public abstract class FunctionData<T> implements ConfigData<T> {
 		Expression expression;
 		try {
 			expression = new ExpressionBuilder(builder.toString())
-					.variables(variables)
-					.build();
+				.variables(variables)
+				.build();
 
 			ValidationResult result = expression.validate(false);
 			if (!result.isValid()) {
-				MagicSpells.error("Invalid equation '" + expressionString + "': [" + String.join(", ", result.getErrors()) + "]");
+				if (!silent) MagicSpells.error("Invalid equation '" + expressionString + "': [" + String.join(", ", result.getErrors()) + "]");
 				return null;
 			}
 
 			return new Pair<>(expression, targeted);
 		} catch (IllegalArgumentException e) {
-			MagicSpells.error("Invalid expression '" + expressionString + "'.");
-			e.printStackTrace();
+			if (!silent) {
+				MagicSpells.error("Invalid expression '" + expressionString + "'.");
+				e.printStackTrace();
+			}
+
 			return null;
 		}
 	}

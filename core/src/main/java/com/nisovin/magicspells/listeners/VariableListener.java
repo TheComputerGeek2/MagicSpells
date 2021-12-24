@@ -56,7 +56,7 @@ public class VariableListener implements Listener {
 			VariableMod mod = entry.getValue();
 			if (mod == null) continue;
 
-			String amount = variableManager.processVariableMods(entry.getKey(), mod, player, player, null);
+			String amount = variableManager.processVariableMods(entry.getKey(), mod, player, player, null, event.getPower(), event.getSpellArgs());
 			MagicSpells.debug(3, "Variable '" + entry.getKey() + "' for player '" + player.getName() + "' modified by " + amount + " as a result of spell cast '" + event.getSpell().getName() + "'");
 		}
 	}
@@ -73,7 +73,7 @@ public class VariableListener implements Listener {
 			VariableMod mod = entry.getValue();
 			if (mod == null) continue;
 
-			String amount = variableManager.processVariableMods(entry.getKey(), mod, player, player, null);
+			String amount = variableManager.processVariableMods(entry.getKey(), mod, player, player, null, event.getPower(), event.getSpellArgs());
 			MagicSpells.debug(3, "Variable '" + entry.getKey() + "' for player '" + player.getName() + "' modified by " + amount + " as a result of spell casted '" + event.getSpell().getName() + "'");
 		}
 	}
@@ -91,7 +91,7 @@ public class VariableListener implements Listener {
 			VariableMod mod = entry.getValue();
 			if (mod == null) continue;
 
-			String amount = variableManager.processVariableMods(entry.getKey(), mod, target, (Player) caster, target);
+			String amount = variableManager.processVariableMods(entry.getKey(), mod, target, (Player) caster, target, event.getPower(), event.getSpellArgs());
 			MagicSpells.debug(3, "Variable '" + entry.getKey() + "' for player '" + target.getName() + "' modified by " + amount + " as a result of spell target from '" + event.getSpell().getName() + "'");
 		}
 	}

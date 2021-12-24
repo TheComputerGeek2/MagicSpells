@@ -400,12 +400,12 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 
 			hitBox.setCenter(currentLocation);
 			if (hitBox.contains(targetLoc)) {
-				SpellTargetEvent targetEvent = new SpellTargetEvent(thisSpell, caster, target, power);
+				SpellTargetEvent targetEvent = new SpellTargetEvent(thisSpell, caster, target, power, args);
 				EventUtil.call(targetEvent);
 				if (targetEvent.isCancelled()) return;
-				playSpellEffects(EffectPosition.TARGET, target);
-				if (hitSpell.isTargetedEntitySpell()) hitSpell.castAtEntity(caster, target, power);
-				else if (hitSpell.isTargetedLocationSpell()) hitSpell.castAtLocation(caster, target.getLocation(), power);
+				playSpellEffects(EffectPosition.TARGET, targetEvent.getTarget());
+				if (hitSpell.isTargetedEntitySpell()) hitSpell.castAtEntity(caster, targetEvent.getTarget(), targetEvent.getPower());
+				else if (hitSpell.isTargetedLocationSpell()) hitSpell.castAtLocation(caster, targetEvent.getTarget().getLocation(), targetEvent.getPower());
 				stop();
 			}
 		}

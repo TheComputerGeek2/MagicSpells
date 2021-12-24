@@ -58,6 +58,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 	private boolean preventBlocks;
 	private boolean callTargetEvent;
 	private boolean ensureSpellCast;
+	private boolean powerAffectsDamage;
 	private boolean projectileHasGravity;
 	private boolean applySpellPowerToVelocity;
 
@@ -105,6 +106,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 		preventBlocks = getConfigBoolean("prevent-blocks", false);
 		callTargetEvent = getConfigBoolean("call-target-event", true);
 		ensureSpellCast = getConfigBoolean("ensure-spell-cast", true);
+		powerAffectsDamage = getConfigBoolean("power-affects-damage", true);
 		projectileHasGravity = getConfigBoolean("gravity", true);
 		applySpellPowerToVelocity = getConfigBoolean("apply-spell-power-to-velocity", false);
 
@@ -192,7 +194,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 	
 	private void spawnFallingBlock(LivingEntity caster, Location location, Vector velocity, float power, String[] args) {
 		Entity entity = null;
-		FallingBlockInfo info = new FallingBlockInfo(caster, power);
+		FallingBlockInfo info = new FallingBlockInfo(caster, power, args);
 
 		if (material != null) {
 			FallingBlock block = location.getWorld().spawnFallingBlock(location, material.createBlockData());
@@ -301,20 +303,25 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 			FallingBlockInfo info;
 			if (removeBlocks || preventBlocks) info = fallingBlocks.get(event.getDamager());
 			else info = fallingBlocks.remove(event.getDamager());
-			if (info == null || !(event.getEntity() instanceof LivingEntity entity)) return;
+			if (info == null || !(event.getEntity() instanceof LivingEntity target)) return;
+
 			float power = info.power;
 			if (callTargetEvent && info.caster != null) {
-				SpellTargetEvent evt = new SpellTargetEvent(thisSpell, info.caster, entity, power);
+				SpellTargetEvent evt = new SpellTargetEvent(thisSpell, info.caster, target, power, info.args);
 				EventUtil.call(evt);
 				if (evt.isCancelled()) {
 					event.setCancelled(true);
 					return;
 				}
+
 				power = evt.getPower();
 			}
-			double damage = event.getDamage() * power;
+
+			double damage = event.getDamage();
+			if (powerAffectsDamage) damage *= power;
+
 			if (checkPlugins && info.caster != null) {
-				MagicSpellsEntityDamageByEntityEvent evt = new MagicSpellsEntityDamageByEntityEvent(info.caster, entity, DamageCause.ENTITY_ATTACK, damage, ThrowBlockSpell.this);
+				MagicSpellsEntityDamageByEntityEvent evt = new MagicSpellsEntityDamageByEntityEvent(info.caster, target, DamageCause.ENTITY_ATTACK, damage, ThrowBlockSpell.this);
 				EventUtil.call(evt);
 				if (evt.isCancelled()) {
 					event.setCancelled(true);
@@ -322,9 +329,10 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 				}
 			}
 			event.setDamage(damage);
+
 			if (spellOnLand != null && !info.spellActivated) {
-				if (info.caster != null) spellOnLand.castAtLocation(info.caster, entity.getLocation(), power);
-				else spellOnLand.castAtLocation(null, entity.getLocation(), power);
+				if (info.caster != null) spellOnLand.castAtLocation(info.caster, target.getLocation(), power);
+				else spellOnLand.castAtLocation(null, target.getLocation(), power);
 				info.spellActivated = true;
 			}
 		}
@@ -371,13 +379,17 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 
 	private static class FallingBlockInfo {
 		
-		private LivingEntity caster;
-		private float power;
+		private final LivingEntity caster;
+		private final String[] args;
+		private final float power;
+
 		private boolean spellActivated;
 
-		private FallingBlockInfo(LivingEntity caster, float castPower) {
+		private FallingBlockInfo(LivingEntity caster, float power, String[] args) {
 			this.caster = caster;
-			power = castPower;
+			this.power = power;
+			this.args = args;
+
 			spellActivated = false;
 		}
 		

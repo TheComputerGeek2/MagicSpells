@@ -111,7 +111,7 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 		if (state == SpellCastState.NORMAL) {
 			Block b = getTargetedBlock(caster, power);
 			if (b != null && !BlockUtils.isAir(b.getType())) {
-				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, b.getLocation(), power);
+				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, b.getLocation(), power, args);
 				EventUtil.call(event);
 				if (event.isCancelled()) b = null;
 				else b = event.getTargetLocation().getBlock();

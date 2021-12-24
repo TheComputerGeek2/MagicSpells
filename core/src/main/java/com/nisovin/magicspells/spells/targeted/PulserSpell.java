@@ -140,7 +140,7 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 			if (!BlockUtils.isPathable(target)) return noTarget(caster);
 
 			if (target != null) {
-				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, target.getLocation(), power);
+				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, target.getLocation(), power, args);
 				EventUtil.call(event);
 				if (event.isCancelled()) return noTarget(caster);
 				target = event.getTargetLocation().getBlock();

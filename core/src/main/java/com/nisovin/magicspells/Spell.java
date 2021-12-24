@@ -1596,7 +1596,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 				}
 
 				// Call event listeners
-				SpellTargetEvent spellTargetEvent = new SpellTargetEvent(this, caster, target, power);
+				SpellTargetEvent spellTargetEvent = new SpellTargetEvent(this, caster, target, power, args);
 				EventUtil.call(spellTargetEvent);
 				if (spellTargetEvent.isCancelled()) {
 					blacklistedEntities.add(target);

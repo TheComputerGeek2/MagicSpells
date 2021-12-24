@@ -56,7 +56,7 @@ public class ForcepushSpell extends InstantSpell {
 			if (!(entity instanceof LivingEntity target)) continue;
 			if (!validTargetList.canTarget(caster, entity)) continue;
 
-			SpellTargetEvent event = new SpellTargetEvent(this, caster, target, basePower);
+			SpellTargetEvent event = new SpellTargetEvent(this, caster, target, basePower, args);
 			EventUtil.call(event);
 			if (event.isCancelled()) continue;
 

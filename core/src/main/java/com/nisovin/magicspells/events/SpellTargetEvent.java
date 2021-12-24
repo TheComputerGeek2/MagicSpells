@@ -13,13 +13,22 @@ import com.nisovin.magicspells.Spell;
 public class SpellTargetEvent extends SpellEvent implements Cancellable {
 
 	private LivingEntity target;
+	private String[] args;
 	private float power;
 	private boolean cancelled = false;
-	
+
+	public SpellTargetEvent(Spell spell, LivingEntity caster, LivingEntity target, float power, String[] args) {
+		super(spell, caster);
+		this.target = target;
+		this.power = power;
+		this.args = args;
+	}
+
 	public SpellTargetEvent(Spell spell, LivingEntity caster, LivingEntity target, float power) {
 		super(spell, caster);
 		this.target = target;
 		this.power = power;
+		this.args = null;
 	}
 	
 	/**
@@ -53,7 +62,15 @@ public class SpellTargetEvent extends SpellEvent implements Cancellable {
 	public void setPower(float power) {
 		this.power = power;
 	}
-	
+
+	/**
+	 * Gets the current spell arguments.
+	 * @return the spell arguments
+	 */
+	public String[] getSpellArgs() {
+		return args;
+	}
+
 	/**
 	 * Increases the power lever for the spell being cast by the given multiplier.
 	 * @param power the power level multiplier

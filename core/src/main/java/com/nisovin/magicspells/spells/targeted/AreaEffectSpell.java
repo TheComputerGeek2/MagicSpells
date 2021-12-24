@@ -108,7 +108,7 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 
 			if (loc == null) return noTarget(caster);
 
-			SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, loc, power);
+			SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, loc, power, args);
 			EventUtil.call(event);
 			if (event.isCancelled()) loc = null;
 			else {
@@ -174,7 +174,7 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 			double vDistance = NumberConversions.square(target.getLocation().getY() - location.getY());
 			if (vDistance > vRadiusSquared) return false;
 
-			SpellTargetEvent event = new SpellTargetEvent(this, caster, target, power);
+			SpellTargetEvent event = new SpellTargetEvent(this, caster, target, power, args);
 			EventUtil.call(event);
 			if (event.isCancelled()) return false;
 
@@ -222,7 +222,7 @@ public class AreaEffectSpell extends TargetedSpell implements TargetedLocationSp
 			if (caster == null && !validTargetList.canTarget(target)) continue;
 			if (caster != null && !validTargetList.canTarget(caster, target)) continue;
 
-			SpellTargetEvent event = new SpellTargetEvent(this, caster, target, power);
+			SpellTargetEvent event = new SpellTargetEvent(this, caster, target, power, args);
 			EventUtil.call(event);
 			if (event.isCancelled()) continue;
 
