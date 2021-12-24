@@ -332,7 +332,7 @@ public class PortalSpell extends InstantSpell {
 		}
 
 		private boolean checkTeleport(LivingEntity target) {
-			SpellTargetEvent event = new SpellTargetEvent(PortalSpell.this, caster, target, power);
+			SpellTargetEvent event = new SpellTargetEvent(PortalSpell.this, caster, target, power, args);
 			if (!event.callEvent()) return false;
 
 			target  = event.getTarget();
@@ -341,6 +341,8 @@ public class PortalSpell extends InstantSpell {
 				sendMessage(strTeleportCooldownFail, target, args);
 				return false;
 			}
+
+			float power = event.getPower();
 
 			int teleportCooldown = PortalSpell.this.teleportCooldown.get(caster, target, power, args) * 1000;
 			cooldownUntil.put(target.getUniqueId(), System.currentTimeMillis() + teleportCooldown);

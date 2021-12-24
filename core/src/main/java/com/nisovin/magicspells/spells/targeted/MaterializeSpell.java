@@ -161,10 +161,11 @@ public class MaterializeSpell extends TargetedSpell implements TargetedLocationS
 
 			Block block = lastTwo.get(0);
 			Block against = lastTwo.get(1);
-			SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, player, block.getLocation(), power);
+			SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, player, block.getLocation(), power, args);
 			EventUtil.call(event);
 			if (event.isCancelled()) return noTarget(player, strFailed);
 			block = event.getTargetLocation().getBlock();
+			power = event.getPower();
 
 			if (!hasMiddle) {
 				boolean done = materialize(player, block, against, power, args);

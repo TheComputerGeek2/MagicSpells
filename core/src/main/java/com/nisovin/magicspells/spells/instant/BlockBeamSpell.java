@@ -312,6 +312,7 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 		private final LivingEntity target;
 		private final Location startLoc;
 		private final ItemStack helmet;
+		private final String[] args;
 		private final float power;
 
 		private final List<LivingEntity> armorStandList;
@@ -342,6 +343,7 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 			this.caster = caster;
 			this.target = null;
 			this.power = power;
+			this.args = args;
 			helmet = headItem;
 
 			startLoc = from.clone();
@@ -358,6 +360,7 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 			this.caster = caster;
 			this.target = target;
 			this.power = power;
+			this.args = args;
 			helmet = headItem;
 
 			startLoc = from.clone();
@@ -496,7 +499,7 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 					if (!box.contains(e)) continue;
 					if (validTargetList != null && !validTargetList.canTarget(e)) continue;
 
-					SpellTargetEvent event = new SpellTargetEvent(BlockBeamSpell.this, caster, e, power);
+					SpellTargetEvent event = new SpellTargetEvent(BlockBeamSpell.this, caster, e, power, args);
 					EventUtil.call(event);
 					if (event.isCancelled()) continue;
 					LivingEntity entity = event.getTarget();

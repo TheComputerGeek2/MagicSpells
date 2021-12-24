@@ -49,7 +49,7 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 		if (state == SpellCastState.NORMAL) {
 			Block block = getTargetedBlock(caster, power);
 			if (block != null && !BlockUtils.isAir(block.getType())) {
-				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, block.getLocation(), power);
+				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, block.getLocation(), power, args);
 				EventUtil.call(event);
 				if (event.isCancelled()) block = null;
 				else {
@@ -128,9 +128,10 @@ public class ForcebombSpell extends TargetedSpell implements TargetedLocationSpe
 
 		float power = basePower;
 		if (callTargetEvents && caster != null) {
-			SpellTargetEvent event = new SpellTargetEvent(this, caster, target, power);
+			SpellTargetEvent event = new SpellTargetEvent(this, caster, target, power, args);
 			EventUtil.call(event);
 			if (event.isCancelled()) return;
+
 			power = event.getPower();
 		}
 

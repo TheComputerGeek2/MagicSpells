@@ -277,6 +277,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 		private final LivingEntity caster;
 		private final LivingEntity target;
 		private final Location startLoc;
+		private final String[] args;
 		private final float power;
 
 		private double hitRadius;
@@ -298,6 +299,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 			this.caster = caster;
 			this.target = null;
 			this.power = power;
+			this.args = args;
 
 			startLoc = from.clone();
 			if (!changePitch) startLoc.setPitch(0F);
@@ -312,6 +314,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 			this.caster = caster;
 			this.target = target;
 			this.power = power;
+			this.args = args;
 
 			startLoc = from.clone();
 			if (!changePitch) startLoc.setPitch(0F);
@@ -421,7 +424,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 					if (!box.contains(e)) continue;
 					if (validTargetList != null && !validTargetList.canTarget(e)) continue;
 
-					SpellTargetEvent event = new SpellTargetEvent(BeamSpell.this, caster, e, power);
+					SpellTargetEvent event = new SpellTargetEvent(BeamSpell.this, caster, e, power, args);
 					EventUtil.call(event);
 					if (event.isCancelled()) continue;
 					LivingEntity entity = event.getTarget();

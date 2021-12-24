@@ -76,7 +76,7 @@ public class ExplodeSpell extends TargetedSpell implements TargetedLocationSpell
 			}
 
 			if (target != null && !BlockUtils.isAir(target.getType())) {
-				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, target.getLocation(), power);
+				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, target.getLocation(), power, args);
 				EventUtil.call(event);
 				if (event.isCancelled()) target = null;
 				else {

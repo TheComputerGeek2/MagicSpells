@@ -145,7 +145,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 
 			Block block = getTargetedBlock(caster, power);
 			if (block != null) {
-				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, block.getLocation(), power);
+				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, block.getLocation(), power, args);
 				EventUtil.call(event);
 				if (event.isCancelled()) block = null;
 				else {
@@ -234,6 +234,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 		private Vector currentPosition;
 		private BoundingBox box;
 		private Set<LivingEntity> immune;
+		private String[] args;
 
 		private float power;
 		private float orbRadius;
@@ -252,6 +253,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			this.caster = caster;
 			this.target = target;
 			this.power = power;
+			this.args = args;
 
 			targetLoc = target.getLocation();
 			initialize(caster, target, power, args);
@@ -370,7 +372,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 				if (!box.contains(e)) continue;
 				if (entityTargetList != null && !entityTargetList.canTarget(e)) continue;
 
-				SpellTargetEvent event = new SpellTargetEvent(OrbitSpell.this, caster, e, power);
+				SpellTargetEvent event = new SpellTargetEvent(OrbitSpell.this, caster, e, power, args);
 				EventUtil.call(event);
 				if (event.isCancelled()) continue;
 

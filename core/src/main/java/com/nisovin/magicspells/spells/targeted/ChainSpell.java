@@ -134,7 +134,7 @@ public class ChainSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 
 				float thisPower = power;
 				if (caster != null) {
-					SpellTargetEvent event = new SpellTargetEvent(this, caster, (LivingEntity) e, thisPower);
+					SpellTargetEvent event = new SpellTargetEvent(this, caster, (LivingEntity) e, thisPower, args);
 					EventUtil.call(event);
 					if (event.isCancelled()) continue;
 					thisPower = event.getPower();

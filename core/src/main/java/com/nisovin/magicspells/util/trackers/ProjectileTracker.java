@@ -68,6 +68,7 @@ public class ProjectileTracker implements Runnable, Tracker {
 	private Location startLocation;
 	private LivingEntity caster;
 	private Vector currentVelocity;
+	private String[] args;
 	private float power;
 	private long startTime;
 
@@ -78,9 +79,10 @@ public class ProjectileTracker implements Runnable, Tracker {
 
 	private boolean stopped = false;
 
-	public ProjectileTracker(LivingEntity caster, Location startLocation, float power) {
+	public ProjectileTracker(LivingEntity caster, Location startLocation, float power, String[] args) {
 		this.caster = caster;
 		this.power = power;
+		this.args = args;
 		this.startLocation = startLocation;
 
 	}
@@ -180,12 +182,12 @@ public class ProjectileTracker implements Runnable, Tracker {
 			if (!(e instanceof LivingEntity livingEntity)) continue;
 			if (!targetList.canTarget(caster, e)) continue;
 
-			SpellTargetEvent event = new SpellTargetEvent(spell, caster, livingEntity, power);
+			SpellTargetEvent event = new SpellTargetEvent(spell, caster, livingEntity, power, args);
 			EventUtil.call(event);
 			if (event.isCancelled()) continue;
 
 			if (hitSpell != null) hitSpell.castAtEntity(caster, livingEntity, event.getPower());
-			if (entityLocationSpell != null) entityLocationSpell.castAtLocation(caster, currentLocation, power);
+			if (entityLocationSpell != null) entityLocationSpell.castAtLocation(caster, currentLocation, event.getPower());
 
 			stop();
 			return;
@@ -497,4 +499,11 @@ public class ProjectileTracker implements Runnable, Tracker {
 		this.callEvents = callEvents;
 	}
 
+	public String[] getArgs() {
+		return args;
+	}
+
+	public void setArgs(String[] args) {
+		this.args = args;
+	}
 }

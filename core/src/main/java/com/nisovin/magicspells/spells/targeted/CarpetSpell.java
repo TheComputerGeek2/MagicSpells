@@ -26,7 +26,7 @@ import com.nisovin.magicspells.util.config.ConfigData;
 
 public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell {
 
-	private Map<Block, Player> blocks;
+	private Map<Block, CarpetData> blocks;
 
 	private Material material;
 	private String materialName;
@@ -167,7 +167,7 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 
 				b.setType(material, false);
 				blockList.add(b);
-				blocks.put(b, player);
+				blocks.put(b, new CarpetData(player, power, args));
 				playSpellEffects(EffectPosition.TARGET, b.getLocation().add(0.5, 0, 0.5));
 			}
 		}
@@ -184,6 +184,8 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 		}
 		if (player != null) playSpellEffects(EffectPosition.CASTER, player);
 	}
+
+	private record CarpetData(LivingEntity caster, float power, String[] args) {}
 	
 	private class TouchChecker implements Runnable {
 		
@@ -199,21 +201,23 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 			for (Player player : Bukkit.getOnlinePlayers()) {
 
 				Block b = player.getLocation().getBlock();
-				Player caster = blocks.get(b);
+				CarpetData data = blocks.get(b);
 
-				if (caster == null) continue;
-				if (player.equals(caster)) continue;
+				if (data == null) continue;
+				if (player.equals(data.caster)) continue;
 				if (!material.equals(b.getType())) continue;
-				
-				SpellTargetEvent event = new SpellTargetEvent(spellOnTouch.getSpell(), caster, player, 1F);
-				EventUtil.call(event);
-				if (event.isCancelled()) continue;
 
-				if (spellOnTouch != null) spellOnTouch.castAtEntity(caster, player, event.getPower());
-				if (!removeOnTouch) continue;
+				if (removeOnTouch) {
+					b.setType(Material.AIR);
+					blocks.remove(b);
+				}
 
-				b.setType(Material.AIR);
-				blocks.remove(b);
+				if (spellOnTouch != null) {
+					SpellTargetEvent event = new SpellTargetEvent(CarpetSpell.this, data.caster, player, data.power, data.args);
+					if (!event.callEvent()) continue;
+
+					spellOnTouch.castAtEntity(data.caster, event.getTarget(), event.getPower());
+				}
 			}
 		}
 		

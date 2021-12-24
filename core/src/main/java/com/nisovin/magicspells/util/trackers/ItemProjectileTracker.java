@@ -70,6 +70,7 @@ public class ItemProjectileTracker implements Runnable, Tracker {
 	private Location startLocation;
 	private Location currentLocation;
 	private Location previousLocation;
+	private String[] args;
 	private float power;
 
 	private boolean landed = false;
@@ -79,11 +80,11 @@ public class ItemProjectileTracker implements Runnable, Tracker {
 	private int taskId;
 	private int count = 0;
 
-	public ItemProjectileTracker(LivingEntity caster, Location startLocation, float power) {
+	public ItemProjectileTracker(LivingEntity caster, Location startLocation, float power, String[] args) {
 		this.caster = caster;
 		this.power = power;
+		this.args = args;
 		this.startLocation = startLocation;
-
 	}
 
 	public void start() {
@@ -161,14 +162,14 @@ public class ItemProjectileTracker implements Runnable, Tracker {
 		}
 
 		for (Entity e : entity.getNearbyEntities(hitRadius, vertHitRadius, hitRadius)) {
-			if (!(e instanceof LivingEntity)) continue;
+			if (!(e instanceof LivingEntity target)) continue;
 			if (!targetList.canTarget(caster, e)) continue;
 
-			SpellTargetEvent event = new SpellTargetEvent(spell, caster, (LivingEntity) e, power);
+			SpellTargetEvent event = new SpellTargetEvent(spell, caster, target, power, args);
 			EventUtil.call(event);
 			if (!event.isCancelled()) {
-				if (spell != null) spell.playEffects(EffectPosition.TARGET, e);
-				if (spellOnHitEntity != null) spellOnHitEntity.castAtEntity(caster, (LivingEntity) e, event.getPower());
+				if (spell != null) spell.playEffects(EffectPosition.TARGET, event.getTarget());
+				if (spellOnHitEntity != null) spellOnHitEntity.castAtEntity(caster, event.getTarget(), event.getPower());
 				if (stopOnHitEntity) stop();
 				return;
 			}

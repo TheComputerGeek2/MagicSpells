@@ -62,7 +62,7 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 			else block = caster.getLocation().subtract(0, 1, 0).getBlock();
 
 			if (block != null) {
-				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, block.getLocation(), power);
+				SpellTargetLocationEvent event = new SpellTargetLocationEvent(this, caster, block.getLocation(), power, args);
 				EventUtil.call(event);
 				if (event.isCancelled()) block = null;
 				else {

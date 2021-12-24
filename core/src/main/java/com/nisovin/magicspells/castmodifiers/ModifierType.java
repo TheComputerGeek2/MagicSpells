@@ -528,12 +528,12 @@ public enum ModifierType {
 
 		}
 
-		private void modifyVariable(VariableModData data, Player caster, Player target) {
+		private void modifyVariable(VariableModData data, Player caster, Player target, float power, String[] args) {
 			if (!data.isValid()) return;
 			boolean needsTarget = data.variableOwner == VariableOwner.TARGET || (data.mod.getVariableOwner() == VariableOwner.TARGET && !data.mod.isConstantValue());
 			if (needsTarget && target == null) return;
 			Player owner = data.variableOwner == VariableOwner.CASTER ? caster : target;
-			double amount = data.mod.getValue(caster, target);
+			double amount = data.mod.getValue(caster, target, power, args);
 			Variable variable = data.variable;
 			double newAmount = data.mod.getOperation().applyTo(variable.getValue(owner), amount);
 			MagicSpells.getVariableManager().set(variable, owner.getName(), newAmount);
@@ -542,13 +542,13 @@ public enum ModifierType {
 		@Override
 		public boolean apply(SpellCastEvent event, boolean check, CustomData customData) {
 			if (!(event.getCaster() instanceof Player caster)) return false;
-			if (check) modifyVariable((VariableModData) customData, caster, null);
+			if (check) modifyVariable((VariableModData) customData, caster, null, event.getPower(), event.getSpellArgs());
 			return true;
 		}
 
 		@Override
 		public boolean apply(ManaChangeEvent event, boolean check, CustomData customData) {
-			if (check) modifyVariable((VariableModData) customData, event.getPlayer(), null);
+			if (check) modifyVariable((VariableModData) customData, event.getPlayer(), null, 1f, null);
 			return true;
 		}
 
@@ -556,7 +556,7 @@ public enum ModifierType {
 		public boolean apply(SpellTargetEvent event, boolean check, CustomData customData) {
 			if (!(event.getCaster() instanceof Player caster)) return false;
 			if (check && event.getTarget() instanceof Player target) {
-				modifyVariable((VariableModData) customData, caster, target);
+				modifyVariable((VariableModData) customData, caster, target, event.getPower(), event.getSpellArgs());
 			}
 			return true;
 		}
@@ -564,13 +564,13 @@ public enum ModifierType {
 		@Override
 		public boolean apply(SpellTargetLocationEvent event, boolean check, CustomData customData) {
 			if (!(event.getCaster() instanceof Player caster)) return false;
-			if (check) modifyVariable((VariableModData) customData, caster, null);
+			if (check) modifyVariable((VariableModData) customData, caster, null, event.getPower(), event.getSpellArgs());
 			return true;
 		}
 
 		@Override
 		public boolean apply(MagicSpellsGenericPlayerEvent event, boolean check, CustomData customData) {
-			if (check) modifyVariable((VariableModData) customData, event.getPlayer(), null);
+			if (check) modifyVariable((VariableModData) customData, event.getPlayer(), null, 1f, null);
 			return true;
 		}
 
