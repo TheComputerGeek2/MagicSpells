@@ -183,6 +183,8 @@ public class Subspell {
 
 		return switch (mode) {
 			case HARD -> {
+				if (caster == null) yield false;
+
 				SpellCastResult result = spell.cast(caster, basePower * subPower, args);
 				yield result.state == SpellCastState.NORMAL && (result.action == PostCastAction.HANDLE_NORMALLY || result.action == PostCastAction.NO_MESSAGES);
 			}
@@ -222,6 +224,8 @@ public class Subspell {
 				yield success;
 			}
 			case FULL -> {
+				if (caster == null) yield false;
+
 				float power = basePower * subPower;
 
 				SpellCastEvent castEvent = spell.preCast(caster, power, args);
@@ -284,6 +288,8 @@ public class Subspell {
 
 		return switch (mode) {
 			case HARD -> {
+				if (caster == null) yield false;
+
 				SpellCastResult result = spell.cast(caster, basePower * subPower, args);
 				yield result.state == SpellCastState.NORMAL && (result.action == PostCastAction.HANDLE_NORMALLY ||
 					result.action == PostCastAction.NO_MESSAGES);
@@ -316,6 +322,8 @@ public class Subspell {
 				yield success;
 			}
 			case FULL -> {
+				if (caster == null) yield false;
+
 				float power = basePower * subPower;
 
 				SpellCastEvent castEvent = spell.preCast(caster, power, args);
@@ -360,6 +368,8 @@ public class Subspell {
 
 		return switch (mode) {
 			case HARD -> {
+				if (caster == null) yield false;
+
 				SpellCastResult result = spell.cast(caster, basePower * subPower, args);
 				yield result.state == SpellCastState.NORMAL && (result.action == PostCastAction.HANDLE_NORMALLY ||
 					result.action == PostCastAction.NO_MESSAGES);
@@ -404,6 +414,8 @@ public class Subspell {
 				yield success;
 			}
 			case FULL -> {
+				if (caster == null) yield false;
+
 				float power = basePower * subPower;
 
 				SpellCastEvent castEvent = spell.preCast(caster, power, args);
