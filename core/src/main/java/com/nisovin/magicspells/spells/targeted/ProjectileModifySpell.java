@@ -124,6 +124,7 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 		intermediateEffects = getConfigDataInt("intermediate-effects", 0);
 		specialEffectInterval = getConfigDataInt("special-effect-interval", 1);
 
+		maxDuration = getConfigDataDouble("max-duration", 0);
 		maxDistance = getConfigDataDouble("max-distance", 15);
 
 		intermediateHitboxes = getConfigDataInt("intermediate-hitboxes", 0);
@@ -269,13 +270,13 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 		Set<ParticleProjectileTracker> trackerSet = ParticleProjectileSpell.getProjectileTrackers();
 
 		int maxTargets = this.maxTargets.get(caster, null, power, args);
+		int cone = this.cone.get(caster, null, power, args);
 		for (ParticleProjectileTracker tracker : trackerSet) {
 			if (tracker == null) continue;
 			if (!tracker.getCurrentLocation().getWorld().equals(location.getWorld())) continue;
 			if (!box.contains(tracker.getCurrentLocation())) continue;
 			if (tracker.getSpell() != null && !filter.check(tracker.getSpell())) continue;
 
-			int cone = this.cone.get(caster, null, power, args);
 			if (pointBlank && cone > 0) {
 				Vector dir = tracker.getCurrentLocation().toVector().subtract(vLoc);
 				if (FastMath.abs(dir.angle(facing)) > cone) continue;

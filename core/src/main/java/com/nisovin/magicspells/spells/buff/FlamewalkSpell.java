@@ -24,7 +24,7 @@ public class FlamewalkSpell extends BuffSpell {
 	private final Map<UUID, SpellData> entities;
 
 	private ConfigData<Integer> fireTicks;
-	private ConfigData<Integer> radius;
+	private ConfigData<Double> radius;
 	private int tickInterval;
 
 	private boolean powerAffectsFireTicks;
@@ -35,7 +35,7 @@ public class FlamewalkSpell extends BuffSpell {
 	public FlamewalkSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		radius = getConfigDataInt("radius", 8);
+		radius = getConfigDataDouble("radius", 8);
 		fireTicks = getConfigDataInt("fire-ticks", 80);
 		tickInterval = getConfigInt("tick-interval", 100);
 

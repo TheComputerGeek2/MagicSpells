@@ -28,6 +28,7 @@ public class MagnetSpell extends InstantSpell implements TargetedLocationSpell {
 	private boolean removeItemGravity;
 	private boolean powerAffectsRadius;
 	private boolean powerAffectsVelocity;
+	private boolean resolveVelocityPerItem;
 
 	public MagnetSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -40,6 +41,7 @@ public class MagnetSpell extends InstantSpell implements TargetedLocationSpell {
 		removeItemGravity = getConfigBoolean("remove-item-gravity", false);
 		powerAffectsRadius = getConfigBoolean("power-affects-radius", true);
 		powerAffectsVelocity = getConfigBoolean("power-affects-velocity", true);
+		resolveVelocityPerItem = getConfigBoolean("resolve-velocity-per-item", false);
 	}
 
 	@Override
@@ -98,15 +100,23 @@ public class MagnetSpell extends InstantSpell implements TargetedLocationSpell {
 	}
 
 	private void magnet(LivingEntity caster, Location location, Collection<Item> items, float power, String[] args) {
-		for (Item i : items) magnet(caster, location, i, power, args);
+		double velocity = 0;
+		if (!resolveVelocityPerItem) {
+			velocity = this.velocity.get(caster, null, power, args);
+			if (powerAffectsVelocity) velocity *= power;
+		}
+
+		for (Item i : items) magnet(caster, location, i, power, args, velocity);
 	}
 
-	private void magnet(LivingEntity caster, Location origin, Item item, float power, String[] args) {
+	private void magnet(LivingEntity caster, Location origin, Item item, float power, String[] args, double velocity) {
 		if (removeItemGravity) item.setGravity(false);
 		if (teleport) item.teleport(origin);
 		else {
-			double velocity = this.velocity.get(caster, null, power, args);
-			if (powerAffectsVelocity) velocity *= power;
+			if (resolveVelocityPerItem) {
+				velocity = this.velocity.get(caster, null, power, args);
+				if (powerAffectsVelocity) velocity *= power;
+			}
 
 			item.setVelocity(origin.toVector().subtract(item.getLocation().toVector()).normalize().multiply(velocity));
 		}

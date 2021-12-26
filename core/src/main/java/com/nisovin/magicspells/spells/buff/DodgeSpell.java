@@ -30,7 +30,7 @@ public class DodgeSpell extends BuffSpell {
 
 	private final Map<UUID, SpellData> entities;
 
-	private ConfigData<Float> distance;
+	private ConfigData<Double> distance;
 
 	private SpellFilter filter;
 
@@ -45,7 +45,7 @@ public class DodgeSpell extends BuffSpell {
 
 		entities = new HashMap<>();
 
-		distance = getConfigDataFloat("distance", 2);
+		distance = getConfigDataDouble("distance", 2);
 
 		spellBeforeDodgeName = getConfigString("spell-before-dodge", "");
 		spellAfterDodgeName = getConfigString("spell-after-dodge", "");

@@ -297,7 +297,6 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 
 	}
 
-	private record VolleyData(String identifier, double damage) {
-	}
+	private record VolleyData(String identifier, double damage) {}
 
 }

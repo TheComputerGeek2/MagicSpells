@@ -111,20 +111,20 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 			if (pointBlank) loc = caster.getLocation();
 			else loc = getTargetedBlock(caster, power).getLocation();
 			
-			createNova(caster, loc, power, strings);
+			createNova(caster, null, loc, power, strings);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 	
 	@Override
-	public boolean castAtEntity(LivingEntity caster, LivingEntity livingEntity, float v, String[] args) {
-		createNova(caster, livingEntity.getLocation(), v, args);
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		createNova(caster, target, target.getLocation(), power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		createNova(caster, target.getLocation(), power, null);
+		createNova(caster, target, target.getLocation(), power, null);
 		return true;
 	}
 
@@ -135,13 +135,13 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 	
 	@Override
 	public boolean castAtLocation(LivingEntity livingEntity, Location location, float v, String[] args) {
-		createNova(livingEntity, location, v, args);
+		createNova(livingEntity, null, location, v, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		createNova(caster, target, power, null);
+		createNova(caster, null, target, power, null);
 		return true;
 	}
 
@@ -150,7 +150,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 		return false;
 	}
 
-	private void createNova(LivingEntity caster, Location loc, float power, String[] args) {
+	private void createNova(LivingEntity caster, LivingEntity target, Location loc, float power, String[] args) {
 		if (material == null) return;
 		// Relative offset
 		Location startLoc = loc.clone();
@@ -161,7 +161,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 		startLoc.add(0, relativeOffset.getY(), 0);
 		
 		// Get nearby players
-		double visibleRange = Math.min(Math.max(this.visibleRange.get(caster, null, power, args), 20), MagicSpells.getGlobalRadius());
+		double visibleRange = Math.min(Math.max(this.visibleRange.get(caster, target, power, args), 20), MagicSpells.getGlobalRadius());
 
 		Collection<Entity> nearbyEntities = startLoc.getWorld().getNearbyEntities(startLoc, visibleRange, visibleRange, visibleRange);
 		List<Player> nearby = new ArrayList<>();
@@ -170,11 +170,11 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 			nearby.add((Player) e);
 		}
 
-		int radius = this.radius.get(caster, null, power, args);
-		int startRadius = this.startRadius.get(caster, null, power, args);
-		int heightPerTick = this.heightPerTick.get(caster, null, power, args);
-		int novaTickInterval = this.novaTickInterval.get(caster, null, power, args);
-		int expandingRadiusChange = this.expandingRadiusChange.get(caster, null, power, args);
+		int radius = this.radius.get(caster, target, power, args);
+		int startRadius = this.startRadius.get(caster, target, power, args);
+		int heightPerTick = this.heightPerTick.get(caster, target, power, args);
+		int novaTickInterval = this.novaTickInterval.get(caster, target, power, args);
+		int expandingRadiusChange = this.expandingRadiusChange.get(caster, target, power, args);
 		if (expandingRadiusChange < 1) expandingRadiusChange = 1;
 
 		// Start tracker

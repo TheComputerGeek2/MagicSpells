@@ -162,10 +162,18 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
 			Location locToSpawn = null;
+			LivingEntity target = null;
 
 			if (canTargetEntities) {
-				TargetInfo<LivingEntity> targetEntityInfo = getTargetedEntity(caster, power);
-				if (targetEntityInfo != null && targetEntityInfo.getTarget() != null) locToSpawn = targetEntityInfo.getTarget().getLocation();
+				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power);
+				if (targetInfo != null) {
+					target = targetInfo.getTarget();
+
+					if (target != null) {
+						locToSpawn = targetInfo.getTarget().getLocation();
+						power = targetInfo.getPower();
+					}
+				}
 			}
 
 			if (canTargetLocation && locToSpawn == null) {
@@ -177,7 +185,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 			locToSpawn.setDirection(caster.getLocation().getDirection());
 
-			AreaEffectCloud cloud = spawnCloud(caster, locToSpawn, power, args);
+			AreaEffectCloud cloud = spawnCloud(caster, target, locToSpawn, power, args);
 			cloud.setSource(caster);
 		}
 		return PostCastAction.HANDLE_NORMALLY;
@@ -186,7 +194,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
 		if (!canTargetLocation) return false;
-		AreaEffectCloud cloud = spawnCloud(caster, target, power, args);
+		AreaEffectCloud cloud = spawnCloud(caster, null, target, power, args);
 		cloud.setSource(caster);
 		return true;
 	}
@@ -209,7 +217,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
 		if (!canTargetEntities) return false;
-		AreaEffectCloud cloud = spawnCloud(caster, target.getLocation(), power, args);
+		AreaEffectCloud cloud = spawnCloud(caster, target, target.getLocation(), power, args);
 		cloud.setSource(caster);
 		return true;
 	}
@@ -229,7 +237,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 		return castAtEntity(null, target, power, null);
 	}
 
-	private AreaEffectCloud spawnCloud(LivingEntity caster, Location loc, float power, String[] args) {
+	private AreaEffectCloud spawnCloud(LivingEntity caster, LivingEntity target, Location loc, float power, String[] args) {
 		Location location = loc.clone();
 		Vector startDir = loc.getDirection().normalize();
 
@@ -245,15 +253,15 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 		else if (dust) cloud.setParticle(particle, dustOptions);
 		else if (none) cloud.setParticle(particle);
 
-		cloud.setColor(Color.fromRGB(color.get(caster, null, power, args)));
-		cloud.setRadius(radius.get(caster, null, power, args));
+		cloud.setColor(Color.fromRGB(color.get(caster, target, power, args)));
+		cloud.setRadius(radius.get(caster, target, power, args));
 		cloud.setGravity(useGravity);
-		cloud.setWaitTime(waitTime.get(caster, null, power, args));
-		cloud.setDuration(ticksDuration.get(caster, null, power, args));
-		cloud.setDurationOnUse(durationOnUse.get(caster, null, power, args));
-		cloud.setRadiusOnUse(radiusOnUse.get(caster, null, power, args));
-		cloud.setRadiusPerTick(radiusPerTick.get(caster, null, power, args));
-		cloud.setReapplicationDelay(reapplicationDelay.get(caster, null, power, args));
+		cloud.setWaitTime(waitTime.get(caster, target, power, args));
+		cloud.setDuration(ticksDuration.get(caster, target, power, args));
+		cloud.setDurationOnUse(durationOnUse.get(caster, target, power, args));
+		cloud.setRadiusOnUse(radiusOnUse.get(caster, target, power, args));
+		cloud.setRadiusPerTick(radiusPerTick.get(caster, target, power, args));
+		cloud.setReapplicationDelay(reapplicationDelay.get(caster, target, power, args));
 
 		for (PotionEffect eff : potionEffects) {
 			cloud.addCustomEffect(eff, true);
