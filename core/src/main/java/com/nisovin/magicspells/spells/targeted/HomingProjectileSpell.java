@@ -311,6 +311,7 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 			if (intermediateSpecialEffects < 0) intermediateSpecialEffects = 0;
 
 			velocity = HomingProjectileSpell.this.velocity.get(caster, target, power, args);
+			if (powerAffectsVelocity) velocity *= power;
 
 			maxDuration = HomingProjectileSpell.this.maxDuration.get(caster, target, power, args) * TimeUtil.MILLISECONDS_PER_SECOND;
 
@@ -330,7 +331,7 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 			}
 
 			currentVelocity = target.getLocation().add(0, 0.75, 0).toVector().subtract(projectile.getLocation().toVector()).normalize();
-			currentVelocity.multiply(powerAffectsVelocity ? velocity * power : velocity);
+			currentVelocity.multiply(velocity);
 			currentVelocity.setY(currentVelocity.getY() + 0.15);
 			projectile.setVelocity(currentVelocity);
 
@@ -385,7 +386,7 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 			targetLoc.setY(target.getLocation().getY() + targetRelativeOffset.getY());
 
 			currentVelocity = targetLoc.toVector().subtract(projectile.getLocation().toVector()).normalize();
-			currentVelocity.multiply(powerAffectsVelocity ? velocity * power : velocity);
+			currentVelocity.multiply(velocity);
 			currentVelocity.setY(currentVelocity.getY() + 0.15);
 			projectile.setVelocity(currentVelocity);
 			currentLocation = projectile.getLocation();

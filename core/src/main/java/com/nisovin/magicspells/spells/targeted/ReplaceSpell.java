@@ -44,6 +44,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 	private boolean replaceRandom;
 	private boolean powerAffectsRadius;
 	private final boolean checkPlugins;
+	private boolean resolveDurationPerBlock;
 
 	public ReplaceSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -60,9 +61,10 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 		replaceDuration = getConfigDataInt("duration", 0);
 
 		pointBlank = getConfigBoolean("point-blank", false);
+		checkPlugins = getConfigBoolean("check-plugins", true);
 		replaceRandom = getConfigBoolean("replace-random", true);
 		powerAffectsRadius = getConfigBoolean("power-affects-radius", false);
-		checkPlugins = getConfigBoolean("check-plugins", true);
+		resolveDurationPerBlock = getConfigBoolean("resolve-duration-per-block", false);
 
 		List<String> list = getConfigStringList("replace-blocks", null);
 		if (list != null) {
@@ -161,12 +163,13 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 		int u = radiusUp.get(caster, null, power, args);
 		int h = radiusHoriz.get(caster, null, power, args);
 		if (powerAffectsRadius) {
-			d *= power;
-			u *= power;
-			h *= power;
+			d = Math.round(d * power);
+			u = Math.round(u * power);
+			h = Math.round(h * power);
 		}
 
 		int yOffset = this.yOffset.get(caster, null, power, args);
+		int replaceDuration = resolveDurationPerBlock ? 0 : this.replaceDuration.get(caster, null, power, args);
 
 		for (int y = target.getBlockY() - d + yOffset; y <= target.getBlockY() + u + yOffset; y++) {
 			for (int x = target.getBlockX() - h; x <= target.getBlockX() + h; x++) {
@@ -202,7 +205,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 						playSpellEffects(EffectPosition.SPECIAL, finalBlock.getLocation());
 
 						// Break block.
-						int replaceDuration = this.replaceDuration.get(caster, null, power, args);
+						if (resolveDurationPerBlock) replaceDuration = this.replaceDuration.get(caster, null, power, args);
 						if (replaceDuration > 0) {
 							blocks.put(block, data);
 

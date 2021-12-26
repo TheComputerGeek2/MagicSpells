@@ -46,6 +46,9 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 
 	private boolean checkPlugins;
 	private boolean preventLandingBlocks;
+	private boolean resolveDamagePerBlock;
+	private boolean resolveVelocityPerBlock;
+	private boolean resolveMaxHeightPerBlock;
 
 	private VelocityType velocityType;
 
@@ -54,14 +57,17 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 
 		vertRadius = getConfigDataInt("vert-radius", 3);
 		horizRadius = getConfigDataInt("horiz-radius", 3);
+		fallingBlockMaxHeight = getConfigDataInt("falling-block-max-height", 0);
 
 		velocity = getConfigDataDouble("velocity", 0);
 
 		fallingBlockDamage = getConfigDataFloat("falling-block-damage", 0);
-		fallingBlockMaxHeight = getConfigDataInt("falling-block-max-height", 0);
 
 		checkPlugins = getConfigBoolean("check-plugins", true);
 		preventLandingBlocks = getConfigBoolean("prevent-landing-blocks", false);
+		resolveDamagePerBlock = getConfigBoolean("resolve-damage-per-block", false);
+		resolveVelocityPerBlock = getConfigBoolean("resolve-velocity-per-block", false);
+		resolveMaxHeightPerBlock = getConfigBoolean("resolve-max-height-per-block", false);
 
 		String vType = getConfigString("velocity-type", "none");
 
@@ -208,6 +214,10 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 			b.setType(Material.AIR);
 		}
 
+		double velocity = resolveVelocityPerBlock ? 0 : this.velocity.get(caster, target, power, args);
+		float fallingBlockDamage = resolveDamagePerBlock ? 0 : this.fallingBlockDamage.get(caster, target, power, args);
+		int fallingBlockHeight = resolveMaxHeightPerBlock ? 0 : this.fallingBlockMaxHeight.get(caster, target, power, args);
+
 		for (Block b : blocksToThrow) {
 			Material material = b.getType();
 			Location l = b.getLocation().clone().add(0.5, 0.5, 0.5);
@@ -217,7 +227,7 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, source, fb.getLocation(), null, fb);
 
 			Vector v;
-			double velocity = this.velocity.get(caster, target, power, args);
+			if (resolveVelocityPerBlock) velocity = this.velocity.get(caster, target, power, args);
 			if (velocityType == VelocityType.UP) {
 				v = new Vector(0, velocity, 0);
 				v.setY(v.getY() + ((Math.random() - 0.5) / 4));
@@ -237,9 +247,9 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 
 			fb.setVelocity(v);
 
-			float fallingBlockDamage = this.fallingBlockDamage.get(caster, target, power, args);
+			if (resolveDamagePerBlock) fallingBlockDamage = this.fallingBlockDamage.get(caster, target, power, args);
 			if (fallingBlockDamage > 0) {
-				int fallingBlockHeight = this.fallingBlockMaxHeight.get(caster, target, power, args);
+				if (resolveMaxHeightPerBlock) fallingBlockHeight = this.fallingBlockMaxHeight.get(caster, target, power, args);
 				MagicSpells.getVolatileCodeHandler().setFallingBlockHurtEntities(fb, fallingBlockDamage, fallingBlockHeight);
 			}
 

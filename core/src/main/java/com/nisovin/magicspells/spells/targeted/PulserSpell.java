@@ -38,11 +38,11 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 	private Material material;
 
 	private final int interval;
+	private final int capPerPlayer;
 	private final ConfigData<Integer> yOffset;
 	private final ConfigData<Integer> totalPulses;
-	private final ConfigData<Integer> capPerPlayer;
 
-	private ConfigData<Double> maxDistance;
+	private final ConfigData<Double> maxDistance;
 
 	private final boolean checkFace;
 	private final boolean unbreakable;
@@ -71,7 +71,7 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 		yOffset = getConfigDataInt("y-offset", 0);
 		interval = getConfigInt("interval", 30);
 		totalPulses = getConfigDataInt("total-pulses", 5);
-		capPerPlayer = getConfigDataInt("cap-per-player", 10);
+		capPerPlayer = getConfigInt("cap-per-player", 10);
 
 		maxDistance = getConfigDataDouble("max-distance", 30);
 
@@ -115,7 +115,6 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			int capPerPlayer = this.capPerPlayer.get(caster, null, power, args);
 			if (capPerPlayer > 0) {
 				int count = 0;
 				for (Pulser pulser : pulsers.values()) {
@@ -153,7 +152,6 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
-		int capPerPlayer = this.capPerPlayer.get(caster, null, power, args);
 		if (capPerPlayer > 0) {
 			int count = 0;
 			for (Pulser pulser : pulsers.values()) {

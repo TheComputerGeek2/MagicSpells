@@ -63,7 +63,7 @@ public class RotateSpell extends TargetedSpell implements TargetedEntitySpell, T
 	@Override
 	public boolean castAtEntity(LivingEntity target, float power, String[] args) {
 		playSpellEffects(EffectPosition.TARGET, target);
-		spinTarget(null, target, power, null);
+		spinTarget(null, target, power, args);
 		return true;
 	}
 

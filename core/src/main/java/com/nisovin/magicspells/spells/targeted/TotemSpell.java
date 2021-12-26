@@ -42,10 +42,10 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
 	private final PulserTicker ticker;
 
 	private final int interval;
+	private final int capPerPlayer;
 	private final ConfigData<Integer> yOffset;
 	private final ConfigData<Integer> maxDuration;
 	private final ConfigData<Integer> totalPulses;
-	private final ConfigData<Integer> capPerPlayer;
 
 	private final ConfigData<Double> maxDistance;
 
@@ -126,7 +126,7 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
 		interval = getConfigInt("interval", 30);
 		maxDuration = getConfigDataInt("max-duration", 0);
 		totalPulses = getConfigDataInt("total-pulses", 5);
-		capPerPlayer = getConfigDataInt("cap-per-player", 10);
+		capPerPlayer = getConfigInt("cap-per-player", 10);
 
 		maxDistance = getConfigDataDouble("max-distance", 30);
 
@@ -186,7 +186,6 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			int capPerPlayer = this.capPerPlayer.get(caster, null, power, args);
 			if (capPerPlayer > 0) {
 				int count = 0;
 				for (Totem pulser : totems) {
