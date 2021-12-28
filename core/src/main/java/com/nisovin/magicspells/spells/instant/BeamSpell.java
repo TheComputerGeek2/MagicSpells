@@ -11,10 +11,8 @@ import org.bukkit.entity.LivingEntity;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.util.BoundingBox;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
@@ -141,21 +139,19 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
-		if (state == SpellCastState.NORMAL) {
-			new Beam(caster, caster.getLocation(), power, args);
-		}
+		if (state == SpellCastState.NORMAL) shootBeam(caster, null, caster.getLocation(), power, args);
 		return PostCastAction.HANDLE_NORMALLY;
 	}
 
 	@Override
-	public boolean castAtEntity(LivingEntity livingEntity, LivingEntity target, float power, String[] args) {
-		new Beam(livingEntity, livingEntity.getLocation(), target, power, args);
+	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power, String[] args) {
+		shootBeam(caster, target, caster.getLocation(), power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
-		new Beam(caster, caster.getLocation(), target, power, null);
+		shootBeam(caster, target, caster.getLocation(), power, null);
 		return true;
 	}
 
@@ -165,14 +161,14 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 	}
 
 	@Override
-	public boolean castAtLocation(LivingEntity livingEntity, Location location, float v, String[] args) {
-		new Beam(livingEntity, location, v, args);
+	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
+		shootBeam(caster, null, target, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power) {
-		new Beam(caster, target, power, null);
+		shootBeam(caster, null, target, power, null);
 		return true;
 	}
 
@@ -183,14 +179,133 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 
 	@Override
 	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
-		new Beam(caster, from, target, power, args);
+		shootBeam(caster, target, from, power, args);
 		return true;
 	}
 
 	@Override
 	public boolean castAtEntityFromLocation(LivingEntity caster, Location from, LivingEntity target, float power) {
-		new Beam(caster, from, target, power, null);
+		shootBeam(caster, target, from, power, null);
 		return true;
+	}
+
+	private void shootBeam(LivingEntity caster, LivingEntity target, Location from, float power, String[] args) {
+		playSpellEffects(EffectPosition.CASTER, caster);
+
+		Location loc = from.clone();
+		if (!changePitch) loc.setPitch(0);
+
+		float beamVertOffset = this.beamVertOffset.get(caster, target, power, args);
+		if (beamVertOffset != 0) loc.setPitch(loc.getPitch() - beamVertOffset);
+
+		float beamHorizOffset = this.beamHorizOffset.get(caster, target, power, args);
+		if (beamHorizOffset != 0) loc.setYaw(loc.getYaw() + beamHorizOffset);
+
+		Vector startDir;
+		if (target == null) startDir = loc.getDirection();
+		else startDir = target.getLocation().toVector().subtract(loc.toVector()).normalize();
+
+		//apply relative offset
+		Vector relativeOffset;
+
+		double yOffset = this.yOffset.get(caster, target, power, args);
+		if (yOffset != 0) relativeOffset = this.relativeOffset.clone().setY(yOffset);
+		else relativeOffset = this.relativeOffset;
+
+		Vector horizOffset = new Vector(-startDir.getZ(), 0, startDir.getX()).normalize();
+		loc.add(horizOffset.multiply(relativeOffset.getZ()));
+		loc.add(loc.getDirection().multiply(relativeOffset.getX()));
+		loc.setY(loc.getY() + relativeOffset.getY());
+
+		float interval = this.interval.get(caster, target, power, args);
+		if (interval < 0.01) interval = 0.01f;
+
+		Vector dir;
+		if (target == null) dir = loc.getDirection().multiply(interval);
+		else {
+			//apply target relative offset
+			Location targetLoc = target.getLocation();
+			Vector targetDir = targetLoc.getDirection();
+
+			Vector targetHorizOffset = new Vector(-targetDir.getZ(), 0, targetDir.getX()).normalize();
+			targetLoc.add(targetHorizOffset.multiply(targetRelativeOffset.getZ()));
+			targetLoc.add(targetLoc.getDirection().multiply(targetRelativeOffset.getX()));
+			targetLoc.setY(target.getLocation().getY() + targetRelativeOffset.getY());
+
+			dir = targetLoc.toVector().subtract(loc.toVector()).normalize().multiply(interval);
+		}
+
+		float beamVerticalSpread = this.beamVerticalSpread.get(caster, target, power, args);
+		float beamHorizontalSpread = this.beamHorizontalSpread.get(caster, target, power, args);
+		if (beamVerticalSpread > 0 || beamHorizontalSpread > 0) {
+			float rx = -1 + random.nextFloat() * 2;
+			float ry = -1 + random.nextFloat() * 2;
+			float rz = -1 + random.nextFloat() * 2;
+			dir.add(new Vector(rx * beamHorizontalSpread, ry * beamVerticalSpread, rz * beamHorizontalSpread));
+		}
+
+		double verticalHitRadius = this.verticalHitRadius.get(caster, target, power, args);
+		double maxDistance = this.maxDistance.get(caster, target, power, args);
+		double hitRadius = this.hitRadius.get(caster, target, power, args);
+
+		float rotation = this.rotation.get(caster, target, power, args);
+		float gravity = -this.gravity.get(caster, target, power, args);
+
+		Set<Entity> immune = new HashSet<>();
+		float d = 0;
+
+		mainLoop:
+		while (d < maxDistance) {
+			d += interval;
+			loc.add(dir);
+
+			if (rotation != 0) Util.rotateVector(dir, rotation);
+			if (gravity != 0) dir.add(new Vector(0, gravity, 0));
+			if (rotation != 0 || gravity != 0) loc.setDirection(dir);
+
+			if (zoneManager.willFizzle(loc, this)) break;
+
+			//check block collision
+			if (!isTransparent(loc.getBlock())) {
+				playSpellEffects(EffectPosition.DISABLED, loc);
+				if (groundSpell != null) groundSpell.castAtLocation(caster, loc, power);
+				if (stopOnHitGround) break;
+			}
+
+			playSpellEffects(EffectPosition.SPECIAL, loc);
+
+			if (travelSpell != null) travelSpell.castAtLocation(caster, loc, power);
+
+			//check entities in the beam range
+			for (LivingEntity e : loc.getNearbyLivingEntities(hitRadius, verticalHitRadius)) {
+				if (e == caster || !e.isValid() || immune.contains(e)) continue;
+				if (validTargetList != null && !validTargetList.canTarget(e)) continue;
+
+				SpellTargetEvent event = new SpellTargetEvent(this, caster, e, power, args);
+				if (!event.callEvent()) continue;
+
+				LivingEntity entity = event.getTarget();
+
+				if (hitSpell != null) {
+					if (hitSpell.isTargetedEntitySpell()) hitSpell.castAtEntity(caster, entity, event.getPower());
+					else if (hitSpell.isTargetedLocationSpell()) hitSpell.castAtLocation(caster, entity.getLocation(), event.getPower());
+				}
+
+				if (entityLocationSpell != null) entityLocationSpell.castAtLocation(caster, loc, power);
+
+				playSpellEffects(EffectPosition.TARGET, entity);
+				playSpellEffectsTrail(caster.getLocation(), entity.getLocation());
+				immune.add(e);
+
+				if (stopOnHitEntity) break mainLoop;
+			}
+		}
+
+		//end of the beam
+		if (!zoneManager.willFizzle(loc, this) && d >= maxDistance) {
+			playSpellEffects(EffectPosition.DELAYED, loc);
+			if (endSpell != null) endSpell.castAtLocation(caster, loc, power);
+		}
 	}
 
 	@Override
@@ -268,189 +383,6 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 
 	public void setGroundSpell(Subspell groundSpell) {
 		this.groundSpell = groundSpell;
-	}
-
-	private class Beam {
-
-		private final Set<Entity> immune;
-
-		private final LivingEntity caster;
-		private final LivingEntity target;
-		private final Location startLoc;
-		private final String[] args;
-		private final float power;
-
-		private double hitRadius;
-		private double maxDistance;
-		private double verticalHitRadius;
-
-		private float gravity;
-		private float interval;
-		private float rotation;
-		private float beamVertOffset;
-		private float beamHorizOffset;
-
-		private float beamVerticalSpread;
-		private float beamHorizontalSpread;
-
-		private Vector relativeOffset;
-
-		private Beam(LivingEntity caster, Location from, float power, String[] args) {
-			this.caster = caster;
-			this.target = null;
-			this.power = power;
-			this.args = args;
-
-			startLoc = from.clone();
-			if (!changePitch) startLoc.setPitch(0F);
-
-			immune = new HashSet<>();
-
-			init(caster, null, power, args);
-			shootBeam();
-		}
-
-		private Beam(LivingEntity caster, Location from, LivingEntity target, float power, String[] args) {
-			this.caster = caster;
-			this.target = target;
-			this.power = power;
-			this.args = args;
-
-			startLoc = from.clone();
-			if (!changePitch) startLoc.setPitch(0F);
-
-			immune = new HashSet<>();
-
-			init(caster, target, power, args);
-			shootBeam();
-		}
-
-		private void init(LivingEntity caster, LivingEntity target, float power, String[] args) {
-			hitRadius = BeamSpell.this.hitRadius.get(caster, target, power, args);
-			maxDistance = BeamSpell.this.maxDistance.get(caster, target, power, args);
-			verticalHitRadius = BeamSpell.this.verticalHitRadius.get(caster, target, power, args);
-
-			gravity = -BeamSpell.this.gravity.get(caster, target, power, args);
-			interval = BeamSpell.this.interval.get(caster, target, power, args);
-			rotation = BeamSpell.this.rotation.get(caster, target, power, args);
-			beamVertOffset = BeamSpell.this.beamVertOffset.get(caster, target, power, args);
-			beamHorizOffset = BeamSpell.this.beamHorizOffset.get(caster, target, power, args);
-
-			beamVerticalSpread = BeamSpell.this.beamVerticalSpread.get(caster, target, power, args);
-			beamHorizontalSpread = BeamSpell.this.beamHorizontalSpread.get(caster, target, power, args);
-
-			if (interval < 0.01) interval = 0.01f;
-
-			double yOffset = BeamSpell.this.yOffset.get(caster, target, power, args);
-			if (yOffset != 0) relativeOffset = BeamSpell.this.relativeOffset.clone().setY(yOffset);
-			else relativeOffset = BeamSpell.this.relativeOffset;
-		}
-
-		private void shootBeam() {
-			playSpellEffects(EffectPosition.CASTER, caster);
-
-			if (beamVertOffset != 0) startLoc.setPitch(startLoc.getPitch() - beamVertOffset);
-			if (beamHorizOffset != 0) startLoc.setYaw(startLoc.getYaw() + beamHorizOffset);
-
-			Vector startDir;
-			if (target == null) startDir = startLoc.getDirection().normalize();
-			else startDir = target.getLocation().toVector().subtract(startLoc.clone().toVector()).normalize();
-
-			//apply relative offset
-			Vector horizOffset = new Vector(-startDir.getZ(), 0, startDir.getX()).normalize();
-			startLoc.add(horizOffset.multiply(relativeOffset.getZ())).getBlock().getLocation();
-			startLoc.add(startLoc.getDirection().clone().multiply(relativeOffset.getX()));
-			startLoc.setY(startLoc.getY() + relativeOffset.getY());
-
-			Location currentLoc = startLoc.clone();
-
-			//apply target relative offset
-			Location targetLoc = null;
-			if (target != null) {
-				targetLoc = target.getLocation().clone();
-				startDir = targetLoc.clone().getDirection().normalize();
-				horizOffset = new Vector(-startDir.getZ(), 0.0, startDir.getX()).normalize();
-				targetLoc.add(horizOffset.multiply(targetRelativeOffset.getZ())).getBlock().getLocation();
-				targetLoc.add(targetLoc.getDirection().multiply(targetRelativeOffset.getX()));
-				targetLoc.setY(target.getLocation().getY() + targetRelativeOffset.getY());
-			}
-
-			Vector dir;
-			if (target == null) dir = startLoc.getDirection().multiply(interval);
-			else dir = targetLoc.toVector().subtract(startLoc.clone().toVector()).normalize().multiply(interval);
-
-			if (beamVerticalSpread > 0 || beamHorizontalSpread > 0) {
-				float rx = -1 + random.nextFloat() * 2;
-				float ry = -1 + random.nextFloat() * 2;
-				float rz = -1 + random.nextFloat() * 2;
-				dir.add(new Vector(rx * beamHorizontalSpread, ry * beamVerticalSpread, rz * beamHorizontalSpread));
-			}
-
-			BoundingBox box = new BoundingBox(currentLoc, hitRadius, verticalHitRadius);
-
-			float d = 0;
-			mainLoop:
-			while (d < maxDistance) {
-
-				d += interval;
-				currentLoc.add(dir);
-
-				if (rotation != 0) Util.rotateVector(dir, rotation);
-				if (gravity != 0) dir.add(new Vector(0, gravity, 0));
-				if (rotation != 0 || gravity != 0) currentLoc.setDirection(dir);
-
-				if (zoneManager.willFizzle(currentLoc, BeamSpell.this)) {
-					break;
-				}
-
-				//check block collision
-				if (!isTransparent(currentLoc.getBlock())) {
-					playSpellEffects(EffectPosition.DISABLED, currentLoc);
-					if (groundSpell != null) groundSpell.castAtLocation(caster, currentLoc, power);
-					if (stopOnHitGround) break;
-				}
-
-				playSpellEffects(EffectPosition.SPECIAL, currentLoc);
-
-				if (travelSpell != null) travelSpell.castAtLocation(caster, currentLoc, power);
-
-				box.setCenter(currentLoc);
-
-				//check entities in the beam range
-				for (LivingEntity e : startLoc.getWorld().getLivingEntities()) {
-					if (e.equals(caster)) continue;
-					if (e.isDead()) continue;
-					if (immune.contains(e)) continue;
-					if (!box.contains(e)) continue;
-					if (validTargetList != null && !validTargetList.canTarget(e)) continue;
-
-					SpellTargetEvent event = new SpellTargetEvent(BeamSpell.this, caster, e, power, args);
-					EventUtil.call(event);
-					if (event.isCancelled()) continue;
-					LivingEntity entity = event.getTarget();
-
-					if (hitSpell != null) {
-						if (hitSpell.isTargetedEntitySpell()) hitSpell.castAtEntity(caster, entity, event.getPower());
-						else if (hitSpell.isTargetedLocationSpell()) hitSpell.castAtLocation(caster, entity.getLocation(), event.getPower());
-					}
-
-					if (entityLocationSpell != null) entityLocationSpell.castAtLocation(caster, currentLoc, power);
-
-					playSpellEffects(EffectPosition.TARGET, entity);
-					playSpellEffectsTrail(caster.getLocation(), entity.getLocation());
-					immune.add(e);
-
-					if (stopOnHitEntity) break mainLoop;
-				}
-			}
-
-			//end of the beam
-			if (!zoneManager.willFizzle(currentLoc, BeamSpell.this) && d >= maxDistance) {
-				playSpellEffects(EffectPosition.DELAYED, currentLoc);
-				if (endSpell != null) endSpell.castAtLocation(caster, currentLoc, power);
-			}
-		}
-
 	}
 
 }
