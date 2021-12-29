@@ -75,7 +75,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 		if (state == SpellCastState.NORMAL) {
 			if (targetSelf) new Rewinder(caster, caster, power, args);
 			else {
-				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power);
+				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power, args);
 				if (targetInfo == null) return noTarget(caster);
 				sendMessages(caster, targetInfo.getTarget(), args);
 				new Rewinder(caster, targetInfo.getTarget(), targetInfo.getPower(), args);

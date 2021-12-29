@@ -1469,22 +1469,39 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	 * @return the targeted Player, or null if none was found
 	 */
 	protected TargetInfo<Player> getTargetedPlayer(LivingEntity livingEntity, float power) {
-		TargetInfo<LivingEntity> target = getTargetedEntity(livingEntity, power, true, null);
+		return getTargetedPlayer(livingEntity, power, null);
+	}
+
+	/**
+	 * Gets the player a player is currently looking at, ignoring other living entities
+	 * @param livingEntity the living entity to get the target for
+	 * @return the targeted Player, or null if none was found
+	 */
+	protected TargetInfo<Player> getTargetedPlayer(LivingEntity livingEntity, float power, String[] args) {
+		TargetInfo<LivingEntity> target = getTargetedEntity(livingEntity, power, true, null, args);
 		if (target == null) return null;
 		if (!(target.getTarget() instanceof Player)) return null;
 		return new TargetInfo<>((Player) target.getTarget(), target.getPower());
 	}
 
 	protected TargetInfo<Player> getTargetPlayer(LivingEntity caster, float power) {
-		return getTargetedPlayer(caster, power);
+		return getTargetedPlayer(caster, power, null);
 	}
 
 	protected TargetInfo<LivingEntity> getTargetedEntity(LivingEntity caster, float power) {
-		return getTargetedEntity(caster, power, false, null);
+		return getTargetedEntity(caster, power, false, null, null);
+	}
+
+	protected TargetInfo<LivingEntity> getTargetedEntity(LivingEntity caster, float power, String[] args) {
+		return getTargetedEntity(caster, power, false, null, args);
 	}
 
 	protected TargetInfo<LivingEntity> getTargetedEntity(LivingEntity caster, float power, ValidTargetChecker checker) {
-		return getTargetedEntity(caster, power, false, checker);
+		return getTargetedEntity(caster, power, false, checker, null);
+	}
+
+	protected TargetInfo<LivingEntity> getTargetedEntity(LivingEntity caster, float power, ValidTargetChecker checker, String[] args) {
+		return getTargetedEntity(caster, power, false, checker, args);
 	}
 
 	protected TargetInfo<LivingEntity> getTargetedEntity(LivingEntity caster, float power, boolean forceTargetPlayers, ValidTargetChecker checker) {

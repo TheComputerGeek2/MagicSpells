@@ -44,7 +44,7 @@ public class OffsetLocationSpell extends TargetedSpell implements TargetedLocati
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
 			Location baseTargetLocation;
-			TargetInfo<LivingEntity> entityTargetInfo = getTargetedEntity(caster, power);
+			TargetInfo<LivingEntity> entityTargetInfo = getTargetedEntity(caster, power, args);
 
 			if (entityTargetInfo != null && entityTargetInfo.getTarget() != null) baseTargetLocation = entityTargetInfo.getTarget().getLocation();
 			else baseTargetLocation = getTargetedBlock(caster, power).getLocation();

@@ -236,7 +236,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			switch (location.toLowerCase()) {
 				case "focus" -> {
 					loc = getRandomLocationFrom(caster.getLocation(), 3);
-					TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power);
+					TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power, args);
 					if (targetInfo == null) return noTarget(caster);
 					target = targetInfo.getTarget();
 					power = targetInfo.getPower();

@@ -108,7 +108,7 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 			Location targetLoc = null;
 			boolean selfTarget = false;
 			if (requireEntityTarget) {
-				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power);
+				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power, args);
 				if (targetInfo == null) return noTarget(caster);
 
 				LivingEntity entity = targetInfo.getTarget();
