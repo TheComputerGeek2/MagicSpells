@@ -172,7 +172,7 @@ public class CleanseSpell extends TargetedSpell implements TargetedEntitySpell {
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power, checker);
+			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power, checker, args);
 			if (target == null) return noTarget(caster);
 			
 			cleanse(caster, target.getTarget());

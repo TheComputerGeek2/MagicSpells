@@ -109,7 +109,7 @@ public class ExternalCommandSpell extends TargetedSpell implements TargetedEntit
 		if (state == SpellCastState.NORMAL) {
 			Player target = null;
 			if (requirePlayerTarget) {
-				TargetInfo<Player> targetInfo = getTargetedPlayer(caster, power);
+				TargetInfo<Player> targetInfo = getTargetedPlayer(caster, power, args);
 				if (targetInfo == null) {
 					sendMessage(strNoTarget, caster, args);
 					return PostCastAction.ALREADY_HANDLED;

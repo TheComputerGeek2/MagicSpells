@@ -24,7 +24,7 @@ public class RiptideSpell extends TargetedSpell implements TargetedEntitySpell {
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state != SpellCastState.NORMAL) return PostCastAction.HANDLE_NORMALLY;
 
-		TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
+		TargetInfo<LivingEntity> target = getTargetedEntity(caster, power, args);
 		if (target == null) return noTarget(caster);
 		playSpellEffects(caster, target.getTarget());
 

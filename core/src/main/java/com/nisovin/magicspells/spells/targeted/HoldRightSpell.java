@@ -71,7 +71,7 @@ public class HoldRightSpell extends TargetedSpell implements TargetedEntitySpell
 			}
 
 			if (targetEntity) {
-				TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
+				TargetInfo<LivingEntity> target = getTargetedEntity(caster, power, args);
 				if (target != null) data = new CastData(caster, target.getTarget(), target.getPower(), args);
 				else return noTarget(caster);
 			} else if (targetLocation) {

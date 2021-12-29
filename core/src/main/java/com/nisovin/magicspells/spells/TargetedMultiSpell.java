@@ -81,7 +81,7 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 			Location locTarget = null;
 			LivingEntity entTarget = null;
 			if (requireEntityTarget) {
-				TargetInfo<LivingEntity> info = getTargetedEntity(caster, power);
+				TargetInfo<LivingEntity> info = getTargetedEntity(caster, power, args);
 				if (info != null) {
 					entTarget = info.getTarget();
 					power = info.getPower();

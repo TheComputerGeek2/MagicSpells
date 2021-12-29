@@ -52,7 +52,7 @@ public class PotionEffectSpell extends TargetedSpell implements TargetedEntitySp
 		if (state == SpellCastState.NORMAL) {
 			LivingEntity target = null;
 			if (targeted) {
-				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power);
+				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power, args);
 				if (targetInfo != null) {
 					target = targetInfo.getTarget();
 					power = targetInfo.getPower();

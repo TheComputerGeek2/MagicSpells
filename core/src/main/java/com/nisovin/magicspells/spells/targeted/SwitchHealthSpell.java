@@ -23,7 +23,7 @@ public class SwitchHealthSpell extends TargetedSpell implements TargetedEntitySp
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
+			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power, args);
 			if (target == null) return noTarget(caster);
 
 			boolean ok = switchHealth(caster, target.getTarget());

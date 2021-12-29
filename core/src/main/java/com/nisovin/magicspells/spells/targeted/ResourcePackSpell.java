@@ -42,7 +42,7 @@ public class ResourcePackSpell extends TargetedSpell {
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL && caster instanceof Player player) {
-			TargetInfo<Player> target = getTargetedPlayer(player, power);
+			TargetInfo<Player> target = getTargetedPlayer(player, power, args);
 			Player targetPlayer = target.getTarget();
 			if (targetPlayer == null) return noTarget(player);
 			try {

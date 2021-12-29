@@ -27,7 +27,7 @@ public class EntitySelectSpell extends TargetedSpell {
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power);
+			TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power, args);
 			if (targetInfo == null || targetInfo.getTarget() == null) return noTarget(caster);
 			
 			targets.put(caster.getUniqueId(), new WeakReference<>(targetInfo.getTarget()));

@@ -166,7 +166,7 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 			Player opener = player;
 
 			if (requireEntityTarget) {
-				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(player, power);
+				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(player, power, args);
 				if (targetInfo != null) entityTarget = targetInfo.getTarget();
 				if (entityTarget == null) return noTarget(player);
 				if (targetOpensMenuInstead) {

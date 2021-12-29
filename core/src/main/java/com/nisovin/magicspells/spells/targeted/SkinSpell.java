@@ -24,7 +24,7 @@ public class SkinSpell extends TargetedSpell implements TargetedEntitySpell {
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
-			TargetInfo<Player> targetInfo = getTargetedPlayer(caster, power);
+			TargetInfo<Player> targetInfo = getTargetedPlayer(caster, power, args);
 			if (targetInfo == null || targetInfo.getTarget() == null) return noTarget(caster);
 
 			Util.setSkin(targetInfo.getTarget(), texture, signature);

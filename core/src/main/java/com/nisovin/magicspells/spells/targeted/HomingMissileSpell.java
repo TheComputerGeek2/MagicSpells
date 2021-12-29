@@ -176,7 +176,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL) {
 			ValidTargetChecker checker = hitSpell != null ? hitSpell.getSpell().getValidTargetChecker() : null;
-			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power, checker);
+			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power, checker, args);
 			if (target == null) return noTarget(caster);
 			new MissileTracker(caster, target.getTarget(), target.getPower(), args);
 			sendMessages(caster, target.getTarget(), args);

@@ -3,7 +3,6 @@ package com.nisovin.magicspells.spells.buff;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.nisovin.magicspells.Spell;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -86,7 +85,7 @@ public class SeeHealthSpell extends BuffSpell {
 		return ChatColor.getByChar(COLORS.charAt(random.nextInt(COLORS.length())));
 	}
 
-	private void showHealthBar(Player player, LivingEntity entity) {
+	private void showHealthBar(Player player, LivingEntity entity, SpellData data) {
 		double pct = entity.getHealth() / Util.getMaxHealth(entity);
 
 		ChatColor color = ChatColor.GREEN;
@@ -95,7 +94,6 @@ public class SeeHealthSpell extends BuffSpell {
 		else if (pct <= 0.6) color = ChatColor.GOLD;
 		else if (pct <= 0.8) color = ChatColor.YELLOW;
 
-		SpellData data = entities.get(player.getUniqueId());
 		int barSize = this.barSize.get(player, entity, data.power(), data.args());
 
 		StringBuilder sb = new StringBuilder(barSize);
@@ -146,12 +144,14 @@ public class SeeHealthSpell extends BuffSpell {
 
 		@Override
 		public void run() {
-			for (UUID id : entities.keySet()) {
+			for (Map.Entry<UUID, SpellData> entry : entities.entrySet()) {
+				UUID id = entry.getKey();
 				Player player = Bukkit.getPlayer(id);
-				if (player == null) continue;
-				if (!player.isValid()) continue;
-				TargetInfo<LivingEntity> target = getTargetedEntity(player, 1F);
-				if (target != null) showHealthBar(player, target.getTarget());
+				if (player == null || !player.isValid()) continue;
+
+				SpellData data = entry.getValue();
+				TargetInfo<LivingEntity> target = getTargetedEntity(player, data.power(), data.args());
+				if (target != null) showHealthBar(player, target.getTarget(), data);
 			}
 		}
 

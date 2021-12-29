@@ -165,7 +165,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 			LivingEntity target = null;
 
 			if (canTargetEntities) {
-				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power);
+				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power, args);
 				if (targetInfo != null) {
 					target = targetInfo.getTarget();
 

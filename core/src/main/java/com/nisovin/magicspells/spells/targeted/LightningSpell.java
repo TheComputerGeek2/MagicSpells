@@ -53,7 +53,7 @@ public class LightningSpell extends TargetedSpell implements TargetedLocationSpe
 			Block target;
 			LivingEntity entityTarget = null;
 			if (requireEntityTarget) {
-				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power);
+				TargetInfo<LivingEntity> targetInfo = getTargetedEntity(caster, power, args);
 				if (targetInfo != null) {
 					entityTarget = targetInfo.getTarget();
 					power = targetInfo.getPower();

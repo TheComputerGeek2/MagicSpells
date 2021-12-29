@@ -91,7 +91,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 			levitating.remove(caster.getUniqueId()).stop();
 			return PostCastAction.ALREADY_HANDLED;
 		} else if (state == SpellCastState.NORMAL) {
-			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power);
+			TargetInfo<LivingEntity> target = getTargetedEntity(caster, power, args);
 			if (target == null) return noTarget(caster);
 
 			levitate(caster, target.getTarget(), target.getPower(), args);

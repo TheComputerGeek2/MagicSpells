@@ -42,7 +42,7 @@ public class DataSpell extends TargetedSpell implements TargetedEntitySpell {
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL && caster instanceof Player player) {
-			TargetInfo<LivingEntity> targetInfo = getTargetedEntity(player, power);
+			TargetInfo<LivingEntity> targetInfo = getTargetedEntity(player, power, args);
 			if (targetInfo == null) return noTarget(player);
 			LivingEntity target = targetInfo.getTarget();
 			if (target == null) return noTarget(player);
