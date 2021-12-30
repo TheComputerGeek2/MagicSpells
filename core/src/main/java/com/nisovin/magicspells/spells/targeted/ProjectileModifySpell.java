@@ -304,7 +304,7 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 			tracker.setGroundHorizontalHitRadius(groundHitRadius.get(caster, null, power, args));
 			tracker.setGroundVerticalHitRadius(groundVerticalHitRadius.get(caster, null, power, args));
 			tracker.setHugSurface(hugSurface);
-			tracker.setHeightFromSurface(heightFromSurface.get(caster, null, power, args));
+			tracker.setHeightFromSurface(hugSurface ? heightFromSurface.get(caster, null, power, args) : 0);
 			tracker.setControllable(controllable);
 			tracker.setHitGround(hitGround);
 			tracker.setHitAirAtEnd(hitAirAtEnd);
