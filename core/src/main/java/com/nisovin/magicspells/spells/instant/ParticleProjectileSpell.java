@@ -503,7 +503,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		tracker.setDisallowedGroundMaterials(disallowedGroundMaterials);
 
 		tracker.setHugSurface(hugSurface);
-		tracker.setHeightFromSurface(heightFromSurface.get(caster, target, power, args));
+		tracker.setHeightFromSurface(hugSurface ? heightFromSurface.get(caster, target, power, args) : 0);
 
 		tracker.setControllable(controllable);
 		tracker.setCallEvents(true);
