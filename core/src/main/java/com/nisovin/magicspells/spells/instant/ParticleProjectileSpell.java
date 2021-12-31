@@ -456,7 +456,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 
 		float startXOffset = relativeOffset.getX() != 1f ? (float) relativeOffset.getX() : this.startXOffset.get(caster, target, power, args);
 		float startYOffset = relativeOffset.getY() != 1f ? (float) relativeOffset.getY() : this.startYOffset.get(caster, target, power, args);
-		float startZOffset = relativeOffset.getZ() != 1f ? (float) relativeOffset.getZ() : this.startZOffset.get(caster, target, power, args);
+		float startZOffset = relativeOffset.getZ() != 0f ? (float) relativeOffset.getZ() : this.startZOffset.get(caster, target, power, args);
 
 		tracker.setStartXOffset(startXOffset);
 		tracker.setStartYOffset(startYOffset);
