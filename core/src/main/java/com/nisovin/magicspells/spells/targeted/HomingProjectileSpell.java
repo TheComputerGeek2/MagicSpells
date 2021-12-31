@@ -295,9 +295,6 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 		private void initialize(LivingEntity caster, LivingEntity target, float power, String[] args) {
 			startTime = System.currentTimeMillis();
 
-			int tickInterval = HomingProjectileSpell.this.tickInterval.get(caster, target, power, args);
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
-
 			Vector startDir = startLocation.clone().getDirection().normalize();
 			Vector horizOffset = new Vector(-startDir.getZ(), 0.0, startDir.getX()).normalize();
 			startLocation.add(horizOffset.multiply(relativeOffset.getZ())).getBlock().getLocation();
@@ -338,6 +335,9 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 			playSpellEffects(EffectPosition.PROJECTILE, projectile);
 			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, startLocation, projectile.getLocation(), caster, projectile);
 			monitors.add(this);
+
+			int tickInterval = HomingProjectileSpell.this.tickInterval.get(caster, target, power, args);
+			taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
 		}
 
 		@Override

@@ -285,9 +285,6 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 
 			startTime = System.currentTimeMillis();
 
-			int tickInterval = HomingMissileSpell.this.tickInterval.get(caster, target, power, args);
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
-
 			maxDuration = HomingMissileSpell.this.maxDuration.get(caster, target, power, args) * TimeUtil.MILLISECONDS_PER_SECOND;
 
 			projectileInertia = HomingMissileSpell.this.projectileInertia.get(caster, target, power, args);
@@ -302,6 +299,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			relativeOffset = yOffset != 0.6f ? relativeOffset.clone().setY(yOffset) : relativeOffset;
 
 			float projectileVelocity = HomingMissileSpell.this.projectileVelocity.get(caster, target, power, args);
+			int tickInterval = HomingMissileSpell.this.tickInterval.get(caster, target, power, args);
 			velocityPerTick = projectileVelocity * tickInterval / 20;
 			currentVelocity.multiply(velocityPerTick);
 
@@ -318,6 +316,8 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			effectSet = playSpellEffectLibEffects(EffectPosition.PROJECTILE, currentLocation);
 			entitySet = playSpellEntityEffects(EffectPosition.PROJECTILE, currentLocation);
 			armorStandSet = playSpellArmorStandEffects(EffectPosition.PROJECTILE, currentLocation);
+
+			taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
 		}
 
 		@Override
