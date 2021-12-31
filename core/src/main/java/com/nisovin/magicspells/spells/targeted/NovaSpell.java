@@ -209,10 +209,11 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 			this.radiusChange = activeRadiusChange;
 			this.startRadius = startRadius;
 			this.heightPerTick = heightPerTick;
-			this.taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
-			
+
 			this.count = 0;
 			this.temp = 0;
+
+			this.taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
 		}
 		
 		@Override
@@ -303,10 +304,11 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 			this.startRadius = startRadius;
 			this.heightPerTick = heightPerTick;
 			this.radiusChange = activeRadiusChange;
-			this.taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
-			
+
 			this.count = 0;
 			this.temp = 0;
+
+			this.taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
 		}
 		
 		@Override
