@@ -296,7 +296,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			if (intermediateSpecialEffects < 0) intermediateSpecialEffects = 0;
 
 			float yOffset = HomingMissileSpell.this.yOffset.get(caster, target, power, args);
-			relativeOffset = yOffset != 0.6f ? relativeOffset.clone().setY(yOffset) : relativeOffset;
+			relativeOffset = yOffset != 0.6f ? HomingMissileSpell.this.relativeOffset.clone().setY(yOffset) : HomingMissileSpell.this.relativeOffset;
 
 			float projectileVelocity = HomingMissileSpell.this.projectileVelocity.get(caster, target, power, args);
 			int tickInterval = HomingMissileSpell.this.tickInterval.get(caster, target, power, args);
