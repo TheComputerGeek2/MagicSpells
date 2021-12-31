@@ -274,7 +274,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			Util.rotateVector(currentPosition, horizOffset.get(caster, target, power, args));
 			orbRadius = orbitRadius.get(caster, target, power, args);
 			orbHeight = yOffset.get(caster, target, power, args);
-			;
+
 			immune = new HashSet<>();
 
 			box = new BoundingBox(targetLoc, hitRadius.get(caster, target, power, args), verticalHitRadius.get(caster, target, power, args));
