@@ -1,7 +1,5 @@
 package com.nisovin.magicspells.spells.instant;
 
-import com.nisovin.magicspells.Spell;
-import com.nisovin.magicspells.Subspell;
 import org.bukkit.World;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -9,24 +7,27 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 
+import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.InstantSpell;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class AreaScanSpell extends InstantSpell {
 
     private Material material;
 
+    private ConfigData<Integer> radius;
+
     private String strNotFound;
     private String spellToCast;
 
     private Subspell spell;
 
-    private int radius;
-
     private boolean getDistance;
+    private boolean powerAffectsRadius;
 
     public AreaScanSpell(MagicConfig config, String spellName) {
         super(config, spellName);
@@ -35,27 +36,28 @@ public class AreaScanSpell extends InstantSpell {
 
         if (!blockName.isEmpty()) material = Util.getMaterial(blockName);
 
+        radius = getConfigDataInt("radius", 4);
+
         strNotFound = getConfigString("str-not-found", "No blocks target found.");
-
-        radius = getConfigInt("radius", 4);
-
         spellToCast = getConfigString("spell", "");
+
         getDistance = strCastSelf != null && strCastSelf.contains("%b");
+        powerAffectsRadius = getConfigBoolean("power-affects-radius", true);
 
         if (material == null) MagicSpells.error("AreaScanSpell '" + internalName + "' has no target block defined!");
-
-        if (radius > MagicSpells.getGlobalRadius()) radius = MagicSpells.getGlobalRadius();
     }
 
     @Override
     public void initialize() {
         super.initialize();
 
-        spell = new Subspell(spellToCast);
-        if (!spell.process()) {
-            if (!spellToCast.isEmpty())
+        if (!spellToCast.isEmpty()) {
+            spell = new Subspell(spellToCast);
+
+            if (!spell.process()) {
                 MagicSpells.error("AreaScanSpell '" + internalName + "' has an invalid spell defined!");
                 spell = null;
+            }
         }
     }
 
@@ -72,7 +74,10 @@ public class AreaScanSpell extends InstantSpell {
                 int cy = loc.getBlockY();
                 int cz = loc.getBlockZ();
 
-                for (int r = 1; r <= Math.round(radius * power); r++) {
+                int radius = this.radius.get(caster, null, power, args);
+                if (powerAffectsRadius) radius = Math.round(radius * power);
+
+                for (int r = 1; r <= radius; r++) {
                     for (int x = -r; x <= r; x++) {
                         for (int y = -r; y <= r; y++) {
                             for (int z = -r; z <= r; z++) {
@@ -124,14 +129,6 @@ public class AreaScanSpell extends InstantSpell {
         this.strNotFound = strNotFound;
     }
 
-    public int getRadius() {
-        return radius;
-    }
-
-    public void setRadius(int radius) {
-        this.radius = radius;
-    }
-
     public boolean shouldGetDistance() {
         return getDistance;
     }
@@ -139,4 +136,5 @@ public class AreaScanSpell extends InstantSpell {
     public void setGetDistance(boolean getDistance) {
         this.getDistance = getDistance;
     }
+
 }
