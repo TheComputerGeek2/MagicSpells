@@ -99,8 +99,11 @@ public class AreaScanSpell extends InstantSpell {
 									if (material.equals(block.getType())) {
 										foundBlock = block;
 
-										if (spell != null && spell.isTargetedLocationSpell())
-											spell.castAtLocation(caster, block.getLocation().add(offset), power);
+										if (spell != null) {
+											if (spell.isTargetedLocationSpell())
+												spell.castAtLocation(caster, block.getLocation().add(offset), power);
+											else spell.cast(caster, power);
+										}
 
 										playSpellEffects(EffectPosition.TARGET, block.getLocation());
 										playSpellEffectsTrail(caster.getLocation(), block.getLocation());
