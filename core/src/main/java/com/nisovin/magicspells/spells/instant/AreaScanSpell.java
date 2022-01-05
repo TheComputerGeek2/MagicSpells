@@ -17,124 +17,127 @@ import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class AreaScanSpell extends InstantSpell {
 
-    private Material material;
+	private Material material;
 
-    private ConfigData<Integer> radius;
+	private ConfigData<Integer> radius;
 
-    private String strNotFound;
-    private String spellToCast;
+	private String strNotFound;
+	private String spellToCast;
 
-    private Subspell spell;
+	private Subspell spell;
 
-    private boolean getDistance;
-    private boolean powerAffectsRadius;
+	private boolean getDistance;
+	private boolean powerAffectsRadius;
 
-    public AreaScanSpell(MagicConfig config, String spellName) {
-        super(config, spellName);
+	public AreaScanSpell(MagicConfig config, String spellName) {
+		super(config, spellName);
 
-        String blockName = getConfigString("block-type", "");
+		String blockName = getConfigString("block-type", "");
 
-        if (!blockName.isEmpty()) material = Util.getMaterial(blockName);
+		if (!blockName.isEmpty()) material = Util.getMaterial(blockName);
 
-        radius = getConfigDataInt("radius", 4);
+		radius = getConfigDataInt("radius", 4);
 
-        strNotFound = getConfigString("str-not-found", "No blocks target found.");
-        spellToCast = getConfigString("spell", "");
+		strNotFound = getConfigString("str-not-found", "No blocks target found.");
+		spellToCast = getConfigString("spell", "");
 
-        getDistance = strCastSelf != null && strCastSelf.contains("%b");
-        powerAffectsRadius = getConfigBoolean("power-affects-radius", true);
+		getDistance = strCastSelf != null && strCastSelf.contains("%b");
+		powerAffectsRadius = getConfigBoolean("power-affects-radius", true);
 
-        if (material == null) MagicSpells.error("AreaScanSpell '" + internalName + "' has no target block defined!");
-    }
+		if (material == null) MagicSpells.error("AreaScanSpell '" + internalName + "' has no target block defined!");
+	}
 
-    @Override
-    public void initialize() {
-        super.initialize();
+	@Override
+	public void initialize() {
+		super.initialize();
 
-        if (!spellToCast.isEmpty()) {
-            spell = new Subspell(spellToCast);
+		if (!spellToCast.isEmpty()) {
+			spell = new Subspell(spellToCast);
 
-            if (!spell.process()) {
-                MagicSpells.error("AreaScanSpell '" + internalName + "' has an invalid spell defined!");
-                spell = null;
-            }
-        }
-    }
+			if (!spell.process()) {
+				MagicSpells.error("AreaScanSpell '" + internalName + "' has an invalid spell defined!");
+				spell = null;
+			}
+		}
+	}
 
-    @Override
-    public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
-        if (state == SpellCastState.NORMAL && caster instanceof Player) {
-            int distance = -1;
-            if (material != null) {
-                Block foundBlock = null;
+	@Override
+	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
+		if (state == SpellCastState.NORMAL && caster instanceof Player) {
+			int distance = -1;
+			if (material != null) {
+				Block foundBlock = null;
 
-                Location loc = caster.getLocation();
-                World world = caster.getWorld();
-                int cx = loc.getBlockX();
-                int cy = loc.getBlockY();
-                int cz = loc.getBlockZ();
+				Location loc = caster.getLocation();
+				World world = caster.getWorld();
+				int cx = loc.getBlockX();
+				int cy = loc.getBlockY();
+				int cz = loc.getBlockZ();
 
-                int radius = this.radius.get(caster, null, power, args);
-                if (powerAffectsRadius) radius = Math.round(radius * power);
+				int radius = this.radius.get(caster, null, power, args);
+				if (powerAffectsRadius) radius = Math.round(radius * power);
 
-                for (int r = 1; r <= radius; r++) {
-                    for (int x = -r; x <= r; x++) {
-                        for (int y = -r; y <= r; y++) {
-                            for (int z = -r; z <= r; z++) {
-                                if (x == r || y == r || z == r || -x == r || -y == r || -z == r) {
-                                    Block block = world.getBlockAt(cx + x, cy + y, cz + z);
-                                    if (material.equals(block.getType())) {
-                                        foundBlock = block;
-                                        if (spell.isTargetedLocationSpell()) spell.castAtLocation(caster, block.getLocation().add(0.5, 0.5, 0.5), power);
-                                        playSpellEffects(EffectPosition.TARGET, caster);
-                                        playSpellEffectsTrail(caster.getLocation(), block.getLocation());
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+				radius = Math.min(radius, MagicSpells.getGlobalRadius());
 
-                if (foundBlock == null) {
-                    sendMessage(strNotFound, caster, args);
-                    return PostCastAction.ALREADY_HANDLED;
-                }
-                if (getDistance) distance = (int) Math.round(caster.getLocation().distance(foundBlock.getLocation()));
-            }
+				for (int r = 1; r <= radius; r++) {
+					for (int x = -r; x <= r; x++) {
+						for (int y = -r; y <= r; y++) {
+							for (int z = -r; z <= r; z++) {
+								if (x == r || y == r || z == r || -x == r || -y == r || -z == r) {
+									Block block = world.getBlockAt(cx + x, cy + y, cz + z);
+									if (material.equals(block.getType())) {
+										foundBlock = block;
+										if (spell.isTargetedLocationSpell())
+											spell.castAtLocation(caster, block.getLocation().add(0.5, 0.5, 0.5), power);
+										playSpellEffects(EffectPosition.TARGET, caster);
+										playSpellEffectsTrail(caster.getLocation(), block.getLocation());
+									}
+								}
+							}
+						}
+					}
+				}
 
-            playSpellEffects(EffectPosition.CASTER, caster);
-            if (getDistance) {
-                sendMessage(strCastSelf, caster, args, "%d", distance + "");
-                sendMessageNear(caster, strCastOthers);
-                return PostCastAction.NO_MESSAGES;
-            }
-        }
+				if (foundBlock == null) {
+					sendMessage(strNotFound, caster, args);
+					return PostCastAction.ALREADY_HANDLED;
+				}
+				if (getDistance) distance = (int) Math.round(caster.getLocation().distance(foundBlock.getLocation()));
+			}
 
-        return PostCastAction.HANDLE_NORMALLY;
-    }
+			playSpellEffects(EffectPosition.CASTER, caster);
+			if (getDistance) {
+				sendMessage(strCastSelf, caster, args, "%d", distance + "");
+				sendMessageNear(caster, strCastOthers);
+				return PostCastAction.NO_MESSAGES;
+			}
+		}
 
-    public Material getMaterial() {
-        return material;
-    }
+		return PostCastAction.HANDLE_NORMALLY;
+	}
 
-    public void setMaterial(Material material) {
-        this.material = material;
-    }
+	public Material getMaterial() {
+		return material;
+	}
 
-    public String getStrNotFound() {
-        return strNotFound;
-    }
+	public void setMaterial(Material material) {
+		this.material = material;
+	}
 
-    public void setStrNotFound(String strNotFound) {
-        this.strNotFound = strNotFound;
-    }
+	public String getStrNotFound() {
+		return strNotFound;
+	}
 
-    public boolean shouldGetDistance() {
-        return getDistance;
-    }
+	public void setStrNotFound(String strNotFound) {
+		this.strNotFound = strNotFound;
+	}
 
-    public void setGetDistance(boolean getDistance) {
-        this.getDistance = getDistance;
-    }
+	public boolean shouldGetDistance() {
+		return getDistance;
+	}
+
+	public void setGetDistance(boolean getDistance) {
+		this.getDistance = getDistance;
+	}
 
 }
