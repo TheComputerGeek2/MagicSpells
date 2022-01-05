@@ -20,6 +20,7 @@ public class AreaScanSpell extends InstantSpell {
 	private Material material;
 
 	private ConfigData<Integer> radius;
+	private ConfigData<Integer> maxBlocks;
 
 	private String strNotFound;
 	private String spellToCast;
@@ -37,6 +38,7 @@ public class AreaScanSpell extends InstantSpell {
 		if (!blockName.isEmpty()) material = Util.getMaterial(blockName);
 
 		radius = getConfigDataInt("radius", 4);
+		maxBlocks = getConfigDataInt("max-blocks", 0);
 
 		strNotFound = getConfigString("str-not-found", "No blocks target found.");
 		spellToCast = getConfigString("spell", "");
@@ -53,6 +55,7 @@ public class AreaScanSpell extends InstantSpell {
 
 		if (!spellToCast.isEmpty()) {
 			spell = new Subspell(spellToCast);
+			spellToCast = null;
 
 			if (!spell.process()) {
 				MagicSpells.error("AreaScanSpell '" + internalName + "' has an invalid spell defined!");
@@ -74,11 +77,14 @@ public class AreaScanSpell extends InstantSpell {
 				int cy = loc.getBlockY();
 				int cz = loc.getBlockZ();
 
+				int maxBlocks = this.maxBlocks.get(caster, null, power, args);
 				int radius = this.radius.get(caster, null, power, args);
 				if (powerAffectsRadius) radius = Math.round(radius * power);
 
 				radius = Math.min(radius, MagicSpells.getGlobalRadius());
 
+				int count = 0;
+				loop:
 				for (int r = 1; r <= radius; r++) {
 					for (int x = -r; x <= r; x++) {
 						for (int y = -r; y <= r; y++) {
@@ -87,10 +93,17 @@ public class AreaScanSpell extends InstantSpell {
 									Block block = world.getBlockAt(cx + x, cy + y, cz + z);
 									if (material.equals(block.getType())) {
 										foundBlock = block;
-										if (spell.isTargetedLocationSpell())
+
+										if (spell != null && spell.isTargetedLocationSpell())
 											spell.castAtLocation(caster, block.getLocation().add(0.5, 0.5, 0.5), power);
-										playSpellEffects(EffectPosition.TARGET, caster);
+
+										playSpellEffects(EffectPosition.TARGET, block.getLocation());
 										playSpellEffectsTrail(caster.getLocation(), block.getLocation());
+
+										if (maxBlocks > 0) {
+											count++;
+											if (count >= maxBlocks) break loop;
+										}
 									}
 								}
 							}
@@ -102,6 +115,7 @@ public class AreaScanSpell extends InstantSpell {
 					sendMessage(strNotFound, caster, args);
 					return PostCastAction.ALREADY_HANDLED;
 				}
+
 				if (getDistance) distance = (int) Math.round(caster.getLocation().distance(foundBlock.getLocation()));
 			}
 
