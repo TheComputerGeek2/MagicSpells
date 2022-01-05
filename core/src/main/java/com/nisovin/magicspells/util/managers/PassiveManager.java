@@ -79,7 +79,6 @@ public class PassiveManager {
 		addListener("dropitem", DropItemListener.class);
 		addListener("enterbed", EnterBedListener.class);
 		addListener("dismount", DismountListener.class);
-		addListener("mount", MountListener.class);
 		addListener("enchant", EnchantListener.class);
 		addListener("entitytarget", EntityTargetListener.class);
 		addListener("equip", EquipListener.class);
