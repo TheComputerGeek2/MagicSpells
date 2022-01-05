@@ -4,6 +4,7 @@ import org.bukkit.World;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.util.Vector;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 
@@ -22,6 +23,8 @@ public class AreaScanSpell extends InstantSpell {
 	private ConfigData<Integer> radius;
 	private ConfigData<Integer> maxBlocks;
 
+	private Vector offset;
+
 	private String strNotFound;
 	private String spellToCast;
 
@@ -39,6 +42,8 @@ public class AreaScanSpell extends InstantSpell {
 
 		radius = getConfigDataInt("radius", 4);
 		maxBlocks = getConfigDataInt("max-blocks", 0);
+
+		offset = getConfigVector("offset", "0.5,0.5,0.5");
 
 		strNotFound = getConfigString("str-not-found", "No blocks target found.");
 		spellToCast = getConfigString("spell", "");
@@ -95,7 +100,7 @@ public class AreaScanSpell extends InstantSpell {
 										foundBlock = block;
 
 										if (spell != null && spell.isTargetedLocationSpell())
-											spell.castAtLocation(caster, block.getLocation().add(0.5, 0.5, 0.5), power);
+											spell.castAtLocation(caster, block.getLocation().add(offset), power);
 
 										playSpellEffects(EffectPosition.TARGET, block.getLocation());
 										playSpellEffectsTrail(caster.getLocation(), block.getLocation());
