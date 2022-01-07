@@ -49,7 +49,7 @@ public class ScoreboardDataSpell extends TargetedSpell implements TargetedEntity
 	@Override
 	public PostCastAction castSpell(LivingEntity livingEntity, SpellCastState state, float power, String[] args) {
 		if (state == SpellCastState.NORMAL && livingEntity instanceof Player player) {
-			TargetInfo<LivingEntity> targetInfo = getTargetedEntity(player, power);
+			TargetInfo<LivingEntity> targetInfo = getTargetedEntity(player, power, args);
 			if (targetInfo == null) return noTarget(player);
 
 			LivingEntity target = targetInfo.getTarget();
