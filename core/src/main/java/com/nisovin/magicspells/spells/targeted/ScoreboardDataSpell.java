@@ -8,8 +8,11 @@ import org.bukkit.scoreboard.Objective;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
+import com.nisovin.magicspells.variables.Variable;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
+import com.nisovin.magicspells.variables.variabletypes.GlobalStringVariable;
+import com.nisovin.magicspells.variables.variabletypes.PlayerStringVariable;
 
 public class ScoreboardDataSpell extends TargetedSpell implements TargetedEntitySpell {
 
@@ -34,6 +37,7 @@ public class ScoreboardDataSpell extends TargetedSpell implements TargetedEntity
 		objective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective(objectiveName);
 		if (objective == null) {
 			MagicSpells.error("ScoreboardDataSpell '" + internalName + "' has an objective name defined for objective-name that could not be resolved as an existing objective!");
+			objectiveName = null;
 		}
 	}
 
@@ -55,8 +59,7 @@ public class ScoreboardDataSpell extends TargetedSpell implements TargetedEntity
 			LivingEntity target = targetInfo.getTarget();
 			if (target == null) return noTarget(player);
 
-			String value = getScoreAsText(objective, target);
-			MagicSpells.getVariableManager().set(variableName, player, value);
+			setScore(player, target);
 
 			playSpellEffects(player, target);
 		}
@@ -67,8 +70,7 @@ public class ScoreboardDataSpell extends TargetedSpell implements TargetedEntity
 	public boolean castAtEntity(LivingEntity caster, LivingEntity target, float power) {
 		if (!(caster instanceof Player player)) return false;
 
-		String value = getScoreAsText(objective, target);
-		MagicSpells.getVariableManager().set(variableName, player, value);
+		setScore(player, target);
 
 		playSpellEffects(caster, target);
 		return true;
@@ -79,13 +81,17 @@ public class ScoreboardDataSpell extends TargetedSpell implements TargetedEntity
 		return false;
 	}
 
-	private static String getScoreAsText(Objective objective, LivingEntity target) {
-		return objective.getScore(getScoreboardParticipantId(target)).getScore() + "";
-	}
+	private void setScore(Player caster, LivingEntity target) {
+		if (objective == null) return;
 
-	private static String getScoreboardParticipantId(LivingEntity entity) {
-		if (entity instanceof Player) return entity.getName();
-		return entity.getUniqueId().toString();
+		Variable variable = MagicSpells.getVariableManager().getVariable(variableName);
+		if (variable == null) return;
+
+		int score = objective.getScoreFor(target).getScore();
+
+		if (variable instanceof GlobalStringVariable || variable instanceof PlayerStringVariable)
+			variable.parseAndSet(caster, String.valueOf(score));
+		else variable.set(caster, score);
 	}
 
 }
