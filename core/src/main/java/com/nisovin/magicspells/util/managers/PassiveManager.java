@@ -80,6 +80,7 @@ public class PassiveManager {
 		addListener("enterbed", EnterBedListener.class);
 		addListener("dismount", DismountListener.class);
 		addListener("enchant", EnchantListener.class);
+		addListener("entitytarget", EntityTargetListener.class);
 		addListener("equip", EquipListener.class);
 		addListener("fataldamage", FatalDamageListener.class);
 		addListener("fish", FishListener.class);
