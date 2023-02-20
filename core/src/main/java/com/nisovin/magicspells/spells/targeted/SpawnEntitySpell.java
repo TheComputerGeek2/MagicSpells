@@ -197,8 +197,9 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 					if (split.length > 1) duration = Integer.parseInt(split[1]);
 					int strength = 0;
 					if (split.length > 2) strength = Integer.parseInt(split[2]);
-					boolean ambient = split.length > 3 && split[3].equalsIgnoreCase("ambient");
-					potionEffects.add(new PotionEffect(type, duration, strength, ambient));
+					boolean ambient = split.length > 3 && (split[3].equalsIgnoreCase("ambient") || split[3].equalsIgnoreCase("true"));
+					boolean hidden = split.length > 4 && (split[4].equalsIgnoreCase("hidden") || split[4].equalsIgnoreCase("true"));
+					potionEffects.add(new PotionEffect(type, duration, strength, ambient, !hidden));
 				} catch (Exception e) {
 					MagicSpells.error("SpawnMonsterSpell '" + spellName + "' has an invalid potion effect defined: " + data);
 				}
