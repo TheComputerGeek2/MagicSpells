@@ -531,9 +531,11 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 
 		@EventHandler
 		private void onTarget(EntityTargetEvent event) {
-			if (event.getEntity() == monster && !validTargetList.canTarget(caster, event.getTarget())) event.setCancelled(true);
-			else if (event.getTarget() == null) retarget(null);
-			else if (target != null && event.getTarget() != target) event.setTarget(target);
+			if (event.getEntity() == monster) {
+				if (!validTargetList.canTarget(caster, event.getTarget())) event.setCancelled(true);
+				else if (event.getTarget() == null) retarget(null);
+				else if (target != null && event.getTarget() != target) event.setTarget(target);
+			}
 		}
 
 		@EventHandler
