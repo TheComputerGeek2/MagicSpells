@@ -96,7 +96,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	private boolean allowSpawnInMidair;
 	private boolean nameplateFormatting;
 	private boolean cancelAttack;
-
+	private boolean synchroniseIntervalSpells;
 
 	private Subspell attackSpell;
 	private String attackSpellName;
@@ -191,6 +191,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		addLookAtPlayerAI = getConfigBoolean("add-look-at-player-ai", false);
 		allowSpawnInMidair = getConfigBoolean("allow-spawn-in-midair", false);
 		cancelAttack = getConfigBoolean("cancel-attack", true);
+		synchroniseIntervalSpells = getConfigBoolean("synchronise-interval-spells", false);
 
 		attackSpellName = getConfigString("attack-spell", "");
 		intervalSpellName = getConfigString("interval-spell", "");
@@ -664,6 +665,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		private final LivingEntity caster;
 		private final LivingEntity entity;
 		private final float power;
+		private final int delay = random.nextInt(SpawnEntitySpell.this.spellInterval);;
 
 		private EntityPulser(LivingEntity caster, LivingEntity entity, float power, String[] args) {
 			this.caster = caster;
@@ -671,14 +673,10 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			this.power = power;
 		}
 
-		private boolean pulse() {
-			if (entity != null) {
-				if (entity.getWorld().isChunkLoaded(entity.getLocation().getBlockX() >> 4, entity.getLocation().getBlockZ() >> 4)) {
-					activate();
-				}
-				return false;
+		private void pulse() {
+			if (entity != null && pulsers.containsKey(entity) && entity.getWorld().isChunkLoaded(entity.getLocation().getBlockX() >> 4, entity.getLocation().getBlockZ() >> 4)) {
+				activate();
 			}
-			return true;
 		}
 
 		private void activate() {
@@ -721,8 +719,11 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		@Override
 		public void run() {
 			for (Map.Entry<LivingEntity, EntityPulser> entry : new HashMap<>(pulsers).entrySet()) {
-				boolean remove = entry.getValue().pulse();
-				if (remove) pulsers.remove(entry.getKey());
+				if (synchroniseIntervalSpells) {
+					entry.getValue().pulse();
+				} else {
+					MagicSpells.scheduleDelayedTask(() -> entry.getValue().pulse(), entry.getValue().delay);
+				}
 			}
 			if (pulsers.isEmpty()) stop();
 		}
