@@ -2,8 +2,10 @@ package com.nisovin.magicspells.spells.targeted;
 
 import java.util.Set;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.destroystokyo.paper.entity.ai.MobGoals;
@@ -24,6 +26,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -33,9 +36,11 @@ import net.kyori.adventure.text.Component;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.MobUtil;
 import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.EntityData;
+import com.nisovin.magicspells.util.LocationUtil;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
@@ -50,6 +55,7 @@ import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationSpell, TargetedEntityFromLocationSpell {
 
 	private List<LivingEntity> entities;
+	private final Map<LivingEntity, EntityPulser> pulsers;
 
 	private EntityData entityData;
 
@@ -71,6 +77,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	private ConfigData<Integer> duration;
 	private ConfigData<Integer> fireTicks;
 	private ConfigData<Integer> targetInterval;
+	private final int spellInterval;
 
 	private ConfigData<Double> targetRange;
 	private ConfigData<Double> retargetRange;
@@ -93,10 +100,15 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	private Subspell attackSpell;
 	private String attackSpellName;
 
+	private Subspell intervalSpell;
+	private String intervalSpellName;
+
 	private List<PotionEffect> potionEffects;
 	private Set<AttributeManager.AttributeInfo> attributes;
 
 	private Random random = ThreadLocalRandom.current();
+
+	private final EntityPulserTicker ticker;
 
 	// DEBUG INFO: level 2, invalid potion effect on internalname spell data
 	public SpawnEntitySpell(MagicConfig config, String spellName) {
@@ -162,6 +174,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		duration = getConfigDataInt("duration", 0);
 		fireTicks = getConfigDataInt("fire-ticks", 0);
 		targetInterval = getConfigDataInt("target-interval", -1);
+		spellInterval = getConfigInt("spell-interval", 20);
 
 		targetRange = getConfigDataDouble("target-range", 20);
 		retargetRange = getConfigDataDouble("retarget-range", 50);
@@ -179,6 +192,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		cancelAttack = getConfigBoolean("cancel-attack", true);
 
 		attackSpellName = getConfigString("attack-spell", "");
+		intervalSpellName = getConfigString("interval-spell", "");
 
 		// Attributes
 		// - [AttributeName] [Number] [Operation]
@@ -205,6 +219,9 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 				}
 			}
 		}
+
+		pulsers = new HashMap<>();
+		ticker = new EntityPulserTicker();
 	}
 
 	@Override
@@ -221,6 +238,11 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			MagicSpells.error("SpawnEntitySpell '" + internalName + "' has an invalid attack-spell defined!");
 			attackSpell = null;
 		}
+		intervalSpell = new Subspell(intervalSpellName);
+		if (!intervalSpellName.isEmpty() && !intervalSpell.process()) {
+			MagicSpells.error("SpawnEntitySpell '" + internalName + "' has an invalid interval-spell defined!");
+			intervalSpell = null;
+		}
 	}
 
 	@Override
@@ -228,8 +250,9 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		for (LivingEntity entity : entities) {
 			entity.remove();
 		}
-
+		ticker.stop();
 		entities.clear();
+		pulsers.clear();
 	}
 
 	@Override
@@ -432,6 +455,15 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 				entities.remove(entity);
 			}, duration);
 		}
+		if (intervalSpell != null && spellInterval > 0) {
+			ticker.start();
+			pulsers.put(entity, new EntityPulser(caster, entity, power, args));
+			if (duration > 0) {
+				MagicSpells.scheduleDelayedTask(() -> {
+					pulsers.remove(entity);
+				}, duration);
+			}
+		}
 	}
 
 	private void prepMob(LivingEntity caster, LivingEntity target, Entity entity, float power, String[] args) {
@@ -481,9 +513,20 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 
 	@EventHandler
 	private void onEntityDeath(EntityDeathEvent event) {
-		LivingEntity entity = event.getEntity();
+		entityDeath(event.getEntity());
+	}
+
+	@EventHandler
+	private void onExplode(EntityExplodeEvent event) {
+		if (event.getEntity() instanceof LivingEntity) entityDeath((LivingEntity) event.getEntity());
+	}
+
+	private void entityDeath(LivingEntity entity) {
 		if (!entities.contains(entity)) return;
-		if (removeMob) entities.remove(entity);
+		if (removeMob) {
+			entities.remove(entity);
+			if (pulsers.containsKey(entity)) pulsers.remove(entity);
+		}
 	}
 
 	private class AttackMonitor implements Listener {
@@ -615,4 +658,68 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 
 	}
 
+	private class EntityPulser {
+
+		private final LivingEntity caster;
+		private final LivingEntity entity;
+		private final float power;
+
+		private EntityPulser(LivingEntity caster, LivingEntity entity, float power, String[] args) {
+			this.caster = caster;
+			this.entity = entity;
+			this.power = power;
+		}
+
+		private boolean pulse() {
+			if (entity != null) {
+				if (entity.getWorld().isChunkLoaded(entity.getLocation().getBlockX() >> 4, entity.getLocation().getBlockZ() >> 4)) {
+					activate();
+				}
+				return false;
+			}
+			return true;
+		}
+
+		private void activate() {
+			LivingEntity target = null;
+			if (entity instanceof Mob) target = ((Mob) entity).getTarget();
+
+			if (intervalSpell.isTargetedEntityFromLocationSpell()) {
+				if (target != null) intervalSpell.castAtEntityFromLocation(caster, entity.getLocation(), target, power);
+			} else if (intervalSpell.isTargetedEntitySpell()) {
+				if (target != null) intervalSpell.castAtEntity(caster, (LivingEntity) target, power);
+			} else if (intervalSpell.isTargetedLocationSpell()) {
+				if (target != null) intervalSpell.castAtLocation(caster, target.getLocation(), power);
+			} else {
+				intervalSpell.cast(entity, power);
+			}
+		}
+	}
+
+
+	private class EntityPulserTicker implements Runnable {
+
+		private int taskId = -1;
+
+		private void start() {
+			if (taskId < 0) taskId = MagicSpells.scheduleRepeatingTask(this, 0, spellInterval);
+		}
+
+		private void stop() {
+			if (taskId > 0) {
+				MagicSpells.cancelTask(taskId);
+				taskId = -1;
+			}
+		}
+
+		@Override
+		public void run() {
+			for (Map.Entry<LivingEntity, EntityPulser> entry : new HashMap<>(pulsers).entrySet()) {
+				boolean remove = entry.getValue().pulse();
+				if (remove) pulsers.remove(entry.getKey());
+			}
+			if (pulsers.isEmpty()) stop();
+		}
+
+	}
 }
