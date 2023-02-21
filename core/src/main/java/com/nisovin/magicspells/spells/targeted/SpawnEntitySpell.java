@@ -50,6 +50,7 @@ import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.util.managers.AttributeManager;
+import com.nisovin.magicspells.spells.InstantSpell;
 import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 
 public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationSpell, TargetedEntityFromLocationSpell {
@@ -689,7 +690,12 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			} else if (intervalSpell.isTargetedEntitySpell()) {
 				if (target != null) intervalSpell.castAtEntity(caster, (LivingEntity) target, power);
 			} else if (intervalSpell.isTargetedLocationSpell()) {
-				if (target != null) intervalSpell.castAtLocation(caster, target.getLocation(), power);
+				Location location = entity.getLocation();
+				if (target != null && !(intervalSpell.getSpell() instanceof InstantSpell)) {
+					location = target.getLocation();
+				}
+
+				intervalSpell.castAtLocation(caster, location, power);
 			} else {
 				intervalSpell.cast(entity, power);
 			}
