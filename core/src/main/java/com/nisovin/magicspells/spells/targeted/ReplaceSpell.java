@@ -31,8 +31,8 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 	private Map<Block, BlockData> blocks;
 
 	private boolean replaceAll;
-	private List<BlockData> replace;
-	private List<BlockData> replaceWith;
+	private List<List<BlockData>> replace;
+	private List<List<BlockData>> replaceWith;
 	private List<BlockData> replaceBlacklist;
 
 	private ConfigData<Integer> yOffset;
@@ -70,32 +70,58 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 		List<String> list = getConfigStringList("replace-blocks", null);
 		if (list != null) {
 			replaceAll = false;
-			for (String block : list) {
-				if (block.equals("all")) {
+			for (int i = 0; i < list.size(); i++) {
+				if (list.get(i).equals("all")) {
 					replaceAll = true;
 					// Just a filler.
 					replace.add(null);
 					break;
 				}
 
-				try {
-					BlockData data = Bukkit.createBlockData(block.trim().toLowerCase());
-					replace.add(data);
-				} catch (IllegalArgumentException e) {
-					MagicSpells.error("ReplaceSpell " + internalName + " has an invalid replace-blocks item: " + block);
+				List<BlockData> blockList = new ArrayList<BlockData>();
+				String[] split = list.get(i).split("\\|");
+				for (String block : split) {
+					try {
+						BlockData data = Bukkit.createBlockData(block.trim().toLowerCase());
+						blockList.add(data);
+					} catch (IllegalArgumentException e) {
+						MagicSpells.error("ReplaceSpell " + internalName + " has an invalid replace-blocks item: " + block);
+					}
 				}
+				replace.add(blockList);
 			}
 		}
 
 		list = getConfigStringList("replace-with", null);
 		if (list != null) {
-			for (String s : list) {
-				try {
-					BlockData data = Bukkit.createBlockData(s.trim().toLowerCase());
-					replaceWith.add(data);
-				} catch (IllegalArgumentException e) {
-					MagicSpells.error("ReplaceSpell " + internalName + " has an invalid replace-with item: " + s);
+			for (int i = 0; i < list.size(); i++) {
+				List<BlockData> blockList = new ArrayList<BlockData>();
+				String[] split = list.get(i).split("\\|");
+
+				for (String block : split) {
+					try {
+						int n = 1;
+
+						String[] blockSplit = block.split("%");
+						String blockName = null;
+
+						if (blockSplit.length == 2) {
+							n = Integer.valueOf(blockSplit[0]);
+							blockName = blockSplit[1];
+						} else {
+							blockName = blockSplit[0];
+						}
+
+						BlockData data = Bukkit.createBlockData(blockName.trim().toLowerCase());
+
+						for (int j = 0; j < n; j++) {
+							blockList.add(data);
+						}
+					} catch (IllegalArgumentException e) {
+						MagicSpells.error("ReplaceSpell " + internalName + " has an invalid replace-with item: " + block);
+					}
 				}
+				replaceWith.add(blockList);
 			}
 		}
 
@@ -173,6 +199,21 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 		int yOffset = this.yOffset.get(caster, null, power, args);
 		int replaceDuration = resolveDurationPerBlock ? 0 : this.replaceDuration.get(caster, null, power, args);
 
+		List<BlockData> allReplaceBlocks = new ArrayList<BlockData>();
+		List<BlockData> allReplaceWithBlocks = new ArrayList<BlockData>();
+
+		for (List<BlockData> blockList : replace) {
+			for (BlockData blockData : blockList) {
+				allReplaceBlocks.add(blockData);
+			}
+		}
+
+		for (List<BlockData> blockList : replaceWith) {
+			for (BlockData blockData : blockList) {
+				allReplaceWithBlocks.add(blockData);
+			}
+		}
+
 		for (int y = target.getBlockY() - d + yOffset; y <= target.getBlockY() + u + yOffset; y++) {
 			for (int x = target.getBlockX() - h; x <= target.getBlockX() + h; x++) {
 				for (int z = target.getBlockZ() - h; z <= target.getBlockZ() + h; z++) {
@@ -181,9 +222,28 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 						BlockData data = block.getBlockData();
 
 						// If specific blocks are being replaced, skip if the block isn't replaceable.
-						if (!replaceAll && !data.matches(replace.get(i))) continue;
+						if (!replaceAll) {
+							Boolean cont = true;
+
+							for (BlockData replaceData : replace.get(i)) {
+								if (data.matches(replaceData)) {
+									cont = false;
+								}
+							}
+							if (cont) continue;
+						}
+
 						// If all blocks are being replaced, skip if the block is already replaced.
-						if (replaceAll && data.matches(replaceWith.get(i))) continue;
+						if (replaceAll) {
+							Boolean cont = false;
+
+							for (BlockData replaceData : replace.get(i)) {
+								if (data.matches(replaceData)) {
+									cont = true;
+								}
+							}
+							if (cont) continue;
+						}
 
 						if (replaceBlacklisted(data)) continue;
 
@@ -191,8 +251,8 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 						BlockState previousState = block.getState();
 
 						// Place block.
-						if (replaceRandom) block.setBlockData(replaceWith.get(Util.getRandomInt(replaceWith.size())));
-						else block.setBlockData(replaceWith.get(i));
+						if (replaceRandom) block.setBlockData(allReplaceWithBlocks.get(Util.getRandomInt(allReplaceWithBlocks.size())));
+						else block.setBlockData(replaceWith.get(i).get(Util.getRandomInt(replaceWith.get(i).size())));
 
 						if (checkPlugins && caster instanceof Player player) {
 							Block against = target.clone().add(target.getDirection()).getBlock();
