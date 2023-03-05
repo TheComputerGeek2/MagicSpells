@@ -13,6 +13,9 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.type.Slab;
+import org.bukkit.block.data.type.Stairs;
 
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
@@ -251,8 +254,8 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 						BlockState previousState = block.getState();
 
 						// Place block.
-						if (replaceRandom) block.setBlockData(allReplaceWithBlocks.get(Util.getRandomInt(allReplaceWithBlocks.size())));
-						else block.setBlockData(replaceWith.get(i).get(Util.getRandomInt(replaceWith.get(i).size())));
+						if (replaceRandom) setBlockData(block, data, allReplaceWithBlocks.get(Util.getRandomInt(allReplaceWithBlocks.size())));
+						else setBlockData(block, data, replaceWith.get(i).get(Util.getRandomInt(replaceWith.get(i).size())));
 
 						if (checkPlugins && caster instanceof Player player) {
 							Block against = target.clone().add(target.getDirection()).getBlock();
@@ -303,6 +306,26 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 				return true;
 
 		return false;
+	}
+
+	private void setBlockData(Block block, BlockData oldBlockData, BlockData newBlockData) {
+		BlockData clone = newBlockData.clone();
+
+		if (oldBlockData instanceof Directional && clone instanceof Directional) {
+			if (((Directional) clone).getFaces().contains(((Directional) oldBlockData).getFacing())) {
+				((Directional) clone).setFacing(((Directional) oldBlockData).getFacing());
+			}
+		}
+
+		if (oldBlockData instanceof Stairs && clone instanceof Stairs) {
+			((Stairs) clone).setShape(((Stairs) oldBlockData).getShape());
+		}
+
+		if (oldBlockData instanceof Slab && clone instanceof Slab) {
+			((Slab) clone).setType(((Slab) oldBlockData).getType());
+		}
+
+		block.setBlockData(clone);
 	}
 
 }
