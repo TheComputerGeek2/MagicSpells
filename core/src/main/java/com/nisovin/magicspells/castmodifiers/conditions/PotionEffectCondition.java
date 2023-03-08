@@ -16,7 +16,7 @@ public class PotionEffectCondition extends OperatorCondition {
 
 	@Override
 	public boolean initialize(String var) {
-		String[] splits = var.split("[:=<>]");
+		String[] splits = var.split(":");
 		if (splits.length > 1) {
 			if (splits[1].length() < 2 || !super.initialize(splits[1])) return false;
 			try {
