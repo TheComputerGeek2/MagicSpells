@@ -669,7 +669,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		private final LivingEntity caster;
 		private final LivingEntity entity;
 		private final float power;
-		private final int delay = random.nextInt(SpawnEntitySpell.this.spellInterval);;
+		private final int delay = random.nextInt(SpawnEntitySpell.this.spellInterval);
 
 		private EntityPulser(LivingEntity caster, LivingEntity entity, float power, String[] args) {
 			this.caster = caster;
