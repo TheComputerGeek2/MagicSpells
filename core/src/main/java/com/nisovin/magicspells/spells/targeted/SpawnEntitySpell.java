@@ -240,10 +240,14 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			MagicSpells.error("SpawnEntitySpell '" + internalName + "' has an invalid attack-spell defined!");
 			attackSpell = null;
 		}
-		intervalSpell = new Subspell(intervalSpellName);
-		if (!intervalSpellName.isEmpty() && !intervalSpell.process()) {
-			MagicSpells.error("SpawnEntitySpell '" + internalName + "' has an invalid interval-spell defined!");
-			intervalSpell = null;
+
+		if (!intervalSpellName.isEmpty()) {
+			intervalSpell = new Subspell(intervalSpellName);
+
+			if (!intervalSpell.process()) {
+				MagicSpells.error("SpawnEntitySpell '" + internalName + "' has an invalid interval-spell defined!");
+				intervalSpell = null;
+			}
 		}
 	}
 
