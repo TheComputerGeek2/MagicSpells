@@ -13,7 +13,10 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Powerable;
+import org.bukkit.block.data.type.Slab;
+import org.bukkit.block.data.type.Stairs;
 import org.bukkit.block.data.AnaloguePowerable;
 
 import com.nisovin.magicspells.Spell;
@@ -225,4 +228,23 @@ public class BlockUtils {
 		}
 	}
 
+	public static void setBlockData(Block block, BlockData oldBlockData, BlockData newBlockData) {
+		BlockData clone = newBlockData.clone();
+
+		if (oldBlockData instanceof Directional && clone instanceof Directional) {
+			if (((Directional) clone).getFaces().contains(((Directional) oldBlockData).getFacing())) {
+				((Directional) clone).setFacing(((Directional) oldBlockData).getFacing());
+			}
+		}
+
+		if (oldBlockData instanceof Stairs && clone instanceof Stairs) {
+			((Stairs) clone).setShape(((Stairs) oldBlockData).getShape());
+		}
+
+		if (oldBlockData instanceof Slab && clone instanceof Slab) {
+			((Slab) clone).setType(((Slab) oldBlockData).getType());
+		}
+
+		block.setBlockData(clone);
+	}
 }
