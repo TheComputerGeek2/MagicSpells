@@ -233,7 +233,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 						if (replaceAll) {
 							Boolean cont = false;
 
-							for (BlockData replaceData : replace.get(i)) {
+							for (BlockData replaceData : replaceWith.get(i)) {
 								if (data.matches(replaceData)) {
 									cont = true;
 								}
