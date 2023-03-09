@@ -48,6 +48,7 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 	private final boolean checkFace;
 	private final boolean unbreakable;
 	private final boolean onlyCountOnSuccess;
+	private final boolean cancelOnDeath;
 
 	private final List<String> spellNames;
 	private List<Subspell> spells;
@@ -79,6 +80,7 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 		checkFace = getConfigBoolean("check-face", true);
 		unbreakable = getConfigBoolean("unbreakable", false);
 		onlyCountOnSuccess = getConfigBoolean("only-count-on-success", false);
+		cancelOnDeath = getConfigBoolean("cancel-on-death", true);
 
 		spellNames = getConfigStringList("spells", null);
 		spellNameOnBreak = getConfigString("spell-on-break", "");
@@ -259,6 +261,7 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 			Pulser pulser = iter.next();
 			if (pulser.caster == null) continue;
 			if (!pulser.caster.equals(player)) continue;
+			if (!pulser.cancelOnDeath) continue;
 			pulser.stop();
 			iter.remove();
 		}
@@ -281,6 +284,7 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 		private final SpellData data;
 		private final float power;
 		private int pulseCount;
+		private boolean cancelOnDeath;
 
 		private final double maxDistanceSq;
 		private final int totalPulses;
@@ -291,6 +295,7 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 			this.location = block.getLocation().add(0.5, 0.5, 0.5).setDirection(from.getDirection());
 			this.power = power;
 			this.pulseCount = 0;
+			this.cancelOnDeath = PulserSpell.this.cancelOnDeath;
 
 			data = new SpellData(caster, power, args);
 
