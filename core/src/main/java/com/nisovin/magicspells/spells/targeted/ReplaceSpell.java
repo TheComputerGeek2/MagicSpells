@@ -200,18 +200,13 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 		int yOffset = this.yOffset.get(caster, null, power, args);
 		int replaceDuration = resolveDurationPerBlock ? 0 : this.replaceDuration.get(caster, null, power, args);
 
-		List<BlockData> allReplaceBlocks = new ArrayList<BlockData>();
 		List<BlockData> allReplaceWithBlocks = new ArrayList<BlockData>();
 
-		for (List<BlockData> blockList : replace) {
-			for (BlockData blockData : blockList) {
-				allReplaceBlocks.add(blockData);
-			}
-		}
-
-		for (List<BlockData> blockList : replaceWith) {
-			for (BlockData blockData : blockList) {
-				allReplaceWithBlocks.add(blockData);
+		if (replaceRandom) {
+			for (List<BlockData> blockList : replaceWith) {
+				for (BlockData blockData : blockList) {
+					allReplaceWithBlocks.add(blockData);
+				}
 			}
 		}
 
