@@ -199,9 +199,11 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 
 					if (blockTypesToThrow != null) {
 						if (blockTypesToThrow.contains(b.getType())) blocksToThrow.add(b);
-						else if (blockTypesToRemove != null && blockTypesToRemove.contains(b.getType()))
-							blocksToRemove.add(b);
-						else if (!b.getType().isSolid()) blocksToRemove.add(b);
+						else if (blockTypesToRemove != null) {
+							if (blockTypesToRemove.contains(b.getType())) {
+								blocksToRemove.add(b);
+							}
+						} else if (!b.getType().isSolid()) blocksToRemove.add(b);
 						continue;
 					}
 
