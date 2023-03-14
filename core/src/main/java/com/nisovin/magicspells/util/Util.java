@@ -422,12 +422,16 @@ public class Util {
 		return location;
 	}
 
-	public static Location applyRelativeOffset(Location loc, Vector relativeOffset) {
-		return loc.add(rotateVector(relativeOffset, loc));
+	public static Location applyRelativeOffset(Location loc, Vector relativeOffset, float pitch) {
+		return loc.add(rotateVector(relativeOffset, loc, pitch));
 	}
 
-	public static Vector rotateVector(Vector v, Location location) {
-		return rotateVector(v, location.getYaw(), location.getPitch());
+	public static Location applyRelativeOffset(Location loc, Vector relativeOffset) {
+		return loc.add(rotateVector(relativeOffset, loc, loc.getPitch()));
+	}
+
+	public static Vector rotateVector(Vector v, Location location, float pitch) {
+		return rotateVector(v, location.getYaw(), pitch);
 	}
 
 	public static Vector rotateVector(Vector v, float yawDegrees, float pitchDegrees) {
@@ -451,8 +455,12 @@ public class Util {
 		return loc.add(offset);
 	}
 
+	public static Location applyOffsets(Location loc, Vector relativeOffset, Vector absoluteOffset, float pitch) {
+		return applyAbsoluteOffset(applyRelativeOffset(loc, relativeOffset, pitch), absoluteOffset);
+	}
+
 	public static Location applyOffsets(Location loc, Vector relativeOffset, Vector absoluteOffset) {
-		return applyAbsoluteOffset(applyRelativeOffset(loc, relativeOffset), absoluteOffset);
+		return applyAbsoluteOffset(applyRelativeOffset(loc, relativeOffset, loc.getPitch()), absoluteOffset);
 	}
 
 	public static Location faceTarget(Location origin, Location target) {

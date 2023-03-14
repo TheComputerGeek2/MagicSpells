@@ -16,19 +16,27 @@ public class OffsetLocationSpell extends TargetedSpell implements TargetedLocati
 
 	private Vector relativeOffset;
 	private Vector absoluteOffset;
-	
+
+	private float forcedPitch;
+	private boolean forcePitch = false;
+
 	private Subspell spellToCast;
 	private String spellToCastName;
-	
+
 	public OffsetLocationSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
 		relativeOffset = getConfigVector("relative-offset", "0,0,0");
 		absoluteOffset = getConfigVector("absolute-offset", "0,0,0");
-		
+
+		if (configKeyExists("forced-pitch")) {
+			forcedPitch = getConfigFloat("forced-pitch", 0);
+			forcePitch = true;
+		}
+
 		spellToCastName = getConfigString("spell", "");
 	}
-	
+
 	@Override
 	public void initialize() {
 		super.initialize();
@@ -50,7 +58,13 @@ public class OffsetLocationSpell extends TargetedSpell implements TargetedLocati
 			if (!info.empty()) baseTargetLocation = info.target().getLocation();
 			else baseTargetLocation = getTargetedBlock(caster, power, args).getLocation();
 
-			Location loc = Util.applyOffsets(baseTargetLocation.clone(), relativeOffset, absoluteOffset);
+			Location loc = null;
+
+			if (forcePitch) {
+				loc = Util.applyOffsets(baseTargetLocation.clone(), relativeOffset, absoluteOffset, forcedPitch);
+			} else {
+				loc = Util.applyOffsets(baseTargetLocation.clone(), relativeOffset, absoluteOffset);
+			}
 
 			if (spellToCast != null) spellToCast.castAtLocation(caster, loc, power);
 			playSpellEffects(caster, loc, power, args);
@@ -66,7 +80,13 @@ public class OffsetLocationSpell extends TargetedSpell implements TargetedLocati
 
 	@Override
 	public boolean castAtLocation(LivingEntity caster, Location target, float power, String[] args) {
-		if (spellToCast != null) spellToCast.castAtLocation(caster, Util.applyOffsets(target.clone(), relativeOffset, absoluteOffset), power);
+		if (spellToCast != null) {
+			if (forcePitch) {
+				spellToCast.castAtLocation(caster, Util.applyOffsets(target.clone(), relativeOffset, absoluteOffset, forcedPitch), power);
+			} else {
+				spellToCast.castAtLocation(caster, Util.applyOffsets(target.clone(), relativeOffset, absoluteOffset), power);
+			}
+		}
 		playSpellEffects(caster, target, power, args);
 		return true;
 	}
