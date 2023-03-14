@@ -22,6 +22,7 @@ import org.bukkit.block.data.Powerable;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.block.data.AnaloguePowerable;
+import org.bukkit.block.data.Bisected;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.MagicSpells;
@@ -265,6 +266,10 @@ public class BlockUtils {
 					((MultipleFacing) clone).setFace(blockFace, true);
 				}
 			}
+		}
+
+		if (oldBlockData instanceof Bisected && clone instanceof Bisected) {
+			((Bisected) clone).setHalf(((Bisected) oldBlockData).getHalf());
 		}
 
 		block.setBlockData(clone);
