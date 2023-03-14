@@ -678,8 +678,10 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		}
 
 		private void pulse() {
-			if (entity != null && pulsers.containsKey(entity) && entity.getWorld().isChunkLoaded(entity.getLocation().getBlockX() >> 4, entity.getLocation().getBlockZ() >> 4)) {
+			if (entity != null && entity.isValid() && pulsers.containsKey(entity) && entity.getWorld().isChunkLoaded(entity.getLocation().getBlockX() >> 4, entity.getLocation().getBlockZ() >> 4)) {
 				activate();
+			} else {
+				pulsers.remove(entity);
 			}
 		}
 
