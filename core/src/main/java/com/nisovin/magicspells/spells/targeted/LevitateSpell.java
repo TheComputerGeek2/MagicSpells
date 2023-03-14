@@ -44,6 +44,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 	private boolean cancelOnSpellCast;
 	private boolean cancelOnItemSwitch;
 	private boolean cancelOnTakeDamage;
+	private boolean toggle;
 
 	private SpellFilter filter;
 
@@ -61,6 +62,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 		cancelOnSpellCast = getConfigBoolean("cancel-on-spell-cast", false);
 		cancelOnItemSwitch = getConfigBoolean("cancel-on-item-switch", true);
 		cancelOnTakeDamage = getConfigBoolean("cancel-on-take-damage", true);
+		toggle = getConfigBoolean("toggle", true);
 
 		List<String> spells = getConfigStringList("spells", null);
 		List<String> deniedSpells = getConfigStringList("denied-spells", null);
@@ -88,7 +90,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 
 	@Override
 	public PostCastAction castSpell(LivingEntity caster, SpellCastState state, float power, String[] args) {
-		if (isLevitating(caster)) {
+		if (toggle && isLevitating(caster)) {
 			levitating.remove(caster.getUniqueId()).stop();
 			return PostCastAction.ALREADY_HANDLED;
 		} else if (state == SpellCastState.NORMAL) {
