@@ -98,7 +98,7 @@ public class ItemProjectileSpell extends InstantSpell implements TargetedLocatio
 
 		relativeOffset = getConfigVector("relative-offset", "0,0,0");
 
-		itemName = Util.getMiniMessage(getConfigString("item-name", ""));
+		itemName = Util.getMiniMessage(getConfigString("item-name", null));
 		spellOnTickName = getConfigString("spell-on-tick", "");
 		spellOnDelayName = getConfigString("spell-on-delay", "");
 		spellOnHitEntityName = getConfigString("spell-on-hit-entity", "");
