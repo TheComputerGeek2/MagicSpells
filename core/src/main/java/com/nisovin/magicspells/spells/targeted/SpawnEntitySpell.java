@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -81,6 +82,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	private final int spellInterval;
 
 	private ConfigData<Double> targetRange;
+	private ConfigData<Double> targetPriorityRange;
 	private ConfigData<Double> retargetRange;
 
 	private String location;
@@ -178,6 +180,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		spellInterval = getConfigInt("spell-interval", 20);
 
 		targetRange = getConfigDataDouble("target-range", 20);
+		targetPriorityRange = getConfigDataDouble("target-priority-range", 10);
 		retargetRange = getConfigDataDouble("retarget-range", 50);
 
 		location = getConfigString("location", "target");
@@ -658,7 +661,16 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			}
 
 			if (targetable.isEmpty()) return;
-			LivingEntity target = targetable.get(random.nextInt(targetable.size()));
+
+			Comparator<LivingEntity> comparator = Comparator.comparingDouble(entity -> entity.getLocation().distanceSquared(entity.getLocation()));
+			targetable.sort(comparator);
+			double targetPriorityRange = SpawnEntitySpell.this.targetPriorityRange.get(caster, null, power, args);
+			LivingEntity target = targetable.get(0);
+
+			if (targetPriorityRange <= 0 || target.getLocation().distanceSquared(entity.getLocation()) > targetPriorityRange) {
+				target = targetable.get(random.nextInt(targetable.size()));
+			}
+
 			MobUtil.setTarget(entity, target);
 		}
 
