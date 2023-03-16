@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -655,7 +654,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			List<Entity> list = entity.getNearbyEntities(targetRange, targetRange, targetRange);
 			List<LivingEntity> targetable = new ArrayList<>();
 			LivingEntity target = null;
-			double nearestEntityDistance;
+			double nearestEntityDistance = 0;
 			for (Entity e : list) {
 				if (!(e instanceof LivingEntity)) continue;
 				if (!validTargetList.canTarget(caster, e)) continue;
@@ -669,7 +668,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 
 			if (targetable.isEmpty()) return;
 
-			if (nearestEntityDistance > SpawnEntitySpell.this.targetPriorityRange.get(caster, null, power, args)) {
+			if (nearestEntityDistance > Math.pow(SpawnEntitySpell.this.targetPriorityRange.get(caster, null, power, args), 2)) {
 				target = targetable.get(random.nextInt(targetable.size()));
 			}
 
