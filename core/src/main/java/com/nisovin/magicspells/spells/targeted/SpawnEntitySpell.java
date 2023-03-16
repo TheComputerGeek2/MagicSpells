@@ -654,20 +654,22 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			double targetRange = SpawnEntitySpell.this.targetRange.get(caster, null, power, args);
 			List<Entity> list = entity.getNearbyEntities(targetRange, targetRange, targetRange);
 			List<LivingEntity> targetable = new ArrayList<>();
+			LivingEntity target = null;
+			double nearestEntityDistance;
 			for (Entity e : list) {
 				if (!(e instanceof LivingEntity)) continue;
 				if (!validTargetList.canTarget(caster, e)) continue;
 				targetable.add((LivingEntity) e);
+
+				if (target == null || e.getLocation().distanceSquared(entity.getLocation()) < nearestEntityDistance) {
+					target = (LivingEntity) e;
+					nearestEntityDistance = e.getLocation().distanceSquared(entity.getLocation());
+				}
 			}
 
 			if (targetable.isEmpty()) return;
 
-			Comparator<LivingEntity> comparator = Comparator.comparingDouble(entity -> entity.getLocation().distanceSquared(entity.getLocation()));
-			targetable.sort(comparator);
-			double targetPriorityRange = SpawnEntitySpell.this.targetPriorityRange.get(caster, null, power, args);
-			LivingEntity target = targetable.get(0);
-
-			if (targetPriorityRange <= 0 || target.getLocation().distanceSquared(entity.getLocation()) > targetPriorityRange) {
+			if (nearestEntityDistance > SpawnEntitySpell.this.targetPriorityRange.get(caster, null, power, args)) {
 				target = targetable.get(random.nextInt(targetable.size()));
 			}
 
