@@ -133,6 +133,7 @@ public class VariableManager {
 		addMetaVariableType("mana", new ManaVariable());
 		addMetaVariableType("max_mana", new MaxManaVariable());
 		addMetaVariableType("mana_regen", new ManaRegenVariable());
+		addMetaVariableType("world", new WorldVariable());
 
 		// meta variable attribute types
 		addMetaVariableType("attribute_generic_max_health_base", new AttributeBaseValueVariable("GENERIC_MAX_HEALTH"));
