@@ -668,11 +668,14 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 
 			if (targetable.isEmpty()) return;
 
+			EntityTargetEvent.TargetReason reason = EntityTargetEvent.TargetReason.CLOSEST_ENTITY;
+
 			if (nearestEntityDistance > Math.pow(SpawnEntitySpell.this.targetPriorityRange.get(caster, null, power, args), 2)) {
 				target = targetable.get(random.nextInt(targetable.size()));
+				reason = EntityTargetEvent.TargetReason.RANDOM_TARGET;
 			}
 
-			MobUtil.setTarget(entity, target);
+			MobUtil.setTarget(entity, target, reason);
 		}
 
 	}

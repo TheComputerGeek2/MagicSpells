@@ -3,8 +3,10 @@ package com.nisovin.magicspells.util;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Mob;
+import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
@@ -49,6 +51,11 @@ public class MobUtil {
 
 	public static boolean hasEggMaterialForEntityType(EntityType type) {
 		return entityToEggMaterial.containsKey(type);
+	}
+
+	public static void setTarget(LivingEntity mob, LivingEntity target, EntityTargetEvent.TargetReason reason) {
+		EntityTargetEvent e = new EntityTargetEvent(mob, target, reason);
+        Bukkit.getPluginManager().callEvent(e);
 	}
 
 	public static void setTarget(LivingEntity mob, LivingEntity target) {
