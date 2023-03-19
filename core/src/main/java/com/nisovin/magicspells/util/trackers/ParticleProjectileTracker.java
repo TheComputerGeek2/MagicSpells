@@ -31,7 +31,7 @@ import com.nisovin.magicspells.events.ParticleProjectileHitEvent;
 import com.nisovin.magicspells.spelleffects.util.EffectlibSpellEffect;
 import com.nisovin.magicspells.spells.instant.ParticleProjectileSpell;
 
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 
 import de.slikey.effectlib.Effect;
 import de.slikey.effectlib.effect.ModifiedEffect;
@@ -140,7 +140,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 
 	private int ticks = 0;
 
-	private static final double ANGLE_Y = FastMath.toRadians(-90);
+	private static final double ANGLE_Y = AccurateMath.toRadians(-90);
 
 	public ParticleProjectileTracker(LivingEntity caster, float power, String[] args) {
 		this.caster = caster;
@@ -384,7 +384,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 
 			effectLoc = Util.makeFinite(effectLoc);
 
-			angle = EulerAngle.ZERO.setX(FastMath.toRadians(effectLoc.getPitch()));
+			angle = EulerAngle.ZERO.setX(AccurateMath.toRadians(effectLoc.getPitch()));
 
 			if (armorStandSet != null) {
 				for (ArmorStand armorStand : armorStandSet) {
@@ -645,6 +645,10 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 			inRange = null;
 		}
 		stopped = true;
+	}
+
+	public boolean isStopped() {
+		return stopped;
 	}
 
 	public LivingEntity getCaster() {

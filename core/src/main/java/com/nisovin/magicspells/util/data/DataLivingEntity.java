@@ -15,9 +15,9 @@ public class DataLivingEntity {
 		dataElements.put("maxair", livingEntity -> livingEntity.getMaximumAir() + "");
 		dataElements.put("air", livingEntity -> livingEntity.getRemainingAir() + "");
 		dataElements.put("maxnodamageticks", livingEntity -> livingEntity.getMaximumNoDamageTicks() + "");
-		dataElements.put("targetedblock.x", livingEntity -> String.valueOf(livingEntity.getTargetBlock(32).getX()));
-		dataElements.put("targetedblock.y", livingEntity -> String.valueOf(livingEntity.getTargetBlock(32).getY()));
-		dataElements.put("targetedblock.z", livingEntity -> String.valueOf(livingEntity.getTargetBlock(32).getZ()));
+		dataElements.put("targetedblock.x", livingEntity -> String.valueOf(livingEntity.getTargetBlockExact(32).getX()));
+		dataElements.put("targetedblock.y", livingEntity -> String.valueOf(livingEntity.getTargetBlockExact(32).getY()));
+		dataElements.put("targetedblock.z", livingEntity -> String.valueOf(livingEntity.getTargetBlockExact(32).getZ()));
 		dataElements.put("eyelocation", livingEntity -> livingEntity.getEyeLocation().toString());
 		dataElements.put("eyelocation.x", livingEntity -> livingEntity.getEyeLocation().getX() + "");
 		dataElements.put("eyelocation.y", livingEntity -> livingEntity.getEyeLocation().getY() + "");

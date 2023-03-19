@@ -32,7 +32,7 @@ public class HasScoreboardTagCondition extends Condition {
     }
 
     @Override
-    public boolean check(LivingEntity livingEntity, Location location) {
+    public boolean check(LivingEntity caster, Location location) {
         return false;
     }
 

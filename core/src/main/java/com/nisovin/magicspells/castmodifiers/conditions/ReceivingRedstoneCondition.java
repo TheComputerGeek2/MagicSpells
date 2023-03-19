@@ -22,17 +22,17 @@ public class ReceivingRedstoneCondition extends OperatorCondition {
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return signal(livingEntity.getLocation());
+	public boolean check(LivingEntity caster) {
+		return signal(caster.getLocation());
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return signal(target.getLocation());
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return signal(location);
 	}
 

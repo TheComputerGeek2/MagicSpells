@@ -16,6 +16,7 @@ import com.nisovin.magicspells.castmodifiers.conditions.util.AbstractWorldGuardC
 public class WorldGuardBooleanFlagCondition extends AbstractWorldGuardCondition {
 
 	protected static Map<String, BooleanFlag> flags = new HashMap<>();
+
 	static {
 		for (Flag<?> flag : WorldGuard.getInstance().getFlagRegistry().getAll()) {
 			if (!(flag instanceof BooleanFlag booleanFlag)) continue;

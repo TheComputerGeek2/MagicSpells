@@ -14,18 +14,12 @@ public class OperatorCondition extends Condition {
 	@Override
 	public boolean initialize(String var) {
 		switch (var.charAt(0)) {
-			case '=':
-			case ':':
-				equals = true;
-				break;
-			case '>':
-				moreThan = true;
-				break;
-			case '<':
-				lessThan = true;
-				break;
-			default:
+			case '=', ':' -> equals = true;
+			case '>' -> moreThan = true;
+			case '<' -> lessThan = true;
+			default -> {
 				return false;
+			}
 		}
 
 		return true;

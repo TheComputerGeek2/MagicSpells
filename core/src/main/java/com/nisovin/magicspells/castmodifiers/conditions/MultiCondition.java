@@ -20,7 +20,7 @@ import com.nisovin.magicspells.events.SpellTargetLocationEvent;
 import com.nisovin.magicspells.events.MagicSpellsGenericPlayerEvent;
 
 /*
- * Just a heads up that for the modifier actions inside this, I recommend that you use
+ * Just a heads-up that for the modifier actions inside this, I recommend that you use
  * stop rather than denied most of the time, because the denied action will actually cancel
  * the event being processed whereas the stop action will just say that this specific check
  * counts as a fail.
@@ -98,16 +98,16 @@ public class MultiCondition extends Condition implements IModifier {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
+	public boolean check(LivingEntity caster) {
 		int pass = 0;
 		int fail = 0;
 		for (Modifier m : modifiers) {
-			boolean check = m.check(livingEntity);
+			boolean check = m.check(caster);
 			if (check) pass++;
 			else {
 				fail++;
 				String msg = m.getStrModifierFailed();
-				if (msg != null) MagicSpells.sendMessage(msg, livingEntity, null);
+				if (msg != null) MagicSpells.sendMessage(msg, caster, null);
 			}
 			if (!passCondition.shouldContinue(pass, fail)) return passCondition.hasPassed(pass, fail);
 		}
@@ -115,16 +115,16 @@ public class MultiCondition extends Condition implements IModifier {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		int pass = 0;
 		int fail = 0;
 		for (Modifier m : modifiers) {
-			boolean check = m.check(livingEntity, target);
+			boolean check = m.check(caster, target);
 			if (check) pass++;
 			else {
 				fail++;
 				String msg = m.getStrModifierFailed();
-				if (msg != null) MagicSpells.sendMessage(msg, livingEntity, null);
+				if (msg != null) MagicSpells.sendMessage(msg, caster, null);
 			}
 			if (!passCondition.shouldContinue(pass, fail)) return passCondition.hasPassed(pass, fail);
 		}
@@ -132,16 +132,16 @@ public class MultiCondition extends Condition implements IModifier {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		int pass = 0;
 		int fail = 0;
 		for (Modifier m : modifiers) {
-			boolean check = m.check(livingEntity, location);
+			boolean check = m.check(caster, location);
 			if (check) pass++;
 			else {
 				fail++;
 				String msg = m.getStrModifierFailed();
-				if (msg != null) MagicSpells.sendMessage(msg, livingEntity, null);
+				if (msg != null) MagicSpells.sendMessage(msg, caster, null);
 			}
 			if (!passCondition.shouldContinue(pass, fail)) return passCondition.hasPassed(pass, fail);
 		}

@@ -9,7 +9,7 @@ import com.nisovin.magicspells.castmodifiers.Condition;
 
 public class UpTimeCondition extends Condition {
 
-	private static long startTime = System.currentTimeMillis();
+	private static final long startTime = System.currentTimeMillis();
 	
 	private int ms;
 	
@@ -25,17 +25,21 @@ public class UpTimeCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return System.currentTimeMillis() > startTime + ms;
+	public boolean check(LivingEntity caster) {
+		return checkUptime();
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		return System.currentTimeMillis() > startTime + ms;
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return checkUptime();
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
+		return checkUptime();
+	}
+
+	private boolean checkUptime() {
 		return System.currentTimeMillis() > startTime + ms;
 	}
 

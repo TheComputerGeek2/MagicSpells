@@ -25,23 +25,24 @@ public class DistanceCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
+	public boolean check(LivingEntity caster) {
 		return false;
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		return distance(livingEntity.getLocation(), target.getLocation());
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return distance(caster.getLocation(), target.getLocation());
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
-		return distance(livingEntity.getLocation(), location);
+	public boolean check(LivingEntity caster, Location location) {
+		return distance(caster.getLocation(), location);
 	}
 
 	private boolean distance(Location from, Location to) {
 		if (from == null || to == null) return false;
 		if (!from.getWorld().equals(to.getWorld())) return false;
+
 		if (equals) return from.distanceSquared(to) == distanceSq;
 		else if (moreThan) return from.distanceSquared(to) > distanceSq;
 		else if (lessThan) return from.distanceSquared(to) < distanceSq;

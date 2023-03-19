@@ -14,24 +14,24 @@ public class HasTargetCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return hasTarget(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return hasTarget(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return hasTarget(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean hasTarget(LivingEntity livingEntity) {
-		if (!(livingEntity instanceof Creature)) return false;
-		LivingEntity target = ((Creature) livingEntity).getTarget();
-		return target != null && target.isValid();
+	private boolean hasTarget(LivingEntity target) {
+		if (!(target instanceof Creature creature)) return false;
+		LivingEntity t = creature.getTarget();
+		return t != null && t.isValid();
 	}
 
 }

@@ -26,25 +26,25 @@ public class AliveCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return alive(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return alive(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return alive(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
 	private boolean alive(LivingEntity target) {
-		if (!(target instanceof Player)) return false;
-		if (equals) return MagicSpells.getLifeLengthTracker().getCurrentLifeLength((Player) target) == time;
-		else if (moreThan) return MagicSpells.getLifeLengthTracker().getCurrentLifeLength((Player) target) > time;
-		else if (lessThan) return MagicSpells.getLifeLengthTracker().getCurrentLifeLength((Player) target) < time;
+		if (!(target instanceof Player p)) return false;
+		if (equals) return MagicSpells.getLifeLengthTracker().getCurrentLifeLength(p) == time;
+		else if (moreThan) return MagicSpells.getLifeLengthTracker().getCurrentLifeLength(p) > time;
+		else if (lessThan) return MagicSpells.getLifeLengthTracker().getCurrentLifeLength(p) < time;
 		return false;
 	}
 

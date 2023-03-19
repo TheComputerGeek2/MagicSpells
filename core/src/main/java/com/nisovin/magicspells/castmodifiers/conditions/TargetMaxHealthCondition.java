@@ -23,24 +23,24 @@ public class TargetMaxHealthCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return false;
+	public boolean check(LivingEntity caster) {
+		return maxHealth(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return maxHealth(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean maxHealth(LivingEntity livingEntity) {
-		if (equals) return Util.getMaxHealth(livingEntity) == health;
-		else if (moreThan) return Util.getMaxHealth(livingEntity) > health;
-		else if (lessThan) return Util.getMaxHealth(livingEntity) < health;
+	private boolean maxHealth(LivingEntity target) {
+		if (equals) return Util.getMaxHealth(target) == health;
+		else if (moreThan) return Util.getMaxHealth(target) > health;
+		else if (lessThan) return Util.getMaxHealth(target) < health;
 		return false;
 	}
 

@@ -4,7 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.LivingEntity;
 
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 
 import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
@@ -18,7 +18,7 @@ public class AngleCondition extends OperatorCondition {
 		if (var.length() < 2 || !super.initialize(var)) return false;
 
 		try {
-			angle = FastMath.toRadians(Double.parseDouble(var.substring(1)));
+			angle = AccurateMath.toRadians(Double.parseDouble(var.substring(1)));
 			return true;
 		} catch (NumberFormatException e) {
 			DebugHandler.debugNumberFormat(e);
@@ -27,18 +27,18 @@ public class AngleCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
+	public boolean check(LivingEntity caster) {
 		return false;
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		return angle(livingEntity.getLocation(), target.getLocation());
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return angle(caster.getLocation(), target.getLocation());
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
-		return angle(livingEntity.getLocation(), location);
+	public boolean check(LivingEntity caster, Location location) {
+		return angle(caster.getLocation(), location);
 	}
 
 	private boolean angle(Location from, Location to) {

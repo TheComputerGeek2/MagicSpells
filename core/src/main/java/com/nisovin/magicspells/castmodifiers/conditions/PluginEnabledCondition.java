@@ -20,21 +20,21 @@ public class PluginEnabledCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return check();
+	public boolean check(LivingEntity caster) {
+		return checkPlugin();
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		return check();
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return checkPlugin();
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
-		return check();
+	public boolean check(LivingEntity caster, Location location) {
+		return checkPlugin();
 	}
 	
-	private boolean check() {
+	private boolean checkPlugin() {
 		if (pluginName == null) return false;
 		return CompatBasics.pluginEnabled(pluginName);
 	}

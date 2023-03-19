@@ -23,25 +23,25 @@ public class SaturationCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return saturation(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return saturation(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		return saturation(livingEntity);
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return saturation(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
 	private boolean saturation(LivingEntity livingEntity) {
-		if (!(livingEntity instanceof Player)) return false;
-		if (equals) return ((Player) livingEntity).getSaturation() == saturation;
-		else if (moreThan) return ((Player) livingEntity).getSaturation() > saturation;
-		else if (lessThan) return ((Player) livingEntity).getSaturation() < saturation;
+		if (!(livingEntity instanceof Player pl)) return false;
+		if (equals) return pl.getSaturation() == saturation;
+		else if (moreThan) return pl.getSaturation() > saturation;
+		else if (lessThan) return pl.getSaturation() < saturation;
 		return false;
 	}
 

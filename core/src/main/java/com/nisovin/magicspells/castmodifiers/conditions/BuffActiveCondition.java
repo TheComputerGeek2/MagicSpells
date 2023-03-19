@@ -23,18 +23,22 @@ public class BuffActiveCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return check(livingEntity, livingEntity);
+	public boolean check(LivingEntity caster) {
+		return active(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		return buff.isActiveAndNotExpired(target);
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return active(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
+	}
+
+	private boolean active(LivingEntity target) {
+		return buff.isActiveAndNotExpired(target);
 	}
 
 }

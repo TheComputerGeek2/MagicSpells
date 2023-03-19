@@ -24,25 +24,25 @@ public class MoneyCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return money(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return money(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return money(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean money(LivingEntity livingEntity) {
-		if (!(livingEntity instanceof Player)) return false;
-		if (equals) return MagicSpells.getMoneyHandler().checkMoney((Player) livingEntity) == money;
-		else if (moreThan) return MagicSpells.getMoneyHandler().checkMoney((Player) livingEntity) > money;
-		else if (lessThan) return MagicSpells.getMoneyHandler().checkMoney((Player) livingEntity) < money;
+	private boolean money(LivingEntity target) {
+		if (!(target instanceof Player pl)) return false;
+		if (equals) return MagicSpells.getMoneyHandler().checkMoney(pl) == money;
+		else if (moreThan) return MagicSpells.getMoneyHandler().checkMoney(pl) > money;
+		else if (lessThan) return MagicSpells.getMoneyHandler().checkMoney(pl) < money;
 		return false;
 	}
 

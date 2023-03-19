@@ -25,25 +25,25 @@ public class FoodCondition extends OperatorCondition {
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return food(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return food(caster);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return food(target);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean food(LivingEntity livingEntity) {
-		if (!(livingEntity instanceof Player)) return false;
-		if (equals) return ((Player) livingEntity).getFoodLevel() == food;
-		else if (moreThan) return ((Player) livingEntity).getFoodLevel() > food;
-		else if (lessThan) return ((Player) livingEntity).getFoodLevel() < food;
+	private boolean food(LivingEntity target) {
+		if (!(target instanceof Player pl)) return false;
+		if (equals) return pl.getFoodLevel() == food;
+		else if (moreThan) return pl.getFoodLevel() > food;
+		else if (lessThan) return pl.getFoodLevel() < food;
 		return false;
 	}
 

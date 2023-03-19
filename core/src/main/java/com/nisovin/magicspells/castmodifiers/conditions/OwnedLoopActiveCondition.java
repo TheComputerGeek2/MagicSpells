@@ -18,8 +18,8 @@ public class OwnedLoopActiveCondition extends Condition {
 	@Override
 	public boolean initialize(String var) {
 		Spell spell = MagicSpells.getSpellByInternalName(var);
-		if (spell instanceof LoopSpell loopSpell) {
-			this.loopSpell = loopSpell;
+		if (spell instanceof LoopSpell loop) {
+			loopSpell = loop;
 			return true;
 		}
 
@@ -28,21 +28,24 @@ public class OwnedLoopActiveCondition extends Condition {
 
 	@Override
 	public boolean check(LivingEntity caster) {
-		return check(caster, caster);
+		return checkLoop(caster, caster);
 	}
 
 	@Override
 	public boolean check(LivingEntity caster, LivingEntity target) {
-		Collection<Loop> loops = loopSpell.getActiveLoops().get(target.getUniqueId());
-		for (Loop loop : loops)
-			if (caster.equals(loop.getCaster()))
-				return true;
-
-		return false;
+		return checkLoop(caster, target);
 	}
 
 	@Override
 	public boolean check(LivingEntity caster, Location location) {
+		return false;
+	}
+
+	private boolean checkLoop(LivingEntity caster, LivingEntity target) {
+		Collection<Loop> loops = loopSpell.getActiveLoops().get(target.getUniqueId());
+		for (Loop loop : loops) {
+			if (caster.equals(loop.getCaster())) return true;
+		}
 		return false;
 	}
 

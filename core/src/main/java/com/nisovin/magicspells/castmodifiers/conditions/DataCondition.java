@@ -7,9 +7,9 @@ import java.util.function.Function;
 
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
-import com.nisovin.magicspells.util.data.DataLivingEntity;
 
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.data.DataLivingEntity;
 import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
 
 public class DataCondition extends OperatorCondition {
@@ -48,11 +48,20 @@ public class DataCondition extends OperatorCondition {
 
 	@Override
 	public boolean check(LivingEntity caster) {
-		return check(caster, caster);
+		return data(caster, caster);
 	}
 
 	@Override
 	public boolean check(LivingEntity caster, LivingEntity target) {
+		return data(caster, target);
+	}
+
+	@Override
+	public boolean check(LivingEntity caster, Location location) {
+		return data(caster, caster);
+	}
+
+	private boolean data(LivingEntity caster, LivingEntity target) {
 		if (dataElement == null) return false;
 
 		String localCompare = !constantValue && doReplacement ? MagicSpells.doReplacements(compare, caster, target) : compare;
@@ -70,11 +79,6 @@ public class DataCondition extends OperatorCondition {
 		}
 
 		return false;
-	}
-
-	@Override
-	public boolean check(LivingEntity caster, Location location) {
-		return check(caster, caster);
 	}
 
 }

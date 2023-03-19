@@ -43,11 +43,11 @@ public class PortalSpell extends InstantSpell {
 	private ConfigData<Boolean> canTeleportOtherPlayers;
 	private ConfigData<Boolean> chargeReagentsToTeleporter;
 
-	private ConfigData<String> strNoMark;
-	private ConfigData<String> strTooFar;
-	private ConfigData<String> strTooClose;
-	private ConfigData<String> strTeleportNoCost;
-	private ConfigData<String> strTeleportOnCooldown;
+	private String strNoMark;
+	private String strTooFar;
+	private String strTooClose;
+	private String strTeleportNoCost;
+	private String strTeleportOnCooldown;
 
 	private MarkSpell startMark;
 	private MarkSpell endMark;
@@ -78,11 +78,11 @@ public class PortalSpell extends InstantSpell {
 		canTeleportOtherPlayers = getConfigDataBoolean("teleport-other-players", true);
 		chargeReagentsToTeleporter = getConfigDataBoolean("charge-cost-to-teleporter", false);
 
-		strNoMark = getConfigDataString("str-no-mark", "You have not marked a location to make a portal to.");
-		strTooFar = getConfigDataString("str-too-far", "You are too far away from your marked location.");
-		strTooClose = getConfigDataString("str-too-close", "You are too close to your marked location.");
-		strTeleportNoCost = getConfigDataString("str-teleport-cost-fail", "");
-		strTeleportOnCooldown = getConfigDataString("str-teleport-cooldown-fail", "");
+		strNoMark = getConfigString("str-no-mark", "You have not marked a location to make a portal to.");
+		strTooFar = getConfigString("str-too-far", "You are too far away from your marked location.");
+		strTooClose = getConfigString("str-too-close", "You are too close to your marked location.");
+		strTeleportNoCost = getConfigString("str-teleport-cost-fail", "");
+		strTeleportOnCooldown = getConfigString("str-teleport-cooldown-fail", "");
 
 		startMarkSpellName = getConfigString("mark-spell", "");
 		endMarkSpellName = getConfigString("second-mark-spell", "");
@@ -117,14 +117,14 @@ public class PortalSpell extends InstantSpell {
 
 			Location locSecond;
 			if (loc == null) {
-				sendMessage(strNoMark.get(data), caster, args);
+				sendMessage(strNoMark, caster, args);
 				return PostCastAction.ALREADY_HANDLED;
 			}
 
 			if (usingSecondMarkSpell) {
 				locSecond = endMark.getEffectiveMark(caster);
 				if (locSecond == null) {
-					sendMessage(strNoMark.get(data), caster, args);
+					sendMessage(strNoMark, caster, args);
 					return PostCastAction.ALREADY_HANDLED;
 				}
 			} else locSecond = caster.getLocation();
@@ -136,12 +136,12 @@ public class PortalSpell extends InstantSpell {
 
 			if (maxDistanceSq > 0) {
 				if (!loc.getWorld().equals(locSecond.getWorld())) {
-					sendMessage(strTooFar.get(data), caster, args);
+					sendMessage(strTooFar, caster, args);
 					return PostCastAction.ALREADY_HANDLED;
 				} else {
 					distanceSq = locSecond.distanceSquared(loc);
 					if (distanceSq > maxDistanceSq) {
-						sendMessage(strTooFar.get(data), caster, args);
+						sendMessage(strTooFar, caster, args);
 						return PostCastAction.ALREADY_HANDLED;
 					}
 				}
@@ -153,7 +153,7 @@ public class PortalSpell extends InstantSpell {
 			if (minDistanceSq > 0 && loc.getWorld().equals(locSecond.getWorld())) {
 				if (distanceSq == 0) distanceSq = locSecond.distanceSquared(loc);
 				if (distanceSq < minDistanceSq) {
-					sendMessage(strTooClose.get(data), caster, args);
+					sendMessage(strTooClose, caster, args);
 					return PostCastAction.ALREADY_HANDLED;
 				}
 			}
@@ -217,23 +217,23 @@ public class PortalSpell extends InstantSpell {
 		return chargeReagentsToTeleporter;
 	}
 
-	public ConfigData<String> getStrNoMark() {
+	public String getStrNoMark() {
 		return strNoMark;
 	}
 
-	public ConfigData<String> getStrTooFar() {
+	public String getStrTooFar() {
 		return strTooFar;
 	}
 
-	public ConfigData<String> getStrTooClose() {
+	public String getStrTooClose() {
 		return strTooClose;
 	}
 
-	public ConfigData<String> getStrTeleportNoCost() {
+	public String getStrTeleportNoCost() {
 		return strTeleportNoCost;
 	}
 
-	public ConfigData<String> getStrTeleportOnCooldown() {
+	public String getStrTeleportOnCooldown() {
 		return strTeleportOnCooldown;
 	}
 
@@ -262,9 +262,6 @@ public class PortalSpell extends InstantSpell {
 		private boolean teleportOtherPlayers;
 		private boolean chargeCostToTeleporter;
 
-		private String strNoCost;
-		private String strOnCooldown;
-
 		private LivingEntity caster;
 		private SpellData data;
 		private float power;
@@ -287,9 +284,6 @@ public class PortalSpell extends InstantSpell {
 			allowReturn = canReturn.get(data);
 			teleportOtherPlayers = canTeleportOtherPlayers.get(data);
 			chargeCostToTeleporter = chargeReagentsToTeleporter.get(data);
-
-			strNoCost = strTeleportNoCost.get(data);
-			strOnCooldown = strTeleportOnCooldown.get(data);
 
 			start();
 		}
@@ -369,7 +363,7 @@ public class PortalSpell extends InstantSpell {
 
 		private boolean checkCooldown(Player target) {
 			if (tpCooldowns.containsKey(target.getUniqueId()) && tpCooldowns.get(target.getUniqueId()) > System.currentTimeMillis()) {
-				sendMessage(strOnCooldown, target, data.args());
+				sendMessage(strTeleportOnCooldown, target, data.args());
 				return false;
 			}
 
@@ -385,14 +379,14 @@ public class PortalSpell extends InstantSpell {
 					if (SpellUtil.hasReagents(target, portal.portalCost())) {
 						payer = target;
 					} else {
-						sendMessage(strNoCost, target, data.args());
+						sendMessage(strTeleportNoCost, target, data.args());
 						return false;
 					}
 				} else {
 					if (SpellUtil.hasReagents(caster, portal.portalCost())) {
 						payer = caster;
 					} else {
-						sendMessage(strNoCost, target, data.args());
+						sendMessage(strTeleportNoCost, target, data.args());
 						return false;
 					}
 				}

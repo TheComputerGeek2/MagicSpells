@@ -1,6 +1,7 @@
 package com.nisovin.magicspells.util.config;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -8,18 +9,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.function.Function;
 
-import org.apache.commons.math3.util.Precision;
-
 import de.slikey.exp4j.Expression;
 import de.slikey.exp4j.ValidationResult;
 import de.slikey.exp4j.ExpressionBuilder;
-import org.jetbrains.annotations.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 
 import me.clip.placeholderapi.PlaceholderAPI;
+
+import org.apache.commons.numbers.core.Precision;
 
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.RegexUtil;

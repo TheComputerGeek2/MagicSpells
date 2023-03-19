@@ -12,33 +12,36 @@ import com.nisovin.magicspells.castmodifiers.Condition;
 
 public class NamePatternCondition extends Condition {
 
-	private String rawPattern;
 	private Pattern compiledPattern;
 	
 	@Override
 	public boolean initialize(String var) {
 		if (var == null || var.isEmpty()) return false;
-		rawPattern = var;
-		compiledPattern = Pattern.compile(rawPattern);
+		compiledPattern = Pattern.compile(var);
 		// note, currently won't translate the & to the color code,
 		// this will need to be done through regex unicode format 
 		return true;
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return check(livingEntity, livingEntity);
+	public boolean check(LivingEntity caster) {
+		return namePattern(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		if (!(target instanceof Player player)) return false;
-		return RegexUtil.matches(compiledPattern, target.getName()) || RegexUtil.matches(compiledPattern, Util.getLegacyFromComponent(player.displayName()));
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return namePattern(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
+	}
+
+	private boolean namePattern(LivingEntity target) {
+		if (!(target instanceof Player pl)) return false;
+		return RegexUtil.matches(compiledPattern, pl.getName()) || RegexUtil.matches(compiledPattern, Util.getLegacyFromComponent(pl.displayName()));
+
 	}
 
 }

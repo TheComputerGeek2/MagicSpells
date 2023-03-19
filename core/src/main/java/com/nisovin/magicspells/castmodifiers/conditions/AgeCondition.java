@@ -28,23 +28,24 @@ public class AgeCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		check(livingEntity, livingEntity);
-		return true;
+	public boolean check(LivingEntity caster) {
+		return age(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		if (target instanceof Ageable) {
-			boolean adult = ((Ageable) target).isAdult();
-			return adult ? passAdult : passBaby;
-		}
-		return false;
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return age(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
+	}
+
+	private boolean age(LivingEntity target) {
+		if (!(target instanceof Ageable t)) return false;
+		boolean adult = t.isAdult();
+		return adult ? passAdult : passBaby;
 	}
 
 }

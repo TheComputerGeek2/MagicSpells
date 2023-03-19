@@ -27,26 +27,26 @@ public class OpenSlotsCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return openSlots(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return openSlots(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return openSlots(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean openSlots(LivingEntity livingEntity) {
+	private boolean openSlots(LivingEntity target) {
 		int c = 0;
 		ItemStack[] inv;
 
-		if (livingEntity instanceof Player) inv = ((Player) livingEntity).getInventory().getContents();
-		else inv = InventoryUtil.getEquipmentItems(livingEntity.getEquipment());
+		if (target instanceof Player pl) inv = pl.getInventory().getContents();
+		else inv = InventoryUtil.getEquipmentItems(target.getEquipment());
 
 		if (inv == null) return false;
 

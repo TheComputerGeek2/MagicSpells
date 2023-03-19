@@ -26,7 +26,7 @@ import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 import com.nisovin.magicspells.spelleffects.util.EffectlibSpellEffect;
 import com.nisovin.magicspells.util.trackers.ParticleProjectileTracker;
 
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 
 public class ParticleProjectileSpell extends InstantSpell implements TargetedLocationSpell, TargetedEntitySpell, TargetedEntityFromLocationSpell {
 
@@ -477,9 +477,9 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 
 		tracker.setProjectileTurn(projectileTurn.get(caster, target, power, args));
 		tracker.setProjectileVelocity(projectileVelocity.get(caster, target, power, args));
-		tracker.setVerticalRotation(FastMath.toRadians(verticalRotation.get(caster, target, power, args)));
-		tracker.setHorizontalRotation(FastMath.toRadians(horizontalRotation.get(caster, target, power, args)));
-		tracker.setXRotation(FastMath.toRadians(xRotation.get(caster, target, power, args)));
+		tracker.setVerticalRotation(AccurateMath.toRadians(verticalRotation.get(caster, target, power, args)));
+		tracker.setHorizontalRotation(AccurateMath.toRadians(horizontalRotation.get(caster, target, power, args)));
+		tracker.setXRotation(AccurateMath.toRadians(xRotation.get(caster, target, power, args)));
 		tracker.setProjectileVertOffset(projectileVertOffset.get(caster, target, power, args));
 		tracker.setProjectileHorizOffset(projectileHorizOffset.get(caster, target, power, args));
 		tracker.setProjectileVertGravity(projectileVertGravity.get(caster, target, power, args));

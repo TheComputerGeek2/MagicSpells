@@ -5,7 +5,6 @@ import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
-
 import com.nisovin.magicspells.castmodifiers.Condition;
 
 public class CustomNameCondition extends Condition {

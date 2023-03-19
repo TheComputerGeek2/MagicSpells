@@ -39,24 +39,24 @@ public class ManaCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return mana(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return mana(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return mana(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean mana(LivingEntity livingEntity) {
-		if (!(livingEntity instanceof Player)) return false;
-		double currentMana = mana.getMana((Player) livingEntity);
-		double percentMana = currentMana / mana.getMaxMana((Player) livingEntity) * 100;
+	private boolean mana(LivingEntity target) {
+		if (!(target instanceof Player pl)) return false;
+		double currentMana = mana.getMana(pl);
+		double percentMana = currentMana / mana.getMaxMana(pl) * 100D;
 		if (equals) {
 			if (percent) return percentMana == amount;
 			return currentMana == amount;

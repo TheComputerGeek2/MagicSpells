@@ -24,17 +24,17 @@ public class LightLevelCondition extends OperatorCondition {
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return lightLevel(livingEntity.getLocation());
+	public boolean check(LivingEntity caster) {
+		return lightLevel(caster.getLocation());
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return lightLevel(target.getLocation());
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return lightLevel(location);
 	}
 

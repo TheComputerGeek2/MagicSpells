@@ -32,25 +32,25 @@ public class MaxManaCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return maxMana(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return maxMana(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return maxMana(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean maxMana(LivingEntity livingEntity) {
-		if (!(livingEntity instanceof Player)) return false;
-		if (equals) return mana.getMaxMana((Player) livingEntity) == amount;
-		else if (moreThan) return mana.getMaxMana((Player) livingEntity) > amount;
-		else if (lessThan) return mana.getMaxMana((Player) livingEntity) < amount;
+	private boolean maxMana(LivingEntity target) {
+		if (!(target instanceof Player pl)) return false;
+		if (equals) return mana.getMaxMana(pl) == amount;
+		else if (moreThan) return mana.getMaxMana(pl) > amount;
+		else if (lessThan) return mana.getMaxMana(pl) < amount;
 		return false;
 	}
 

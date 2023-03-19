@@ -59,22 +59,22 @@ public class DurabilityCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return checkDurability(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return checkDurability(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return checkDurability(target);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean checkDurability(LivingEntity livingEntity) {
-		EntityEquipment equipment = livingEntity.getEquipment();
+	private boolean checkDurability(LivingEntity target) {
+		EntityEquipment equipment = target.getEquipment();
 		for (DurabilityChecker d : durabilitySet) {
 			ItemStack item = switch (d.slot) {
 				case 0 -> equipment.getHelmet();
@@ -117,18 +117,12 @@ public class DurabilityCondition extends Condition {
 
 		private boolean determineOperatorAndValue(String str) {
 			switch (str.charAt(0)) {
-				case '=':
-				case ':':
-					equals = true;
-					break;
-				case '<':
-					lessThan = true;
-					break;
-				case '>':
-					moreThan = true;
-					break;
-				default:
+				case '=', ':' -> equals = true;
+				case '<' -> lessThan = true;
+				case '>' -> moreThan = true;
+				default -> {
 					return false;
+				}
 			}
 
 			try {

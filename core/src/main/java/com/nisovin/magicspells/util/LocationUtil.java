@@ -11,7 +11,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.util.NumberConversions;
 import org.bukkit.command.BlockCommandSender;
 
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math4.core.jdkmath.JdkMath;
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 
 public class LocationUtil {
 	
@@ -153,7 +154,7 @@ public class LocationUtil {
 
 	// setDirection function with fast math
 	public static Location setDirection(Location loc, Vector v) {
-		final double _2PI = 2 * FastMath.PI;
+		final double _2PI = 2 * AccurateMath.PI;
 		final double x = v.getX();
 		final double z = v.getZ();
 
@@ -162,13 +163,13 @@ public class LocationUtil {
 			return loc;
 		}
 
-		double theta = FastMath.atan2(-x, z);
-		loc.setYaw((float) FastMath.toDegrees((theta + _2PI) % _2PI));
+		double theta = AccurateMath.atan2(-x, z);
+		loc.setYaw((float) AccurateMath.toDegrees((theta + _2PI) % _2PI));
 
 		double x2 = NumberConversions.square(x);
 		double z2 = NumberConversions.square(z);
-		double xz = FastMath.sqrt(x2 + z2);
-		loc.setPitch((float) FastMath.toDegrees(FastMath.atan(-v.getY() / xz)));
+		double xz = JdkMath.sqrt(x2 + z2);
+		loc.setPitch((float) AccurateMath.toDegrees(AccurateMath.atan(-v.getY() / xz)));
 
 		return loc;
 	}

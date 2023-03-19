@@ -31,16 +31,16 @@ public class HasItemCondition extends Condition {
 	public boolean initialize(String var) {
 		try {
 			if (var.contains("|")) {
-				String[] subvardata = var.split("\\|");
-				var = subvardata[0];
-				name = Util.getMiniMessage(subvardata[1].replace("__", " "));
+				String[] subVarData = var.split("\\|");
+				var = subVarData[0];
+				name = Util.getMiniMessage(subVarData[1].replace("__", " "));
 				checkName = true;
 			} else checkName = false;
 
 			if (var.contains(":")) {
-				String[] vardata = var.split(":");
-				material = Util.getMaterial(vardata[0]);
-				durability = vardata[1].equals("*") ? 0 : Short.parseShort(vardata[1]);
+				String[] varData = var.split(":");
+				material = Util.getMaterial(varData[0]);
+				durability = varData[1].equals("*") ? 0 : Short.parseShort(varData[1]);
 			} else material = Util.getMaterial(var);
 
 			return true;
@@ -51,25 +51,25 @@ public class HasItemCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return check(livingEntity, livingEntity);
+	public boolean check(LivingEntity caster) {
+		return check(caster, caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		if (target == null) return false;
-		if (target instanceof InventoryHolder holder) return check(holder.getInventory());
-		else return check(target.getEquipment());
+		if (target instanceof InventoryHolder holder) return checkInventory(holder.getInventory());
+		else return checkEquipment(target.getEquipment());
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		Block target = location.getBlock();
 		BlockState targetState = target.getState();
-		return targetState instanceof InventoryHolder holder && check(holder.getInventory());
+		return targetState instanceof InventoryHolder holder && checkInventory(holder.getInventory());
 	}
 
-	private boolean check(Inventory inventory) {
+	private boolean checkInventory(Inventory inventory) {
 		if (inventory == null) return false;
 		if (checkName) {
 			for (ItemStack item : inventory.getContents()) {
@@ -89,7 +89,7 @@ public class HasItemCondition extends Condition {
 		return inventory.contains(material);
 	}
 
-	private boolean check(EntityEquipment entityEquipment) {
+	private boolean checkEquipment(EntityEquipment entityEquipment) {
 		if (entityEquipment == null) return false;
 		ItemStack[] items = InventoryUtil.getEquipmentItems(entityEquipment);
 

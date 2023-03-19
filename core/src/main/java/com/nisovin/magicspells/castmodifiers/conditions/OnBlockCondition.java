@@ -22,8 +22,8 @@ public class OnBlockCondition extends Condition {
 		if (split.length > 1) {
 			blockDataSet = new HashSet<>();
 
+			BlockData data;
 			for (String s : split) {
-				BlockData data;
 				try {
 					data = Bukkit.createBlockData(s.trim().toLowerCase());
 				} catch (IllegalArgumentException e) {
@@ -48,17 +48,17 @@ public class OnBlockCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return onBlock(livingEntity.getLocation());
+	public boolean check(LivingEntity caster) {
+		return onBlock(caster.getLocation());
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return onBlock(target.getLocation());
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return onBlock(location.clone());
 	}
 
@@ -66,9 +66,9 @@ public class OnBlockCondition extends Condition {
 		BlockData bd = location.subtract(0, 1, 0).getBlock().getBlockData();
 		if (blockData != null) return bd.matches(blockData);
 
-		for (BlockData data : blockDataSet)
-			if (bd.matches(data))
-				return true;
+		for (BlockData data : blockDataSet) {
+			if (bd.matches(data)) return true;
+		}
 
 		return false;
 	}

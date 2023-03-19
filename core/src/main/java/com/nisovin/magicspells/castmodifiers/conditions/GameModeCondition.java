@@ -25,24 +25,24 @@ public class GameModeCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return gameMode(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return gameMode(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return gameMode(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean gameMode(LivingEntity livingEntity) {
+	private boolean gameMode(LivingEntity target) {
 		if (mode == null) return false;
-		if (!(livingEntity instanceof Player)) return false;
-		return ((Player) livingEntity).getGameMode() == mode;
+		if (!(target instanceof Player pl)) return false;
+		return pl.getGameMode() == mode;
 	}
 
 }

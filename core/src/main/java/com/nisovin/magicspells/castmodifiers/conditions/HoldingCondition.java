@@ -6,13 +6,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
-import com.nisovin.magicspells.util.Util;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.EntityEquipment;
 
 import net.kyori.adventure.text.Component;
 
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.castmodifiers.Condition;
 
@@ -27,34 +27,34 @@ public class HoldingCondition extends Condition {
 	@Override
 	public boolean initialize(String var) {
 		try {
-			String[] vardata = var.split(",");
-			ids = new Material[vardata.length];
-			datas = new short[vardata.length];
-			checkData = new boolean[vardata.length];
-			names = new Component[vardata.length];
-			checkName = new boolean[vardata.length];
-			for (int i = 0; i < vardata.length; i++) {
-				if (vardata[i].contains("|")) {
-					String[] subvardata = vardata[i].split("\\|");
-					vardata[i] = subvardata[0];
-					names[i] = Util.getMiniMessage(subvardata[1].replace("__", " "));
+			String[] varData = var.split(",");
+			ids = new Material[varData.length];
+			datas = new short[varData.length];
+			checkData = new boolean[varData.length];
+			names = new Component[varData.length];
+			checkName = new boolean[varData.length];
+			for (int i = 0; i < varData.length; i++) {
+				if (varData[i].contains("|")) {
+					String[] subVarData = varData[i].split("\\|");
+					varData[i] = subVarData[0];
+					names[i] = Util.getMiniMessage(subVarData[1].replace("__", " "));
 					checkName[i] = true;
 				} else {
 					names[i] = null;
 					checkName[i] = false;
 				}
-				if (vardata[i].contains(":")) {
-					String[] subvardata = vardata[i].split(":");
-					ids[i] = Util.getMaterial(subvardata[0]);
-					if (subvardata[1].equals("*")) {
+				if (varData[i].contains(":")) {
+					String[] subVarData = varData[i].split(":");
+					ids[i] = Util.getMaterial(subVarData[0]);
+					if (subVarData[1].equals("*")) {
 						datas[i] = 0;
 						checkData[i] = false;
 					} else {
-						datas[i] = Short.parseShort(subvardata[1]);
+						datas[i] = Short.parseShort(subVarData[1]);
 						checkData[i] = true;
 					}
 				} else {
-					ids[i] = Util.getMaterial(vardata[i]);
+					ids[i] = Util.getMaterial(varData[i]);
 					datas[i] = 0;
 					checkData[i] = false;
 				}
@@ -67,28 +67,31 @@ public class HoldingCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		ItemStack item = livingEntity.getEquipment().getItemInMainHand();
-		return check(item);
+	public boolean check(LivingEntity caster) {
+		return checkHolding(caster);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		EntityEquipment equip = target.getEquipment();
-		return equip != null && check(equip.getItemInMainHand());
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return checkHolding(target);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 	
-	private boolean check(ItemStack item) {
-		if (item == null) return false;
+	private boolean checkHolding(LivingEntity target) {
+		EntityEquipment equipment = target.getEquipment();
+		if (equipment == null) return false;
+
+		ItemStack item = equipment.getItemInMainHand();
 		Material type = item.getType();
 		ItemMeta meta = item.getItemMeta();
+
 		int durability = meta instanceof Damageable ? ((Damageable) meta).getDamage() : 0;
 		Component name = null;
+
 		try {
 			if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) name = item.getItemMeta().displayName();
 		} catch (Exception e) {

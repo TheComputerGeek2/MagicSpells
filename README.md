@@ -14,22 +14,21 @@
 
 [//]: # (These links are here for easier hyperlink referencing and less clutter in the actual text below.)
 [Discord server]: https://discord.magicspells.dev
-[Forum]: https://forum.magicspells.dev
 [showcase channel]: https://canary.discord.com/channels/335237931633606656/468537255925907466
 [Releases]: https://github.com/TheComputerGeek2/MagicSpells/releases
 [Wiki]: https://github.com/TheComputerGeek2/MagicSpells/wiki
-[Guides]: https://forum.magicspells.dev/index.php?p=/categories/configuration-guides
 [SpellRepo]: https://github.com/niblexis/ms-examples
 [PAPIExp]: https://github.com/JasperLorelai/Expansion-MagicSpells
-[Soundboard]: https://mhaprodigy.uk/soundboard/
+[Soundboard]: https://jasperlorelai.eu/soundboard/
 [Nisovin]: https://nisovin.com/
 [Bukkit]: https://dev.bukkit.org/projects/magicspells
 [Spigot]: https://www.spigotmc.org/resources/magicspells.60847/
-[Community Update]: https://forum.magicspells.dev/index.php?p=/discussion/17/community-update
+[PaperMC]: https://papermc.io/
+[Modrinth]: https://modrinth.com/plugin/magicspells
 [DiscordBadge]: https://img.shields.io/badge/Join%20our%20Discord-blue?style=for-the-badge&color=586ff2
 [WelcomeChannel]: https://media.discordapp.net/attachments/423551934784339968/957725621503541288/unknown.png
 
-MagicSpells is a [Paper](https://papermc.io/) plugin which gives its users the ability to modify their Minecraft servers by configuring existing features without writing Java code.  It provides you with the tools for playing with blocks of logic, bringing other plugins together, playing fantastic special effects, making your own new mechanics, and more.
+MagicSpells is a [PaperMC] plugin which gives its users the ability to modify their Minecraft servers by configuring existing features without writing Java code. It provides you with the tools for playing with blocks of logic, bringing other plugins together, playing fantastic special effects, making your own new mechanics, and more.
 
 Check out more examples of what this plugin can do in our [Discord server] (in the [showcase channel]).
 
@@ -37,8 +36,6 @@ Check out more examples of what this plugin can do in our [Discord server] (in t
 ## Resources 📝
 * [Plugin Releases (Downloads)][Releases]
 * [Community Wiki][Wiki]
-* [Plugin Guides][Guides]
-* [Official Forum][Forum]
 * [Discord server]
 * [Niblexis' Public Spell Repo][SpellRepo]
 * [MagicSpells PAPI Expansion][PAPIExp]
@@ -46,7 +43,7 @@ Check out more examples of what this plugin can do in our [Discord server] (in t
 
 ---
 ## Classical MagicSpells ⭐
-This plugin was originally created by [Nisovin], and published on [Bukkit]. After some time TheComputerGeek2 took over the project on [Spigot] which was followed by the [Community Update].
+This plugin was originally created by [Nisovin], and published on [Bukkit]. After some time TheComputerGeek2 took over the project and published it on [Spigot]. Since then we dropped support for Spigot and moved to [PaperMC], and the plugin was published on [Modrinth].
 
 ---
 ## Support 📞

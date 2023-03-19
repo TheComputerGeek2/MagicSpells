@@ -4,8 +4,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.HashMap;
 
-import org.apache.commons.math3.util.FastMath;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,6 +20,8 @@ import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
+
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 
 public class HasteSpell extends BuffSpell {
 
@@ -170,7 +170,7 @@ public class HasteSpell extends BuffSpell {
 
 		private HasteData(LivingEntity entity, float power, String[] args) {
 			int strength = HasteSpell.this.strength.get(entity, null, power, args);
-			if (powerAffectsStrength) strength = FastMath.round(strength * power);
+			if (powerAffectsStrength) strength = AccurateMath.round(strength * power);
 			this.strength = strength;
 
 			accelerationIncrease = HasteSpell.this.accelerationIncrease.get(entity, null, power, args);

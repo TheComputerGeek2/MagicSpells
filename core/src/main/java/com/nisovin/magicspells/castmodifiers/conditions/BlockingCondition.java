@@ -14,19 +14,23 @@ public class BlockingCondition extends Condition {
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return check(livingEntity, livingEntity);
+	public boolean check(LivingEntity caster) {
+		return blocking(caster);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		if (!(target instanceof Player)) return false;
-		return ((Player) target).isBlocking();
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return blocking(target);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
+	}
+
+	private boolean blocking(LivingEntity target) {
+		if (!(target instanceof Player pl)) return false;
+		return pl.isBlocking();
 	}
 	
 }

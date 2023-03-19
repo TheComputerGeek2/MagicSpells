@@ -32,7 +32,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import org.jetbrains.annotations.Nullable;
 
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
@@ -175,13 +175,13 @@ public class Util {
 
 	public static void setLocationFacingFromVector(Location location, Vector vector) {
 		double yaw = getYawOfVector(vector);
-		double pitch = FastMath.toDegrees(-FastMath.asin(vector.getY()));
+		double pitch = AccurateMath.toDegrees(-AccurateMath.asin(vector.getY()));
 		location.setYaw((float) yaw);
 		location.setPitch((float) pitch);
 	}
 
 	public static double getYawOfVector(Vector vector) {
-		return FastMath.toDegrees(FastMath.atan2(-vector.getX(), vector.getZ()));
+		return AccurateMath.toDegrees(AccurateMath.atan2(-vector.getX(), vector.getZ()));
 	}
 
 	public static boolean arrayContains(int[] array, int value) {
@@ -405,9 +405,9 @@ public class Util {
 	}
 
 	public static void rotateVector(Vector v, double degrees) {
-		double rad = FastMath.toRadians(degrees);
-		double sin = FastMath.sin(rad);
-		double cos = FastMath.cos(rad);
+		double rad = AccurateMath.toRadians(degrees);
+		double sin = AccurateMath.sin(rad);
+		double cos = AccurateMath.cos(rad);
 		double x = (v.getX() * cos) - (v.getZ() * sin);
 		double z = (v.getX() * sin) + (v.getZ() * cos);
 		v.setX(x);
@@ -435,12 +435,12 @@ public class Util {
 	}
 
 	public static Vector rotateVector(Vector v, float yawDegrees, float pitchDegrees) {
-		double yaw = FastMath.toRadians(-1.0F * (yawDegrees + 90.0F));
-		double pitch = FastMath.toRadians(-pitchDegrees);
-		double cosYaw = FastMath.cos(yaw);
-		double cosPitch = FastMath.cos(pitch);
-		double sinYaw = FastMath.sin(yaw);
-		double sinPitch = FastMath.sin(pitch);
+		double yaw = AccurateMath.toRadians(-1.0F * (yawDegrees + 90.0F));
+		double pitch = AccurateMath.toRadians(-pitchDegrees);
+		double cosYaw = AccurateMath.cos(yaw);
+		double cosPitch = AccurateMath.cos(pitch);
+		double sinYaw = AccurateMath.sin(yaw);
+		double sinPitch = AccurateMath.sin(pitch);
 		double initialX = v.getX();
 		double initialY = v.getY();
 		double x = initialX * cosPitch - initialY * sinPitch;

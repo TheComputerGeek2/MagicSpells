@@ -12,7 +12,7 @@ import com.nisovin.magicspells.castmodifiers.Condition;
 
 public class BiomeCondition extends Condition {
 	
-	private EnumSet<Biome> biomes = EnumSet.noneOf(Biome.class);
+	private final EnumSet<Biome> biomes = EnumSet.noneOf(Biome.class);
 
 	@Override
 	public boolean initialize(String var) {
@@ -30,17 +30,21 @@ public class BiomeCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return check(livingEntity, livingEntity);
+	public boolean check(LivingEntity caster) {
+		return biome(caster.getLocation());
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		return check(livingEntity, target.getLocation());
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return biome(target.getLocation());
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
+		return biome(location);
+	}
+
+	private boolean biome(Location location) {
 		return biomes.contains(location.getBlock().getBiome());
 	}
 	

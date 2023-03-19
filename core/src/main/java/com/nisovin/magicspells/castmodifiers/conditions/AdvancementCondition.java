@@ -39,22 +39,22 @@ public class AdvancementCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return hasAdvancement(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return hasAdvancement(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return hasAdvancement(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean hasAdvancement(LivingEntity livingEntity) {
-		if (!(livingEntity instanceof Player player)) return false;
+	private boolean hasAdvancement(LivingEntity target) {
+		if (!(target instanceof Player player)) return false;
 		for (Advancement advancement : advancements) {
 			if (!player.getAdvancementProgress(advancement).isDone()) return false;
 		}

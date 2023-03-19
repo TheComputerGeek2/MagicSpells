@@ -21,30 +21,29 @@ public class VariableMatchesCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		if (!(livingEntity instanceof Player)) return false;
+	public boolean check(LivingEntity caster) {
+		return variableMatches(caster, null);
+	}
+
+	@Override
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return variableMatches(caster, target);
+	}
+
+	@Override
+	public boolean check(LivingEntity caster, Location location) {
+		return variableMatches(caster, null);
+	}
+
+	private boolean variableMatches(LivingEntity caster, LivingEntity target) {
+		if (!(caster instanceof Player pl)) return false;
+		String name = null;
+		if (target instanceof Player t) name = t.getName();
 		// Check against normal (default)
 		return Objects.equals(
-			MagicSpells.getVariableManager().getStringValue(variable, (Player) livingEntity),
-			MagicSpells.getVariableManager().getStringValue(variable, (String) null)
+				MagicSpells.getVariableManager().getStringValue(variable, pl),
+				MagicSpells.getVariableManager().getStringValue(variable, name)
 		);
-	}
-
-	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		if (!(livingEntity instanceof Player)) return false;
-		if (!(target instanceof Player)) return false;
-		// Check against each other
-		return Objects.equals(
-			MagicSpells.getVariableManager().getStringValue(variable, (Player) livingEntity),
-			MagicSpells.getVariableManager().getStringValue(variable, target.getName())
-		);
-	}
-
-	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
-		// Against defaults (only possible comparison here)
-		return check(livingEntity);
 	}
 
 }

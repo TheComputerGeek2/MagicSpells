@@ -25,17 +25,21 @@ public class LoopActiveCondition extends Condition {
 
 	@Override
 	public boolean check(LivingEntity caster) {
-		return loop.isActive(caster);
+		return loopActive(caster);
 	}
 
 	@Override
 	public boolean check(LivingEntity caster, LivingEntity target) {
-		return check(target);
+		return loopActive(target);
 	}
 
 	@Override
 	public boolean check(LivingEntity caster, Location location) {
 		return false;
+	}
+
+	private boolean loopActive(LivingEntity target) {
+		return loop.isActive(target);
 	}
 
 }

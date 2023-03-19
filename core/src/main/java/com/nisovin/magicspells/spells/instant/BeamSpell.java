@@ -22,6 +22,8 @@ import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
+
 public class BeamSpell extends InstantSpell implements TargetedLocationSpell, TargetedEntitySpell, TargetedEntityFromLocationSpell {
 
 	private Vector relativeOffset;
@@ -31,6 +33,8 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 	private final ConfigData<Double> hitRadius;
 	private final ConfigData<Double> maxDistance;
 	private final ConfigData<Double> verticalHitRadius;
+	private final ConfigData<Double> verticalRotation;
+	private final ConfigData<Double> horizontalRotation;
 
 	private final ConfigData<Float> gravity;
 	private final ConfigData<Float> interval;
@@ -59,6 +63,8 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 
 	private NoMagicZoneManager zoneManager;
 
+	private static final double ANGLE_Y = AccurateMath.toRadians(-90);
+
 	public BeamSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
@@ -69,6 +75,9 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 		hitRadius = getConfigDataDouble("hit-radius", 2);
 		maxDistance = getConfigDataDouble("max-distance", 30);
 		verticalHitRadius = getConfigDataDouble("vertical-hit-radius", 2);
+
+		verticalRotation = getConfigDataDouble("vertical-rotation", 0D);
+		horizontalRotation = getConfigDataDouble("horizontal-rotation", 0D);
 
 		gravity = getConfigDataFloat("gravity", 0F);
 		interval = getConfigDataFloat("interval", 1F);
@@ -240,6 +249,17 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 
 			dir = targetLoc.toVector().subtract(loc.toVector()).normalize().multiply(interval);
 		}
+
+		Vector dirNormalized = dir.clone().normalize();
+
+		Vector angleZ = Util.makeFinite(new Vector(-dirNormalized.getZ(), 0D, dirNormalized.getX()).normalize());
+		Vector angleY = Util.makeFinite(dirNormalized.rotateAroundAxis(angleZ, ANGLE_Y).normalize());
+
+		double verticalRotation = this.verticalRotation.get(caster, target, power, args);
+		double horizontalRotation = this.horizontalRotation.get(caster, target, power, args);
+
+		if (verticalRotation != 0) dir.rotateAroundAxis(angleZ, AccurateMath.toRadians(verticalRotation));
+		if (horizontalRotation != 0) dir.rotateAroundAxis(angleY, AccurateMath.toRadians(horizontalRotation));
 
 		float beamVerticalSpread = this.beamVerticalSpread.get(caster, target, power, args);
 		float beamHorizontalSpread = this.beamHorizontalSpread.get(caster, target, power, args);

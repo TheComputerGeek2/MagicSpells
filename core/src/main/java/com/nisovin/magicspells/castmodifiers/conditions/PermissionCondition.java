@@ -16,18 +16,22 @@ public class PermissionCondition extends Condition {
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return livingEntity.hasPermission(perm);
+	public boolean check(LivingEntity caster) {
+		return hasPermission(caster);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		return target.hasPermission(perm);
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return hasPermission(target);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
+	}
+
+	private boolean hasPermission(LivingEntity target) {
+		return target.hasPermission(perm);
 	}
 
 }

@@ -1,12 +1,13 @@
 package com.nisovin.magicspells.castmodifiers.conditions;
 
-import com.nisovin.magicspells.castmodifiers.Condition;
-import com.nisovin.magicspells.util.magicitems.MagicItemData;
-import com.nisovin.magicspells.util.magicitems.MagicItems;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.EntityEquipment;
+
+import com.nisovin.magicspells.castmodifiers.Condition;
+import com.nisovin.magicspells.util.magicitems.MagicItems;
+import com.nisovin.magicspells.util.magicitems.MagicItemData;
 
 public class OffHandPreciseCondition extends Condition {
 
@@ -19,23 +20,25 @@ public class OffHandPreciseCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		EntityEquipment eq = livingEntity.getEquipment();
-		return eq != null && check(eq.getItemInOffHand());
+	public boolean check(LivingEntity caster) {
+		return offHand(caster);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		EntityEquipment eq = target.getEquipment();
-		return eq != null && check(eq.getItemInOffHand());
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return offHand(target);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 	
-	private boolean check(ItemStack item) {
+	private boolean offHand(LivingEntity target) {
+		EntityEquipment equipment = target.getEquipment();
+		if (equipment == null) return false;
+		ItemStack item = equipment.getItemInOffHand();
+
 		MagicItemData data = MagicItems.getMagicItemDataFromItemStack(item);
 		if (data == null) return false;
 

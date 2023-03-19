@@ -13,17 +13,21 @@ public class StormCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return check(livingEntity, livingEntity.getLocation());
+	public boolean check(LivingEntity caster) {
+		return stormy(caster.getLocation());
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		return check(target, target.getLocation());
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return stormy(target.getLocation());
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
+		return stormy(location);
+	}
+
+	private boolean stormy(Location location) {
 		return location.getWorld().hasStorm() || location.getWorld().isThundering();
 	}
 

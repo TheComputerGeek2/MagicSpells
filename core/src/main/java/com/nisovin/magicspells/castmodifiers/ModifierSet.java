@@ -9,8 +9,8 @@ import org.bukkit.entity.LivingEntity;
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.events.*;
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.util.ModifierResult;
 import com.nisovin.magicspells.util.SpellData;
+import com.nisovin.magicspells.util.ModifierResult;
 
 public class ModifierSet {
 

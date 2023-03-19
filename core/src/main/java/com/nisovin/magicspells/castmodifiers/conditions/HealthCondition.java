@@ -32,23 +32,23 @@ public class HealthCondition extends OperatorCondition {
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return health(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return health(caster);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return health(target);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean health(LivingEntity livingEntity) {
-		double hp = livingEntity.getHealth();
-		double percentHp = hp / Util.getMaxHealth(livingEntity) * 100;
+	private boolean health(LivingEntity target) {
+		double hp = target.getHealth();
+		double percentHp = hp / Util.getMaxHealth(target) * 100D;
 		if (equals) {
 			if (percent) return percentHp == health;
 			return hp == health;

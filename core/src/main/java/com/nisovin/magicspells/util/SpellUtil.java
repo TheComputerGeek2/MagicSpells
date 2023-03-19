@@ -22,7 +22,7 @@ import com.nisovin.magicspells.handlers.MoneyHandler;
 import com.nisovin.magicspells.mana.ManaChangeReason;
 import com.nisovin.magicspells.util.managers.VariableManager;
 
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 
 public class SpellUtil {
 	
@@ -209,7 +209,7 @@ public class SpellUtil {
 				int maxDurability = item.getType().getMaxDurability();
 				if (maxDurability > 0 && meta instanceof Damageable damageable) {
 					int damage = damageable.getDamage() + durabilityCost;
-					damage = FastMath.max(FastMath.min(damage, maxDurability), 0);
+					damage = AccurateMath.max(AccurateMath.min(damage, maxDurability), 0);
 
 					damageable.setDamage(damage);
 					item.setItemMeta(meta);

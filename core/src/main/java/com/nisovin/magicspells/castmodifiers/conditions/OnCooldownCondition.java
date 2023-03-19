@@ -18,18 +18,22 @@ public class OnCooldownCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return spell.onCooldown(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return onCooldown(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		return spell.onCooldown(target);
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return onCooldown(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
+	}
+
+	private boolean onCooldown(LivingEntity target) {
+		return spell.onCooldown(target);
 	}
 
 }

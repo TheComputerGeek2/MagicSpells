@@ -24,24 +24,24 @@ public class OxygenCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return oxygen(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return oxygen(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return oxygen(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
-	private boolean oxygen(LivingEntity livingEntity) {
-		if (equals) return livingEntity.getRemainingAir() == oxygen;
-		else if (moreThan) return livingEntity.getRemainingAir() > oxygen;
-		else if (lessThan) return livingEntity.getRemainingAir() < oxygen;
+	private boolean oxygen(LivingEntity target) {
+		if (equals) return target.getRemainingAir() == oxygen;
+		else if (moreThan) return target.getRemainingAir() > oxygen;
+		else if (lessThan) return target.getRemainingAir() < oxygen;
 		return false;
 	}
 	

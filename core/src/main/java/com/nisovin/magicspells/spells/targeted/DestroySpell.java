@@ -182,7 +182,7 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 		List<Block> blocksToRemove = new ArrayList<>();
 
 		int vertRadius = this.vertRadius.get(caster, target, power, args);
-		int horizRadius = this.vertRadius.get(caster, target, power, args);
+		int horizRadius = this.horizRadius.get(caster, target, power, args);
 
 		for (int y = centerY - vertRadius; y <= centerY + vertRadius; y++) {
 			for (int x = centerX - horizRadius; x <= centerX + horizRadius; x++) {
@@ -204,6 +204,7 @@ public class DestroySpell extends TargetedSpell implements TargetedLocationSpell
 								blocksToRemove.add(b);
 							}
 						} else if (!b.getType().isSolid()) blocksToRemove.add(b);
+            
 						continue;
 					}
 

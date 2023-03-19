@@ -24,24 +24,24 @@ public class PotionEffectCondition extends OperatorCondition {
 			} catch (NumberFormatException ignored) {
 				return false;
 			}
-		}
-		else matchOnlyType = true;
+		} else matchOnlyType = true;
+
 		effectType = Util.getPotionEffectType(splits[0]);
 		return effectType != null;
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return checkPotionEffects(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return checkPotionEffects(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return checkPotionEffects(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
 	}
 
@@ -49,6 +49,7 @@ public class PotionEffectCondition extends OperatorCondition {
 		for (PotionEffect effect : target.getActivePotionEffects()) {
 			if (effect.getType() != effectType) continue;
 			if (matchOnlyType) return true;
+
 			int amplifier = effect.getAmplifier();
 			if (equals) return amplifier == value;
 			else if (moreThan) return amplifier > value;

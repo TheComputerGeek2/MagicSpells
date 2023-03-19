@@ -16,8 +16,8 @@ public class BoundingBox implements Space {
 	private double highX;
 	private double highY;
 	private double highZ;
-	private double horizRadius;
-	private double vertRadius;
+	private double horizontalRadius;
+	private double verticalRadius;
 	
 	public BoundingBox(Block center, double radius) {
 		this(center.getLocation().add(0.5, 0, 0.5), radius, radius);
@@ -27,13 +27,13 @@ public class BoundingBox implements Space {
 		this(center, radius, radius);
 	}
 	
-	public BoundingBox(Block center, double horizRadius, double vertRadius) {
-		this(center.getLocation().add(0.5, 0, 0.5), horizRadius, vertRadius);
+	public BoundingBox(Block center, double horizontalRadius, double verticalRadius) {
+		this(center.getLocation().add(0.5, 0, 0.5), horizontalRadius, verticalRadius);
 	}
 	
-	public BoundingBox(Location center, double horizRadius, double vertRadius) {
-		this.horizRadius = horizRadius;
-		this.vertRadius = vertRadius;
+	public BoundingBox(Location center, double horizontalRadius, double verticalRadius) {
+		this.horizontalRadius = horizontalRadius;
+		this.verticalRadius = verticalRadius;
 		setCenter(center);
 	}
 	
@@ -49,12 +49,12 @@ public class BoundingBox implements Space {
 	
 	public void setCenter(Location center) {
 		world = center.getWorld();
-		lowX = center.getX() - horizRadius;
-		lowY = center.getY() - vertRadius;
-		lowZ = center.getZ() - horizRadius;
-		highX = center.getX() + horizRadius;
-		highY = center.getY() + vertRadius;
-		highZ = center.getZ() + horizRadius;
+		lowX = center.getX() - horizontalRadius;
+		lowY = center.getY() - verticalRadius;
+		lowZ = center.getZ() - horizontalRadius;
+		highX = center.getX() + horizontalRadius;
+		highY = center.getY() + verticalRadius;
+		highZ = center.getZ() + horizontalRadius;
 	}
 	
 	public void expand(double amount) {
@@ -83,6 +83,14 @@ public class BoundingBox implements Space {
 	@Override
 	public boolean contains(Block block) {
 		return contains(block.getLocation().add(0.5, 0, 0.5));
+	}
+
+	public double getHorizontalRadius() {
+		return horizontalRadius;
+	}
+
+	public double getVerticalRadius() {
+		return verticalRadius;
 	}
 	
 }

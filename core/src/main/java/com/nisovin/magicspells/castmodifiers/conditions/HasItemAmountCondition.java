@@ -10,7 +10,6 @@ import org.bukkit.inventory.EntityEquipment;
 
 import com.nisovin.magicspells.util.InventoryUtil;
 import com.nisovin.magicspells.handlers.DebugHandler;
-
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.magicitems.MagicItemData;
 import com.nisovin.magicspells.castmodifiers.conditions.util.OperatorCondition;
@@ -39,24 +38,24 @@ public class HasItemAmountCondition extends OperatorCondition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return check(livingEntity, livingEntity);
+	public boolean check(LivingEntity caster) {
+		return check(caster, caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		if (target == null) return false;
-		if (target instanceof InventoryHolder) return check(((InventoryHolder) target).getInventory());
-		else return check(target.getEquipment());
+		if (target instanceof InventoryHolder holder) return checkInventory(holder.getInventory());
+		else return checkEquipment(target.getEquipment());
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		BlockState targetState = location.getBlock().getState();
-		return targetState instanceof InventoryHolder && check(((InventoryHolder) targetState).getInventory());
+		return targetState instanceof InventoryHolder holder && checkInventory(holder.getInventory());
 	}
 
-	private boolean check(Inventory inventory) {
+	private boolean checkInventory(Inventory inventory) {
 		int c = 0;
 		for (ItemStack i : inventory.getContents()) {
 			if (!isSimilar(i)) continue;
@@ -72,7 +71,7 @@ public class HasItemAmountCondition extends OperatorCondition {
 		return false;
 	}
 
-	private boolean check(EntityEquipment entityEquipment) {
+	private boolean checkEquipment(EntityEquipment entityEquipment) {
 		int c = 0;
 		for (ItemStack i : InventoryUtil.getEquipmentItems(entityEquipment)) {
 			if (!isSimilar(i)) continue;

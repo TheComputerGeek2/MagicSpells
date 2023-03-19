@@ -40,22 +40,22 @@ public class VariableStringEqualsCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return isEqualFor(livingEntity);
+	public boolean check(LivingEntity caster) {
+		return isEqualFor(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return isEqualFor(target);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
-		return isEqualFor(livingEntity);
+	public boolean check(LivingEntity caster, Location location) {
+		return isEqualFor(caster);
 	}
 
-	private boolean isEqualFor(LivingEntity entity) {
-		if (!(entity instanceof Player player)) return false;
+	private boolean isEqualFor(LivingEntity target) {
+		if (!(target instanceof Player player)) return false;
 		return Objects.equals(
 				MagicSpells.getVariableManager().getStringValue(variable, player),
 				isVariable ? MagicSpells.getVariableManager().getStringValue(value, player) : value

@@ -17,23 +17,27 @@ public class OnSameTeamCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
+	public boolean check(LivingEntity caster) {
 		return false;
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		if (target instanceof Player && livingEntity instanceof Player) {
-			ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
-			Team team1 = scoreboardManager.getMainScoreboard().getEntryTeam(livingEntity.getName());
-			Team team2 = scoreboardManager.getMainScoreboard().getEntryTeam(target.getName());
-			return team1 != null && team1.equals(team2);
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return checkTeam(caster, target);
+	}
+
+	@Override
+	public boolean check(LivingEntity caster, Location location) {
+		return false;
+	}
+
+	private boolean checkTeam(LivingEntity caster, LivingEntity target) {
+		if (caster instanceof Player c && target instanceof Player t) {
+			ScoreboardManager manager = Bukkit.getScoreboardManager();
+			Team team1 = manager.getMainScoreboard().getEntryTeam(c.getName());
+			Team team2 = manager.getMainScoreboard().getEntryTeam(t.getName());
+			return (team1 != null && team2 != null) && team1.equals(team2);
 		}
-		return false;
-	}
-
-	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
 		return false;
 	}
 	

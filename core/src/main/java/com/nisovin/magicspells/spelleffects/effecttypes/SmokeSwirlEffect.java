@@ -23,7 +23,7 @@ public class SmokeSwirlEffect extends SpellEffect {
 
 	@Override
 	public void loadFromConfig(ConfigurationSection config) {
-		duration = ConfigDataUtil.getInteger(config, "interval", TimeUtil.TICKS_PER_SECOND);
+		duration = ConfigDataUtil.getInteger(config, "duration", TimeUtil.TICKS_PER_SECOND);
 		interval = ConfigDataUtil.getInteger(config, "interval", 1);
 	}
 

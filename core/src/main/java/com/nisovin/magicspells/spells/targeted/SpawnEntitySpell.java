@@ -33,6 +33,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 import net.kyori.adventure.text.Component;
 
+import org.apache.commons.math4.core.jdkmath.JdkMath;
+
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
@@ -92,6 +94,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	private boolean gravity;
 	private boolean removeAI;
 	private boolean removeMob;
+	private boolean invulnerable;
 	private boolean useCasterName;
 	private boolean addLookAtPlayerAI;
 	private boolean allowSpawnInMidair;
@@ -189,6 +192,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		gravity = getConfigBoolean("gravity", true);
 		removeAI = getConfigBoolean("remove-ai", false);
 		removeMob = getConfigBoolean("remove-mob", true);
+		invulnerable = getConfigBoolean("invulnerable", false);
 		useCasterName = getConfigBoolean("use-caster-name", false);
 		addLookAtPlayerAI = getConfigBoolean("add-look-at-player-ai", false);
 		allowSpawnInMidair = getConfigBoolean("allow-spawn-in-midair", false);
@@ -411,7 +415,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		if (entityData == null || entityData.getEntityType() == null) return;
 		if (entityData.isPlayer()) return;
 
-		loc.setYaw((float) (Math.random() * 360));
+		loc.setYaw((float) (JdkMath.random() * 360));
 		LivingEntity entity = (LivingEntity) entityData.spawn(
 			loc.add(0.5, yOffset.get(caster, target, power, args), 0.5),
 			e -> {
@@ -436,7 +440,8 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 						preSpawned.setAI(false);
 					}
 				}
-				if (noAI) preSpawned.setAI(false);
+				preSpawned.setAI(!noAI);
+				preSpawned.setInvulnerable(invulnerable);
 
 				if (target != null) MobUtil.setTarget(preSpawned, target);
 			}

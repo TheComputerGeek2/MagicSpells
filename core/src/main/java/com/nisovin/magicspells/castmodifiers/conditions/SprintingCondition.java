@@ -14,19 +14,23 @@ public class SprintingCondition extends Condition {
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return check(livingEntity, livingEntity);
+	public boolean check(LivingEntity caster) {
+		return isSprinting(caster);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		if (!(target instanceof Player)) return false;
-		return ((Player) target).isSprinting();
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return isSprinting(target);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
+	}
+
+	private boolean isSprinting(LivingEntity target) {
+		if (!(target instanceof Player pl)) return false;
+		return pl.isSprinting();
 	}
 	
 }

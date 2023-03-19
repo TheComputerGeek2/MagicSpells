@@ -20,20 +20,24 @@ public class RidingCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return check(livingEntity, livingEntity);
+	public boolean check(LivingEntity caster) {
+		return isRiding(caster);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
-		Entity vehicle = target.getVehicle();
-		if (vehicle == null) return false;
-		return entityType == null || vehicle.getType() == entityType;
+	public boolean check(LivingEntity caster, LivingEntity target) {
+		return isRiding(target);
 	}
 	
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return false;
+	}
+
+	private boolean isRiding(LivingEntity target) {
+		Entity vehicle = target.getVehicle();
+		if (vehicle == null) return false;
+		return entityType == null || vehicle.getType() == entityType;
 	}
 
 }

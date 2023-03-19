@@ -14,11 +14,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.TargetInfo;
 import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.util.SpellFilter;
+import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.ValidTargetList;
 import com.nisovin.magicspells.events.SpellCastEvent;
@@ -39,6 +41,8 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 	private boolean preventCast;
 	private boolean preventChat;
 	private boolean preventCommands;
+	private boolean notifyHelperSpells;
+	private boolean notifyPassiveSpells;
 	private boolean powerAffectsDuration;
 
 	private final String preventCastSpellName;
@@ -59,6 +63,8 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 		preventCast = getConfigBoolean("prevent-cast", true);
 		preventChat = getConfigBoolean("prevent-chat", false);
 		preventCommands = getConfigBoolean("prevent-commands", false);
+		notifyHelperSpells = getConfigBoolean("notify-helper-spells", false);
+		notifyPassiveSpells = getConfigBoolean("notify-passive-spells", false);
 		powerAffectsDuration = getConfigBoolean("power-affects-duration", true);
 
 		preventCastSpellName = getConfigString("spell-on-denied-cast", "");
@@ -164,10 +170,13 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 		public void onSpellCast(final SpellCastEvent event) {
 			if (event.getCaster() == null) return;
 			if (!silenced.containsKey(event.getCaster().getUniqueId())) return;
-			if (filter.check(event.getSpell())) return;
+			Spell spell = event.getSpell();
+			if (filter.check(spell)) return;
 			event.setCancelled(true);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(MagicSpells.plugin, () -> {
 				if (preventCastSpell != null) preventCastSpell.cast(event.getCaster(), 1);
+				if (spell.isHelperSpell() && !notifyHelperSpells) return;
+				if (spell instanceof PassiveSpell && !notifyPassiveSpells) return;
 				sendMessage(strSilenced, event.getCaster(), event.getSpellArgs());
 			});
 		}

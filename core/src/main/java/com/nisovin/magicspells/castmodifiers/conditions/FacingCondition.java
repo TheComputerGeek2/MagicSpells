@@ -16,17 +16,17 @@ public class FacingCondition extends Condition {
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity) {
-		return getDirection(livingEntity.getLocation()).equals(direction);
+	public boolean check(LivingEntity caster) {
+		return getDirection(caster.getLocation()).equals(direction);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, LivingEntity target) {
+	public boolean check(LivingEntity caster, LivingEntity target) {
 		return getDirection(target.getLocation()).equals(direction);
 	}
 
 	@Override
-	public boolean check(LivingEntity livingEntity, Location location) {
+	public boolean check(LivingEntity caster, Location location) {
 		return getDirection(location).equals(direction);
 	}
 	

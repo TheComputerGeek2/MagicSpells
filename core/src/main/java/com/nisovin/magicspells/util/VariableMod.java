@@ -6,13 +6,13 @@ import java.util.function.Function;
 import java.util.function.BinaryOperator;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.commons.math3.util.FastMath;
-
 import org.bukkit.entity.Player;
 
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.config.FunctionData;
+
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 
 public class VariableMod {
 
@@ -28,7 +28,7 @@ public class VariableMod {
 		MULTIPLY((a, b) -> a * b),
 		DIVIDE((a, b) -> a / b),
 		MODULO((a, b) -> a % b),
-		POWER(FastMath::pow),
+		POWER(AccurateMath::pow),
 		RANDOM((a, b) -> ThreadLocalRandom.current().nextDouble() * b);
 
 		private final BinaryOperator<Double> operator;
