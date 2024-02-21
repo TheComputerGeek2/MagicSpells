@@ -82,6 +82,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 	private boolean changePitch;
 	private boolean controllable;
 	private boolean stopOnHitGround;
+	private boolean bounce;
 	private boolean stopOnModifierFail;
 	private boolean allowCasterInteract;
 	private boolean powerAffectsVelocity;
@@ -422,6 +423,15 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 				groundSpell.subcast(data.location(previousLocation));
 				if (spell != null) spell.playEffects(EffectPosition.TARGET, currentLocation, data);
 			}
+			if (bounce) {
+				if (b.getFace(previousLocation.getBlock()) == BlockFace.NORTH || b.getFace(previousLocation.getBlock()) == BlockFace.SOUTH)
+					currentVelocity.multiply(new Vector(1,1,-1));
+				if (b.getFace(previousLocation.getBlock()) == BlockFace.EAST || b.getFace(previousLocation.getBlock()) == BlockFace.WEST)
+					currentVelocity.multiply(new Vector(-1,1,1));
+				if (b.getFace(previousLocation.getBlock()) == BlockFace.UP || b.getFace(previousLocation.getBlock()) == BlockFace.DOWN)
+					currentVelocity.multiply(new Vector(1,-1,1));
+			}
+
 			if (stopOnHitGround) {
 				stop();
 				return;
@@ -436,7 +446,6 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 			stop();
 			return;
 		}
-
 		checkHitbox(currentLocation);
 		if (stopped) return;
 
@@ -444,6 +453,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 		Set<ParticleProjectileTracker> toRemove = new HashSet<>();
 		Set<ParticleProjectileTracker> trackers = new HashSet<>(ParticleProjectileSpell.getProjectileTrackers());
 		for (ParticleProjectileTracker collisionTracker : trackers) {
+
 			if (!canInteractWith(collisionTracker)) continue;
 
 			Subspell collisionSpell = interactionSpells.get(collisionTracker.spell.getInternalName());
@@ -862,6 +872,14 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 
 	public void setStopOnHitGround(boolean stopOnHitGround) {
 		this.stopOnHitGround = stopOnHitGround;
+	}
+
+	public boolean shouldBounce() {
+		return bounce;
+	}
+
+	public void setBounce(boolean bounce) {
+		this.bounce = bounce;
 	}
 
 	public boolean shouldStopOnModifierFail() {

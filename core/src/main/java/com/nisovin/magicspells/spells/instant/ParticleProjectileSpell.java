@@ -85,6 +85,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 	private final ConfigData<Boolean> hitAirAfterDuration;
 	private final ConfigData<Boolean> stopOnHitEntity;
 	private final ConfigData<Boolean> stopOnHitGround;
+	private final ConfigData<Boolean> bounce;
 	private final ConfigData<Boolean> stopOnModifierFail;
 	private final ConfigData<Boolean> allowCasterInteract;
 	private final ConfigData<Boolean> powerAffectsVelocity;
@@ -198,6 +199,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		hitAirDuring = getConfigDataBoolean("hit-air-during", false);
 		hitAirAfterDuration = getConfigDataBoolean("hit-air-after-duration", false);
 		stopOnHitGround = getConfigDataBoolean("stop-on-hit-ground", true);
+		bounce = getConfigDataBoolean("bounce", true);
 		stopOnHitEntity = getConfigDataBoolean("stop-on-hit-entity", true);
 		stopOnModifierFail = getConfigDataBoolean("stop-on-modifier-fail", true);
 		allowCasterInteract = getConfigDataBoolean("allow-caster-interact", true);
@@ -488,6 +490,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		tracker.setHitAirDuring(hitAirDuring.get(data));
 		tracker.setHitAirAfterDuration(hitAirAfterDuration.get(data));
 		tracker.setStopOnHitGround(stopOnHitGround.get(data));
+		tracker.setBounce(bounce.get(data));
 		tracker.setStopOnModifierFail(stopOnModifierFail.get(data));
 		tracker.setAllowCasterInteract(allowCasterInteract.get(data));
 		tracker.setPowerAffectsVelocity(powerAffectsVelocity.get(data));
