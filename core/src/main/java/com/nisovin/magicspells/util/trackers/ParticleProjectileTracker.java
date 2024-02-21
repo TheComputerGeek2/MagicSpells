@@ -446,6 +446,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 			stop();
 			return;
 		}
+
 		checkHitbox(currentLocation);
 		if (stopped) return;
 
@@ -455,7 +456,6 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 		for (ParticleProjectileTracker collisionTracker : trackers) {
 
 			if (!canInteractWith(collisionTracker)) continue;
-
 			Subspell collisionSpell = interactionSpells.get(collisionTracker.spell.getInternalName());
 			if (collisionSpell == null) {
 				toRemove.add(collisionTracker);
