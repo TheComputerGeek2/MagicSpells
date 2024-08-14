@@ -19,7 +19,8 @@ object ManagerVolatile {
     fun constructVolatileCodeHandler(): VolatileCodeHandle {
         val mcVersion = Bukkit.getMinecraftVersion()
         return try {
-            val version = "v" + mcVersion.replace(".", "_")
+            @Suppress("DEPRECATION")
+            val version = "v" + Bukkit.getUnsafe().protocolVersion
             val volatileCode = Class.forName("com.nisovin.magicspells.volatilecode.$version.VolatileCode_$version")
 
             MagicSpells.log("Found volatile code handler for $mcVersion.")

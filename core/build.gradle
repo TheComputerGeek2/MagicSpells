@@ -12,8 +12,7 @@ dependencies {
     shadow(group: "org.bstats", name: "bstats-bukkit", version: "3.0.2")
 
     shadow(project(path: ":nms:shared", configuration: "apiElements"))
-    shadow(project(path: ":nms:v1_21")) { transitive = false }
-    shadow(project(path: ":nms:v1_21_1")) { transitive = false }
+    shadow(project(path: ":nms:v767")) { transitive = false }
 
     implementation(group: "com.comphenix.protocol", name: "ProtocolLib", version: "5.1.0") { transitive = false }
     implementation(group: "com.github.libraryaddict", name: "LibsDisguises", version: "v10.0.25") { transitive = false }

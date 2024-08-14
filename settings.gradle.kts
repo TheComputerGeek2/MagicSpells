@@ -8,8 +8,8 @@ include("teams")
 include("towny")
 
 include(":nms:shared")
-include(":nms:v1_21")
-include(":nms:v1_21_1")
+// https://wiki.vg/Protocol_version_numbers
+include(":nms:v767")
 
 startParameter.isParallelProjectExecutionEnabled = true
 

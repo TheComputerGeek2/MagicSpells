@@ -1,4 +1,4 @@
-package com.nisovin.magicspells.volatilecode.v1_21_1
+package com.nisovin.magicspells.volatilecode.v767
 
 import java.util.*
 import java.lang.reflect.Method
@@ -30,8 +30,8 @@ import com.nisovin.magicspells.volatilecode.VolatileCodeHandle
 import com.nisovin.magicspells.volatilecode.VolatileCodeHelper
 
 import net.minecraft.core.BlockPos
-import net.minecraft.util.FastColor
 import net.minecraft.advancements.*
+import net.minecraft.util.FastColor
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.entity.EntityType
 import net.minecraft.network.protocol.game.*
@@ -39,15 +39,15 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.item.PrimedTnt
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.core.particles.ParticleOptions
-import net.minecraft.core.particles.ColorParticleOption
 import net.minecraft.network.syncher.EntityDataAccessor
+import net.minecraft.core.particles.ColorParticleOption
 import net.minecraft.advancements.critereon.ImpossibleTrigger
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket
 import net.minecraft.network.protocol.common.custom.GameTestAddMarkerDebugPayload
 import net.minecraft.network.protocol.common.custom.GameTestClearMarkersDebugPayload
 
-class VolatileCode_v1_21_1(helper: VolatileCodeHelper) : VolatileCodeHandle(helper) {
+class VolatileCode_v767(helper: VolatileCodeHelper) : VolatileCodeHandle(helper) {
 
     private val toastKey = ResourceLocation.fromNamespaceAndPath("magicspells", "toast_effect")
 
@@ -70,7 +70,7 @@ class VolatileCode_v1_21_1(helper: VolatileCodeHelper) : VolatileCodeHandle(help
             UPDATE_EFFECT_PARTICLES = net.minecraft.world.entity.LivingEntity::class.java.getDeclaredMethod("updateSynchronizedMobEffectParticles")
             UPDATE_EFFECT_PARTICLES!!.isAccessible = true
         } catch (e: Exception) {
-            helper.error("Encountered an error while creating the volatile code handler for 1.21.1")
+            helper.error("Encountered an error while creating the volatile code handler for " + Bukkit.getMinecraftVersion())
             e.printStackTrace()
         }
     }
