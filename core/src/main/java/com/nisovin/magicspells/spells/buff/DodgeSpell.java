@@ -48,8 +48,6 @@ public class DodgeSpell extends BuffSpell {
 
 		spellBeforeDodgeName = getConfigString("spell-before-dodge", "");
 		spellAfterDodgeName = getConfigString("spell-after-dodge", "");
-
-		filter = getConfigSpellFilter();
 	}
 
 	@Override
@@ -63,6 +61,8 @@ public class DodgeSpell extends BuffSpell {
 		spellAfterDodge = initSubspell(spellAfterDodgeName,
 				error.formatted("spell-after-dodge"),
 				true);
+
+		filter = getConfigSpellFilter();
 	}
 
 	@Override

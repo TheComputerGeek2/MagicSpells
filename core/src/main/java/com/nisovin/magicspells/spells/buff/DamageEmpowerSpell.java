@@ -35,9 +35,15 @@ public class DamageEmpowerSpell extends BuffSpell {
 		damageMultiplier = getConfigDataFloat("damage-multiplier", 1.5F);
 		constantFlatModifier = getConfigDataBoolean("constant-flat-modifier", true);
 		constantDamageMultiplier = getConfigDataBoolean("constant-damage-multiplier", true);
-		filter = getConfigSpellFilter();
 
 		entities = new HashMap<>();
+	}
+
+	@Override
+	public void initialize() {
+		super.initialize();
+
+		filter = getConfigSpellFilter();
 	}
 
 	@Override

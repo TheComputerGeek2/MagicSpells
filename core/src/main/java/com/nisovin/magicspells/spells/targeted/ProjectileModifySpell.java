@@ -39,7 +39,7 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 	private final ConfigData<Boolean> pointBlank;
 	private final ConfigData<Boolean> claimProjectiles;
 
-	private final SpellFilter filter;
+	private SpellFilter filter;
 
 	private final ConfigData<Float> velocity;
 
@@ -114,8 +114,6 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 
 		pointBlank = getConfigDataBoolean("point-blank", true);
 		claimProjectiles = getConfigDataBoolean("claim-projectiles", false);
-
-		filter = getConfigSpellFilter();
 
 		velocity = getConfigDataFloat("projectile-velocity", 1F);
 		acceleration = getConfigDataFloat("projectile-acceleration", 0F);
@@ -206,6 +204,8 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 		entityLocationSpell = initSubspell(entityLocationSpellName,
 				error.formatted("spell-on-entity-location"),
 				true);
+
+		filter = getConfigSpellFilter();
 	}
 
 	@Override

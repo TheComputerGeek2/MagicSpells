@@ -20,7 +20,7 @@ public class SpellTargetListener extends PassiveListener {
 	@Override
 	public void initialize(@NotNull String var) {
 		if (var.isEmpty()) return;
-		filter = SpellFilter.fromString(var);
+		filter = SpellFilter.fromLegacyString(var);
 	}
 
 	@OverridePriority

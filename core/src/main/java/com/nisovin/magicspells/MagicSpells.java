@@ -19,6 +19,9 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.LinkedHashMultimap;
+
 import de.slikey.effectlib.EffectManager;
 
 import org.bstats.bukkit.Metrics;
@@ -110,6 +113,7 @@ public class MagicSpells extends JavaPlugin {
 	private Map<String, Spell> spellNames; // Map configured names to spells
 	private Map<String, Spell> incantations; // Map incantation strings to spells
 	private Map<String, Spellbook> spellbooks; // Player spellbooks
+	private SetMultimap<String, Spell> spellsByTag; // Map of tag -> spell
 
 	private List<Spell> spellsOrdered; // Spells ordered
 
@@ -276,6 +280,7 @@ public class MagicSpells extends JavaPlugin {
 		spellNames = new HashMap<>();
 		spellsOrdered = new ArrayList<>();
 		spellbooks = new HashMap<>();
+		spellsByTag = LinkedHashMultimap.create();
 		incantations = new HashMap<>();
 
 		// Make sure directories are created
@@ -655,6 +660,9 @@ public class MagicSpells extends JavaPlugin {
 				MagicSpells.error(spell.getClass().getSimpleName() + " '" + spell.internalName + "' could not be loaded.");
 				continue;
 			}
+
+			for (String tag : spell.getTags())
+				spellsByTag.put(tag, spell);
 
 			spellNames.put(Util.getPlainString(Util.getMiniMessage(spell.getName().toLowerCase())), spell);
 			String[] aliases = spell.getAliases();
@@ -1401,6 +1409,10 @@ public class MagicSpells extends JavaPlugin {
 		return plugin.spellsOrdered;
 	}
 
+	public static SetMultimap<String, Spell> getSpellsByTag() {
+		return plugin.spellsByTag;
+	}
+
 	public static Map<String, Spell> getSpellNames() {
 		return plugin.spellNames;
 	}
@@ -2129,6 +2141,8 @@ public class MagicSpells extends JavaPlugin {
 		spellsOrdered = null;
 		spellbooks.clear();
 		spellbooks = null;
+		spellsByTag.clear();
+		spellsByTag = null;
 		incantations.clear();
 		incantations = null;
 		entityNames.clear();

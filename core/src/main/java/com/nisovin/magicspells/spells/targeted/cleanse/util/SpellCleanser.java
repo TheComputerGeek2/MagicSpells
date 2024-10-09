@@ -28,7 +28,7 @@ public abstract class SpellCleanser<T extends Spell> implements Cleanser {
 
 		// If the string is a filter, we need to loop through all spells to find them.
 		if (FILTER_CHARS.matcher(string).find()) {
-			SpellFilter filter = SpellFilter.fromString(string);
+			SpellFilter filter = SpellFilter.fromLegacyString(string);
 			for (Spell spell : MagicSpells.getSpellsOrdered()) {
 				if (!getSpellClass().isInstance(spell)) continue;
 				if (!filter.check(spell)) continue;
