@@ -1,5 +1,6 @@
 plugins {
-    id("io.github.goooler.shadow") version "8.1.7"
+    id('com.gradleup.shadow') version '8.3.2'
+    id("antlr")
 }
 
 dependencies {
@@ -7,6 +8,9 @@ dependencies {
     shadow(group: "com.github.Chronoken", name: "EffectLib", version: "477d459")
     shadow(group: "co.aikar", name: "acf-paper", version: "0.5.1-SNAPSHOT")
     shadow(group: "org.bstats", name: "bstats-bukkit", version: "3.0.2")
+
+    shadow(group: "org.antlr", name: "antlr4-runtime", version: "4.13.2")
+    antlr(group: "org.antlr", name: "antlr4", version: "4.13.2")
 
     shadow(project(path: ":nms:shared", configuration: "apiElements"))
     shadow(project(path: ":nms:latest")) { transitive = false }
@@ -61,6 +65,18 @@ shadowJar {
     relocate("co.aikar.locales", "com.nisovin.magicspells.shaded.locales")
     relocate("org.bstats", "com.nisovin.magicspells.shaded.bstats")
     archiveClassifier.set("")
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir file("generated-src/antlr/main/")
+        }
+    }
+}
+
+generateGrammarSource {
+    arguments += ["-package", "com.nisovin.magicspells.util.spellfilter", "-visitor", "-no-listener"]
 }
 
 artifacts {

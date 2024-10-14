@@ -39,6 +39,11 @@ public class SpellHasteSpell extends BuffSpell {
 		powerAffectsCooldownModAmt = getConfigDataBoolean("power-affects-cooldown-mod-amt", true);
 
 		entities = new HashMap<>();
+	}
+
+	@Override
+	public void initialize() {
+		super.initialize();
 
 		filter = getConfigSpellFilter();
 	}

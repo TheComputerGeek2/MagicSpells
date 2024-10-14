@@ -36,7 +36,7 @@ public record Interaction(
 			if (object instanceof String string) {
 				String[] splits = string.split(" ");
 
-				SpellFilter interactsWith = SpellFilter.fromString(splits[0]);
+				SpellFilter interactsWith = SpellFilter.fromLegacyString(splits[0]);
 				if (splits.length < 2) {
 					interactions.add(new Interaction(interactsWith, null));
 					continue;
@@ -59,7 +59,7 @@ public record Interaction(
 			SpellFilter interactsWith;
 			if (config.isConfigurationSection("with"))
 				interactsWith = SpellFilter.fromConfig(config, "with");
-			else interactsWith = SpellFilter.fromString(config.getString("with", ""));
+			else interactsWith = SpellFilter.fromLegacyString(config.getString("with", ""));
 
 			String collisionName = config.getString("collision-spell", "");
 			Subspell collisionSpell = collisionName.isEmpty() ? null : new Subspell(collisionName);

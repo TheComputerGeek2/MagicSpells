@@ -42,6 +42,11 @@ public class ListSpell extends CommandSpell {
 
 		strPrefix = getConfigString("str-prefix", "Known spells:");
 		strNoSpells = getConfigString("str-no-spells", "You do not know any spells.");
+	}
+
+	@Override
+	protected void initialize() {
+		super.initialize();
 
 		filter = getConfigSpellFilter("filter");
 	}

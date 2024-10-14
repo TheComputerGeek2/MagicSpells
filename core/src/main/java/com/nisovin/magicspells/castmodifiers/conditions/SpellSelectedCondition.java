@@ -21,7 +21,7 @@ public class SpellSelectedCondition extends Condition {
 	@Override
 	public boolean initialize(@NotNull String var) {
 		if (var.isEmpty()) return false;
-		filter = SpellFilter.fromString(var);
+		filter = SpellFilter.fromLegacyString(var);
 		return true;
 	}
 

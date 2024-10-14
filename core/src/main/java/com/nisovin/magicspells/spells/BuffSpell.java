@@ -105,8 +105,6 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 		spellOnCostName = getConfigString("spell-on-cost", "");
 		spellOnUseIncrementName = getConfigString("spell-on-use-increment", "");
 
-		filter = getConfigSpellFilter();
-
 		if (cancelOnGiveDamage || cancelOnTakeDamage) registerEvents(new DamageListener());
 		if (cancelOnDeath) registerEvents(new PlayerDeathListener());
 		if (cancelOnTeleport) registerEvents(new TeleportListener());
@@ -136,6 +134,8 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 		spellOnEnd = initSubspell(spellOnEndName,
 				error.formatted("spell-on-end"),
 				true);
+
+		filter = getConfigSpellFilter();
 	}
 
 	@Override

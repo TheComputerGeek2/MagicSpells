@@ -11,7 +11,7 @@ import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
 public class ModifyCooldownSpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private final SpellFilter filter;
+	private SpellFilter filter;
 
 	private final ConfigData<Float> seconds;
 	private final ConfigData<Float> multiplier;
@@ -27,6 +27,11 @@ public class ModifyCooldownSpell extends TargetedSpell implements TargetedEntity
 
 		powerAffectsSeconds = getConfigDataBoolean("power-affects-seconds", true);
 		powerAffectsMultiplier = getConfigDataBoolean("power-affects-multiplier", true);
+	}
+
+	@Override
+	protected void initialize() {
+		super.initialize();
 
 		filter = getConfigSpellFilter();
 	}
