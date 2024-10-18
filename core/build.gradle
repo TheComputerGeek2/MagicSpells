@@ -15,8 +15,8 @@ dependencies {
     implementation(group: "com.github.libraryaddict", name: "LibsDisguises", version: "v10.0.25") { transitive = false }
     implementation(group: "com.github.MilkBowl", name: "VaultAPI", version: "master-SNAPSHOT") { transitive = false }
     implementation(group: "me.clip", name: "placeholderapi", version: "2.11.6") { transitive = false }
-    implementation(group: "com.github.GriefPrevention", name: "GriefPrevention", version: "master-SNAPSHOT") { transitive = false }
-    implementation(group: "com.github.Xezard", name: "XGlow", version: "master-SNAPSHOT") {
+    implementation(group: "com.github.GriefPrevention", name: "GriefPrevention", version: "17.0.0") { transitive = false }
+    implementation(group: "com.github.Xezard", name: "XGlow", version: "1.1.0") {
         exclude(module: "XGlowPlugin")
         exclude(module: "XGlowExample")
     }
