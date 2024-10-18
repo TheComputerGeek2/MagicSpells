@@ -42,7 +42,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 	private final boolean cancelOnItemSwitch;
 	private final boolean cancelOnTakeDamage;
 
-	private final SpellFilter filter;
+	private SpellFilter filter;
 
 	public LevitateSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -59,14 +59,14 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 		cancelOnItemSwitch = getConfigBoolean("cancel-on-item-switch", true);
 		cancelOnTakeDamage = getConfigBoolean("cancel-on-take-damage", true);
 
-		filter = getConfigSpellFilter();
-
 		levitating = new HashMap<>();
 	}
 
 	@Override
 	public void initialize() {
 		super.initialize();
+
+		filter = getConfigSpellFilter();
 
 		if (cancelOnItemSwitch) registerEvents(new ItemSwitchListener());
 		if (cancelOnSpellCast) registerEvents(new SpellCastListener());

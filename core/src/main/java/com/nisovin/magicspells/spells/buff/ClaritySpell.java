@@ -32,9 +32,14 @@ public class ClaritySpell extends BuffSpell {
 		constantMultiplier = getConfigDataBoolean("constant-multiplier", true);
 		powerAffectsMultiplier = getConfigDataBoolean("power-affects-multiplier", true);
 
-		filter = getConfigSpellFilter();
-
 		entities = new HashMap<>();
+	}
+
+	@Override
+	public void initialize() {
+		super.initialize();
+
+		filter = getConfigSpellFilter();
 	}
 
 	@Override

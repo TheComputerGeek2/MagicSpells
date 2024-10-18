@@ -19,6 +19,9 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.LinkedHashMultimap;
+
 import de.slikey.effectlib.EffectManager;
 
 import org.bstats.bukkit.Metrics;
@@ -110,6 +113,7 @@ public class MagicSpells extends JavaPlugin {
 	private Map<String, Spell> spellNames; // Map configured names to spells
 	private Map<String, Spell> incantations; // Map incantation strings to spells
 	private Map<String, Spellbook> spellbooks; // Player spellbooks
+	private SetMultimap<String, Spell> spellsByTag; // Map of tag -> spell
 
 	private List<Spell> spellsOrdered; // Spells ordered
 
@@ -276,6 +280,7 @@ public class MagicSpells extends JavaPlugin {
 		spellNames = new HashMap<>();
 		spellsOrdered = new ArrayList<>();
 		spellbooks = new HashMap<>();
+		spellsByTag = LinkedHashMultimap.create();
 		incantations = new HashMap<>();
 
 		// Make sure directories are created
@@ -646,31 +651,42 @@ public class MagicSpells extends JavaPlugin {
 
 	private void initializeSpells() {
 		log("Initializing spells...");
-		for (Spell spell : new ArrayList<>(spells.values())) {
+
+		Iterator<Map.Entry<String, Spell>> it = spells.entrySet().iterator();
+		while (it.hasNext()) {
+			Spell spell = it.next().getValue();
+
 			DependsOn dependsOn = spell.getClass().getAnnotation(DependsOn.class);
 			if (dependsOn != null && !Util.checkPluginsEnabled(dependsOn.value())) {
-				spells.remove(spell.getInternalName().toLowerCase());
 				spellsOrdered.remove(spell);
+				it.remove();
 
 				MagicSpells.error(spell.getClass().getSimpleName() + " '" + spell.internalName + "' could not be loaded.");
 				continue;
 			}
 
 			spellNames.put(Util.getPlainString(Util.getMiniMessage(spell.getName().toLowerCase())), spell);
+
+			for (String tag : spell.getTags())
+				spellsByTag.put(tag, spell);
+
 			String[] aliases = spell.getAliases();
 			if (aliases != null) {
 				for (String alias : aliases) {
 					if (!spellNames.containsKey(alias.toLowerCase())) spellNames.put(alias.toLowerCase(), spell);
 				}
 			}
+
 			List<String> incs = spell.getIncantations();
 			if (incs != null && !incs.isEmpty()) {
 				for (String s : incs) {
 					incantations.put(s.toLowerCase(), spell);
 				}
 			}
-			spell.initialize();
 		}
+
+		spellsOrdered.forEach(Spell::initialize);
+
 		log("...done");
 	}
 
@@ -1401,6 +1417,10 @@ public class MagicSpells extends JavaPlugin {
 		return plugin.spellsOrdered;
 	}
 
+	public static SetMultimap<String, Spell> getSpellsByTag() {
+		return plugin.spellsByTag;
+	}
+
 	public static Map<String, Spell> getSpellNames() {
 		return plugin.spellNames;
 	}
@@ -2129,6 +2149,8 @@ public class MagicSpells extends JavaPlugin {
 		spellsOrdered = null;
 		spellbooks.clear();
 		spellbooks = null;
+		spellsByTag.clear();
+		spellsByTag = null;
 		incantations.clear();
 		incantations = null;
 		entityNames.clear();

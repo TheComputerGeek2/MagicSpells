@@ -483,8 +483,7 @@ public class LoopSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 		public void onDeath(PlayerDeathEvent event) {
 			UUID uuid = event.getEntity().getUniqueId();
 
-			List<Spell> spells = MagicSpells.getSpellsOrdered();
-			for (Spell spell : spells) {
+			for (Spell spell : MagicSpells.getSpellsOrdered()) {
 				if (!(spell instanceof LoopSpell loopSpell)) continue;
 
 				Collection<Loop> loops = loopSpell.getActiveLoops().get(uuid);

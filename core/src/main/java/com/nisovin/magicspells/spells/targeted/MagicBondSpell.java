@@ -25,13 +25,19 @@ public class MagicBondSpell extends TargetedSpell implements TargetedEntitySpell
 
 	private final String strDurationEnd;
 
-	private final SpellFilter filter;
+	private SpellFilter filter;
 
 	public MagicBondSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
 		duration = getConfigDataInt("duration", 200);
 		strDurationEnd = getConfigString("str-duration", "");
+	}
+
+	@Override
+	protected void initialize() {
+		super.initialize();
+
 		filter = getConfigSpellFilter();
 	}
 
