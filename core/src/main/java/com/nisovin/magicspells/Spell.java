@@ -911,15 +911,14 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	}
 
 	/**
-	 * @param key Path for the keys to be read from. If the path is set to something like "filter", the keys will
-	 *            be read from spell config section under the "filter" section.
+	 * @param key Path for the String or Config SpellFilter to be read from.
 	 */
 	protected SpellFilter getConfigSpellFilter(String key) {
 		return SpellFilter.fromConfig(config.getMainConfig(), internalKey + key);
 	}
 
 	/**
-	 * Gets the config spell filter under the base path of the spell config.
+	 * Gets the Config SpellFilter keys under the base path of the spell config.
 	 */
 	protected SpellFilter getConfigSpellFilter() {
 		return SpellFilter.fromSection(config.getMainConfig(), internalKey);
