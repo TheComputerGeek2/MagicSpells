@@ -3,7 +3,6 @@ package com.nisovin.magicspells.spells.targeted;
 import org.bukkit.entity.Player;
 
 import com.nisovin.magicspells.util.*;
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
@@ -22,19 +21,15 @@ public class RiptideSpell extends TargetedSpell implements TargetedEntitySpell {
 	public CastResult cast(SpellData data) {
 		TargetInfo<Player> info = getTargetedPlayer(data);
 		if (info.noTarget()) return noTarget(info);
-		data = info.spellData();
 
-		MagicSpells.getVolatileCodeHandler().startAutoSpinAttack(info.target(), duration.get(data));
-		playSpellEffects(data);
-
-		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+		return castAtEntity(info.spellData());
 	}
 
 	@Override
 	public CastResult castAtEntity(SpellData data) {
 		if (!(data.target() instanceof Player player)) return noTarget(data);
 
-		MagicSpells.getVolatileCodeHandler().startAutoSpinAttack(player, duration.get(data));
+		player.startRiptideAttack(duration.get(data), 0, null);
 		playSpellEffects(data);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
