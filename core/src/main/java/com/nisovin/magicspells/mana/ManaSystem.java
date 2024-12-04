@@ -254,7 +254,12 @@ public class ManaSystem extends ManaHandler {
 	
 	private void showManaOnHungerBar(Player player, ManaBar bar) {
 		int food = Math.round(((float) bar.getMana() / (float) bar.getMaxMana()) * 20);
-		MagicSpells.getVolatileCodeHandler().sendStatusUpdate(player, player.getHealth(), food, player.getSaturation());
+
+		double health = player.isHealthScaled() ?
+				player.getHealth() / Util.getMaxHealth(player) * player.getHealthScale() :
+				player.getHealth();
+
+		player.sendHealthUpdate(health, food, player.getSaturation());
 	}
 
 	private void showManaOnActionBar(Player player, ManaBar bar) {

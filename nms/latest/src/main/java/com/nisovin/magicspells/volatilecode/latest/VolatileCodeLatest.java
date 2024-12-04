@@ -9,7 +9,6 @@ import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 
@@ -151,11 +150,6 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 	}
 
 	@Override
-	public void startAutoSpinAttack(Player player, int ticks) {
-		((CraftPlayer) player).getHandle().startAutoSpinAttack(ticks, 0f, net.minecraft.world.item.ItemStack.EMPTY);
-	}
-
-	@Override
 	public void playHurtSound(LivingEntity entity) {
 		var nmsEntity = ((CraftLivingEntity) entity).getHandle();
 
@@ -206,16 +200,6 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 	}
 
 	@Override
-	public void sendStatusUpdate(Player player, double health, int food, float saturation) {
-		double displayedHealth = (float) health;
-		if (player.isHealthScaled()) {
-			displayedHealth = player.getHealth() / player.getAttribute(Attribute.MAX_HEALTH).getValue() * player.getHealthScale();
-		}
-
-		((CraftPlayer) player).getHandle().connection.send(new ClientboundSetHealthPacket((float) displayedHealth, food, saturation));
-	}
-
-	@Override
 	public void addGameTestMarker(Player player, Location location, int color, String name, int lifetime) {
 		GameTestAddMarkerDebugPayload payload = new GameTestAddMarkerDebugPayload(MCUtil.toBlockPosition(location), color, name, lifetime);
 		((CraftPlayer) player).getHandle().connection.send(new ClientboundCustomPayloadPacket(payload));
@@ -226,4 +210,5 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 		GameTestClearMarkersDebugPayload payload = new GameTestClearMarkersDebugPayload();
 		((CraftPlayer) player).getHandle().connection.send(new ClientboundCustomPayloadPacket(payload));
 	}
+
 }
