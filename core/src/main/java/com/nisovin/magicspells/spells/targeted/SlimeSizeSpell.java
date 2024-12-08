@@ -37,9 +37,9 @@ public class SlimeSizeSpell extends TargetedSpell implements TargetedEntitySpell
 
 	@Override
 	public CastResult castAtEntity(SpellData data) {
-		if (!(data.target() instanceof Slime target)) return noTarget(data);
+		if (!SLIME.isValidTarget(data.target())) return noTarget(data);
 
-		return setSize(target, data);
+		return setSize((Slime) data.target(), data);
 	}
 
 	@Override
