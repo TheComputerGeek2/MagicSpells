@@ -144,6 +144,12 @@ public record SpellData(LivingEntity caster, LivingEntity target, Location locat
 		return args != null && args.length > 0;
 	}
 
+	public boolean isValid() {
+		return (caster == null || caster.isValid())
+			&& (target == null || target.isValid())
+			&& (recipient == null || recipient.isValid());
+	}
+
 	public static class Builder {
 
 		private LivingEntity caster;
