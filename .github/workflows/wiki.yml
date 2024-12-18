@@ -11,9 +11,55 @@ jobs:
         id: secret
         run: echo "empty=${{secrets.WIKI_WEBHOOK == ''}}" >> $GITHUB_OUTPUT
 
+      - name: Checkout
+        if: steps.secret.outputs.empty == 'false'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{github.repository}}.wiki
+
       - name: Send Webhook
         if: steps.secret.outputs.empty == 'false'
-        uses: "oznu/gh-wiki-edit-discord-notification@v1.0.0"
+        uses: actions/github-script@v7
         with:
-          discord-webhook-url: ${{ secrets.WIKI_WEBHOOK }}
-          ignore-collaborators: false
+          script: |
+            const embedLimit = 10;
+            const fieldsLimit = 25;
+            
+            // Array of batched 10 embeds per element, each with up to 25 fields documenting a page edit.
+            const batches = [];
+            
+            for (const {title, html_url, sha} of context.payload.pages) {
+              const needsNewBatch = !batches.length || batches.at(-1).length >= embedLimit;
+              if (needsNewBatch) batches.push([]);
+              
+              const needsNewEmbed = !batches.at(-1).length || batches.at(-1).at(-1).fields.length >= fieldsLimit;
+              if (needsNewEmbed) batches.at(-1).push({
+                author: {
+                  name: "Edited by: " + context.payload.sender.login,
+                  url: context.payload.sender.html_url,
+                  icon_url: context.payload.sender.avatar_url,
+                },
+                fields: []
+              });
+              
+              const {stdout} = await exec.getExecOutput(`git log -1 --pretty=format:"%B"`);
+              batches.at(-1).at(-1).fields.push({
+                name: title,
+                value: stdout.trim().split("\n").map(l => "> " + l).join("\n") +
+                  `\n-# [View Page](${html_url}) • [View Changes](${html_url}/_compare/${sha})`
+              });
+            }
+            
+            batches.forEach(embeds => {
+              const message = {
+                username: "Wiki Updates",
+                avatar_url: "https://files.jasperlorelai.eu/magicspells/images/webhook_icon.png",
+                embeds
+              };
+              fetch("${{secrets.WIKI_WEBHOOK}}", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(message)
+              }).then(response => console.log("Status: " + response.status))
+                .catch(error => core.setFailed(error.message));
+            });
