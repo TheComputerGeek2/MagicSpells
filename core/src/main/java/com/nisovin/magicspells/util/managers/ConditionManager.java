@@ -218,7 +218,7 @@ public class ConditionManager {
 		addCondition(SleepingCondition.class);
 		addCondition(UnderWaterCondition.class);
 		addCondition(FixedTimeCondition.class);
-		addCondition(UsingCondition.class);
+		addCondition(UsingItemCondition.class);
 	}
 
 }

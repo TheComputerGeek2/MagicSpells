@@ -10,7 +10,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.DependsOn;
@@ -36,11 +35,11 @@ public class DisguiseSpell extends BuffSpell {
 
 	private EntityData entityData;
 
-	private String playerName;
-	private String skinName;
+	private final String playerName;
+	private final String skinName;
 
-	private boolean burning;
-	private boolean glowing;
+	private final boolean burning;
+	private final boolean glowing;
 
 	public DisguiseSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -53,18 +52,21 @@ public class DisguiseSpell extends BuffSpell {
 		burning = getConfigBoolean("burning", false);
 		glowing = getConfigBoolean("glowing", false);
 
-		if (isConfigSection("disguise")) {
-			ConfigurationSection disguiseSection = getConfigSection("disguise");
-			if (disguiseSection != null) entityData = new EntityData(disguiseSection);
+		if (!isConfigSection("disguise")) return;
 
-			MagicSpells.error("DisguiseSpell '" + internalName + "' is using the legacy 'disguise' section, which is planned for removal. Please switch to a 'disguise' string.");
-			return;
-		}
+		entityData = new EntityData(getConfigSection("disguise"));
+		MagicSpells.error("DisguiseSpell '" + internalName + "' is using the legacy 'disguise' section, which is planned for removal. Please switch to a 'disguise' string.");
+	}
+
+	@Override
+	public void initialize() {
+		super.initialize();
+
+		if (entityData != null) return;
 
 		String disguiseString = getConfigString("disguise", null);
 		if (disguiseString == null) {
-			MagicSpells.error("DisguiseSpell '" + internalName + "' has an invalid or no 'disguise' defined.");
-			disguiseData = null;
+			MagicSpells.error("DisguiseSpell '" + internalName + "' has an invalid 'disguise' defined!");
 			return;
 		}
 
@@ -76,7 +78,6 @@ public class DisguiseSpell extends BuffSpell {
 			} catch (Throwable t) {
 				MagicSpells.error("DisguiseSpell '" + internalName + "' has an invalid 'disguise' defined.");
 				DebugHandler.debug(t);
-				disguiseData = null;
 			}
 
 			return;
@@ -89,16 +90,6 @@ public class DisguiseSpell extends BuffSpell {
 				return null;
 			}
 		};
-	}
-
-	@Override
-	public void initialize() {
-		super.initialize();
-
-		if (disguiseData != null) return;
-
-		if (entityData == null || entityData.getEntityType() == null)
-			MagicSpells.error("DisguiseSpell '" + internalName + "' has an invalid disguise defined!");
 	}
 
 	@Override

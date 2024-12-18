@@ -2,19 +2,21 @@ package com.nisovin.magicspells.spells.targeted;
 
 import org.bukkit.DyeColor;
 import org.bukkit.entity.Sheep;
+import org.bukkit.entity.Bogged;
 import org.bukkit.entity.LivingEntity;
+
+import io.papermc.paper.entity.Shearable;
 
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
-//This spell currently support the shearing of sheep at the moment.
-//Future tweaks for the shearing of other mobs will be added.
-
 public class RegrowSpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private static final ValidTargetChecker SHEEP = entity -> entity instanceof Sheep sheep && sheep.isSheared() && sheep.isAdult();
+	private static final ValidTargetChecker REGROWABLE = entity ->
+			(entity instanceof Sheep sheep && sheep.isSheared() && sheep.isAdult()) ||
+			(entity instanceof Bogged bogged && bogged.isSheared());
 
 	private final ConfigData<DyeColor> woolColor;
 
@@ -28,36 +30,36 @@ public class RegrowSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		forceWoolColor = getConfigDataBoolean("force-wool-color", false);
 		randomWoolColor = getConfigDataBoolean("random-wool-color", false);
-
 	}
 
 	@Override
 	public CastResult cast(SpellData data) {
-		TargetInfo<LivingEntity> info = getTargetedEntity(data, SHEEP);
+		TargetInfo<LivingEntity> info = getTargetedEntity(data, REGROWABLE);
 		if (info.noTarget()) return noTarget(info);
 
-		return grow((Sheep) info.target(), info.spellData());
+		return regrow((Shearable) info.target(), info.spellData());
 	}
 
 	@Override
 	public CastResult castAtEntity(SpellData data) {
-		if (!(data.target() instanceof Sheep sheep) || !sheep.isSheared() || !sheep.isAdult())
-			return noTarget(data);
+		if (!REGROWABLE.isValidTarget(data.target())) return noTarget(data);
 
-		return grow(sheep, data);
+		return regrow((Shearable) data.target(), data);
 	}
 
-	public CastResult grow(Sheep sheep, SpellData data) {
-		if (forceWoolColor.get(data)) {
-			DyeColor color = randomWoolColor.get(data) ? randomizeDyeColor() : woolColor.get(data);
-			if (color == null) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
-
-			sheep.setColor(color);
+	public CastResult regrow(Shearable shearable, SpellData data) {
+		if (shearable instanceof Sheep sheep) {
+			if (forceWoolColor.get(data)) {
+				DyeColor color = randomWoolColor.get(data) ? randomizeDyeColor() : woolColor.get(data);
+				if (color == null) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
+				sheep.setColor(color);
+			}
+			sheep.setSheared(false);
+		} else if (shearable instanceof Bogged bogged) {
+			bogged.setSheared(false);
 		}
 
-		sheep.setSheared(false);
 		playSpellEffects(data);
-
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}
 
@@ -69,7 +71,7 @@ public class RegrowSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	@Override
 	public ValidTargetChecker getValidTargetChecker() {
-		return SHEEP;
+		return REGROWABLE;
 	}
 
 }
