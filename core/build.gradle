@@ -24,23 +24,10 @@ dependencies {
         exclude(module: "XGlowPlugin")
         exclude(module: "XGlowExample")
     }
-
-    implementation(group: "com.github.EngineHub", name: "WorldGuard", version: "master") {
-        exclude(module: "worldguard-libs")
-    }
-
-    implementation(group: "com.github.EngineHub", name: "WorldEdit", version: "master") {
-        transitive = false
-        exclude(module: "ap")
-        exclude(module: "cli")
-        exclude(module: "fabric")
-        exclude(module: "forge")
-        exclude(module: "sponge")
-        exclude(module: "worldedit-cli")
-        exclude(module: "worldedit-sponge")
-        exclude(module: "worldedit-forge-mc1.16.1")
-        exclude(module: "worldedit-fabric-mc1.16.1")
-    }
+    implementation(group: "com.sk89q.worldguard", name: "worldguard-core", version: "7.1.0-SNAPSHOT") { transitive = false }
+    implementation(group: "com.sk89q.worldguard", name: "worldguard-bukkit", version: "7.1.0-SNAPSHOT") { transitive = false }
+    implementation(group: "com.sk89q.worldedit", name: "worldedit-core", version: "7.4.0-SNAPSHOT") { transitive = false }
+    implementation(group: "com.sk89q.worldedit", name: "worldedit-bukkit", version: "7.4.0-SNAPSHOT") { transitive = false }
 
 }
 

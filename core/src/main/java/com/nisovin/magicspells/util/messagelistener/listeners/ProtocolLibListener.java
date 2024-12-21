@@ -4,19 +4,19 @@ import java.util.*;
 
 import org.bukkit.entity.Player;
 
+import net.kyori.adventure.text.Component;
+
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.Converters;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.PacketType.Play.Server;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.AdventureComponentConverter;
 
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.messagelistener.MessageListener;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 public class ProtocolLibListener implements MessageListener {
 
@@ -54,31 +54,27 @@ public class ProtocolLibListener implements MessageListener {
 	private class PacketListener extends PacketAdapter {
 
 		PacketListener() {
-			super(MagicSpells.getInstance(), Server.SYSTEM_CHAT, Server.DISGUISED_CHAT, Server.CHAT);
+			super(MagicSpells.getInstance(), Server.SYSTEM_CHAT, Server.DISGUISED_CHAT);
 		}
 
 		@Override
 		public void onPacketSending(PacketEvent event) {
 			PacketContainer container = event.getPacket();
 			Player player = event.getPlayer();
+
+			// Ignore SystemChat actionbar.
+			if (container.getType() == Server.SYSTEM_CHAT && container.getBooleans().read(0)) return;
+
 			RecordedData recordedData = listening.get(player.getUniqueId());
 			if (recordedData == null) return;
 			ListenerData listenerData = recordedData.listenerData;
 
-			// Ignore actionbar.
-			if (container.getBooleans().read(0)) return;
-
 			event.setCancelled(listenerData.blockChatOutput());
 
-			// Collect message if appropriate.
 			if (listenerData.storeChatOutput() == null) return;
 
-			// Sometimes the message is an Adventure component, sometimes a string.
-			Component component = event.getPacket().getModifier().withType(Component.class, Converters.passthrough(Component.class)).readSafely(0);
-			if (component == null && container.getStrings().size() > 0) {
-				String json = container.getStrings().read(0);
-				component = GsonComponentSerializer.gson().deserialize(json);
-			}
+			WrappedChatComponent chat = container.getChatComponents().read(0);
+			Component component = AdventureComponentConverter.fromWrapper(chat);
 
 			StringBuilder recorded = recordedData.recorded;
 			if (!recorded.isEmpty()) recorded.append("\\n");

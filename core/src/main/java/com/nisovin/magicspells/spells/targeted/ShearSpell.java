@@ -6,17 +6,16 @@ import org.bukkit.entity.Sheep;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 
+import io.papermc.paper.entity.Shearable;
+
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
-//This spell currently support the shearing of sheep at the moment.
-//Future tweaks for the shearing of other mobs will be added.
-
 public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private static final ValidTargetChecker SHEEP = entity -> entity instanceof Sheep sheep && !sheep.isSheared() && sheep.isAdult();
+	private static final ValidTargetChecker SHEARABLE = entity -> entity instanceof Shearable shearable && shearable.readyToBeSheared();
 
 	private final ConfigData<DyeColor> woolColor;
 
@@ -27,6 +26,7 @@ public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private final ConfigData<Boolean> forceWoolColor;
 	private final ConfigData<Boolean> randomWoolColor;
+	private final ConfigData<Boolean> vanillaSheepShearing;
 
 	public ShearSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -40,54 +40,61 @@ public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		forceWoolColor = getConfigDataBoolean("force-wool-color", false);
 		randomWoolColor = getConfigDataBoolean("random-wool-color", false);
+		vanillaSheepShearing = getConfigDataBoolean("vanilla-sheep-shearing", false);
 	}
 
 	@Override
 	public CastResult cast(SpellData data) {
-		TargetInfo<LivingEntity> info = getTargetedEntity(data, SHEEP);
+		TargetInfo<LivingEntity> info = getTargetedEntity(data, SHEARABLE);
 		if (info.noTarget()) return noTarget(info);
 
-		return shear((Sheep) info.target(), info.spellData());
+		return shear((Shearable) info.target(), info.spellData());
 	}
 
 	@Override
 	public CastResult castAtEntity(SpellData data) {
-		if (!(data.target() instanceof Sheep sheep) || sheep.isSheared() || !sheep.isAdult())
-			return noTarget(data);
+		if (!SHEARABLE.isValidTarget(data.target())) return noTarget(data);
 
-		return shear(sheep, data);
+		return shear((Shearable) data.target(), data);
 	}
 
-	private CastResult shear(Sheep sheep, SpellData data) {
-		DyeColor color;
-		if (forceWoolColor.get(data)) {
-			if (randomWoolColor.get(data)) {
-				DyeColor[] colors = DyeColor.values();
-				color = colors[random.nextInt(colors.length)];
+	private CastResult shear(Shearable shearable, SpellData data) {
+		if (shearable instanceof Sheep sheep && !vanillaSheepShearing.get(data)) {
+			DyeColor color;
+			if (forceWoolColor.get(data)) {
+				if (randomWoolColor.get(data)) {
+					DyeColor[] colors = DyeColor.values();
+					color = colors[random.nextInt(colors.length)];
+				} else {
+					color = woolColor.get(data);
+					if (color == null) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
+				}
 			} else {
-				color = woolColor.get(data);
-				if (color == null) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
+				color = sheep.getColor();
+				if (color == null) color = DyeColor.WHITE;
 			}
-		} else {
-			color = sheep.getColor();
-			if (color == null) color = DyeColor.WHITE;
-		}
 
-		Material wool = Material.getMaterial(color.name() + "_WOOL");
-		if (wool == null) wool = Material.WHITE_WOOL;
+			Material wool = Material.getMaterial(color.name() + "_WOOL");
+			if (wool == null) wool = Material.WHITE_WOOL;
 
-		int minWool = this.minWool.get(data);
-		int maxWool = this.maxWool.get(data);
+			int minWool = this.minWool.get(data);
+			int maxWool = this.maxWool.get(data);
 
-		int count;
-		if (maxWool != 0) count = random.nextInt((maxWool - minWool) + 1) + minWool;
-		else count = random.nextInt(minWool + 1);
+			int count;
+			if (maxWool != 0) count = random.nextInt((maxWool - minWool) + 1) + minWool;
+			else count = random.nextInt(minWool + 1);
 
-		sheep.setSheared(true);
-		sheep.getWorld().dropItemNaturally(sheep.getLocation().add(0, dropOffset.get(data), 0), new ItemStack(wool, count));
+			sheep.setSheared(true);
+			sheep.getWorld().dropItemNaturally(sheep.getLocation().add(0, dropOffset.get(data), 0), new ItemStack(wool, count));
+		} else shearable.shear();
 
 		playSpellEffects(data);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+	}
+
+	@Override
+	public ValidTargetChecker getValidTargetChecker() {
+		return SHEARABLE;
 	}
 
 }

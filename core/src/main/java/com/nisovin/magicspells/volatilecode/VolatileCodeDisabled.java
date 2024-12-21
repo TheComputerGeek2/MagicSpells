@@ -42,11 +42,6 @@ public class VolatileCodeDisabled extends VolatileCodeHandle {
 	}
 
 	@Override
-	public void startAutoSpinAttack(Player player, int ticks) {
-
-	}
-
-	@Override
 	public void playHurtSound(LivingEntity entity) {
 		Sound sound = entity.getHurtSound();
 		if (sound == null) return;
@@ -55,11 +50,6 @@ public class VolatileCodeDisabled extends VolatileCodeHandle {
 
 	@Override
 	public void sendToastEffect(Player receiver, ItemStack icon, Frame frameType, Component text) {
-
-	}
-
-	@Override
-	public void sendStatusUpdate(Player player, double health, int food, float saturation) {
 
 	}
 
