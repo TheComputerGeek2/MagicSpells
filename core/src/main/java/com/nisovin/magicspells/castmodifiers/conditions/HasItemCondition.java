@@ -19,12 +19,20 @@ import net.kyori.adventure.text.Component;
 
 import com.nisovin.magicspells.util.Name;
 import com.nisovin.magicspells.util.Util;
+import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.InventoryUtil;
 import com.nisovin.magicspells.handlers.DebugHandler;
+import com.nisovin.magicspells.util.DeprecationNotice;
 import com.nisovin.magicspells.castmodifiers.Condition;
 
 @Name("hasitem")
 public class HasItemCondition extends Condition {
+
+	private static final DeprecationNotice DEPRECATION_NOTICE = new DeprecationNotice(
+			"The 'hasitem' modifier condition does not function properly.",
+			"Use the 'hasitemprecise' condition.",
+			"https://github.com/TheComputerGeek2/MagicSpells/wiki/Deprecations#modifier-condition-hasitem"
+	);
 
 	private Material material;
 	private short durability;
@@ -33,6 +41,8 @@ public class HasItemCondition extends Condition {
 
 	@Override
 	public boolean initialize(@NotNull String var) {
+		MagicSpells.getDeprecationManager().addDeprecation(DEPRECATION_NOTICE);
+
 		try {
 			if (var.contains("|")) {
 				String[] subVarData = var.split("\\|");
