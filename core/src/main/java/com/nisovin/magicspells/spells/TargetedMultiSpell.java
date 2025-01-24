@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntCollection;
+
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
@@ -25,6 +28,7 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 	private final ConfigData<Boolean> pointBlank;
 	private final ConfigData<Boolean> stopOnFail;
 	private final ConfigData<Boolean> passTargeting;
+	private final ConfigData<Boolean> stopOnSuccess;
 	private final ConfigData<Boolean> requireEntityTarget;
 	private final ConfigData<Boolean> castRandomSpellInstead;
 
@@ -39,6 +43,7 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 		pointBlank = getConfigDataBoolean("point-blank", false);
 		stopOnFail = getConfigDataBoolean("stop-on-fail", true);
 		passTargeting = getConfigDataBoolean("pass-targeting", false);
+		stopOnSuccess = getConfigDataBoolean("stop-on-success", false);
 		requireEntityTarget = getConfigDataBoolean("require-entity-target", false);
 		castRandomSpellInstead = getConfigDataBoolean("cast-random-spell-instead", false);
 	}
@@ -52,13 +57,12 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 		for (String s : spellList) {
 			if (DELAY_PATTERN.asMatchPredicate().test(s)) {
 				int delay = Integer.parseInt(s.split(" ")[1]);
-				actions.add(new Action(delay));
+				actions.add(new DelayAction(delay));
 				continue;
 			}
 
 			Subspell spell = initSubspell(s, "TargetedMultiSpell '" + internalName + "' has an invalid spell '" + s + "' defined!");
-			if (spell == null) continue;
-			actions.add(new Action(spell));
+			if (spell != null) actions.add(new SpellAction(spell));
 		}
 
 		spellList = null;
@@ -102,115 +106,82 @@ public final class TargetedMultiSpell extends TargetedSpell implements TargetedE
 	}
 
 	private CastResult runSpells(SpellData data) {
-		if (data.hasLocation() && !data.hasTarget()) data = data.location(data.location().add(0, yOffset.get(data), 0));
+		if (actions.isEmpty()) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 
-		boolean stopOnFail = this.stopOnFail.get(data);
+		if (data.hasLocation() && !data.hasTarget())
+			data = data.location(data.location().add(0, yOffset.get(data), 0));
+
 		boolean passTargeting = this.passTargeting.get(data);
 
-		boolean somethingWasDone = false;
-		if (!castRandomSpellInstead.get(data)) {
-			int delay = 0;
-			Subspell spell;
-			List<DelayedSpell> delayedSpells = new ArrayList<>();
-			for (Action action : actions) {
-				if (action.isDelay()) {
-					delay += action.getDelay();
-					continue;
-				}
+		if (castRandomSpellInstead.get(data)) {
+			Action action = actions.get(random.nextInt(actions.size()));
 
-				if (action.isSpell()) {
-					spell = action.getSpell();
-					if (delay == 0) {
-						boolean ok = spell.subcast(data, passTargeting).success();
-						if (ok) somethingWasDone = true;
-						else if (stopOnFail) break;
+			boolean casted = action instanceof SpellAction(Subspell spell) && spell.subcast(data, passTargeting).success();
+			if (!casted) return noTarget(data);
+
+			playSpellEffects(data);
+			return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+		}
+
+		boolean stopOnFail = this.stopOnFail.get(data);
+		boolean stopOnSuccess = this.stopOnSuccess.get(data);
+
+		DelayedSpells delayedSpells = new DelayedSpells(new IntArrayList(), data, passTargeting, stopOnFail, stopOnSuccess);
+		int totalDelay = 0;
+
+		boolean casted = false;
+		loop:
+		for (Action action : actions) {
+			switch (action) {
+				case DelayAction(int delay) -> totalDelay += delay;
+				case SpellAction(Subspell subspell) -> {
+					if (totalDelay > 0) {
+						delayedSpells.scheduleSpell(subspell, totalDelay);
+						casted = true;
 						continue;
 					}
 
-					DelayedSpell ds = new DelayedSpell(spell, delayedSpells, data, stopOnFail, passTargeting);
-					delayedSpells.add(ds);
-					MagicSpells.scheduleDelayedTask(ds, delay);
-					somethingWasDone = true;
+					boolean success = subspell.subcast(data, passTargeting).success();
+					casted |= success;
+
+					if (stopOnSuccess && success || stopOnFail && !success) {
+						delayedSpells.cancel();
+						break loop;
+					}
 				}
 			}
-		} else {
-			Action action = actions.get(random.nextInt(actions.size()));
-			if (action.isSpell()) somethingWasDone = action.getSpell().subcast(data).success();
 		}
 
-		if (somethingWasDone) playSpellEffects(data);
-		return somethingWasDone ? new CastResult(PostCastAction.HANDLE_NORMALLY, data) : noTarget(data);
+		if (casted) {
+			playSpellEffects(data);
+			return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+		}
+
+		return noTarget(data);
 	}
 
-	private static class Action {
+	private sealed interface Action permits DelayAction, SpellAction {}
 
-		private final Subspell spell;
-		private final int delay;
+	private record DelayAction(int delay) implements Action {}
 
-		private Action(Subspell spell) {
-			this.spell = spell;
-			delay = 0;
+	private record SpellAction(Subspell subspell) implements Action {}
+
+	private record DelayedSpells(IntCollection tasks, SpellData data, boolean passTargeting, boolean stopOnFail, boolean stopOnSuccess) {
+
+		private void cancel() {
+			tasks.forEach(MagicSpells::cancelTask);
 		}
 
-		private Action(int delay) {
-			this.delay = delay;
-			spell = null;
-		}
+		private void scheduleSpell(Subspell subspell, int delay) {
+			tasks.add(MagicSpells.scheduleDelayedTask(() -> {
+				if (!data.isValid()) {
+					cancel();
+					return;
+				}
 
-		public boolean isSpell() {
-			return spell != null;
-		}
-
-		public Subspell getSpell() {
-			return spell;
-		}
-
-		public boolean isDelay() {
-			return delay > 0;
-		}
-
-		public int getDelay() {
-			return delay;
-		}
-
-	}
-
-	private static class DelayedSpell implements Runnable {
-
-		private final Subspell spell;
-		private final SpellData data;
-		private final boolean stopOnFail;
-		private final boolean passTargeting;
-
-		private List<DelayedSpell> delayedSpells;
-		private boolean cancelled;
-
-		private DelayedSpell(Subspell spell, List<DelayedSpell> delayedSpells, SpellData data, boolean stopOnFail, boolean passTargeting) {
-			this.delayedSpells = delayedSpells;
-			this.passTargeting = passTargeting;
-			this.stopOnFail = stopOnFail;
-			this.spell = spell;
-			this.data = data;
-
-			cancelled = false;
-		}
-
-		public void cancelAll() {
-			for (DelayedSpell ds : delayedSpells) ds.cancelled = true;
-			delayedSpells.clear();
-		}
-
-		@Override
-		public void run() {
-			if (cancelled) return;
-
-			if (!data.hasCaster() || data.caster().isValid()) {
-				boolean ok = spell.subcast(data, passTargeting).success();
-				delayedSpells.remove(this);
-				if (!ok && stopOnFail) cancelAll();
-			} else cancelAll();
-
-			delayedSpells = null;
+				boolean success = subspell.subcast(data, passTargeting).success();
+				if (stopOnSuccess && success || stopOnFail && !success) cancel();
+			}, delay));
 		}
 
 	}
