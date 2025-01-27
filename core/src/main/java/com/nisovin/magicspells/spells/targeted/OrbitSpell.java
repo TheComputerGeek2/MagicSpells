@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.targeted;
 import java.util.*;
 import java.util.function.Predicate;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 
@@ -232,11 +233,12 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 		private final boolean constantImmuneTicks;
 
 		private int tickCount;
-		private final int taskId;
 		private final int immuneTicks;
 		private final int ticksPerRevolution;
-		private final int repeatingVertTaskId;
-		private final int repeatingHorizTaskId;
+
+		private final ScheduledTask task;
+		private final ScheduledTask repeatingVertTaskId;
+		private final ScheduledTask repeatingHorizTaskId;
 
 		private final long startTime;
 
@@ -286,21 +288,21 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			stopOnHitGround = OrbitSpell.this.stopOnHitGround.get(data);
 
 			int tickInterval = OrbitSpell.this.tickInterval.get(data);
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
+			task = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval, center);
 
 			orbitRadius = OrbitSpell.this.orbitRadius.get(data);
 			int horizExpandDelay = OrbitSpell.this.horizExpandDelay.get(data);
 			if (horizExpandDelay > 0) {
 				float horizExpandRadius = OrbitSpell.this.horizExpandRadius.get(data);
-				repeatingHorizTaskId = MagicSpells.scheduleRepeatingTask(() -> orbitRadius += horizExpandRadius, horizExpandDelay, horizExpandDelay);
-			} else repeatingHorizTaskId = -1;
+				repeatingHorizTaskId = MagicSpells.scheduleRepeatingTask(() -> orbitRadius += horizExpandRadius, horizExpandDelay, horizExpandDelay, center);
+			} else repeatingHorizTaskId = null;
 
 			yOffset = OrbitSpell.this.yOffset.get(data);
 			int vertExpandDelay = OrbitSpell.this.vertExpandDelay.get(data);
 			if (vertExpandDelay > 0) {
 				float vertExpandRadius = OrbitSpell.this.vertExpandRadius.get(data);
-				repeatingVertTaskId = MagicSpells.scheduleRepeatingTask(() -> yOffset += vertExpandRadius, vertExpandDelay, vertExpandDelay);
-			} else repeatingVertTaskId = -1;
+				repeatingVertTaskId = MagicSpells.scheduleRepeatingTask(() -> yOffset += vertExpandRadius, vertExpandDelay, vertExpandDelay, center);
+			} else repeatingVertTaskId = null;
 
 			ticksPerRevolution = Math.round(secondsPerRevolution.get(data) * 20 / tickInterval);
 
@@ -502,7 +504,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			stopped = true;
 			playSpellEffects(EffectPosition.DELAYED, getCurrentLocation(), data);
 
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 			MagicSpells.cancelTask(repeatingHorizTaskId);
 			MagicSpells.cancelTask(repeatingVertTaskId);
 

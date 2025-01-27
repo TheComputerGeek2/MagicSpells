@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.google.common.collect.Multimap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.World;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -472,7 +473,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 				AttackMonitor monitor = new AttackMonitor(mob, data);
 				MagicSpells.registerEvents(monitor);
 
-				if (duration > 0) MagicSpells.scheduleDelayedTask(() -> HandlerList.unregisterAll(monitor), duration);
+				if (duration > 0) MagicSpells.scheduleDelayedTask(() -> HandlerList.unregisterAll(monitor), duration, source);
 			}
 		}
 
@@ -671,19 +672,19 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		private final Mob mob;
 
 		private final SpellData data;
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private Targeter(Mob mob, SpellData data, int interval) {
 			this.data = data.noTargeting();
 			this.mob = mob;
 
-			this.taskId = MagicSpells.scheduleRepeatingTask(this, 1, interval);
+			this.task = MagicSpells.scheduleRepeatingTask(this, 1, interval, mob);
 		}
 
 		@Override
 		public void run() {
 			if (!mob.isValid()) {
-				MagicSpells.cancelTask(taskId);
+				MagicSpells.cancelTask(task);
 				return;
 			}
 

@@ -74,7 +74,7 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		playSpellEffects(data);
 
-		MagicSpells.scheduleDelayedTask(() -> combusting.remove(data.target().getUniqueId()), duration + 2);
+		MagicSpells.scheduleDelayedTask(() -> combusting.remove(data.target().getUniqueId()), duration + 2, data.target());
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}
@@ -98,7 +98,7 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 		EventUtil.call(new SpellApplyDamageEvent(this, data.spellData.caster(), target, fireTickDamage, DamageCause.FIRE_TICK, ""));
 		event.setDamage(fireTickDamage);
 
-		if (data.preventImmunity) MagicSpells.scheduleDelayedTask(() -> target.setNoDamageTicks(0), 0);
+		if (data.preventImmunity) MagicSpells.scheduleDelayedTask(() -> target.setNoDamageTicks(0), 0, target);
 	}
 
 	private record CombustData(SpellData spellData, double fireTickDamage, boolean constantFireTickDamage, boolean preventImmunity) {

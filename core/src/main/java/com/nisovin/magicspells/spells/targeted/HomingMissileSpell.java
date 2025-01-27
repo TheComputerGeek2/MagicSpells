@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
@@ -206,7 +207,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 
 		private final BoundingBox hitBox;
 		private final long startTime;
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private final Vector effectOffset;
 		private final Vector targetRelativeOffset;
@@ -298,7 +299,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 
 			if (data.hasCaster()) playSpellEffects(EffectPosition.CASTER, data.caster(), data);
 
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
+			task = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval, currentLocation);
 		}
 
 		@Override
@@ -463,7 +464,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			if (removeTracker) trackers.remove(this);
 
 			playSpellEffects(EffectPosition.DELAYED, currentLocation, data);
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 			if (effectSet != null) {
 				for (EffectlibSpellEffect spellEffect : effectSet) {
 					spellEffect.getEffect().cancel();

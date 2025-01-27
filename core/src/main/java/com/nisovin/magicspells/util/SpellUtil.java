@@ -222,7 +222,7 @@ public class SpellUtil {
 	public static void updateManaBar(Player player) {
 		if (!(MagicSpells.getManaHandler() instanceof ManaSystem system)) return;
 		if (!system.usingHungerBar()) return;
-		MagicSpells.scheduleDelayedTask(() -> system.showMana(player), 1);
+		MagicSpells.scheduleDelayedTask(() -> system.showMana(player), 1, player);
 	}
 	
 }

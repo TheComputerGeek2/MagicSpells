@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.HashMap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Fluid;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -99,12 +100,12 @@ public class WaterwalkSpell extends BuffSpell {
 
 	private class Ticker implements Runnable {
 
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private int count = 0;
 
 		private Ticker() {
-			taskId = MagicSpells.scheduleRepeatingTask(this, 5, 5);
+			task = MagicSpells.scheduleRepeatingTask(this, 5, 5);
 		}
 
 		private boolean isWater(Location location) {
@@ -161,7 +162,7 @@ public class WaterwalkSpell extends BuffSpell {
 		}
 
 		public void stop() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 
 	}

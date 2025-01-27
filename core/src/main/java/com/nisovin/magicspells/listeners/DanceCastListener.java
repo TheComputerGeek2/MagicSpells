@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -35,7 +36,7 @@ public class DanceCastListener implements Listener {
 	private Map<String, Spell> spells = new HashMap<>();
 
 	private Map<String, String> playerCasts = new HashMap<>();
-	private Map<String, Integer> playerTasks = new HashMap<>();
+	private Map<String, ScheduledTask> playerTasks = new HashMap<>();
 	private Map<String, Location> playerLocations = new HashMap<>();
 
 	private boolean dynamicCasting = false;
@@ -104,8 +105,8 @@ public class DanceCastListener implements Listener {
 				player.setAllowFlight(false);
 			}
 			playerLocations.remove(playerName);
-			Integer taskId = playerTasks.remove(playerName);
-			if (taskId != null) MagicSpells.cancelTask(taskId);
+			ScheduledTask task = playerTasks.remove(playerName);
+			if (task != null) MagicSpells.cancelTask(task);
 			playerCasts.remove(playerName);
 		}
 		return casted;

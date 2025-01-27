@@ -344,7 +344,7 @@ public class Subspell {
 		if (delay < 0) return castReal(data.noTargeting());
 
 		SpellData finalData = data.noTargeting();
-		MagicSpells.scheduleDelayedTask(() -> castReal(finalData), delay);
+		MagicSpells.scheduleDelayedTask(() -> castReal(finalData), delay, data.location());
 
 		return new SpellCastResult(SpellCastState.NORMAL, PostCastAction.DELAYED, data);
 	}
@@ -395,7 +395,7 @@ public class Subspell {
 		if (delay < 0) return castAtEntityReal(data.noLocation());
 
 		SpellData finalData = data.noLocation();
-		MagicSpells.scheduleDelayedTask(() -> castAtEntityReal(finalData), delay);
+		MagicSpells.scheduleDelayedTask(() -> castAtEntityReal(finalData), delay, data.target());
 
 		return new SpellCastResult(SpellCastState.NORMAL, PostCastAction.DELAYED, data);
 	}
@@ -467,7 +467,7 @@ public class Subspell {
 		if (delay < 0) return castAtLocationReal(data.noTarget());
 
 		SpellData finalData = data.noTarget();
-		MagicSpells.scheduleDelayedTask(() -> castAtLocationReal(finalData), delay);
+		MagicSpells.scheduleDelayedTask(() -> castAtLocationReal(finalData), delay, data.location());
 
 		return new SpellCastResult(SpellCastState.NORMAL, PostCastAction.DELAYED, data);
 	}
@@ -549,7 +549,7 @@ public class Subspell {
 		if (delay < 0) return castAtEntityFromLocationReal(data);
 
 		SpellData finalData = data;
-		MagicSpells.scheduleDelayedTask(() -> castAtEntityFromLocationReal(finalData), delay);
+		MagicSpells.scheduleDelayedTask(() -> castAtEntityFromLocationReal(finalData), delay, data.target());
 
 		return new SpellCastResult(SpellCastState.NORMAL, PostCastAction.DELAYED, data);
 	}

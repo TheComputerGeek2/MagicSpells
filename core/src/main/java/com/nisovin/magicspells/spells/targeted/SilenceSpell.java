@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
@@ -178,12 +179,12 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 	private class Unsilencer implements Runnable {
 
 		private final UUID uuid;
-		private final int taskId;
+		private final ScheduledTask task;
 		private boolean canceled = false;
 
 		private Unsilencer(UUID uuid, int delay) {
 			this.uuid = uuid;
-			taskId = MagicSpells.scheduleDelayedTask(this, delay);
+			task = MagicSpells.scheduleDelayedTask(this, delay);
 		}
 
 		@Override
@@ -193,7 +194,7 @@ public class SilenceSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		private void cancel() {
 			canceled = true;
-			if (taskId > 0) MagicSpells.cancelTask(taskId);
+			if (!task.isCancelled()) MagicSpells.cancelTask(task);
 		}
 
 	}

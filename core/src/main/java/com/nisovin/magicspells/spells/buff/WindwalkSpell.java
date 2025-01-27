@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import io.papermc.paper.entity.TeleportFlag;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -203,10 +204,10 @@ public class WindwalkSpell extends BuffSpell {
 
 	private class HeightMonitor implements Runnable {
 
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private HeightMonitor() {
-			taskId = MagicSpells.scheduleRepeatingTask(this, TimeUtil.TICKS_PER_SECOND, TimeUtil.TICKS_PER_SECOND);
+			task = MagicSpells.scheduleRepeatingTask(this, TimeUtil.TICKS_PER_SECOND, TimeUtil.TICKS_PER_SECOND);
 		}
 
 		@Override
@@ -258,7 +259,7 @@ public class WindwalkSpell extends BuffSpell {
 		}
 
 		public void stop() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 
 	}

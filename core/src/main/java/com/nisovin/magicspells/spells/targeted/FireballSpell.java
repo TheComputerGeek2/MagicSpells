@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.util.Vector;
@@ -33,7 +34,7 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 
 	private final Map<Fireball, SpellData> fireballs;
 
-	private final int taskId;
+	private final ScheduledTask task;
 
 	private final ConfigData<Float> explosionSize;
 
@@ -84,13 +85,13 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 		relativeCastLocationOffset = getConfigDataVector("relative-cast-position-offset", new Vector());
 		absoluteCastLocationOffset = getConfigDataVector("absolute-cast-position-offset", new Vector());
 
-		taskId = MagicSpells.scheduleRepeatingTask(() -> fireballs.entrySet().removeIf(fireballFloatEntry ->
+		task = MagicSpells.scheduleRepeatingTask(() -> fireballs.entrySet().removeIf(fireballFloatEntry ->
 			fireballFloatEntry.getKey().isDead()), TimeUtil.TICKS_PER_MINUTE, TimeUtil.TICKS_PER_MINUTE);
 	}
 
 	@Override
 	public void turnOff() {
-		MagicSpells.cancelTask(taskId);
+		MagicSpells.cancelTask(task);
 	}
 
 	@Override
@@ -218,7 +219,7 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 				}
 				fireball.remove();
 				if (!fires.isEmpty()) {
-					MagicSpells.scheduleDelayedTask(() -> fires.stream().filter(b -> b.getType() == Material.FIRE).forEachOrdered(b -> b.setType(Material.AIR)), TimeUtil.TICKS_PER_SECOND);
+					MagicSpells.scheduleDelayedTask(() -> fires.stream().filter(b -> b.getType() == Material.FIRE).forEachOrdered(b -> b.setType(Material.AIR)), TimeUtil.TICKS_PER_SECOND, loc);
 				}
 			}
 		} else {
@@ -229,7 +230,7 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 		}
 
 		if (noExplosion.get(data)) fireballs.remove(fireball);
-		else MagicSpells.scheduleDelayedTask(() -> fireballs.remove(fireball), 1);
+		else MagicSpells.scheduleDelayedTask(() -> fireballs.remove(fireball), 1, fireball);
 	}
 
 	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

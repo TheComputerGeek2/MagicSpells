@@ -7,6 +7,7 @@ import java.util.Collection;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.LinkedListMultimap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
@@ -84,8 +85,8 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 			// If casted by the same spell, extend duration, otherwise fail
 			if (!glowData.getInternalName().equals(internalName)) return;
 
-			MagicSpells.cancelTask(glowData.getTaskId());
-			glowData.setTaskId(MagicSpells.scheduleDelayedTask(() -> {
+			MagicSpells.cancelTask(glowData.getTask());
+			glowData.setTask(MagicSpells.scheduleDelayedTask(() -> {
 				// Make the target hidden if it has an invisibility spell active
 				if (target instanceof Player targetPlayer) {
 					Set<BuffSpell> buffSpells = MagicSpells.getBuffManager().getActiveBuffs(target);
@@ -116,7 +117,7 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 		glow.display(caster);
 
 		glowData = new GlowData(glow, internalName);
-		glowData.setTaskId(MagicSpells.scheduleDelayedTask(() -> {
+		glowData.setTask(MagicSpells.scheduleDelayedTask(() -> {
 			// Make the target hidden if it has an invisibility spell active
 			if (target instanceof Player targetPlayer) {
 				Set<BuffSpell> buffSpells = MagicSpells.getBuffManager().getActiveBuffs(targetPlayer);
@@ -154,7 +155,7 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 	private static class GlowData {
 
 		private Glow glow;
-		private int taskId;
+		private ScheduledTask task;
 		private String internalName;
 
 		private GlowData(Glow glow, String internalName) {
@@ -170,12 +171,12 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 			this.glow = glow;
 		}
 
-		public int getTaskId() {
-			return taskId;
+		public ScheduledTask getTask() {
+			return task;
 		}
 
-		public void setTaskId(int taskId) {
-			this.taskId = taskId;
+		public void setTask(ScheduledTask task) {
+			this.task = task;
 		}
 
 		public String getInternalName() {

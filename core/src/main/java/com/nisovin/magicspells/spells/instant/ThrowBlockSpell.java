@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Tag;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,7 +36,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 
 	private static final Map<Entity, FallingBlockInfo> fallingBlocks = new HashMap<>();
 	private static ThrowBlockListener throwBlockListener;
-	private static int cleanTask = -1;
+	private static ScheduledTask cleanTask = null;
 
 	private final ConfigData<BlockData> material;
 
@@ -243,7 +244,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 	}
 
 	private static void startCleanTask() {
-		if (cleanTask > -1) return;
+		if (cleanTask != null) return;
 
 		cleanTask = MagicSpells.scheduleDelayedTask(() -> {
 			Iterator<Map.Entry<Entity, FallingBlockInfo>> iter = fallingBlocks.entrySet().iterator();
@@ -266,7 +267,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 				}
 			}
 
-			if (fallingBlocks.isEmpty()) cleanTask = -1;
+			if (fallingBlocks.isEmpty()) cleanTask = null;
 			else startCleanTask();
 		}, 500);
 	}
@@ -276,7 +277,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 		private final FallingBlock block;
 		private final FallingBlockInfo info;
 
-		private final int task;
+		private final ScheduledTask task;
 
 		private final boolean stickyBlocks;
 		private final boolean ensureSpellCast;
@@ -290,7 +291,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 			this.stickyBlocks = stickyBlocks;
 			this.ensureSpellCast = ensureSpellCast;
 
-			task = MagicSpells.scheduleRepeatingTask(this, TimeUtil.TICKS_PER_SECOND, 1);
+			task = MagicSpells.scheduleRepeatingTask(this, TimeUtil.TICKS_PER_SECOND, 1, block.getLocation());
 		}
 
 		@Override

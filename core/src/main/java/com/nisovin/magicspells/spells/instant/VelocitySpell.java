@@ -9,6 +9,7 @@ import java.util.Collection;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.ArrayListMultimap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.util.Vector;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
@@ -119,7 +120,7 @@ public class VelocitySpell extends InstantSpell implements TargetedEntitySpell, 
 		private final List<VelocityData> queue = new ArrayList<>();
 
 		private boolean running = false;
-		private int taskId = -1;
+		private ScheduledTask task = null;
 
 		public void add(VelocityData data) {
 			queue.add(data);
@@ -127,18 +128,18 @@ public class VelocitySpell extends InstantSpell implements TargetedEntitySpell, 
 		}
 
 		public void start() {
-			if (taskId != -1) return;
+			if (task != null) return;
 
 			MagicSpells.registerEvents(this);
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, 1);
+			task = MagicSpells.scheduleRepeatingTask(this, 0, 1);
 		}
 
 		public void stop() {
-			if (taskId == -1) return;
+			if (task == null) return;
 
 			EntityDamageEvent.getHandlerList().unregister(this);
-			MagicSpells.cancelTask(taskId);
-			taskId = -1;
+			MagicSpells.cancelTask(task);
+			task = null;
 
 			jumping.clear();
 			queue.clear();

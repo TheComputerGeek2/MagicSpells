@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.util;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.ApiStatus;
@@ -110,13 +111,13 @@ public class DelayableEntity<E extends Entity> {
 			}
 		};
 
-		int taskId = -1;
+		ScheduledTask task = null;
 		if (delay <= 0) spawnEntity.run();
-		else taskId = MagicSpells.scheduleDelayedTask(spawnEntity, delay);
+		else task = MagicSpells.scheduleDelayedTask(spawnEntity, delay, location);
 
-		int id = taskId;
+		ScheduledTask id = task;
 		future.whenComplete((result, throwable) -> {
-			if (future.isCancelled() && id != -1) MagicSpells.cancelTask(id);
+			if (future.isCancelled() && id != null) MagicSpells.cancelTask(id);
 			if (throwable == null) return;
 			MagicSpells.handleException(new Exception("Delayed entity failed to spawn", throwable));
 		});

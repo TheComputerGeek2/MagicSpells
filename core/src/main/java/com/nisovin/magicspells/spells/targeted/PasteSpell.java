@@ -125,7 +125,7 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 				MagicSpells.scheduleDelayedTask(() -> {
 					editSession.undo(editSession);
 					sessions.remove(editSession);
-				}, undoDelay);
+				}, undoDelay, data.location());
 			}
 		} catch (WorldEditException e) {
 			e.printStackTrace();

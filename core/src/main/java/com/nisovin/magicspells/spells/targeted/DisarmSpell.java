@@ -121,7 +121,7 @@ public class DisarmSpell extends TargetedSpell implements TargetedEntitySpell {
 					if (preventTheft.get(data)) disarmedItems.put(item, target.getUniqueId());
 				}
 			}
-		}, disarmDuration);
+		}, disarmDuration, target);
 
 		playSpellEffects(data);
 

@@ -2,9 +2,10 @@ package com.nisovin.magicspells.util;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.nisovin.magicspells.MagicSpells;
 
@@ -21,7 +22,7 @@ public abstract class SpellAnimation implements Runnable {
 
 	private final boolean async;
 
-	private BukkitTask task;
+	private ScheduledTask task;
 	private int delay;
 	private int interval;
 	private int tick;
@@ -72,8 +73,8 @@ public abstract class SpellAnimation implements Runnable {
 	 * Start the spell animation.
 	 */
 	public void play() {
-		if (async) task = Bukkit.getScheduler().runTaskTimerAsynchronously(MagicSpells.getInstance(), this, delay, interval);
-		else task = Bukkit.getScheduler().runTaskTimer(MagicSpells.getInstance(), this, delay, interval);
+		if (async) task = Bukkit.getAsyncScheduler().runAtFixedRate(MagicSpells.getInstance(), t -> run(), delay, interval * 50L, TimeUnit.MILLISECONDS);
+		else task = Bukkit.getGlobalRegionScheduler().runAtFixedRate(MagicSpells.getInstance(), t -> run(), delay, interval);
 	}
 
 	/**

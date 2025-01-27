@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedListMultimap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -291,7 +292,7 @@ public class LoopSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 		private final boolean skipFirstLoopLocationModifiers;
 		private final boolean skipFirstVariableModsTargetLoop;
 
-		private final int taskId;
+		private final ScheduledTask task;
 		private final long iterations;
 
 		private long count;
@@ -325,7 +326,7 @@ public class LoopSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 			else activeLoops.put(null, this);
 
 			if (interval <= 0) {
-				taskId = -1;
+				task = null;
 
 				if (iterations <= 0) {
 					cancel();
@@ -344,10 +345,10 @@ public class LoopSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 				return;
 			}
 
-			taskId = MagicSpells.scheduleRepeatingTask(this, delay, interval);
+			task = MagicSpells.scheduleRepeatingTask(this, delay, interval);
 
 			long duration = LoopSpell.this.duration.get(data);
-			if (duration > 0) MagicSpells.scheduleDelayedTask(this::cancel, duration);
+			if (duration > 0) MagicSpells.scheduleDelayedTask(this::cancel, duration, data.location());
 		}
 
 		@Override
@@ -455,7 +456,7 @@ public class LoopSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 
 			cancelled = true;
 
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 
 			if (remove) {
 				UUID key = null;

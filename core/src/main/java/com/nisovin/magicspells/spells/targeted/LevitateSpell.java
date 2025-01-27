@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
@@ -196,7 +197,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 		private final double yOffset;
 		private final int duration;
 		private final int tickRate;
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private double distance;
 		private int counter;
@@ -218,7 +219,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 			minDistance = LevitateSpell.this.minDistance.get(data);
 			yOffset = LevitateSpell.this.yOffset.get(data);
 
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickRate);
+			task = MagicSpells.scheduleRepeatingTask(this, 0, tickRate, data.caster());
 		}
 
 		@Override
@@ -257,7 +258,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 
 		private void stop() {
 			stopped = true;
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 
 	}

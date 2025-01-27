@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.passive;
 import java.util.Set;
 import java.util.HashSet;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.jetbrains.annotations.NotNull;
 
 import org.bukkit.World;
@@ -158,12 +159,12 @@ public class TicksListener extends PassiveListener {
 
 		private final PassiveSpell passiveSpell;
 
-		private final int taskId;
+		private final ScheduledTask task;
 		private final String profilingKey;
 
 		public Ticker(PassiveSpell passiveSpell, int interval) {
 			this.passiveSpell = passiveSpell;
-			taskId = MagicSpells.scheduleRepeatingTask(this, interval, interval);
+			task = MagicSpells.scheduleRepeatingTask(this, interval, interval);
 			profilingKey = MagicSpells.profilingEnabled() ? "PassiveTick:" + interval : null;
 			entities = new HashSet<>();
 		}
@@ -192,7 +193,7 @@ public class TicksListener extends PassiveListener {
 		}
 
 		public void turnOff() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 
 	}

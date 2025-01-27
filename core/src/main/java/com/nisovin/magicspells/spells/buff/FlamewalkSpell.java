@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.HashMap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -108,14 +109,14 @@ public class FlamewalkSpell extends BuffSpell {
 
 	private class Burner implements Runnable {
 
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private Burner() {
-			taskId = MagicSpells.scheduleRepeatingTask(this, tickInterval, tickInterval);
+			task = MagicSpells.scheduleRepeatingTask(this, tickInterval, tickInterval);
 		}
 
 		public void stop() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 
 		@Override

@@ -1,9 +1,11 @@
 package com.nisovin.magicspells.volatilecode;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+
 public interface VolatileCodeHelper {
 
 	void error(String message);
 
-	int scheduleDelayedTask(Runnable task, long delay);
+	ScheduledTask scheduleDelayedTask(Runnable task, long delay);
 
 }

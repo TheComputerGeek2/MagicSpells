@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -111,14 +112,14 @@ public class LifewalkSpell extends BuffSpell {
 
 	private class Grower implements Runnable {
 		
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private Grower() {
-			taskId = MagicSpells.scheduleRepeatingTask(this, tickInterval, tickInterval);
+			task = MagicSpells.scheduleRepeatingTask(this, tickInterval, tickInterval);
 		}
 		
 		public void stop() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 		
 		@Override

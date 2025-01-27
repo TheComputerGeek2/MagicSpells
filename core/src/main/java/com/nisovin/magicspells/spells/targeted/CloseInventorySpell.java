@@ -41,7 +41,7 @@ public class CloseInventorySpell extends TargetedSpell implements TargetedEntity
 			MagicSpells.scheduleDelayedTask(() -> {
 				target.closeInventory();
 				playSpellEffects(data);
-			}, delay);
+			}, delay, target);
 		} else {
 			target.closeInventory();
 			playSpellEffects(data);

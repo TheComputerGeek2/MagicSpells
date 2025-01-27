@@ -83,7 +83,7 @@ public class TemporaryBlockSet implements Runnable {
 	public void removeAfter(int ticks, BlockSetRemovalCallback callback) {
 		if (blocks.isEmpty()) return;
 		this.callback = callback;
-		MagicSpells.scheduleDelayedTask(this, ticks);
+		MagicSpells.scheduleDelayedTask(this, ticks, livingEntity); // loc ?
 	}
 	
 	@Override

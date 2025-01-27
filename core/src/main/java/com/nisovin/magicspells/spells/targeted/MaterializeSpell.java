@@ -359,7 +359,7 @@ public class MaterializeSpell extends TargetedSpell implements TargetedLocationS
 					playSpellEffects(EffectPosition.BLOCK_DESTRUCTION, block.getLocation(), data);
 					if (playBreakEffect) block.getWorld().playEffect(block.getLocation(), Effect.STEP_SOUND, block.getBlockData());
 				}
-			}, resetDelay);
+			}, resetDelay, block.getLocation());
 		}
 		return true;
 	}

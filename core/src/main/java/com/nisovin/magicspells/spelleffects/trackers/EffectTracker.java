@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.spelleffects.trackers;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.entity.Entity;
 
 import com.nisovin.magicspells.MagicSpells;
@@ -19,7 +20,7 @@ public class EffectTracker implements Runnable {
 
 	protected SpellData data;
 
-	protected int effectTrackerTaskId;
+	protected ScheduledTask effectTrackerTask;
 
 	protected boolean isEntityEffect;
 
@@ -34,7 +35,7 @@ public class EffectTracker implements Runnable {
 		isEntityEffect = effect instanceof EntityEffect;
 
 		int interval = effect.getEffectInterval().get(data);
-		effectTrackerTaskId = MagicSpells.scheduleRepeatingTask(this, 0, interval);
+		effectTrackerTask = MagicSpells.scheduleRepeatingTask(this, 0, interval, entity);
 	}
 
 	public Entity getEntity() {
@@ -53,8 +54,8 @@ public class EffectTracker implements Runnable {
 		return checker;
 	}
 
-	public int getEffectTrackerTaskId() {
-		return effectTrackerTaskId;
+	public ScheduledTask getEffectTrackerTask() {
+		return effectTrackerTask;
 	}
 
 	public SpellData getData() {
@@ -71,7 +72,7 @@ public class EffectTracker implements Runnable {
 	}
 
 	public void stop() {
-		MagicSpells.cancelTask(effectTrackerTaskId);
+		MagicSpells.cancelTask(effectTrackerTask);
 		entity = null;
 		if (effectEntity != null) effectEntity.remove();
 	}

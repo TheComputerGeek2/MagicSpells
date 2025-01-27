@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.targeted;
 import java.util.List;
 import java.util.ArrayList;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.*;
@@ -234,7 +235,7 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 		private final Projectile projectile;
 		private final BoundingBox hitBox;
 		private final long startTime;
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private final boolean stopOnModifierFail;
 
@@ -311,7 +312,7 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 			monitors.add(this);
 
 			int tickInterval = HomingProjectileSpell.this.tickInterval.get(data);
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
+			task = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval, projectile);
 
 			playSpellEffects(EffectPosition.CASTER, currentLocation, data);
 			playSpellEffects(EffectPosition.PROJECTILE, projectile, data);
@@ -412,7 +413,7 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 
 		private void stop(boolean remove) {
 			playSpellEffects(EffectPosition.DELAYED, currentLocation, data);
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 			projectile.remove();
 			if (remove) monitors.remove(this);
 		}

@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -136,7 +137,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 
 		protected final boolean removePreviousBlocks;
 
-		protected final int taskId;
+		protected final ScheduledTask task;
 		protected final int radius;
 		protected final int startRadius;
 		protected final int heightPerTick;
@@ -173,7 +174,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 			nearby = new HashSet<>();
 
 			this.data = data.noTarget();
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, expandInterval.get(data));
+			task = MagicSpells.scheduleRepeatingTask(this, 0, expandInterval.get(data), center);
 		}
 
 		protected boolean step() {
@@ -232,7 +233,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 
 		protected void stop() {
 			removeBlocks(spellOnEnd);
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 
 	}

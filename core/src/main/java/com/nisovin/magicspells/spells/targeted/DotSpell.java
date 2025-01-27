@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.HashMap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
@@ -117,7 +118,7 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		private SpellData data;
 
-		private int taskId = -1;
+		private ScheduledTask task = null;
 		private int duration;
 		private int interval;
 		private int dur = 0;
@@ -138,7 +139,7 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 
 		private void init() {
-			if (taskId != -1) MagicSpells.cancelTask(taskId);
+			if (task != null) MagicSpells.cancelTask(task);
 
 			interval = DotSpell.this.interval.get(data);
 			duration = DotSpell.this.duration.get(data);
@@ -153,7 +154,7 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell {
 			spellDamageType = DotSpell.this.spellDamageType.get(data);
 			damageType = DotSpell.this.damageType.get(data);
 
-			taskId = MagicSpells.scheduleRepeatingTask(this, delay.get(data), interval);
+			task = MagicSpells.scheduleRepeatingTask(this, delay.get(data), interval);
 		}
 
 		@Override
@@ -218,7 +219,7 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 
 		private void cancel() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 			activeDots.remove(data.target().getUniqueId());
 		}
 

@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.targeted;
 import java.util.*;
 import java.util.Map.Entry;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -166,7 +167,7 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 					CarpetData carpetData = blocks.remove(b1);
 					b1.setType(carpetData.air);
 				}
-			}, duration);
+			}, duration, loc);
 		}
 
 		if (data.hasCaster()) playSpellEffects(EffectPosition.CASTER, data.caster(), data);
@@ -179,10 +180,10 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 
 	private class TouchChecker implements Runnable {
 
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private TouchChecker() {
-			taskId = MagicSpells.scheduleRepeatingTask(this, touchCheckInterval, touchCheckInterval);
+			task = MagicSpells.scheduleRepeatingTask(this, touchCheckInterval, touchCheckInterval);
 		}
 
 		@Override
@@ -210,7 +211,7 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 		}
 
 		private void stop() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 
 	}

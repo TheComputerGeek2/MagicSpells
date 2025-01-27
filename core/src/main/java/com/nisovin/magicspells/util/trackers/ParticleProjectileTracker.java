@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.concurrent.ThreadLocalRandom;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleArraySet;
 
@@ -57,7 +58,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 	private Vector currentVelocity;
 	private Vector effectOffset;
 	private int counter;
-	private int taskId;
+	private ScheduledTask task;
 	private BoundingBox hitBox;
 	private BoundingBox groundHitBox;
 	private Set<LivingEntity> immune;
@@ -250,7 +251,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 			ParticleProjectileSpell.getProjectileTrackers().add(this);
 		}
 
-		taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
+		task = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval, currentLocation);
 	}
 
 	@Override
@@ -638,7 +639,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 	public void stop(Location location, boolean removeTracker) {
 		if (removeTracker && spell != null) ParticleProjectileSpell.getProjectileTrackers().remove(this);
 		if (spell != null) spell.playEffects(EffectPosition.DELAYED, location, data.location(location));
-		MagicSpells.cancelTask(taskId);
+		MagicSpells.cancelTask(task);
 		if (effectSet != null) {
 			for (EffectlibSpellEffect spellEffect : effectSet) {
 				spellEffect.getEffect().cancel();
@@ -724,12 +725,12 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 		this.currentVelocity = currentVelocity;
 	}
 
-	public int getTaskId() {
-		return taskId;
+	public ScheduledTask getTask() {
+		return task;
 	}
 
-	public void setTaskId(int taskId) {
-		this.taskId = taskId;
+	public void setTask(ScheduledTask task) {
+		this.task = task;
 	}
 
 	public BoundingBox getHitBox() {

@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.targeted;
 import java.util.List;
 import java.util.ArrayList;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Registry;
@@ -156,7 +157,7 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 		private final Location target;
 
 		private final int arrows;
-		private final int taskId;
+		private final ScheduledTask task;
 		private final boolean resolveOptionsPerArrow;
 
 		private boolean gravity;
@@ -197,8 +198,8 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 			int shootInterval = VolleySpell.this.shootInterval.get(data);
 			if (shootInterval <= 0) {
 				for (int i = 0; i < arrows; i++) run();
-				taskId = -1;
-			} else taskId = MagicSpells.scheduleRepeatingTask(this, 0, shootInterval);
+				task = null;
+			} else task = MagicSpells.scheduleRepeatingTask(this, 0, shootInterval, from);
 
 			playSpellEffects(data);
 		}
@@ -262,9 +263,9 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 			playSpellEffects(EffectPosition.PROJECTILE, arrow, data);
 			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, from, arrow.getLocation(), data.caster(), arrow, data);
 
-			if (taskId != -1) {
+			if (task != null) {
 				count++;
-				if (count >= arrows) MagicSpells.cancelTask(taskId);
+				if (count >= arrows) MagicSpells.cancelTask(task);
 			}
 		}
 

@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.HashMap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -186,10 +187,10 @@ public class WindglideSpell extends BuffSpell {
 
 	private class GlideMonitor implements Runnable {
 
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private GlideMonitor() {
-			taskId = MagicSpells.scheduleRepeatingTask(this, interval, interval);
+			task = MagicSpells.scheduleRepeatingTask(this, interval, interval);
 		}
 
 		@Override
@@ -223,7 +224,7 @@ public class WindglideSpell extends BuffSpell {
 		}
 
 		public void stop() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 
 	}

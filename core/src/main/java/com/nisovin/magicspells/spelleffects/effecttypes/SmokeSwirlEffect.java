@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.spelleffects.effecttypes;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -48,7 +49,7 @@ public class SmokeSwirlEffect extends SpellEffect {
 		private int iteration;
 		private final int interval;
 		private final int animatorDuration;
-		private final int animatorTaskId;
+		private final ScheduledTask animatorTask;
 
 		Animator(Location location, int interval, int duration) {
 			this(interval, duration);
@@ -64,13 +65,13 @@ public class SmokeSwirlEffect extends SpellEffect {
 			this.interval = interval;
 			this.animatorDuration = duration;
 			this.iteration = 0;
-			this.animatorTaskId = MagicSpells.scheduleRepeatingTask(this, 0, interval);
+			this.animatorTask = MagicSpells.scheduleRepeatingTask(this, 0, interval);
 		}
 
 		@Override
 		public void run() {
 			if (iteration * interval > animatorDuration) {
-				MagicSpells.cancelTask(animatorTaskId);
+				MagicSpells.cancelTask(animatorTask);
 				return;
 			}
 

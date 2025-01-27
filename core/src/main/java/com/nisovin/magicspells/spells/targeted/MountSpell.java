@@ -54,7 +54,7 @@ public class MountSpell extends TargetedSpell implements TargetedEntitySpell {
 			caster.addPassenger(target);
 			if (duration > 0) {
 				LivingEntity finalTarget = target;
-				MagicSpells.scheduleDelayedTask(() -> caster.removePassenger(finalTarget), duration);
+				MagicSpells.scheduleDelayedTask(() -> caster.removePassenger(finalTarget), duration, caster);
 			}
 
 			playSpellEffects(data);
@@ -75,7 +75,7 @@ public class MountSpell extends TargetedSpell implements TargetedEntitySpell {
 			for (Entity e : passengers) {
 				veh.addPassenger(e);
 				if (duration > 0) {
-					MagicSpells.scheduleDelayedTask(() -> veh.removePassenger(e), duration);
+					MagicSpells.scheduleDelayedTask(() -> veh.removePassenger(e), duration, veh);
 				}
 			}
 
@@ -93,7 +93,7 @@ public class MountSpell extends TargetedSpell implements TargetedEntitySpell {
 		target.addPassenger(caster);
 		if (duration > 0) {
 			LivingEntity finalTarget = target;
-			MagicSpells.scheduleDelayedTask(() -> finalTarget.removePassenger(caster), duration);
+			MagicSpells.scheduleDelayedTask(() -> finalTarget.removePassenger(caster), duration, finalTarget);
 		}
 
 		playSpellEffects(data);

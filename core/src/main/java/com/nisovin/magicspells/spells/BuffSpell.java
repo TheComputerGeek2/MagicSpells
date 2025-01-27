@@ -219,7 +219,7 @@ public abstract class BuffSpell extends TargetedSpell implements TargetedEntityS
 
 			MagicSpells.scheduleDelayedTask(() -> {
 				if (isExpired(data.target())) turnOff(data.target());
-			}, Math.round(dur * TimeUtil.TICKS_PER_SECOND) + 1); // overestimate ticks, since the duration is real-time ms based
+			}, Math.round(dur * TimeUtil.TICKS_PER_SECOND) + 1, data.target()); // overestimate ticks, since the duration is real-time ms based
 		}
 
 		playSpellEffectsBuff(data.target(), entity -> isActiveAndNotExpired((LivingEntity) entity), data);

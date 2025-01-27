@@ -5,6 +5,7 @@ import java.util.*;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.LinkedHashMultimap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -105,7 +106,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		private final SpellData data;
 
-		private final int taskId;
+		private final ScheduledTask task;
 		private int counter = 0;
 
 		private final int startMana;
@@ -139,7 +140,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 			startDuration = RewindSpell.this.startDuration.get(data) / tickInterval;
 			specialEffectInterval = RewindSpell.this.specialEffectInterval.get(data);
 
-			this.taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
+			this.task = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
 			if (data.hasCaster()) entities.put(data.caster().getUniqueId(), this);
 
 			playSpellEffects(data);
@@ -163,14 +164,14 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 
 		private void rewind(boolean remove) {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 			if (remove && data.hasCaster()) entities.remove(data.caster().getUniqueId(), this);
 			if (rewindSpell != null) rewindSpell.subcast(data.noTarget());
 			new ForceRewinder(data, locations, startHealth, startMana, rewindHealth, rewindMana);
 		}
 
 		private void stop() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 
 	}
@@ -179,7 +180,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		private final SpellData data;
 
-		private final int taskId;
+		private final ScheduledTask task;
 		private int counter;
 
 		private final int startMana;
@@ -206,7 +207,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 			delayedEffectInterval = RewindSpell.this.delayedEffectInterval.get(data);
 
 			int rewindInterval = RewindSpell.this.rewindInterval.get(data);
-			this.taskId = MagicSpells.scheduleRepeatingTask(this, 0, rewindInterval);
+			this.task = MagicSpells.scheduleRepeatingTask(this, 0, rewindInterval);
 		}
 
 		@Override
@@ -230,7 +231,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 
 		private void stop() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 			if (rewindHealth) data.target().setHealth(startHealth);
 			if (rewindMana && MagicSpells.isManaSystemEnabled() && startMana > -1 && data.target() instanceof Player player) {
 				ManaHandler handler = MagicSpells.getManaHandler();
@@ -239,7 +240,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 
 		private void cancel() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 			locations.clear();
 			locations = null;
 		}

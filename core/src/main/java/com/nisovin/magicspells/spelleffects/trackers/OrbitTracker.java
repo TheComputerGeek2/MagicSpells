@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.spelleffects.trackers;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
@@ -18,8 +19,8 @@ public class OrbitTracker extends EffectTracker implements Runnable {
 
 	private Vector currentPosition;
 
-	private int horizontalTaskId;
-	private int verticalTaskId;
+	private ScheduledTask horizontalTask;
+	private ScheduledTask verticalTask;
 
 	private float orbRadius;
 	private float orbHeight;
@@ -56,12 +57,12 @@ public class OrbitTracker extends EffectTracker implements Runnable {
 		float horizRadius = effect.getHorizExpandRadius().get(data);
 		int horizDelay = effect.getHorizExpandDelay().get(data);
 		if (horizDelay > 0 && horizRadius != 0)
-			horizontalTaskId = MagicSpells.scheduleRepeatingTask(() -> orbRadius += horizRadius, horizDelay, horizDelay);
+			horizontalTask = MagicSpells.scheduleRepeatingTask(() -> orbRadius += horizRadius, horizDelay, horizDelay, entity);
 
 		float vertRadius = effect.getVertExpandRadius().get(data);
 		int vertDelay = effect.getVertExpandDelay().get(data);
 		if (vertDelay > 0 && vertRadius != 0)
-			verticalTaskId = MagicSpells.scheduleRepeatingTask(() -> orbHeight += vertRadius, vertDelay, vertDelay);
+			verticalTask = MagicSpells.scheduleRepeatingTask(() -> orbHeight += vertRadius, vertDelay, vertDelay, entity);
 	}
 
 	@Override
@@ -118,8 +119,8 @@ public class OrbitTracker extends EffectTracker implements Runnable {
 	@Override
 	public void stop() {
 		super.stop();
-		MagicSpells.cancelTask(horizontalTaskId);
-		MagicSpells.cancelTask(verticalTaskId);
+		MagicSpells.cancelTask(horizontalTask);
+		MagicSpells.cancelTask(verticalTask);
 		currentPosition = null;
 	}
 

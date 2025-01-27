@@ -112,7 +112,7 @@ public class EntombSpell extends TargetedSpell implements TargetedEntitySpell {
 		if (powerAffectsDuration.get(data)) duration = Math.round(duration * data.power());
 
 		if (duration > 0 && !tombBlocks.isEmpty())
-			MagicSpells.scheduleDelayedTask(() -> removeTomb(tombBlocks, data), duration);
+			MagicSpells.scheduleDelayedTask(() -> removeTomb(tombBlocks, data), duration, feet.getLocation());
 
 		playSpellEffects(data);
 

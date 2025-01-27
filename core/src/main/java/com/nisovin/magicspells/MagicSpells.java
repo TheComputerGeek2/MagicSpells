@@ -24,6 +24,7 @@ import com.google.common.collect.LinkedHashMultimap;
 
 import de.slikey.effectlib.EffectManager;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bstats.charts.AdvancedPie;
@@ -652,7 +653,7 @@ public class MagicSpells extends JavaPlugin {
 		CompatBasics.setupExemptionAssistant();
 
 		// Load external data
-		Bukkit.getScheduler().runTaskLater(this, this::loadExternalData, 1);
+		Bukkit.getGlobalRegionScheduler().runDelayed(this, t -> loadExternalData(), 1);
 	}
 
 	private void initializeSpells() {
@@ -1925,8 +1926,8 @@ public class MagicSpells extends JavaPlugin {
 		return m.getAnnotation(clazz) != null;
 	}
 
-	public static int scheduleDelayedTask(final Runnable task, long delay) {
-		return Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, !plugin.enableErrorLogging ? task : () -> {
+	public static ScheduledTask scheduleDelayedTask(final Runnable task, long delay, Location ctx) {
+		return Bukkit.getRegionScheduler().runDelayed(plugin, ctx, !plugin.enableErrorLogging ? t -> task.run() : t -> {
 			try {
 				task.run();
 			} catch (Exception e) {
@@ -1935,8 +1936,22 @@ public class MagicSpells extends JavaPlugin {
 		}, delay);
 	}
 
-	public static int scheduleRepeatingTask(final Runnable task, long delay, long interval) {
-		return Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, !plugin.enableErrorLogging ? task : () -> {
+	public static ScheduledTask scheduleDelayedTask(final Runnable task, long delay) {
+		return Bukkit.getGlobalRegionScheduler().runDelayed(plugin, !plugin.enableErrorLogging ? t -> task.run() : t -> {
+			try {
+				task.run();
+			} catch (Exception e) {
+				handleException(e);
+			}
+		}, delay);
+	}
+
+	public static ScheduledTask scheduleDelayedTask(final Runnable task, long delay, Entity ent) {
+		return scheduleDelayedTask(task, delay, ent.getLocation());
+	}
+
+	public static ScheduledTask scheduleRepeatingTask(final Runnable task, long delay, long interval, Location ctx) {
+		return Bukkit.getRegionScheduler().runAtFixedRate(plugin, ctx, !plugin.enableErrorLogging ? t -> task.run() : t -> {
 			try {
 				task.run();
 			} catch (Exception e) {
@@ -1945,8 +1960,28 @@ public class MagicSpells extends JavaPlugin {
 		}, delay, interval);
 	}
 
-	public static void cancelTask(int taskId) {
-		Bukkit.getScheduler().cancelTask(taskId);
+	public static ScheduledTask scheduleRepeatingTask(final Runnable task, long delay, long interval) {
+		return Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, !plugin.enableErrorLogging ? t -> task.run() : t -> {
+			try {
+				task.run();
+			} catch (Exception e) {
+				handleException(e);
+			}
+		}, delay, interval);
+	}
+
+	public static ScheduledTask scheduleRepeatingTask(final Runnable task, long delay, long interval, Entity ent) {
+		return ent.getScheduler().runAtFixedRate(plugin, !plugin.enableErrorLogging ? t -> task.run() : t -> {
+			try {
+				task.run();
+			} catch (Exception e) {
+				handleException(e);
+			}
+		}, null, delay, interval);
+	}
+
+	public static void cancelTask(ScheduledTask task) {
+		task.cancel();
 	}
 
 	public static void handleException(@NotNull Exception ex) {

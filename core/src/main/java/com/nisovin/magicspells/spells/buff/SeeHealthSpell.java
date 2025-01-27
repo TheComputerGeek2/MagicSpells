@@ -2,6 +2,7 @@ package com.nisovin.magicspells.spells.buff;
 
 import java.util.*;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
@@ -131,10 +132,10 @@ public class SeeHealthSpell extends BuffSpell {
 
 	private class Updater implements Runnable {
 
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private Updater() {
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, interval);
+			task = MagicSpells.scheduleRepeatingTask(this, 0, interval);
 		}
 
 		@Override
@@ -150,7 +151,7 @@ public class SeeHealthSpell extends BuffSpell {
 		}
 
 		public void stop() {
-			MagicSpells.cancelTask(taskId);
+			MagicSpells.cancelTask(task);
 		}
 
 	}

@@ -242,7 +242,7 @@ public class ArmorSpell extends BuffSpell {
 			if (!isActive(player) || isExpired(player)) return;
 
 			EntityEquipment eq = player.getEquipment();
-			Bukkit.getScheduler().scheduleSyncDelayedTask(MagicSpells.plugin, () -> setArmor(eq));
+			player.getScheduler().run(MagicSpells.plugin, t -> setArmor(eq), null);
 		}
 
 		@EventHandler

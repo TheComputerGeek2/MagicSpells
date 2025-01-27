@@ -4,6 +4,7 @@ version: $version
 authors: [nisovin, TheComputerGeek2, Chronoken, tonythemacaroni, JasperLorelai]
 website: "https://github.com/TheComputerGeek2/MagicSpells/"
 api-version: "1.21.4"
+folia-supported: true
 softdepend:
     - GriefPrevention
     - Vault

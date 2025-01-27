@@ -2,6 +2,7 @@ package com.nisovin.magicspells.mana;
 
 import java.util.*;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -288,7 +289,7 @@ public class ManaSystem extends ManaHandler {
 		manaBars.clear();
 
 		for (Regenerator regenerator : regenerators) {
-			MagicSpells.cancelTask(regenerator.taskId);
+			MagicSpells.cancelTask(regenerator.task);
 		}
 		regenerators.clear();
 	}
@@ -297,11 +298,11 @@ public class ManaSystem extends ManaHandler {
 
 		private final ManaRank rank;
 
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private Regenerator(ManaRank rank, int regenInterval) {
 			this.rank = rank;
-			taskId = MagicSpells.scheduleRepeatingTask(this, regenInterval, regenInterval);
+			task = MagicSpells.scheduleRepeatingTask(this, regenInterval, regenInterval);
 		}
 
 		@Override

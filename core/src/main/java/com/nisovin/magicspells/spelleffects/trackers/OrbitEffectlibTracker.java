@@ -1,10 +1,10 @@
 package com.nisovin.magicspells.spelleffects.trackers;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
-import org.bukkit.scheduler.BukkitTask;
 
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
@@ -16,12 +16,14 @@ import de.slikey.effectlib.Effect;
 import de.slikey.effectlib.util.VectorUtils;
 import de.slikey.effectlib.effect.ModifiedEffect;
 
+import java.util.concurrent.TimeUnit;
+
 public class OrbitEffectlibTracker extends AsyncEffectTracker implements Runnable {
 
 	private Vector currentPosition;
 
-	private BukkitTask repeatingHorizTask;
-	private BukkitTask repeatingVertTask;
+	private ScheduledTask repeatingHorizTask;
+	private ScheduledTask repeatingVertTask;
 
 	private float orbRadius;
 	private float orbHeight;
@@ -62,14 +64,14 @@ public class OrbitEffectlibTracker extends AsyncEffectTracker implements Runnabl
 		float horizRadius = effect.getHorizExpandRadius().get(data);
 		int horizDelay = effect.getHorizExpandDelay().get(data);
 		if (horizDelay > 0 && horizRadius != 0)
-			repeatingHorizTask = Bukkit.getScheduler().runTaskTimerAsynchronously(MagicSpells.getInstance(),
-				() -> orbRadius += horizRadius, horizDelay, horizDelay);
+			repeatingHorizTask = Bukkit.getAsyncScheduler().runAtFixedRate(MagicSpells.getInstance(),
+				t -> orbRadius += horizRadius, horizDelay * 50L, horizDelay * 50L, TimeUnit.MILLISECONDS);
 
 		float vertRadius = effect.getVertExpandRadius().get(data);
 		int vertDelay = effect.getVertExpandDelay().get(data);
 		if (vertDelay > 0 && vertRadius != 0)
-			repeatingVertTask = Bukkit.getScheduler().runTaskTimerAsynchronously(MagicSpells.getInstance(),
-				() -> orbHeight += vertRadius, vertDelay, vertDelay);
+			repeatingVertTask = Bukkit.getAsyncScheduler().runAtFixedRate(MagicSpells.getInstance(),
+				t -> orbHeight += vertRadius, vertDelay * 50L, vertDelay * 50L, TimeUnit.MILLISECONDS);
 
 		effectlibEffect = effect.playEffectLib(entity.getLocation(), data);
 		if (effectlibEffect != null) effectlibEffect.infinite();

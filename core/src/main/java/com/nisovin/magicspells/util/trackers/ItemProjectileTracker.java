@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.util.trackers;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Item;
@@ -78,7 +79,7 @@ public class ItemProjectileTracker implements Runnable, Tracker {
 	private boolean groundSpellCasted = false;
 	private boolean stopped = false;
 
-	private int taskId;
+	private ScheduledTask task;
 	private int count = 0;
 
 	public ItemProjectileTracker(SpellData data) {
@@ -115,14 +116,14 @@ public class ItemProjectileTracker implements Runnable, Tracker {
 			spell.playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, startLocation, entity.getLocation(), data.caster(), entity, data);
 		}
 
-		taskId = MagicSpells.scheduleRepeatingTask(this, tickInterval, tickInterval);
+		task = MagicSpells.scheduleRepeatingTask(this, tickInterval, tickInterval, entity);
 
 		MagicSpells.scheduleDelayedTask(() -> {
 			entity.customName(itemName);
 			entity.setCustomNameVisible(true);
-		}, itemNameDelay);
+		}, itemNameDelay, entity);
 
-		MagicSpells.scheduleDelayedTask(this::stop, removeDelay);
+		MagicSpells.scheduleDelayedTask(this::stop, removeDelay, entity);
 	}
 
 	@Override
@@ -184,7 +185,7 @@ public class ItemProjectileTracker implements Runnable, Tracker {
 			if (!landed) MagicSpells.scheduleDelayedTask(() -> {
 				if (spellOnDelay != null) spellOnDelay.subcast(data.location(entity.getLocation()));
 				stop();
-			}, spellDelay);
+			}, spellDelay, entity);
 			landed = true;
 		}
 	}
@@ -200,7 +201,7 @@ public class ItemProjectileTracker implements Runnable, Tracker {
 			if (removeTracker) ItemProjectileSpell.getProjectileTrackers().remove(this);
 		}
 		if (entity != null) entity.remove();
-		MagicSpells.cancelTask(taskId);
+		MagicSpells.cancelTask(task);
 		stopped = true;
 	}
 

@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.targeted;
 import java.util.List;
 import java.util.ArrayList;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -130,7 +131,7 @@ public class ChainSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 
 		private final SpellData data;
 		private final Location start;
-		private final int taskId;
+		private final ScheduledTask task;
 
 		private final List<LivingEntity> targets;
 		private final List<Float> targetPowers;
@@ -144,7 +145,7 @@ public class ChainSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			this.targetPowers = targetPowers;
 			this.targets = targets;
 
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, interval);
+			task = MagicSpells.scheduleRepeatingTask(this, 0, interval, start);
 		}
 
 		@Override
@@ -160,7 +161,7 @@ public class ChainSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			playSpellEffects(EffectPosition.TARGET, target, subData);
 
 			current++;
-			if (current >= targets.size()) MagicSpells.cancelTask(taskId);
+			if (current >= targets.size()) MagicSpells.cancelTask(task);
 		}
 
 	}

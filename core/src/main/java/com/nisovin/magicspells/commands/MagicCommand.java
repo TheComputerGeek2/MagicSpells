@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.jetbrains.annotations.NotNull;
 
 import org.bukkit.*;
@@ -15,7 +16,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.command.ConsoleCommandSender;
@@ -271,12 +271,12 @@ public class MagicCommand extends BaseCommand {
 		if (!MagicSpells.isLoaded()) return;
 		if (noPermission(issuer.getIssuer(), Perm.COMMAND_TASKINFO)) return;
 
-		List<BukkitTask> msTasks = new ArrayList<>();
-		for (BukkitTask task : Bukkit.getScheduler().getPendingTasks()) {
-			if (task == null) continue;
-			if (!task.getOwner().equals(MagicSpells.getInstance())) continue;
-			msTasks.add(task);
-		}
+		List<ScheduledTask> msTasks = new ArrayList<>();
+//		for (ScheduledTask task : /* api ? */ ) {
+//			if (task == null) continue;
+//			if (!task.getOwningPlugin().equals(MagicSpells.getInstance())) continue;
+//			msTasks.add(task);
+//		}
 
 		issuer.sendMessage(MagicSpells.getTextColor() + "EffectLib effect instances - " + MagicSpells.getEffectManager().getEffects().size());
 		issuer.sendMessage(MagicSpells.getTextColor() + "MagicSpells tasks - " + msTasks.size());

@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Player;
@@ -83,7 +84,7 @@ public class FlightPathSpell extends InstantSpell {
 
 		private boolean initialized = false;
 
-		private int task = -1;
+		private ScheduledTask task = null;
 
 		private FlightHandler() {
 			init();
@@ -92,7 +93,7 @@ public class FlightPathSpell extends InstantSpell {
 		private void addFlight(ActiveFlight flight) {
 			flights.put(flight.caster.getUniqueId(), flight);
 			flight.start();
-			if (task < 0) task = MagicSpells.scheduleRepeatingTask(this, 0, interval);
+			if (task == null) task = MagicSpells.scheduleRepeatingTask(this, 0, interval, flight.caster);
 		}
 
 		private void init() {
@@ -139,7 +140,7 @@ public class FlightPathSpell extends InstantSpell {
 			}
 			if (flights.isEmpty()) {
 				MagicSpells.cancelTask(task);
-				task = -1;
+				task = null;
 			}
 		}
 

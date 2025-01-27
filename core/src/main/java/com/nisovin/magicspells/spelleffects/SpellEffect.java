@@ -257,7 +257,7 @@ public abstract class SpellEffect {
 		if (delay <= 0) return playEffectEntity(entity, data);
 
 		SpellData finalData = data;
-		MagicSpells.scheduleDelayedTask(() -> playEffectEntity(entity, finalData), delay);
+		MagicSpells.scheduleDelayedTask(() -> playEffectEntity(entity, finalData), delay, entity);
 
 		return null;
 	}
@@ -299,7 +299,7 @@ public abstract class SpellEffect {
 		if (delay <= 0) return playEffectLocationReal(location, data);
 
 		SpellData finalData = data;
-		MagicSpells.scheduleDelayedTask(() -> playEffectLocationReal(location, finalData), delay);
+		MagicSpells.scheduleDelayedTask(() -> playEffectLocationReal(location, finalData), delay, location);
 
 		return null;
 	}
@@ -321,7 +321,7 @@ public abstract class SpellEffect {
 		if (delay <= 0) return playEffectLibLocationReal(location, data);
 
 		SpellData finalData = data;
-		MagicSpells.scheduleDelayedTask(() -> playEffectLibLocationReal(location, finalData), delay);
+		MagicSpells.scheduleDelayedTask(() -> playEffectLibLocationReal(location, finalData), delay, location);
 
 		return null;
 	}

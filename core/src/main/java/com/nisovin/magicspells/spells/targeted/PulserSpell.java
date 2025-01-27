@@ -2,6 +2,7 @@ package com.nisovin.magicspells.spells.targeted;
 
 import java.util.*;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -272,7 +273,7 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 
 		private final double maxDistanceSq;
 
-		private int taskId;
+		private ScheduledTask task;
 		private int pulseCount;
 
 		private Pulser(Block block, Material type, SpellData data) {
@@ -291,7 +292,7 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 
 			pulseCount = 0;
 
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, interval.get(data));
+			task = MagicSpells.scheduleRepeatingTask(this, 0, interval.get(data), location);
 		}
 
 		public LivingEntity getCaster() {
@@ -331,10 +332,9 @@ public class PulserSpell extends TargetedSpell implements TargetedLocationSpell 
 		}
 
 		private void stop(boolean remove) {
-			if (taskId < 0) return;
+			if (task.isCancelled()) return;
 
-			MagicSpells.cancelTask(taskId);
-			taskId = -1;
+			MagicSpells.cancelTask(task);
 
 			if (remove) pulsers.remove(block);
 

@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.HashMap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -266,8 +267,8 @@ public class PortalSpell extends InstantSpell {
 		private final Portal startPortal;
 		private final Portal endPortal;
 
-		private int taskPortal = -1;
-		private int taskStop = -1;
+		private ScheduledTask taskPortal = null;
+		private ScheduledTask taskStop = null;
 
 		private PortalLink(SpellData data, Portal startPortal, Portal endPortal) {
 			this.startPortal = startPortal;
@@ -300,10 +301,10 @@ public class PortalSpell extends InstantSpell {
 						playSpellEffects(EffectPosition.END_POSITION, endPortal.portalLocation(), data);
 					}
 
-				}, interval, interval);
+				}, interval, interval, startPortal.portalLocation);
 			}
 
-			taskStop = MagicSpells.scheduleDelayedTask(this::stop, duration.get(data));
+			taskStop = MagicSpells.scheduleDelayedTask(this::stop, duration.get(data), startPortal.portalLocation);
 		}
 
 		@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -404,8 +405,8 @@ public class PortalSpell extends InstantSpell {
 			playSpellEffects(EffectPosition.DELAYED, startPortal.portalLocation(), data);
 			playSpellEffects(EffectPosition.DELAYED, endPortal.portalLocation(), data);
 
-			if (taskPortal > 0) MagicSpells.cancelTask(taskPortal);
-			if (taskStop > 0) MagicSpells.cancelTask(taskStop);
+			if (taskPortal != null) MagicSpells.cancelTask(taskPortal);
+			if (taskStop != null) MagicSpells.cancelTask(taskStop);
 
 			tpCooldowns.clear();
 		}

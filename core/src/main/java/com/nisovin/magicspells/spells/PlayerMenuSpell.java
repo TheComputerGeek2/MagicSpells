@@ -203,7 +203,7 @@ public class PlayerMenuSpell extends TargetedSpell implements TargetedEntitySpel
 
 	private void openDelay(Player opener, SpellData data) {
 		int delay = this.delay.get(data);
-		if (delay > 0) MagicSpells.scheduleDelayedTask(() -> open(opener, new PlayerMenuInventory(data)), delay);
+		if (delay > 0) MagicSpells.scheduleDelayedTask(() -> open(opener, new PlayerMenuInventory(data)), delay, opener);
 		else open(opener, new PlayerMenuInventory(data));
 	}
 

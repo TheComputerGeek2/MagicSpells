@@ -217,7 +217,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 								}
 								finalBlock.setBlockData(previous);
 								playSpellEffects(EffectPosition.BLOCK_DESTRUCTION, finalBlock.getLocation(), subData);
-							}, replaceDuration);
+							}, replaceDuration, target);
 						}
 
 						replaced = true;

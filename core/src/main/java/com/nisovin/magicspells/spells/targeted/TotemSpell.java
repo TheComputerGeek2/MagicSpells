@@ -5,6 +5,7 @@ import java.util.*;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.HashMultimap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
@@ -233,7 +234,7 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
 		totems.put(data.hasCaster() ? data.caster().getUniqueId() : null, totem);
 
 		int maxDuration = this.maxDuration.get(data);
-		if (maxDuration > 0) MagicSpells.scheduleDelayedTask(totem::stop, maxDuration);
+		if (maxDuration > 0) MagicSpells.scheduleDelayedTask(totem::stop, maxDuration, loc);
 
 		playSpellEffects(data);
 	}
@@ -294,7 +295,7 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
 		private final boolean allowCasterTarget;
 		private final boolean onlyCountOnSuccess;
 
-		private int taskId;
+		private ScheduledTask task;
 		private int pulseCount;
 		private final int totalPulses;
 
@@ -342,7 +343,7 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
 
 			if (spellOnSpawn != null) spellOnSpawn.subcast(this.data.retarget(armorStand, null));
 
-			taskId = MagicSpells.scheduleRepeatingTask(this, 0, interval.get(data));
+			task = MagicSpells.scheduleRepeatingTask(this, 0, interval.get(data));
 		}
 
 		@Override
@@ -381,10 +382,10 @@ public class TotemSpell extends TargetedSpell implements TargetedLocationSpell {
 		}
 
 		private void stop(boolean remove) {
-			if (taskId < 0) return;
+			if (task == null) return;
 
-			MagicSpells.cancelTask(taskId);
-			taskId = -1;
+			MagicSpells.cancelTask(task);
+			task = null;
 
 			if (remove) totems.remove(data.hasCaster() ? data.caster().getUniqueId() : null, this);
 

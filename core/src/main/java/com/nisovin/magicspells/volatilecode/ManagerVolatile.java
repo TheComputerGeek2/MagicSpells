@@ -2,6 +2,7 @@ package com.nisovin.magicspells.volatilecode;
 
 import java.util.Map;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 
 import com.nisovin.magicspells.MagicSpells;
@@ -20,7 +21,7 @@ public class ManagerVolatile {
 		}
 
 		@Override
-		public int scheduleDelayedTask(Runnable task, long delay) {
+		public ScheduledTask scheduleDelayedTask(Runnable task, long delay) {
 			return MagicSpells.scheduleDelayedTask(task, delay);
 		}
 

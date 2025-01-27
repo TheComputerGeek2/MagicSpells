@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Color;
 import org.bukkit.entity.*;
 import org.bukkit.Location;
@@ -91,7 +92,7 @@ public class ProjectileTracker implements Runnable, Tracker {
 
 	private ValidTargetList targetList;
 
-	private int taskId;
+	private ScheduledTask task;
 	private int counter = 0;
 
 	private boolean stopped = false;
@@ -109,7 +110,7 @@ public class ProjectileTracker implements Runnable, Tracker {
 	public void initialize() {
 		zoneManager = MagicSpells.getNoMagicZoneManager();
 		startTime = System.currentTimeMillis();
-		taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval);
+		task = MagicSpells.scheduleRepeatingTask(this, 0, tickInterval, projectile);
 
 		startLocation.add(0, relativeOffset.getY(), 0);
 		Util.applyRelativeOffset(startLocation, relativeOffset.setY(0));
@@ -315,7 +316,7 @@ public class ProjectileTracker implements Runnable, Tracker {
 			spell.playEffects(EffectPosition.DELAYED, currentLocation, data);
 			if (removeTracker) ProjectileSpell.getProjectileTrackers().remove(this);
 		}
-		MagicSpells.cancelTask(taskId);
+		MagicSpells.cancelTask(task);
 		if (effectSet != null) {
 			for (EffectlibSpellEffect spellEffect : effectSet) {
 				spellEffect.getEffect().cancel();

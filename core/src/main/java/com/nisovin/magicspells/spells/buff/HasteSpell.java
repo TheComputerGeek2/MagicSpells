@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.HashMap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -123,7 +124,7 @@ public class HasteSpell extends BuffSpell {
 					}
 					data.count++;
 					player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, data.boostDuration, data.strength + (data.count * data.accelerationIncrease), data.ambient, !data.hidden, data.icon));
-				}, data.accelerationDelay, data.accelerationInterval);
+				}, data.accelerationDelay, data.accelerationInterval, player);
 			}
 		} else {
 			player.removePotionEffect(PotionEffectType.SPEED);
@@ -163,7 +164,7 @@ public class HasteSpell extends BuffSpell {
 		private final SpellData data;
 
 		private int count;
-		private int task;
+		private ScheduledTask task;
 
 		private HasteData(SpellData data) {
 			this.data = data;
