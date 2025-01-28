@@ -3,6 +3,7 @@ package com.nisovin.magicspells.commands;
 import java.util.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
@@ -71,7 +72,8 @@ public class MagicCommand extends BaseCommand {
 		commandManager.getCommandCompletions().registerAsyncCompletion("magic_items", context ->
 			MagicItems.getMagicItemKeys()
 		);
-		commandManager.getCommandCompletions().registerAsyncCompletion("looking_at", context -> {
+
+		Function<BukkitCommandCompletionContext, Collection<String>> lookingAt = context -> {
 			Player player = context.getPlayer();
 			if (player == null) return Collections.emptySet();
 
@@ -93,8 +95,9 @@ public class MagicCommand extends BaseCommand {
 				default -> "";
 			};
 			return Set.of(value);
-		});
-		commandManager.getCommandCompletions().registerAsyncCompletion("spell_target", context -> {
+		};
+
+		Function<BukkitCommandCompletionContext, Collection<String>> spellTarget = context -> {
 			CommandSender sender = context.getSender();
 			Player player = context.getPlayer();
 			if (player == null) return TxtUtil.tabCompletePlayerName(sender);
@@ -107,8 +110,9 @@ public class MagicCommand extends BaseCommand {
 			}
 			targets.addAll(TxtUtil.tabCompletePlayerName(sender));
 			return targets;
-		});
-		commandManager.getCommandCompletions().registerAsyncCompletion("target_uuid", context -> {
+		};
+
+		Function<BukkitCommandCompletionContext, Collection<String>> targetUuid = context -> {
 			Player player = context.getPlayer();
 			if (player == null) return Collections.emptySet();
 
@@ -116,7 +120,19 @@ public class MagicCommand extends BaseCommand {
 			if (result == null || !(result.getHitEntity() instanceof LivingEntity entity))
 				return Collections.emptySet();
 			return Set.of(entity.getUniqueId().toString());
-		});
+		};
+
+		// ray tracing entities cannot be done async on folia
+		if (MagicSpells.IS_FOLIA) {
+			commandManager.getCommandCompletions().registerCompletion("looking_at", lookingAt::apply);
+			commandManager.getCommandCompletions().registerCompletion("spell_target", spellTarget::apply);
+			commandManager.getCommandCompletions().registerCompletion("target_uuid", targetUuid::apply);
+		} else {
+			commandManager.getCommandCompletions().registerAsyncCompletion("looking_at", lookingAt::apply);
+			commandManager.getCommandCompletions().registerAsyncCompletion("spell_target", spellTarget::apply);
+			commandManager.getCommandCompletions().registerAsyncCompletion("target_uuid", targetUuid::apply);
+		}
+
 		commandManager.getCommandCompletions().registerAsyncCompletion("cast_data", context -> {
 			String[] args = (String[]) context.getContextValue(String.class.arrayType());
 			CommandSender sender = context.getSender();

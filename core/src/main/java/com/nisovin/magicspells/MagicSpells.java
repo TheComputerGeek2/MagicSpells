@@ -105,6 +105,8 @@ public class MagicSpells extends JavaPlugin {
 	// Pass this to methods that want spell arguments passed but doesn't have any to be passed
 	public static final String[] NULL_ARGS = null;
 
+	public static final boolean IS_FOLIA = isFolia();
+
 	private Set<Material> losTransparentBlocks;
 	private List<Material> ignoreCastItemDurability;
 	private Map<EntityType, String> entityNames;
@@ -2331,4 +2333,12 @@ public class MagicSpells extends JavaPlugin {
 		return config;
 	}
 
+	private static boolean isFolia() {
+		try {
+			Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+			return true;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+	}
 }
