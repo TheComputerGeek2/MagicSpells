@@ -134,25 +134,27 @@ public class LifewalkSpell extends BuffSpell {
 					continue;
 				}
 
-				Block feet = livingEntity.getLocation().getBlock();
-				Block ground = feet.getRelative(BlockFace.DOWN);
+				entity.getScheduler().run(MagicSpells.plugin, t -> {
+					Block feet = livingEntity.getLocation().getBlock();
+					Block ground = feet.getRelative(BlockFace.DOWN);
 
-				if (!feet.getType().isAir()) continue;
-				if (ground.getType() != Material.DIRT && ground.getType() != Material.GRASS_BLOCK) continue;
-				if (ground.getType() == Material.DIRT) ground.setType(Material.GRASS_BLOCK);
+					if (!feet.getType().isAir()) return;
+					if (ground.getType() != Material.DIRT && ground.getType() != Material.GRASS_BLOCK) return;
+					if (ground.getType() == Material.DIRT) ground.setType(Material.GRASS_BLOCK);
 
-				int rand = random.nextInt(100);
+					int rand = random.nextInt(100);
 
-				for (Material m : blocks.keySet()) {
-					int chance = blocks.get(m);
+					for (Material m : blocks.keySet()) {
+						int chance = blocks.get(m);
 
-					if (rand > chance) continue;
+						if (rand > chance) continue;
 
-					feet.setType(m);
-					addUseAndChargeCost(livingEntity);
+						feet.setType(m);
+						addUseAndChargeCost(livingEntity);
 
-					rand = random.nextInt(100);
-				}
+						rand = random.nextInt(100);
+					}
+				}, () -> entities.remove(id));
 			}
 		}
 	}
