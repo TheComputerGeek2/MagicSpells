@@ -352,8 +352,9 @@ public class LoopSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 
 		@Override
 		public void run() {
-			if (data.hasTarget() && !data.target().isValid()) {
-				cancel();
+			LivingEntity loopingEntity = data.hasTarget() ? data.target() : data.hasCaster() ? data.caster() : null;
+			if (loopingEntity != null && !loopingEntity.isValid()) {
+				if (loopingEntity instanceof Player) cancel();
 				return;
 			}
 
