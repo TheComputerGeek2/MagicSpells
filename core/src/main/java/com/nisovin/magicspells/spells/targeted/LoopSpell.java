@@ -352,8 +352,9 @@ public class LoopSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 
 		@Override
 		public void run() {
-			if (data.hasTarget() && !data.target().isValid()) {
-				cancel();
+			LivingEntity loopingEntity = data.hasTarget() ? data.target() : data.hasCaster() ? data.caster() : null;
+			if (loopingEntity != null && !loopingEntity.isValid()) {
+				if (loopingEntity instanceof Player) cancel();
 				return;
 			}
 
@@ -379,7 +380,7 @@ public class LoopSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 				}
 			}
 
-			if (loopModifiers != null && (!skipFirstLoopModifiers || !firstIteration)) {
+			if (data.hasCaster() && loopModifiers != null && (!skipFirstLoopModifiers || !firstIteration)) {
 				ModifierResult result = loopModifiers.apply(data.caster(), data);
 				data = result.data();
 
@@ -389,7 +390,7 @@ public class LoopSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 				}
 			}
 
-			if (data.hasTarget() && loopTargetModifiers != null && (!skipFirstLoopTargetModifiers || !firstIteration)) {
+			if (data.hasCaster() && data.hasTarget() && loopTargetModifiers != null && (!skipFirstLoopTargetModifiers || !firstIteration)) {
 				ModifierResult result = loopTargetModifiers.apply(data.caster(), data.target(), data);
 				data = result.data();
 
@@ -399,7 +400,7 @@ public class LoopSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 				}
 			}
 
-			if (data.hasLocation() && loopLocationModifiers != null && (!skipFirstLoopLocationModifiers || !firstIteration)) {
+			if (data.hasCaster() && data.hasLocation() && loopLocationModifiers != null && (!skipFirstLoopLocationModifiers || !firstIteration)) {
 				ModifierResult result = loopLocationModifiers.apply(data.caster(), data.location(), data);
 				data = result.data();
 

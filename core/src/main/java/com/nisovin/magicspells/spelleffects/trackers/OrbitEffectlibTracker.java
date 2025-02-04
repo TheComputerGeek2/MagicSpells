@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.nisovin.magicspells.util.Util;
@@ -38,10 +39,6 @@ public class OrbitEffectlibTracker extends AsyncEffectTracker implements Runnabl
 	private final boolean counterClockwise;
 
 	private final Effect effectlibEffect;
-
-	private Location loc;
-
-	private Effect modifiedEffect;
 
 	public OrbitEffectlibTracker(Entity entity, SpellEffectActiveChecker checker, SpellEffect effect, SpellData data) {
 		super(entity, checker, effect, data);
@@ -81,16 +78,20 @@ public class OrbitEffectlibTracker extends AsyncEffectTracker implements Runnabl
 			stop();
 			return;
 		}
+		if (!entity.isValid()) {
+			if (!(entity instanceof Player)) stop();
+			return;
+		}
 
 		xAxis += orbitXAxis;
 		yAxis += orbitYAxis;
 		zAxis += orbitZAxis;
 
-		loc = effect.applyOffsets(getLocation(), data);
+		Location loc = effect.applyOffsets(getLocation(), data);
 
 		effectlibEffect.setLocation(loc);
 		if (effectlibEffect instanceof ModifiedEffect) {
-			modifiedEffect = ((ModifiedEffect) effectlibEffect).getInnerEffect();
+			Effect modifiedEffect = ((ModifiedEffect) effectlibEffect).getInnerEffect();
 			if (modifiedEffect != null) modifiedEffect.setLocation(loc);
 		}
 	}
@@ -119,7 +120,6 @@ public class OrbitEffectlibTracker extends AsyncEffectTracker implements Runnabl
 
 	public boolean canRun() {
 		if (entity == null) return false;
-		if (!entity.isValid()) return false;
 		if (!checker.isActive(entity)) return false;
 		if (effect == null) return false;
 		if (effectlibEffect == null) return false;
