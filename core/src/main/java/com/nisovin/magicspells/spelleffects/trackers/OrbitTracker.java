@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spelleffects.trackers;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.util.Util;
@@ -66,8 +67,12 @@ public class OrbitTracker extends EffectTracker implements Runnable {
 
 	@Override
 	public void run() {
-		if (!entity.isValid() || !checker.isActive(entity) || effect == null) {
+		if (!checker.isActive(entity) || effect == null) {
 			stop();
+			return;
+		}
+		if (!entity.isValid()) {
+			if (!(entity instanceof Player)) stop();
 			return;
 		}
 

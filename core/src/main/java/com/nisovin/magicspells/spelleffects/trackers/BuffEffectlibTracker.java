@@ -2,6 +2,7 @@ package com.nisovin.magicspells.spelleffects.trackers;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 
 import de.slikey.effectlib.Effect;
 import de.slikey.effectlib.effect.ModifiedEffect;
@@ -13,10 +14,6 @@ import com.nisovin.magicspells.spelleffects.SpellEffect.SpellEffectActiveChecker
 public class BuffEffectlibTracker extends AsyncEffectTracker implements Runnable {
 
 	private final Effect effectlibEffect;
-
-	private Location entityLoc;
-
-	private Effect modifiedEffect;
 
 	public BuffEffectlibTracker(Entity entity, SpellEffectActiveChecker checker, SpellEffect effect, SpellData data) {
 		super(entity, checker, effect, data);
@@ -31,12 +28,16 @@ public class BuffEffectlibTracker extends AsyncEffectTracker implements Runnable
 			stop();
 			return;
 		}
+		if (!entity.isValid()) {
+			if (!(entity instanceof Player)) stop();
+			return;
+		}
 
-		entityLoc = effect.applyOffsets(entity.getLocation(), data);
+		Location entityLoc = effect.applyOffsets(entity.getLocation(), data);
 
 		effectlibEffect.setLocation(entityLoc);
 		if (effectlibEffect instanceof ModifiedEffect) {
-			modifiedEffect = ((ModifiedEffect) effectlibEffect).getInnerEffect();
+			Effect modifiedEffect = ((ModifiedEffect) effectlibEffect).getInnerEffect();
 			if (modifiedEffect != null) modifiedEffect.setLocation(entityLoc);
 		}
 	}
@@ -53,7 +54,6 @@ public class BuffEffectlibTracker extends AsyncEffectTracker implements Runnable
 
 	public boolean canRun() {
 		if (entity == null) return false;
-		if (!entity.isValid()) return false;
 		if (!checker.isActive(entity)) return false;
 		if (effect == null) return false;
 		if (effectlibEffect == null) return false;
