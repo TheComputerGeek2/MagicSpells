@@ -71,12 +71,13 @@ public class BuffManager {
 		private final ScheduledTask task;
 
 		private BuffMonitor() {
-			task = Bukkit.getGlobalRegionScheduler().runAtFixedRate(MagicSpells.getInstance(), this, interval, interval);
+			if (interval > 0) task = Bukkit.getGlobalRegionScheduler().runAtFixedRate(MagicSpells.getInstance(), this, interval, interval);
+			else task = null;
 			MagicSpells.registerEvents(this);
 		}
 
 		public void stop() {
-			task.cancel();
+			if (task != null) task.cancel();
 		}
 
 		@Override
