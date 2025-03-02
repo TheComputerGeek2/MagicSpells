@@ -418,7 +418,12 @@ public class ConfigDataUtil {
 
 		if (config.isString(path)) {
 			ConfigData<String> supplier = getString(config, path, null);
-			return data -> Boolean.parseBoolean(supplier.get(data));
+			if (supplier.isConstant()) {
+				Boolean val = parseBoolean(supplier.get());
+				return data -> val;
+			}
+
+			return (VariableConfigData<Boolean>) data -> parseBoolean(supplier.get(data));
 		}
 
 		return data -> null;
@@ -431,8 +436,13 @@ public class ConfigDataUtil {
 		}
 
 		if (config.isString(path)) {
-			ConfigData<String> supplier = getString(config, path, Boolean.toString(def));
-			return data -> Boolean.parseBoolean(supplier.get(data));
+			ConfigData<String> supplier = getString(config, path, null);
+			if (supplier.isConstant()) {
+				boolean val = parseBoolean(supplier.get(), def);
+				return data -> val;
+			}
+
+			return (VariableConfigData<Boolean>) data -> parseBoolean(supplier.get(data), def);
 		}
 
 		return data -> def;
@@ -446,13 +456,51 @@ public class ConfigDataUtil {
 
 		if (config.isString(path)) {
 			ConfigData<String> supplier = getString(config, path, null);
-			return data -> {
-				String value = supplier.get(data);
-				return value == null ? def.get(data) : Boolean.parseBoolean(value);
+			if (supplier.isConstant()) {
+				Boolean val = parseBoolean(supplier.get());
+				if (val == null) return def;
+
+				return data -> val;
+			}
+
+			return (VariableConfigData<Boolean>) data -> {
+				Boolean val = parseBoolean(supplier.get(data));
+				return val == null ? def.get(data) : val;
 			};
 		}
 
 		return def;
+	}
+
+	public static ConfigData<Boolean> getBoolean(@NotNull String value, boolean def) {
+		ConfigData<String> supplier = getString(value);
+		if (supplier.isConstant()) {
+			boolean val = parseBoolean(value, def);
+			return data -> val;
+		}
+
+		return (VariableConfigData<Boolean>) data -> parseBoolean(supplier.get(data), def);
+	}
+
+	@Nullable
+	private static Boolean parseBoolean(@Nullable String value) {
+		if (value == null) return null;
+
+		return switch (value.toLowerCase()) {
+			case "true" -> true;
+			case "false" -> false;
+			default -> null;
+		};
+	}
+
+	private static boolean parseBoolean(@Nullable String value, boolean def) {
+		if (value == null) return def;
+
+		return switch (value.toLowerCase()) {
+			case "true" -> true;
+			case "false" -> false;
+			default -> def;
+		};
 	}
 
 	@NotNull
