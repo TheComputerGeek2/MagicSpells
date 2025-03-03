@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import org.bukkit.*;
 import org.bukkit.util.Vector;
@@ -19,6 +20,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.*;
+import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.handlers.PotionEffectHandler;
 
 public class ConfigDataUtil {
@@ -700,6 +702,64 @@ public class ConfigDataUtil {
 
 				T entry = registry.get(key);
 				return entry == null ? def : entry;
+			}
+
+			@Override
+			public boolean isConstant() {
+				return false;
+			}
+
+		};
+	}
+
+	public static ConfigData<NamedTextColor> getNamedTextColor(@NotNull ConfigurationSection config, @NotNull String path, @Nullable NamedTextColor def) {
+		String value = config.getString(path);
+		if (value == null) return data -> def;
+
+		NamedTextColor val = NamedTextColor.NAMES.value(value.toLowerCase());
+		if (val != null) return data -> val;
+
+		ConfigData<String> supplier = getString(value);
+		if (supplier.isConstant()) return data -> def;
+
+		return new ConfigData<>() {
+
+			@Override
+			public NamedTextColor get(@NotNull SpellData data) {
+				String val = supplier.get(data);
+				if (val == null) return def;
+
+				NamedTextColor color = NamedTextColor.NAMES.value(val.toLowerCase());
+				return color == null ? def : color;
+			}
+
+			@Override
+			public boolean isConstant() {
+				return false;
+			}
+
+		};
+	}
+
+	public static ConfigData<NamespacedKey> getNamespacedKey(@NotNull ConfigurationSection config, @NotNull String path, @Nullable NamespacedKey def) {
+		String value = config.getString(path);
+		if (value == null) return data -> def;
+
+		NamespacedKey val = NamespacedKey.fromString(value.toLowerCase(), MagicSpells.getInstance());
+		if (val != null) return data -> val;
+
+		ConfigData<String> supplier = getString(value);
+		if (supplier.isConstant()) return data -> def;
+
+		return new ConfigData<>() {
+
+			@Override
+			public NamespacedKey get(@NotNull SpellData data) {
+				String val = supplier.get(data);
+				if (val == null) return def;
+
+				NamespacedKey key = NamespacedKey.fromString(val.toLowerCase(), MagicSpells.getInstance());
+				return key == null ? def : key;
 			}
 
 			@Override
