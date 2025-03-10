@@ -3,6 +3,8 @@ package com.nisovin.magicspells.volatilecode;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.event.Listener;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.volatilecode.latest.VolatileCodeLatest;
@@ -22,6 +24,21 @@ public class ManagerVolatile {
 		@Override
 		public int scheduleDelayedTask(Runnable task, long delay) {
 			return MagicSpells.scheduleDelayedTask(task, delay);
+		}
+
+		@Override
+		public void cancelTask(int id) {
+			MagicSpells.cancelTask(id);
+		}
+
+		@Override
+		public void registerEvents(Listener listener) {
+			MagicSpells.registerEvents(listener);
+		}
+
+		@Override
+		public YamlConfiguration getMainConfig() {
+			return MagicSpells.getInstance().getMagicConfig().getMainConfig();
 		}
 
 	};
