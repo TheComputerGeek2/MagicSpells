@@ -1,6 +1,7 @@
 package com.nisovin.magicspells.volatilecode;
 
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -9,6 +10,8 @@ import org.bukkit.inventory.ItemStack;
 import net.kyori.adventure.text.Component;
 
 import io.papermc.paper.advancement.AdvancementDisplay.Frame;
+
+import com.nisovin.magicspells.util.glow.GlowManager;
 
 public class VolatileCodeDisabled extends VolatileCodeHandle {
 
@@ -61,6 +64,21 @@ public class VolatileCodeDisabled extends VolatileCodeHandle {
 	@Override
 	public void clearGameTestMarkers(Player player) {
 
+	}
+
+	@Override
+	public byte getEntityMetadata(Entity entity) {
+		return 0;
+	}
+
+	@Override
+	public Entity getEntityFromId(World world, int id) {
+		return null;
+	}
+
+	@Override
+	public GlowManager getGlowManager() {
+		return null;
 	}
 
 }

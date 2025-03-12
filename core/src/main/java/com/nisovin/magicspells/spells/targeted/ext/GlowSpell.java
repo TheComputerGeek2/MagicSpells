@@ -25,6 +25,11 @@ import com.nisovin.magicspells.spells.buff.InvisibilitySpell;
 @DependsOn({"ProtocolLib", "XGlow"})
 public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 
+	private static final DeprecationNotice DEPRECATION_NOTICE = new DeprecationNotice(
+		"The '.targeted.ext.GlowSpell' spell class does not function, as the XGlow plugin is abandoned.",
+		"Use the '.targeted.GlowSpell' spell class."
+	);
+
 	private final Multimap<UUID, GlowData> glowing;
 
 	private final ConfigData<ChatColor> color;
@@ -43,6 +48,8 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 		powerAffectsDuration = getConfigDataBoolean("power-affects-duration", true);
 
 		color = getConfigDataEnum("color", ChatColor.class, ChatColor.WHITE);
+
+		MagicSpells.getDeprecationManager().addDeprecation(this, DEPRECATION_NOTICE);
 	}
 
 	@Override
