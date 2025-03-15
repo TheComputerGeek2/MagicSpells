@@ -1,0 +1,60 @@
+name: PR Build Link
+
+on:
+  workflow_run:
+    workflows: ["Build MagicSpells"]
+    types: [completed]
+
+jobs:
+  pr_comment:
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const label = "Build PR Jar";
+            
+            const {owner, repo} = context.repo;
+
+            const pr_branch = "${{github.event.workflow_run.head_branch}}";
+            const pr_owner = "${{github.event.workflow_run.head_repository.owner.login}}";
+            const pr_sha = "${{github.event.workflow_run.head_sha}}";
+
+            // Find PR matching workflow run.
+            const {data} = await github.rest.pulls.list({owner, repo, head: `${pr_owner}:${pr_branch}`, state: "open"});
+            const pulls = data.filter(pr => pr.head.sha === pr_sha);
+            
+            if (!pulls.length) return core.error("No PR found");
+            if (pulls.length > 1) return core.error("Found multiple matching PRs");
+            const pull_request = pulls[0];
+            if (!pull_request.labels.some(l => l.name === label))
+              return core.notice(`PR is not labelled with '${label}'. Skipping...`);
+            
+            // Find artifact on workflow.
+            const run_id = "${{github.event.workflow_run.id}}";
+            const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {owner, repo, run_id});
+            
+            if (!artifacts.length) return core.error("No artifact found");
+            if (artifacts.length > 1) return core.error("Found multiple artifacts");
+            const artifact = artifacts[0];
+            
+            // Create or update comment, linking the artifact.
+            const artifact_url = `https://nightly.link/${owner}/${repo}/actions/artifacts/${artifact.id}.zip`;
+            const marker = `<!-- bot: ${label} -->`;
+            const body = `${marker}\nBuilt artifact: [\`${artifact.name}\`](${artifact_url})`;
+
+            const issue_number = pull_request.number;
+            const {data: comments} = await github.rest.issues.listComments({owner, repo, issue_number});
+            const last_comment = comments.filter(c => c.body.includes(marker) && c.user.login === "github-actions[bot]")?.at(-1);
+            
+            if (last_comment) {
+              await github.rest.issues.updateComment({owner, repo, body, comment_id: last_comment.id});
+              core.info(`Updating comment at: ${last_comment.html_url}`);
+            }
+            else {
+              const {data: {html_url}} = await github.rest.issues.createComment({issue_number, body, owner, repo});
+              core.info(`Creating a comment at: ${html_url}`);
+            }

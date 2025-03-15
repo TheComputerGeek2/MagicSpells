@@ -1,5 +1,9 @@
 name: Build MagicSpells
-
+# On push events to the "main" branch, this action builds the jar and uploads its artifact.
+#
+# When triggered on a PR, it will only run if the PR was opened, synced, or newly labelled "Build PR Jar".
+# If the PR does not have the "Build PR Jar" label, the action will only build the jar; otherwise, it will also
+# upload its artifact. Due to security, the "pr_comment" workflow will follow up to link it in the PR.
 on:
   push:
     branches:
@@ -10,32 +14,53 @@ on:
       - shop/**
       - teams/**
       - towny/**
+  pull_request:
+    types:
+      - labeled
+      - synchronize
+      - opened
+      - reopened
 
 jobs:
   build:
+    name: Build
+    if: |
+      github.event_name == 'push' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'Build PR Jar') ||
+      github.event.action != 'labeled'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout project sources
         uses: actions/checkout@v4
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
       - name: Get commit hash
         id: hash
-        run: echo "sha_short=$(git rev-parse --short ${{github.sha}})" >> $GITHUB_OUTPUT
+        run: echo "sha_short=$(git rev-parse --short ${{github.event.pull_request.head.sha || github.sha}})" >> $GITHUB_OUTPUT
+
       - name: Get version
         id: version
         run: echo "version=$(grep version gradle.properties | cut -d"=" -f2 | xargs)" >> $GITHUB_OUTPUT
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Run build with Gradle Wrapper
         run: ./gradlew "-Pversion=${{steps.version.outputs.version}}-${{steps.hash.outputs.sha_short}}" core:build
-      - name: Upload artifacts
+
+      - name: Upload artifact
+        if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'Build PR Jar')
+        id: artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MagicSpells
+          name: MagicSpells-${{steps.version.outputs.version}}-${{steps.hash.outputs.sha_short}}
           if-no-files-found: error
           path: core/build/libs/MagicSpells*.jar
