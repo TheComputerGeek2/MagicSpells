@@ -12,9 +12,8 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.google.common.collect.*;
 import com.google.common.base.Functions;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.LinkedListMultimap;
 
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -87,7 +86,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 
 	protected IntMap<UUID> chargesConsumed;
 
-	protected EnumMap<EffectPosition, List<SpellEffect>> effects;
+	protected ListMultimap<EffectPosition, SpellEffect> effects;
 
 	protected Set<String> tags;
 	protected Set<CastItem> bindableItems;
@@ -582,47 +581,66 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		// Graphical effects
 		effectTrackerSet = new HashSet<>();
 		asyncEffectTrackerSet = new HashSet<>();
+
 		if (!config.contains(internalKey + "effects")) return;
 
-		effects = new EnumMap<>(EffectPosition.class);
+		effects = MultimapBuilder.enumKeys(EffectPosition.class).arrayListValues().build();
 
-		if (!config.isSection(internalKey + "effects")) return;
-		for (String key : config.getKeys(internalKey + "effects")) {
-			ConfigurationSection section = config.getSection(internalKey + "effects." + key);
-			if (section == null) {
-				MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not contain a configuration section.");
-				continue;
+		Object effectsObject = config.get(internalKey + "effects");
+		switch (effectsObject) {
+			case ConfigurationSection effectSection -> {
+				for (String key : effectSection.getKeys(false)) {
+				    ConfigurationSection section = effectSection.getConfigurationSection(key);
+					if (section == null) {
+						MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not contain a configuration section.");
+						continue;
+					}
+
+					initializeSpellEffect(section, key);
+				}
 			}
+			case List<?> effectList -> {
+				for (int i = 0; i < effectList.size(); i++) {
+					String key = "#" + i;
+					if (!(effectList.get(i) instanceof Map<?, ?> map)) {
+						MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not contain a configuration section.");
+						continue;
+					}
 
-			String positionName = section.getString("position", "");
-			if (positionName.isEmpty()) {
-				MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not contain a 'position' value.");
-				continue;
+					initializeSpellEffect(ConfigReaderUtil.mapToSection(map), key);
+				}
 			}
-
-			EffectPosition position = EffectPosition.getPositionFromString(positionName);
-			if (position == null) {
-				MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not have a valid 'position' defined: " + positionName);
-				continue;
-			}
-
-			String effectType = section.getString("effect", "");
-			if (effectType.isEmpty()) {
-				MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not contain an 'effect' value.");
-				continue;
-			}
-
-			SpellEffect effect = MagicSpells.getSpellEffectManager().getSpellEffectByName(effectType);
-			if (effect == null) {
-				MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not have a valid 'effect' defined: " + effectType);
-				continue;
-			}
-
-			effect.loadFromConfiguration(section);
-
-			List<SpellEffect> effectList = effects.computeIfAbsent(position, p -> new ArrayList<>());
-			effectList.add(effect);
+			default -> MagicSpells.error("Invalid 'effects' section on spell '" + internalName + "'.");
 		}
+	}
+
+	protected void initializeSpellEffect(ConfigurationSection section, String key) {
+		String positionName = section.getString("position", "");
+		if (positionName.isEmpty()) {
+			MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not contain a 'position' value.");
+			return;
+		}
+
+		EffectPosition position = EffectPosition.getPositionFromString(positionName);
+		if (position == null) {
+			MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not have a valid 'position' defined: " + positionName);
+			return;
+		}
+
+		String effectType = section.getString("effect", "");
+		if (effectType.isEmpty()) {
+			MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not contain an 'effect' value.");
+			return;
+		}
+
+		SpellEffect effect = MagicSpells.getSpellEffectManager().getSpellEffectByName(effectType);
+		if (effect == null) {
+			MagicSpells.error("Spell effect '" + key + "' on spell '" + internalName + "' does not have a valid 'effect' defined: " + effectType);
+			return;
+		}
+
+		effect.loadFromConfiguration(section);
+		effects.put(position, effect);
 	}
 
 	// DEBUG INFO: level 2, adding modifiers to internalname
@@ -1429,8 +1447,8 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		SpellUtil.removeReagents(livingEntity, reagents.getItemsAsArray(), reagents.getHealth(), reagents.getMana(), reagents.getHunger(), reagents.getExperience(), reagents.getLevels(), reagents.getDurability(), reagents.getMoney(), reagents.getVariables());
 	}
 
-	public EnumMap<EffectPosition, List<SpellEffect>> getEffects() {
-		return effects;
+	public Map<EffectPosition, List<SpellEffect>> getEffects() {
+		return effects != null ? Multimaps.asMap(effects) : null;
 	}
 
 	protected int getRange(float power) {

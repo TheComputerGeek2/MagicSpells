@@ -178,6 +178,10 @@ public class MagicConfig {
 		return mainConfig.contains(path);
 	}
 
+	public Object get(String path) {
+		return mainConfig.get(path);
+	}
+
 	public boolean isInt(String path) {
 		return mainConfig.isInt(path);
 	}
