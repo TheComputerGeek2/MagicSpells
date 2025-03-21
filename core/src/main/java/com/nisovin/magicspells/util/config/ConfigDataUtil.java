@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import org.bukkit.*;
 import org.bukkit.util.Vector;
@@ -19,6 +20,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.*;
+import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.handlers.PotionEffectHandler;
 
 public class ConfigDataUtil {
@@ -755,6 +757,44 @@ public class ConfigDataUtil {
 				return false;
 			}
 
+		};
+	}
+
+	public static ConfigData<NamedTextColor> getNamedTextColor(@NotNull ConfigurationSection config, @NotNull String path, @Nullable NamedTextColor def) {
+		String value = config.getString(path);
+		if (value == null) return data -> def;
+
+		NamedTextColor val = NamedTextColor.NAMES.value(value.toLowerCase());
+		if (val != null) return data -> val;
+
+		ConfigData<String> supplier = getString(value);
+		if (supplier.isConstant()) return data -> def;
+
+		return (VariableConfigData<NamedTextColor>) data -> {
+			String string = supplier.get(data);
+			if (string == null) return def;
+
+			NamedTextColor color = NamedTextColor.NAMES.value(string.toLowerCase());
+			return color == null ? def : color;
+		};
+	}
+
+	public static ConfigData<NamespacedKey> getNamespacedKey(@NotNull ConfigurationSection config, @NotNull String path, @Nullable NamespacedKey def) {
+		String value = config.getString(path);
+		if (value == null) return data -> def;
+
+		NamespacedKey val = NamespacedKey.fromString(value.toLowerCase());
+		if (val != null) return data -> val;
+
+		ConfigData<String> supplier = getString(value);
+		if (supplier.isConstant()) return data -> def;
+
+		return (VariableConfigData<NamespacedKey>) data -> {
+			String string = supplier.get(data);
+			if (string == null) return def;
+
+			NamespacedKey key = NamespacedKey.fromString(string.toLowerCase());
+			return key == null ? def : key;
 		};
 	}
 

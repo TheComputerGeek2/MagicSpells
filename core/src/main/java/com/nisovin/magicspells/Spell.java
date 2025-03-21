@@ -7,6 +7,7 @@ import de.slikey.effectlib.Effect;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -918,6 +919,14 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 
 	protected <T extends Keyed> ConfigData<T> getConfigDataRegistryEntry(@NotNull String key, @NotNull Registry<T> registry, @Nullable T def) {
 		return ConfigDataUtil.getRegistryEntry(config.getMainConfig(), internalKey + key, registry, def);
+	}
+
+	protected ConfigData<NamedTextColor> getConfigDataNamedTextColor(String key, NamedTextColor def) {
+		return ConfigDataUtil.getNamedTextColor(config.getMainConfig(), internalKey + key, def);
+	}
+
+	protected ConfigData<NamespacedKey> getConfigDataNamespacedKey(String key, NamespacedKey def) {
+		return ConfigDataUtil.getNamespacedKey(config.getMainConfig(), internalKey + key, def);
 	}
 
 	/**

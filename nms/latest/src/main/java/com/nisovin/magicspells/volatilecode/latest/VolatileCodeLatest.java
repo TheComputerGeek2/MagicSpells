@@ -4,9 +4,11 @@ import java.util.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import org.bukkit.World;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
@@ -14,6 +16,7 @@ import org.bukkit.event.entity.ExplosionPrimeEvent;
 
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.entity.CraftTNTPrimed;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -25,6 +28,7 @@ import io.papermc.paper.util.MCUtil;
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.advancement.AdvancementDisplay;
 
+import com.nisovin.magicspells.util.glow.GlowManager;
 import com.nisovin.magicspells.volatilecode.VolatileCodeHandle;
 import com.nisovin.magicspells.volatilecode.VolatileCodeHelper;
 
@@ -55,11 +59,16 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 
 	private final EntityDataAccessor<List<ParticleOptions>> DATA_EFFECT_PARTICLES;
 	private final EntityDataAccessor<Boolean> DATA_EFFECT_AMBIENCE_ID;
+	private final EntityDataAccessor<Byte> DATA_SHARED_FLAGS_ID;
 	private final Method UPDATE_EFFECT_PARTICLES;
 
 	@SuppressWarnings("unchecked")
 	public VolatileCodeLatest(VolatileCodeHelper helper) throws Exception {
 		super(helper);
+
+		Field dataSharedFlagsIdField = net.minecraft.world.entity.Entity.class.getDeclaredField("DATA_SHARED_FLAGS_ID");
+		dataSharedFlagsIdField.setAccessible(true);
+		DATA_SHARED_FLAGS_ID = (EntityDataAccessor<Byte>) dataSharedFlagsIdField.get(null);
 
 		Class<?> nmsEntityClass = net.minecraft.world.entity.LivingEntity.class;
 
@@ -209,6 +218,22 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 	public void clearGameTestMarkers(Player player) {
 		GameTestClearMarkersDebugPayload payload = new GameTestClearMarkersDebugPayload();
 		((CraftPlayer) player).getHandle().connection.send(new ClientboundCustomPayloadPacket(payload));
+	}
+
+	@Override
+	public byte getEntityMetadata(Entity entity) {
+		return ((CraftEntity) entity).getHandle().getEntityData().get(DATA_SHARED_FLAGS_ID);
+	}
+
+	@Override
+	public Entity getEntityFromId(World world, int id) {
+		var entity = ((CraftWorld) world).getHandle().moonrise$getEntityLookup().get(id);
+		return entity == null ? null : entity.getBukkitEntity();
+	}
+
+	@Override
+	public GlowManager getGlowManager() {
+		return new VolatileGlowManagerLatest(helper);
 	}
 
 }

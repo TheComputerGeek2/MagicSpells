@@ -13,3 +13,4 @@ softdepend:
     - NoCheatPlus
     - PlaceholderAPI
     - XGlow
+    - packetevents

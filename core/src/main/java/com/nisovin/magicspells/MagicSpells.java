@@ -19,6 +19,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 
+import com.google.common.collect.Sets;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 
@@ -1869,9 +1870,13 @@ public class MagicSpells extends JavaPlugin {
 
 	public static void registerEvents(final Listener listener, EventPriority customPriority) {
 		if (customPriority == null) customPriority = EventPriority.NORMAL;
-		Method[] methods;
+		Set<Method> methods;
 		try {
-			methods = listener.getClass().getDeclaredMethods();
+			Class<?> listenerClazz = listener.getClass();
+			methods = Sets.union(
+				Set.of(listenerClazz.getMethods()),
+				Set.of(listenerClazz.getDeclaredMethods())
+			);
 		} catch (NoClassDefFoundError e) {
 			DebugHandler.debugNoClassDefFoundError(e);
 			return;

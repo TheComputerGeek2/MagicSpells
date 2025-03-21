@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.volatilecode;
 
+import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -8,6 +9,8 @@ import org.bukkit.inventory.ItemStack;
 import net.kyori.adventure.text.Component;
 
 import io.papermc.paper.advancement.AdvancementDisplay.Frame;
+
+import com.nisovin.magicspells.util.glow.GlowManager;
 
 public abstract class VolatileCodeHandle {
 
@@ -34,5 +37,11 @@ public abstract class VolatileCodeHandle {
 	public abstract void addGameTestMarker(Player player, Location location, int color, String name, int lifetime);
 
 	public abstract void clearGameTestMarkers(Player player);
+
+	public abstract byte getEntityMetadata(Entity entity);
+
+	public abstract Entity getEntityFromId(World world, int id);
+
+	public abstract GlowManager getGlowManager();
 
 }

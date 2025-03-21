@@ -152,3 +152,7 @@ entity-names:
     mooshroom: a deformed cow
     squid: a slimy squid
     iron_golem: a friendly iron golem
+glow-spell-scoreboard-teams:
+    see-friendly-invisibles: false
+    name-tag-visibility: always
+    collision-rule: always
