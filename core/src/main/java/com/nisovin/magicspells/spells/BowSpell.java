@@ -119,7 +119,7 @@ public class BowSpell extends Spell {
 		cancelShotOnFail = getConfigDataBoolean("cancel-shot-on-fail", true);
 
 		minimumForce = getConfigDataFloat("minimum-force", 0F);
-		maximumForce = getConfigDataFloat("maximum-force", 1F);
+		maximumForce = getConfigDataFloat("maximum-force", 0F);
 	}
 
 	private List<MagicItemData> getFilter(String key) {
@@ -220,7 +220,10 @@ public class BowSpell extends Spell {
 		if (bow == null || (bow.getType() != Material.BOW && bow.getType() != Material.CROSSBOW)) return;
 
 		float force = event.getForce();
-		if (force < minimumForce.get(data) || force > maximumForce.get(data)) return;
+		float minimumForce = this.minimumForce.get(data);
+		if (minimumForce > 0 && force < minimumForce) return;
+		float maximumForce = this.maximumForce.get(data);
+		if (maximumForce > 0 && force > maximumForce) return;
 
 		Component name = bow.getItemMeta().displayName();
 		if (bowNames != null && !bowNames.contains(name)) return;
