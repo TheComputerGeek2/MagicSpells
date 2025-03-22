@@ -86,6 +86,7 @@ public class SpawnTntSpell extends TargetedSpell implements TargetedLocationSpel
 		TNTPrimed tnt = loc.getWorld().spawn(loc, TNTPrimed.class, t -> {
 			if (cancelGravity.get(data)) t.setGravity(false);
 			t.setFuseTicks(fuse.get(data));
+			t.setSource(data.caster());
 
 			float velocity = this.velocity.get(data);
 			float upVelocity = this.upVelocity.get(data);

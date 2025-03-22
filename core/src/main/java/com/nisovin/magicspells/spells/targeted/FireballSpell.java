@@ -147,7 +147,7 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 
 		Fireball fireball = origin.getWorld().spawn(origin, fireballClass, fb -> {
 			fb.setGravity(fireballGravity.get(data));
-			if (data.hasCaster()) fb.setShooter(data.caster());
+			fb.setShooter(data.caster());
 		});
 		fireballs.put(fireball, data);
 

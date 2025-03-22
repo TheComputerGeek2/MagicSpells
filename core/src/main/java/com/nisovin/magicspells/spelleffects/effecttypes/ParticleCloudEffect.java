@@ -38,13 +38,14 @@ public class ParticleCloudEffect extends ParticlesEffect {
 		Particle particle = this.particle.get(data);
 		if (particle == null) return null;
 
-		AreaEffectCloud cloud = location.getWorld().spawn(location.clone().add(0, yOffset.get(data), 0), AreaEffectCloud.class);
-		cloud.setColor(Color.fromRGB(color.get(data)));
-		cloud.setRadius(radius.get(data));
-		cloud.setDuration(duration.get(data));
-		cloud.setRadiusPerTick(radiusPerTick.get(data));
+		location.getWorld().spawn(location.clone().add(0, yOffset.get(data), 0), AreaEffectCloud.class, cloud -> {
+			cloud.setColor(Color.fromRGB(color.get(data)));
+			cloud.setRadius(radius.get(data));
+			cloud.setDuration(duration.get(data));
+			cloud.setRadiusPerTick(radiusPerTick.get(data));
 
-		cloud.setParticle(particle, getParticleData(particle, null, location, data));
+			cloud.setParticle(particle, getParticleData(particle, null, location, data));
+		});
 
 		return null;
 	}

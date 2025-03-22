@@ -228,6 +228,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 				tntPrimed.setGravity(projectileHasGravity.get(data));
 				tntPrimed.setFuseTicks(tntFuse.get(data));
 				tntPrimed.setVelocity(velocity);
+				tntPrimed.setSource(data.caster());
 			});
 
 			playSpellEffects(EffectPosition.PROJECTILE, tnt, data);

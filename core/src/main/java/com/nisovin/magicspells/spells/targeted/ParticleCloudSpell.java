@@ -179,6 +179,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 			else if (dataType == DustOptions.class) cloud.setParticle(particle, dustOptions.get(finalData));
 			else cloud.setParticle(particle);
 
+			cloud.setSource(finalData.caster());
 			cloud.setColor(Color.fromRGB(color.get(finalData)));
 			cloud.setRadius(radius.get(finalData));
 			cloud.setGravity(useGravity.get(finalData));
