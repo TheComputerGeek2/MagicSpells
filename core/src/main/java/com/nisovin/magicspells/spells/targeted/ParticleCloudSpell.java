@@ -13,6 +13,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.AreaEffectCloud;
+import org.bukkit.Particle.DustTransition;
+
+import org.jetbrains.annotations.NotNull;
 
 import net.kyori.adventure.text.Component;
 
@@ -29,12 +32,13 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 	private final ConfigData<Component> customName;
 
-	protected ConfigData<ItemStack> item;
-	protected ConfigData<Particle> particle;
-	protected ConfigData<BlockData> blockData;
-	protected ConfigData<DustOptions> dustOptions;
+	private final ConfigData<ItemStack> item;
+	private final ConfigData<Color> argbColor;
+	private final ConfigData<Particle> particle;
+	private final ConfigData<BlockData> blockData;
+	private final ConfigData<DustOptions> dustOptions;
+	private final ConfigData<DustTransition> dustTransition;
 
-	private final ConfigData<Integer> color;
 	private final ConfigData<Integer> waitTime;
 	private final ConfigData<Integer> ticksDuration;
 	private final ConfigData<Integer> durationOnUse;
@@ -60,7 +64,15 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 		particle = ConfigDataUtil.getParticle(config.getMainConfig(), internalKey + "particle", Particle.POOF);
 
 		blockData = getConfigDataBlockData("material", null);
+		argbColor = ConfigDataUtil.getARGBColor(config.getMainConfig(), internalKey + "argb-color", Color.RED);
 		dustOptions = ConfigDataUtil.getDustOptions(config.getMainConfig(), internalKey + "dust-color", internalKey + "size", new DustOptions(Color.RED, 1));
+		dustTransition = ConfigDataUtil.getDustTransition(
+				config.getMainConfig(),
+				internalKey + "dust-transition.color",
+				internalKey + "dust-transition.to-color",
+				internalKey + "dust-transition.size",
+				new DustTransition(Color.RED, Color.BLACK, 1)
+		);
 
 		ConfigData<Material> material = getConfigDataMaterial("material", null);
 		if (material.isConstant()) {
@@ -75,7 +87,6 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 			};
 		}
 
-		color = getConfigDataInt("color", 0xFF0000);
 		waitTime = getConfigDataInt("wait-time-ticks", 10);
 		ticksDuration = getConfigDataInt("duration-ticks", 3 * TimeUtil.TICKS_PER_SECOND);
 		durationOnUse = getConfigDataInt("duration-ticks-on-use", 0);
@@ -136,16 +147,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 		SpellData finalData = data;
 		location.getWorld().spawn(location, AreaEffectCloud.class, cloud -> {
-			Particle particle = this.particle.get(finalData);
-
-			Class<?> dataType = particle.getDataType();
-			if (dataType == BlockData.class) cloud.setParticle(particle, blockData.get(finalData));
-			else if (dataType == ItemStack.class) cloud.setParticle(particle, item.get(finalData));
-			else if (dataType == DustOptions.class) cloud.setParticle(particle, dustOptions.get(finalData));
-			else cloud.setParticle(particle);
-
 			cloud.setSource(finalData.caster());
-			cloud.setColor(Color.fromRGB(color.get(finalData)));
 
 			cloud.setRadius(radius.get(finalData));
 			cloud.setGravity(useGravity.get(finalData));
@@ -160,6 +162,9 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 				for (ConfigData<PotionEffect> eff : potionEffects)
 					cloud.addCustomEffect(eff.get(finalData), true);
 
+			Particle particle = this.particle.get(finalData);
+			cloud.setParticle(particle, getParticleData(particle, finalData));
+
 			Component customName = this.customName.get(finalData);
 			if (customName != null) {
 				cloud.customName(customName);
@@ -169,6 +174,18 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 		playSpellEffects(data);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+	}
+
+	private Object getParticleData(@NotNull Particle particle, @NotNull SpellData data) {
+		Class<?> type = particle.getDataType();
+
+		if (type == ItemStack.class) return item.get(data);
+		if (type == Color.class) return argbColor.get(data);
+		if (type == BlockData.class) return blockData.get(data);
+		if (type == DustOptions.class) return dustOptions.get(data);
+		if (type == DustTransition.class) return dustTransition.get(data);
+
+		return null;
 	}
 
 }
