@@ -127,20 +127,14 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 			if (!info.noTarget()) {
 				Location location = info.target().getLocation();
 				location.setDirection(data.caster().getLocation().getDirection());
-				data = info.spellData().location(location);
-
-				spawnCloud(data);
-				return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+				return spawnCloud(info.spellData().location(location));
 			}
 		}
 
 		if (canTargetLocation.get(data)) {
 			TargetInfo<Location> info = getTargetedBlockLocation(data, 0.5, 1, 0.5, false);
 			if (info.noTarget()) return noTarget(info);
-			data = info.spellData();
-
-			spawnCloud(data);
-			return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+			return spawnCloud(info.spellData());
 		}
 
 		return noTarget(data);
@@ -148,18 +142,15 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 	@Override
 	public CastResult castAtLocation(SpellData data) {
-		spawnCloud(data);
-		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+		return spawnCloud(data);
 	}
 
 	@Override
 	public CastResult castAtEntity(SpellData data) {
-		data = data.location(data.target().getLocation());
-		spawnCloud(data);
-		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+		return spawnCloud(data.location(data.target().getLocation()));
 	}
 
-	private void spawnCloud(SpellData data) {
+	private CastResult spawnCloud(SpellData data) {
 		Location location = data.location();
 
 		//apply relative offset
@@ -181,6 +172,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 			cloud.setSource(finalData.caster());
 			cloud.setColor(Color.fromRGB(color.get(finalData)));
+
 			cloud.setRadius(radius.get(finalData));
 			cloud.setGravity(useGravity.get(finalData));
 			cloud.setWaitTime(waitTime.get(finalData));
@@ -199,8 +191,8 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 			}
 		});
 
-		if (data.hasTarget()) playSpellEffects(data.caster(), data.target(), data);
-		else playSpellEffects(data.caster(), location, data);
+		playSpellEffects(data);
+		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}
 
 }

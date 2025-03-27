@@ -66,20 +66,20 @@ public class Util {
 		return Material.matchMaterial(name);
 	}
 
-	// - <potionEffectType> (level) (duration) (ambient)
+	// - <potionEffectType> (amplifier) (duration) (ambient) (particles) (icon)
 	public static PotionEffect buildPotionEffect(String effectString) {
 		String[] data = effectString.split(" ");
-		PotionEffectType t = PotionEffectHandler.getPotionEffectType(data[0]);
+		PotionEffectType type = PotionEffectHandler.getPotionEffectType(data[0]);
 
-		if (t == null) {
+		if (type == null) {
 			MagicSpells.error('\'' + data[0] + "' could not be connected to a potion effect type");
 			return null;
 		}
 
-		int level = 0;
+		int amplifier = 0;
 		if (data.length > 1) {
 			try {
-				level = Integer.parseInt(data[1]);
+				amplifier = Integer.parseInt(data[1]);
 			} catch (NumberFormatException ex) {
 				DebugHandler.debugNumberFormat(ex);
 			}
@@ -100,7 +100,7 @@ public class Util {
 
 		boolean icon = data.length > 5 && (BooleanUtils.isYes(data[5]) || data[5].equalsIgnoreCase("icon"));
 
-		return new PotionEffect(t, duration, level, ambient, particles, icon);
+		return new PotionEffect(type, duration, amplifier, ambient, particles, icon);
 	}
 
 	// - <potionEffectType> (duration)

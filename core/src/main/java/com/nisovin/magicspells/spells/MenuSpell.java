@@ -3,7 +3,6 @@ package com.nisovin.magicspells.spells;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -281,7 +280,7 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 				if (event.isCancelled()) continue;
 			}
 			// Select and finalise item to display.
-			ItemStack item = option.item != null ? option.item : option.items.get(ThreadLocalRandom.current().nextInt(option.items.size()));
+			ItemStack item = option.item != null ? option.item : option.items.get(random.nextInt(option.items.size()));
 			item.editMeta(meta -> meta.getPersistentDataContainer().set(OPTION_KEY, PersistentDataType.STRING, option.menuOptionName));
 			item = translateItem(opener, item, menu.data);
 
