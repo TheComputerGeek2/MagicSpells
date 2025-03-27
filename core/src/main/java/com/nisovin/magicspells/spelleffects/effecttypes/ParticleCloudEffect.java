@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spelleffects.effecttypes;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -31,6 +32,11 @@ public class ParticleCloudEffect extends ParticlesEffect {
 		radius = ConfigDataUtil.getFloat(config, "radius", 5);
 		yOffset = ConfigDataUtil.getFloat(config, "y-offset", 0);
 		radiusPerTick = ConfigDataUtil.getFloat(config, "radius-per-tick", 0);
+	}
+
+	@Override
+	protected Runnable playEffectEntity(Entity entity, SpellData data) {
+		return playEffectLocation(applyOffsets(entity.getLocation(), data), data);
 	}
 
 	@Override
