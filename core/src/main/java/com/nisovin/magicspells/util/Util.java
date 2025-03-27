@@ -186,8 +186,8 @@ public class Util {
 					}
 				}
 
-				boolean ambient = data.length >= 4 && Boolean.parseBoolean(data[4]);
-				boolean particles = data.length < 5 || !Boolean.parseBoolean(data[3]);
+				boolean particles = data.length < 4 || !Boolean.parseBoolean(data[3]);
+				boolean ambient = data.length >= 5 && Boolean.parseBoolean(data[4]);
 				boolean icon = data.length < 6 || Boolean.parseBoolean(data[5]);
 
 				if (data.length > 6)
