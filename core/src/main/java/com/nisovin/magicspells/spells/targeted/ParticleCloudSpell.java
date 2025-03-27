@@ -1,9 +1,6 @@
 package com.nisovin.magicspells.spells.targeted;
 
-import java.util.Set;
 import java.util.List;
-import java.util.HashSet;
-import java.util.ArrayList;
 
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -16,7 +13,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.AreaEffectCloud;
-import org.bukkit.potion.PotionEffectType;
 
 import net.kyori.adventure.text.Component;
 
@@ -26,7 +22,6 @@ import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
-import com.nisovin.magicspells.handlers.PotionEffectHandler;
 
 public class ParticleCloudSpell extends TargetedSpell implements TargetedLocationSpell, TargetedEntitySpell {
 
@@ -53,7 +48,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	private final ConfigData<Boolean> canTargetEntities;
 	private final ConfigData<Boolean> canTargetLocation;
 
-	private final Set<PotionEffect> potionEffects;
+	private final List<ConfigData<PotionEffect>> potionEffects;
 
 	public ParticleCloudSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -94,28 +89,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 		canTargetEntities = getConfigDataBoolean("can-target-entities", true);
 		canTargetLocation = getConfigDataBoolean("can-target-location", true);
 
-		List<String> potionEffectStrings = getConfigStringList("potion-effects", null);
-		if (potionEffectStrings == null) potionEffectStrings = new ArrayList<>();
-
-		potionEffects = new HashSet<>();
-
-		for (String effect : potionEffectStrings) {
-			potionEffects.add(getPotionEffectFromString(effect));
-		}
-	}
-
-	private static PotionEffect getPotionEffectFromString(String s) {
-		String[] splits = s.split(" ");
-		PotionEffectType type = PotionEffectHandler.getPotionEffectType(splits[0]);
-
-		int durationTicks = Integer.parseInt(splits[1]);
-		int amplifier = Integer.parseInt(splits[2]);
-
-		boolean ambient = Boolean.parseBoolean(splits[3]);
-		boolean particles = Boolean.parseBoolean(splits[4]);
-		boolean icon = Boolean.parseBoolean(splits[5]);
-
-		return new PotionEffect(type, durationTicks, amplifier, ambient, particles, icon);
+		potionEffects = Util.getPotionEffects(getConfigList("potion-effects", null), internalName);
 	}
 
 	@Override
@@ -182,7 +156,9 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 			cloud.setRadiusPerTick(radiusPerTick.get(finalData));
 			cloud.setReapplicationDelay(reapplicationDelay.get(finalData));
 
-			for (PotionEffect eff : potionEffects) cloud.addCustomEffect(eff, true);
+			if (potionEffects != null)
+				for (ConfigData<PotionEffect> eff : potionEffects)
+					cloud.addCustomEffect(eff.get(finalData), true);
 
 			Component customName = this.customName.get(finalData);
 			if (customName != null) {
