@@ -66,20 +66,20 @@ public class Util {
 		return Material.matchMaterial(name);
 	}
 
-	// - <potionEffectType> (level) (duration) (ambient)
+	// - <potionEffectType> (amplifier) (duration) (ambient) (particles) (icon)
 	public static PotionEffect buildPotionEffect(String effectString) {
 		String[] data = effectString.split(" ");
-		PotionEffectType t = PotionEffectHandler.getPotionEffectType(data[0]);
+		PotionEffectType type = PotionEffectHandler.getPotionEffectType(data[0]);
 
-		if (t == null) {
+		if (type == null) {
 			MagicSpells.error('\'' + data[0] + "' could not be connected to a potion effect type");
 			return null;
 		}
 
-		int level = 0;
+		int amplifier = 0;
 		if (data.length > 1) {
 			try {
-				level = Integer.parseInt(data[1]);
+				amplifier = Integer.parseInt(data[1]);
 			} catch (NumberFormatException ex) {
 				DebugHandler.debugNumberFormat(ex);
 			}
@@ -100,7 +100,7 @@ public class Util {
 
 		boolean icon = data.length > 5 && (BooleanUtils.isYes(data[5]) || data[5].equalsIgnoreCase("icon"));
 
-		return new PotionEffect(t, duration, level, ambient, particles, icon);
+		return new PotionEffect(type, duration, amplifier, ambient, particles, icon);
 	}
 
 	// - <potionEffectType> (duration)
@@ -145,7 +145,13 @@ public class Util {
 		return c;
 	}
 
-	public static List<ConfigData<PotionEffect>> getPotionEffects(@Nullable List<?> potionEffectData, @NotNull String internalName, boolean spellPowerAffectsDuration, boolean spellPowerAffectsStrength) {
+	@Nullable
+	public static List<ConfigData<PotionEffect>> getPotionEffects(@Nullable List<?> potionEffectData, @Nullable String internalName) {
+		return getPotionEffects(potionEffectData, internalName, false, false);
+	}
+
+	@Nullable
+	public static List<ConfigData<PotionEffect>> getPotionEffects(@Nullable List<?> potionEffectData, @Nullable String internalName, boolean spellPowerAffectsDuration, boolean spellPowerAffectsStrength) {
 		if (potionEffectData == null || potionEffectData.isEmpty()) return null;
 
 		List<ConfigData<PotionEffect>> potionEffects = new ArrayList<>();
@@ -156,7 +162,7 @@ public class Util {
 
 				PotionEffectType type = PotionEffectHandler.getPotionEffectType(data[0]);
 				if (type == null) {
-					MagicSpells.error("Invalid potion effect string '" + potionEffectString + "' in spell '" + internalName + "'.");
+					MagicSpells.error("Invalid potion effect string '" + potionEffectString + "'" + (internalName == null ? "" : " in spell '" + internalName + "'."));
 					continue;
 				}
 
@@ -165,7 +171,7 @@ public class Util {
 					try {
 						duration = Integer.parseInt(data[1]);
 					} catch (NumberFormatException e) {
-						MagicSpells.error("Invalid duration '" + duration + "' in potion effect string '" + potionEffectString + "' in spell '" + internalName + "'.");
+						MagicSpells.error("Invalid duration '" + duration + "' in potion effect string '" + potionEffectString + "'" + (internalName == null ? "" : " in spell '" + internalName + "'."));
 						continue;
 					}
 				}
@@ -175,17 +181,17 @@ public class Util {
 					try {
 						strength = Integer.parseInt(data[2]);
 					} catch (NumberFormatException e) {
-						MagicSpells.error("Invalid strength '" + strength + "' in potion effect string '" + potionEffectString + "' in spell '" + internalName + "'.");
+						MagicSpells.error("Invalid strength '" + strength + "' in potion effect string '" + potionEffectString + "'" + (internalName == null ? "" : " in spell '" + internalName + "'."));
 						continue;
 					}
 				}
 
-				boolean ambient = data.length >= 4 && Boolean.parseBoolean(data[4]);
-				boolean particles = data.length < 5 || !Boolean.parseBoolean(data[3]);
+				boolean particles = data.length < 4 || !Boolean.parseBoolean(data[3]);
+				boolean ambient = data.length >= 5 && Boolean.parseBoolean(data[4]);
 				boolean icon = data.length < 6 || Boolean.parseBoolean(data[5]);
 
 				if (data.length > 6)
-					MagicSpells.error("Trailing data found in potion effect string '" + potionEffectString + "' in spell '" + internalName + "'.");
+					MagicSpells.error("Trailing data found in potion effect string '" + potionEffectString + "'" + (internalName == null ? "" : " in spell '" + internalName + "'."));
 
 				if (spellPowerAffectsDuration || spellPowerAffectsStrength) {
 					int finalDuration = duration;

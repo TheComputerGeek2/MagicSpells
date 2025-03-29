@@ -91,7 +91,7 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 
 		color = getConfigDataColor("color", null);
 		potionType = getConfigDataRegistryEntry("potion-type", Registry.POTION, null);
-		potionEffects = Util.getPotionEffects(getConfigList("potion-effects", null), internalName, false, false);
+		potionEffects = Util.getPotionEffects(getConfigList("potion-effects", null), internalName);
 	}
 
 	@Override

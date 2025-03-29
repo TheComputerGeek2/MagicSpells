@@ -27,6 +27,7 @@ import org.bukkit.util.EulerAngle;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Transformation;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.attribute.Attributable;
 import org.bukkit.inventory.EquipmentSlot;
@@ -178,6 +179,16 @@ public class EntityData {
 		addOptEquipment(transformers, config, "equipment.leggings", EquipmentSlot.LEGS);
 		addOptEquipment(transformers, config, "equipment.boots", EquipmentSlot.FEET);
 		addOptEquipment(transformers, config, "equipment.body", Mob.class, EquipmentSlot.BODY);
+
+		List<?> potionEffectData = config.getList("potion-effects");
+		if (potionEffectData != null && !potionEffectData.isEmpty()) {
+			List<ConfigData<PotionEffect>> effects = Util.getPotionEffects(potionEffectData, null);
+			if (effects != null) {
+				transformers.put(LivingEntity.class, (LivingEntity entity, SpellData data) -> {
+					effects.forEach(effect -> entity.addPotionEffect(effect.get(data)));
+				});
+			}
+		}
 
 		// Mob
 		addOptEquipmentDropChance(transformers, config, "equipment.main-hand-drop-chance", EquipmentSlot.HAND);

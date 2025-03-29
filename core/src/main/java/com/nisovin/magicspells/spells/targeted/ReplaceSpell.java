@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -42,6 +41,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 
 	private final ConfigData<Boolean> pointBlank;
 	private final ConfigData<Boolean> checkPlugins;
+	private final ConfigData<Boolean> applyPhysics;
 	private final ConfigData<Boolean> replaceRandom;
 	private final ConfigData<Boolean> powerAffectsRadius;
 	private final ConfigData<Boolean> resolveDurationPerBlock;
@@ -62,8 +62,9 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 
 		pointBlank = getConfigDataBoolean("point-blank", false);
 		checkPlugins = getConfigDataBoolean("check-plugins", true);
-		ConfigData<Boolean> replaceRandom = getConfigDataBoolean("replace-random", true);
+		applyPhysics = getConfigDataBoolean("apply-physics", true);
 		powerAffectsRadius = getConfigDataBoolean("power-affects-radius", false);
+		ConfigData<Boolean> replaceRandom = getConfigDataBoolean("replace-random", true);
 		resolveDurationPerBlock = getConfigDataBoolean("resolve-duration-per-block", false);
 
 		boolean replaceAll = false;
@@ -160,6 +161,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 		}
 
 		boolean checkPlugins = this.checkPlugins.get(data);
+		boolean applyPhysics = this.applyPhysics.get(data);
 		boolean replaceRandom = this.replaceRandom.get(data);
 		boolean resolveDurationPerBlock = this.resolveDurationPerBlock.get(data);
 
@@ -181,12 +183,11 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 
 						if (replaceBlacklisted(blockData)) continue;
 
-						Block finalBlock = block;
 						BlockState previousState = block.getState();
 
 						// Place block.
-						if (replaceRandom) block.setBlockData(replaceWith.get(ThreadLocalRandom.current().nextInt(replaceWith.size())));
-						else block.setBlockData(replaceWith.get(i));
+						BlockData newData = replaceWith.get(replaceRandom ? random.nextInt(replaceWith.size()) : i);
+						block.setBlockData(newData, applyPhysics);
 
 						if (checkPlugins && data.caster() instanceof Player player) {
 							Block against = target.clone().add(target.getDirection()).getBlock();
@@ -199,14 +200,15 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 							}
 						}
 
-						SpellData subData = data.location(finalBlock.getLocation());
-						playSpellEffects(EffectPosition.SPECIAL, finalBlock.getLocation(), subData);
+						SpellData subData = data.location(block.getLocation());
+						playSpellEffects(EffectPosition.SPECIAL, block.getLocation(), subData);
 
 						// Break block.
 						if (resolveDurationPerBlock) replaceDuration = this.replaceDuration.get(subData);
 						if (replaceDuration > 0) {
 							blocks.put(block, blockData);
 
+							Block finalBlock = block;
 							MagicSpells.scheduleDelayedTask(() -> {
 								BlockData previous = blocks.remove(finalBlock);
 								if (previous == null) return;
@@ -215,7 +217,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 									EventUtil.call(event);
 									if (event.isCancelled()) return;
 								}
-								finalBlock.setBlockData(previous);
+								finalBlock.setBlockData(previous, applyPhysics);
 								playSpellEffects(EffectPosition.BLOCK_DESTRUCTION, finalBlock.getLocation(), subData);
 							}, replaceDuration);
 						}
@@ -228,7 +230,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 		}
 
 		playSpellEffects(data);
-		return new CastResult(replaced ?PostCastAction.HANDLE_NORMALLY : PostCastAction.ALREADY_HANDLED, data);
+		return new CastResult(replaced ? PostCastAction.HANDLE_NORMALLY : PostCastAction.ALREADY_HANDLED, data);
 	}
 
 	private boolean replaceBlacklisted(BlockData data) {
