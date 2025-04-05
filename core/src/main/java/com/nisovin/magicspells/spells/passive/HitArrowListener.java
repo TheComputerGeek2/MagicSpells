@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.bukkit.entity.Arrow;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 import com.nisovin.magicspells.util.Name;
@@ -43,28 +43,22 @@ public class HitArrowListener extends PassiveListener {
 	@OverridePriority
 	@EventHandler
 	public void onDamage(EntityDamageByEntityEvent event) {
-		if (!(event.getEntity() instanceof LivingEntity attacked)) return;
 		if (!isCancelStateOk(event.isCancelled())) return;
 
-		LivingEntity caster = getAttacker(event);
-		if (caster == null || !canTrigger(caster)) return;
+		if (!(event.getDamager() instanceof Arrow arrow)) return;
+		if (!(event.getEntity() instanceof LivingEntity attacked)) return;
+		if (!(arrow.getShooter() instanceof LivingEntity caster) || !canTrigger(caster)) return;
 
 		if (!items.isEmpty()) {
-			EntityEquipment eq = caster.getEquipment();
-			if (eq == null) return;
+			ItemStack item = arrow.getWeapon();
+			if (item == null) return;
 
-			MagicItemData itemData = MagicItems.getMagicItemDataFromItemStack(eq.getItemInMainHand());
+			MagicItemData itemData = MagicItems.getMagicItemDataFromItemStack(item);
 			if (itemData == null || !contains(itemData)) return;
 		}
 
 		boolean casted = passiveSpell.activate(caster, attacked);
 		if (cancelDefaultAction(casted)) event.setCancelled(true);
-	}
-	
-	private LivingEntity getAttacker(EntityDamageByEntityEvent event) {
-		if (!(event.getDamager() instanceof Arrow arrow)) return null;
-		if (arrow.getShooter() != null && arrow.getShooter() instanceof LivingEntity shooter) return shooter;
-		return null;
 	}
 
 	private boolean contains(MagicItemData itemData) {
