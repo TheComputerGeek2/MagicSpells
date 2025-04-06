@@ -11,7 +11,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
@@ -62,7 +62,7 @@ public class MissArrowListener extends PassiveListener {
 	@OverridePriority
 	@EventHandler
 	public void onDamage(ProjectileHitEvent event) {
-		if (!(event.getEntity() instanceof Arrow)) return;
+		if (!(event.getEntity() instanceof Arrow arrow)) return;
 
 		LivingEntity caster = getAttacker(event);
 		if (caster == null || !canTrigger(caster)) return;
@@ -77,10 +77,10 @@ public class MissArrowListener extends PassiveListener {
 		if (arrowParticle.isHitEntity()) return;
 
 		if (!items.isEmpty()) {
-			EntityEquipment eq = caster.getEquipment();
-			if (eq == null) return;
+			ItemStack item = arrow.getWeapon();
+			if (item == null) return;
 
-			MagicItemData itemData = MagicItems.getMagicItemDataFromItemStack(eq.getItemInMainHand());
+			MagicItemData itemData = MagicItems.getMagicItemDataFromItemStack(item);
 			if (!contains(itemData)) return;
 		}
 
