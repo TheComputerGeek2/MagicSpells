@@ -1,4 +1,4 @@
-package com.nisovin.magicspells.volatilecode.latest;
+package com.nisovin.magicspells.volatilecode.v1_21_4;
 
 import java.util.*;
 import java.lang.reflect.Field;
@@ -18,13 +18,13 @@ import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.entity.CraftTNTPrimed;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 
 import net.kyori.adventure.text.Component;
 
+import io.papermc.paper.util.MCUtil;
 import io.papermc.paper.adventure.PaperAdventure;
 import io.papermc.paper.advancement.AdvancementDisplay;
 
@@ -36,7 +36,6 @@ import net.minecraft.util.ARGB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.advancements.*;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.level.ServerLevel;
@@ -54,7 +53,7 @@ import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.GameTestAddMarkerDebugPayload;
 import net.minecraft.network.protocol.common.custom.GameTestClearMarkersDebugPayload;
 
-public class VolatileCodeLatest extends VolatileCodeHandle {
+public class VolatileCode_v1_21_4 extends VolatileCodeHandle {
 
 	private final ResourceLocation TOAST_KEY = ResourceLocation.fromNamespaceAndPath("magicspells", "toast_effect");
 
@@ -64,7 +63,7 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 	private final Method UPDATE_EFFECT_PARTICLES;
 
 	@SuppressWarnings("unchecked")
-	public VolatileCodeLatest(VolatileCodeHelper helper) throws Exception {
+	public VolatileCode_v1_21_4(VolatileCodeHelper helper) throws Exception {
 		super(helper);
 
 		Field dataSharedFlagsIdField = net.minecraft.world.entity.Entity.class.getDeclaredField("DATA_SHARED_FLAGS_ID");
@@ -162,14 +161,12 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 	@Override
 	public void playHurtSound(LivingEntity entity) {
 		var nmsEntity = ((CraftLivingEntity) entity).getHandle();
-		var sound = nmsEntity.getHurtSound(nmsEntity.damageSources().generic());
-		if (sound == null) sound = SoundEvents.GENERIC_HURT;
 
 		if (nmsEntity.isSilent()) return;
 		nmsEntity.level().playSound(
 				null,
 				nmsEntity.blockPosition(),
-				sound,
+				nmsEntity.getHurtSound0(nmsEntity.damageSources().generic()),
 				nmsEntity.getSoundSource(),
 				nmsEntity.getSoundVolume(),
 				nmsEntity.getVoicePitch()
@@ -201,21 +198,19 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 				false,
 				Collections.singleton(advancement),
 				Collections.emptySet(),
-				Collections.singletonMap(TOAST_KEY, progress),
-				true
+				Collections.singletonMap(TOAST_KEY, progress)
 		));
 		player.connection.send(new ClientboundUpdateAdvancementsPacket(
 				false,
 				Collections.emptySet(),
 				Collections.singleton(TOAST_KEY),
-				Collections.emptyMap(),
-				true
+				Collections.emptyMap()
 		));
 	}
 
 	@Override
 	public void addGameTestMarker(Player player, Location location, int color, String name, int lifetime) {
-		GameTestAddMarkerDebugPayload payload = new GameTestAddMarkerDebugPayload(CraftLocation.toBlockPosition(location), color, name, lifetime);
+		GameTestAddMarkerDebugPayload payload = new GameTestAddMarkerDebugPayload(MCUtil.toBlockPosition(location), color, name, lifetime);
 		((CraftPlayer) player).getHandle().connection.send(new ClientboundCustomPayloadPacket(payload));
 	}
 
@@ -238,7 +233,7 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 
 	@Override
 	public GlowManager getGlowManager() {
-		return new VolatileGlowManagerLatest(helper);
+		return new VolatileGlowManager_v1_21_4(helper);
 	}
 
 }
