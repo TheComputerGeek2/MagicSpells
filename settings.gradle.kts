@@ -9,8 +9,7 @@ include("towny")
 
 include(":nms:shared")
 include(":nms:latest")
-
-startParameter.isParallelProjectExecutionEnabled = true
+include(":nms:v1_21_4")
 
 pluginManagement {
     repositories {
@@ -18,4 +17,3 @@ pluginManagement {
         maven("https://repo.papermc.io/repository/maven-public/")
     }
 }
-
