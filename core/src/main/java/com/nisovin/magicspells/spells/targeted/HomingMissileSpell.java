@@ -279,7 +279,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			airSpellInterval = HomingMissileSpell.this.airSpellInterval.get(data);
 			specialEffectInterval = HomingMissileSpell.this.specialEffectInterval.get(data);
 
-			intermediateSpecialEffects = Math.min(HomingMissileSpell.this.intermediateSpecialEffects.get(data), 0);
+			intermediateSpecialEffects = Math.max(HomingMissileSpell.this.intermediateSpecialEffects.get(data), 0);
 
 			float hitRadius = HomingMissileSpell.this.hitRadius.get(data);
 			float verticalHitRadius = HomingMissileSpell.this.verticalHitRadius.get(data);
