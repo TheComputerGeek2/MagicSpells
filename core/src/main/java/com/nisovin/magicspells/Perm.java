@@ -1,8 +1,12 @@
 package com.nisovin.magicspells;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import org.bukkit.permissions.Permissible;
 
-public enum Perm {
+import org.incendo.cloud.permission.Permission;
+
+public enum Perm implements Permission {
 	
 	SILENT("magicspells.silent"),
 	NO_REAGENTS("magicspells.noreagents"),
@@ -99,5 +103,10 @@ public enum Perm {
 		if (requiresNode() && !permissible.hasPermission(getNode(spell))) return false;
 		return true;
 	}
-	
+
+	@Override
+	public @NonNull String permissionString() {
+		return node;
+	}
+
 }

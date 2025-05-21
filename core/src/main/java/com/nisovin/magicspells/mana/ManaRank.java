@@ -1,11 +1,12 @@
 package com.nisovin.magicspells.mana;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.Style;
 
 public class ManaRank {
 	
 	private String name;
-	private String prefix;
+	private Component prefix;
 
 	private char symbol;
 
@@ -15,14 +16,14 @@ public class ManaRank {
 	private int regenAmount;
 	private int regenInterval;
 
-	private ChatColor colorFull;
-	private ChatColor colorEmpty;
+	private Style styleFull;
+	private Style styleEmpty;
 
 	ManaRank() {
 
 	}
 
-	ManaRank(String name, String prefix, char symbol, int barSize, int maxMana, int startingMana, int regenAmount, int regenInterval, ChatColor colorFull, ChatColor colorEmpty) {
+	ManaRank(String name, Component prefix, char symbol, int barSize, int maxMana, int startingMana, int regenAmount, int regenInterval, Style styleFull, Style styleEmpty) {
 		this.name = name;
 		this.prefix = prefix;
 		this.symbol = symbol;
@@ -31,8 +32,8 @@ public class ManaRank {
 		this.startingMana = startingMana;
 		this.regenAmount = regenAmount;
 		this.regenInterval = regenInterval;
-		this.colorFull = colorFull;
-		this.colorEmpty = colorEmpty;
+		this.styleFull = styleFull;
+		this.styleEmpty = styleEmpty;
 	}
 
 	public String getName() {
@@ -43,11 +44,11 @@ public class ManaRank {
 		this.name = name;
 	}
 
-	public String getPrefix() {
+	public Component getPrefix() {
 		return prefix;
 	}
 
-	public void setPrefix(String prefix) {
+	public void setPrefix(Component prefix) {
 		this.prefix = prefix;
 	}
 
@@ -99,20 +100,20 @@ public class ManaRank {
 		this.regenInterval = regenInterval;
 	}
 
-	public ChatColor getColorFull() {
-		return colorFull;
+	public Style getStyleFull() {
+		return styleFull;
 	}
 
-	public void setColorFull(ChatColor colorFull) {
-		this.colorFull = colorFull;
+	public void setStyleFull(Style styleFull) {
+		this.styleFull = styleFull;
 	}
 
-	public ChatColor getColorEmpty() {
-		return colorEmpty;
+	public Style getStyleEmpty() {
+		return styleEmpty;
 	}
 
-	public void setColorEmpty(ChatColor colorEmpty) {
-		this.colorEmpty = colorEmpty;
+	public void setStyleEmpty(Style styleEmpty) {
+		this.styleEmpty = styleEmpty;
 	}
 	
 	@Override
@@ -126,8 +127,8 @@ public class ManaRank {
 			+ ",startingMana=" + startingMana
 			+ ",regenAmount=" + regenAmount
 			+ ",regenInterval=" + regenInterval
-			+ ",colorFull=" + colorFull
-			+ ",colorEmpty=" + colorEmpty
+			+ ",colorFull=" + styleFull
+			+ ",colorEmpty=" + styleEmpty
 			+ ']';
 	}
 	
