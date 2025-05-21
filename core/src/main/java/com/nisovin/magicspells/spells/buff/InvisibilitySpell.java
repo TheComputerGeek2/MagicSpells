@@ -68,19 +68,18 @@ public class InvisibilitySpell extends BuffSpell {
 	protected void turnOff() {
 		super.turnOff();
 
-		if (manager == null) return;
-		manager.stop();
-		manager = null;
+		if (manager != null) manager.stop();
 	}
 
 	@Override
 	protected @NotNull Collection<UUID> getActiveEntities() {
-		return manager.entities.keySet();
+		return manager == null ? Collections.emptyList() : manager.getActiveEntities(this);
 	}
 
 	private static class InvisibilityManager implements Listener {
 
 		private final Object2ObjectArrayMap<UUID, InvisibilityData> entities = new Object2ObjectArrayMap<>();
+		private boolean stopped = false;
 
 		public InvisibilityManager() {
 			MagicSpells.registerEvents(this);
@@ -111,6 +110,13 @@ public class InvisibilitySpell extends BuffSpell {
 			return data != null && data.spells.containsKey(spell.internalName);
 		}
 
+		public Collection<UUID> getActiveEntities(InvisibilitySpell spell) {
+			return entities.entrySet().stream()
+				.filter(entry -> entry.getValue().spells.containsKey(spell.internalName))
+				.map(Map.Entry::getKey)
+				.toList();
+		}
+
 		public void turnOffBuff(InvisibilitySpell spell, LivingEntity entity) {
 			UUID uuid = entity.getUniqueId();
 			InvisibilityData data = entities.get(uuid);
@@ -136,7 +142,11 @@ public class InvisibilitySpell extends BuffSpell {
 		}
 
 		public void stop() {
-			entities.clear();
+			// Only stop if all other InvisibilitySpell instances with active casts have been turned off.
+			if (stopped || !entities.isEmpty()) return;
+
+			stopped = true;
+			InvisibilitySpell.manager = null;
 			HandlerList.unregisterAll(this);
 		}
 
