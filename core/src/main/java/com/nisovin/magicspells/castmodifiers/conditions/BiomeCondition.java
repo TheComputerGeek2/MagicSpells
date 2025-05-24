@@ -11,6 +11,8 @@ import org.bukkit.block.Biome;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 
+import io.papermc.paper.registry.tag.Tag;
+import io.papermc.paper.registry.tag.TagKey;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.RegistryAccess;
 
@@ -29,6 +31,18 @@ public class BiomeCondition extends Condition {
 		Registry<Biome> registry = RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME);
 
 		for (String value : var.split(",")) {
+			if (value.startsWith("#")) {
+				NamespacedKey key = NamespacedKey.fromString(value.substring(1));
+				if (key == null) return false;
+
+				TagKey<Biome> tagKey = TagKey.create(RegistryKey.BIOME, key);
+				if (!registry.hasTag(tagKey)) return false;
+
+				Tag<Biome> tag = registry.getTag(tagKey);
+				biomes.addAll(tag.resolve(registry));
+				continue;
+			}
+
 			NamespacedKey key = NamespacedKey.fromString(value);
 			if (key == null) return false;
 
