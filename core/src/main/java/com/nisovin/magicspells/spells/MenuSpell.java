@@ -22,8 +22,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 
 import net.kyori.adventure.text.Component;
 
-import co.aikar.commands.ACFUtil;
-
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.MagicSpells;
@@ -286,8 +284,13 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 
 			int quantity;
 			Variable variable = MagicSpells.getVariableManager().getVariable(option.quantity);
-			if (variable == null) quantity = ACFUtil.parseInt(option.quantity, 1);
-			else quantity = (int) Math.round(variable.getValue(opener));
+			if (variable == null) {
+				try {
+					quantity = Integer.parseInt(option.quantity);
+				} catch (NumberFormatException e) {
+					quantity = 1;
+				}
+			} else quantity = (int) Math.round(variable.getValue(opener));
 			item.setAmount(quantity);
 
 			// Set item for all defined slots.
