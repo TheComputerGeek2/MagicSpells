@@ -178,6 +178,12 @@ public class VariableManager {
 			addMetaVariableType("attribute_" + name, new AttributeVariable(attribute));
 			addMetaVariableType("attribute_" + name + "_base", new AttributeBaseValueVariable(attribute));
 		}
+
+		AttributeUtil.getLegacyAttributeNames().forEach((key, attribute) -> {
+			String name = key.replace('.', '_');
+			addMetaVariableType("attribute_" + name, new AttributeVariable(attribute));
+			addMetaVariableType("attribute_" + name + "_base", new AttributeBaseValueVariable(attribute));
+		});
 	}
 
 	// DEBUG INFO: level 2, loaded variable (name)

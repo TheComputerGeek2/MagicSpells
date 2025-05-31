@@ -45,6 +45,26 @@ public class AttributeUtil {
 	}
 
 	private static void loadLegacyAttributeNames() {
+		Map<String, Attribute> legacy = getLegacyAttributeNames();
+		attributeNameMap.putAll(legacy);
+
+		for (Map.Entry<String, Attribute> entry : legacy.entrySet()) {
+			Attribute attribute = entry.getValue();
+
+			String key = entry.getKey();
+			String rep = key.replaceAll("_", "");
+
+			attributeNameMap.put(key.replace('.', '_'), attribute);
+
+			attributeNameMap.put(key, attribute);
+			attributeNameMap.put(key.substring(key.indexOf('.') + 1), attribute);
+
+			attributeNameMap.put(rep, attribute);
+			attributeNameMap.put(rep.substring(rep.indexOf('.') + 1), attribute);
+		}
+	}
+
+	public static Map<String, Attribute> getLegacyAttributeNames() {
 		Map<String, Attribute> legacy = new HashMap<>();
 		legacy.put("generic.max_health", Attribute.MAX_HEALTH);
 		legacy.put("generic.follow_range", Attribute.FOLLOW_RANGE);
@@ -78,22 +98,7 @@ public class AttributeUtil {
 		legacy.put("player.sweeping_damage_ratio", Attribute.SWEEPING_DAMAGE_RATIO);
 		legacy.put("zombie.spawn_reinforcements", Attribute.SPAWN_REINFORCEMENTS);
 
-		attributeNameMap.putAll(legacy);
-
-		for (Map.Entry<String, Attribute> entry : legacy.entrySet()) {
-			Attribute attribute = entry.getValue();
-
-			String key = entry.getKey();
-			String rep = key.replaceAll("_", "");
-
-			attributeNameMap.put(key.replace('.', '_'), attribute);
-
-			attributeNameMap.put(key, attribute);
-			attributeNameMap.put(key.substring(key.indexOf('.') + 1), attribute);
-
-			attributeNameMap.put(rep, attribute);
-			attributeNameMap.put(rep.substring(rep.indexOf('.') + 1), attribute);
-		}
+		return legacy;
 	}
 
 	public static Attribute getAttribute(String attribute) {
