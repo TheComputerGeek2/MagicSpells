@@ -27,7 +27,6 @@ public class MSJavaPlugin implements Plugin<Project> {
             "https://repo.dmulloy2.net/nexus/repository/public/",
             "https://repo.md-5.net/content/repositories/releases/",
             "https://repo.papermc.io/repository/maven-public/",
-            "https://repo.aikar.co/content/groups/aikar/",
             "https://oss.sonatype.org/content/repositories/central",
             "https://oss.sonatype.org/content/repositories/snapshots",
             "https://hub.spigotmc.org/nexus/content/repositories/snapshots/",
