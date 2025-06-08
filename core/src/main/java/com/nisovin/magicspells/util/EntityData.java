@@ -213,6 +213,9 @@ public class EntityData {
 		addBoolean(transformers, config, "visible", true, ArmorStand.class, ArmorStand::setVisible, forceOptional);
 		addBoolean(transformers, config, "has-arms", true, ArmorStand.class, ArmorStand::setArms, forceOptional);
 		addBoolean(transformers, config, "has-base-plate", true, ArmorStand.class, ArmorStand::setBasePlate, forceOptional);
+		addBoolean(transformers, config, "disable-slots", false, ArmorStand.class, (stand, disabled) -> {
+			if (disabled) stand.setDisabledSlots(EquipmentSlot.values());
+		}, forceOptional);
 
 		addEulerAngle(transformers, config, "head-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setHeadPose, forceOptional);
 		addEulerAngle(transformers, config, "body-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setBodyPose, forceOptional);
@@ -220,6 +223,33 @@ public class EntityData {
 		addEulerAngle(transformers, config, "right-arm-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setRightArmPose, forceOptional);
 		addEulerAngle(transformers, config, "left-leg-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setLeftLegPose, forceOptional);
 		addEulerAngle(transformers, config, "right-leg-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setRightLegPose, forceOptional);
+
+		for (String slotName : config.getStringList("disable-slots")) {
+			ConfigData<EquipmentSlot> slotData = ConfigDataUtil.getEnum(slotName, EquipmentSlot.class, null);
+
+			transformers.put(ArmorStand.class, (ArmorStand stand, SpellData data) -> {
+				EquipmentSlot slot = slotData.get(data);
+				if (slot == null) return;
+
+				stand.addDisabledSlots(slot);
+			});
+		}
+
+		for (Object object : config.getList("equipment-locks", new ArrayList<>())) {
+			if (!(object instanceof Map<?,?> map)) continue;
+			ConfigurationSection section = ConfigReaderUtil.mapToSection(map);
+
+			ConfigData<EquipmentSlot> slotData = ConfigDataUtil.getEnum(section, "slot", EquipmentSlot.class, null);
+			ConfigData<ArmorStand.LockType> lockData = ConfigDataUtil.getEnum(section, "lock", ArmorStand.LockType.class, null);
+
+			transformers.put(ArmorStand.class, (ArmorStand stand, SpellData data) -> {
+				EquipmentSlot slot = slotData.get(data);
+				ArmorStand.LockType lock = lockData.get(data);
+				if (slot == null || lock == null) return;
+
+				stand.addEquipmentLock(slot, lock);
+			});
+		}
 
 		// Axolotl
 		fallback(
@@ -511,6 +541,20 @@ public class EntityData {
 
 	@Nullable
 	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> consumer) {
+		EntityType type = this.entityType.get(data);
+		if (type == null || (!type.isSpawnable() && type != EntityType.FALLING_BLOCK && type != EntityType.ITEM))
+			return null;
+
+		Class<? extends Entity> entityClass = type.getEntityClass();
+		if (entityClass == null) return null;
+
+		return spawn(location, data, entityClass, entity -> {
+			if (consumer != null) consumer.accept(entity);
+		});
+	}
+
+	@NotNull
+	public <T extends Entity> T spawn(@NotNull Location location, @NotNull SpellData data, @NotNull Class<T> entityClass, @Nullable Consumer<T> consumer) {
 		Location spawnLocation = location.clone();
 
 		Vector relativeOffset = this.relativeOffset.get(data);
@@ -519,13 +563,6 @@ public class EntityData {
 
 		spawnLocation.setYaw(yaw.get(data).apply(spawnLocation.getYaw()));
 		spawnLocation.setPitch(pitch.get(data).apply(spawnLocation.getPitch()));
-
-		EntityType type = this.entityType.get(data);
-		if (type == null || (!type.isSpawnable() && type != EntityType.FALLING_BLOCK && type != EntityType.ITEM))
-			return null;
-
-		Class<? extends Entity> entityClass = type.getEntityClass();
-		if (entityClass == null) return null;
 
 		return spawnLocation.getWorld().spawn(spawnLocation, entityClass, entity -> {
 			apply(entity, data);
@@ -1003,6 +1040,10 @@ public class EntityData {
 		return relativeOffset;
 	}
 
+	/**
+	 * @deprecated Use {@link EntityData#spawn(Location, SpellData, Class, Consumer)}
+	 */
+	@Deprecated(forRemoval = true)
 	public void setEntityType(ConfigData<EntityType> entityType) {
 		this.entityType = entityType;
 	}
