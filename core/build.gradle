@@ -6,7 +6,9 @@ plugins {
 dependencies {
     shadow(group: "org.apache.commons", name: "commons-math4-core", version: "4.0-beta1")
     shadow(group: "com.github.Chronoken", name: "EffectLib", version: "753da6c")
-    shadow(group: "co.aikar", name: "acf-paper", version: "0.5.1-SNAPSHOT")
+    shadow(group: "org.incendo", name: "cloud-paper", version: "2.0.0-beta.10")
+    shadow(group: "org.incendo", name: "cloud-minecraft-extras", version: "2.0.0-beta.10")
+    shadow(group: "org.incendo", name: "cloud-processors-requirements", version: "1.0.0-rc.1")
     shadow(group: "org.bstats", name: "bstats-bukkit", version: "3.0.2")
 
     shadow(group: "org.antlr", name: "antlr4-runtime", version: "4.13.2")
@@ -50,8 +52,10 @@ shadowJar {
 
     relocate("org.apache.commons.math4", "com.nisovin.magicspells.shaded.org.apache.commons.math4")
     relocate("de.slikey.effectlib", "com.nisovin.magicspells.shaded.effectlib")
-    relocate("co.aikar.commands", "com.nisovin.magicspells.shaded.acf")
-    relocate("co.aikar.locales", "com.nisovin.magicspells.shaded.locales")
+    relocate("org.incendo.cloud", "com.nisovin.magicspells.shaded.cloud")
+    relocate("io.leangen.geantyref", "com.nisovin.magicspells.shaded.geantyref")
+    relocate("xyz.jpenilla.reflectionremapper", "com.nisovin.magicspells.shaded.reflectionremapper")
+    relocate("net.fabricmc.mappingio", "com.nisovin.magicspells.shaded.mappingio")
     relocate("org.bstats", "com.nisovin.magicspells.shaded.bstats")
 
     // Included by apache/commons-math, copied by this project.
