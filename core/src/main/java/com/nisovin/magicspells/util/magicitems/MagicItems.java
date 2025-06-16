@@ -1,6 +1,10 @@
 package com.nisovin.magicspells.util.magicitems;
 
 import java.util.*;
+import java.time.Duration;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import net.kyori.adventure.text.Component;
 
@@ -25,7 +29,11 @@ import static com.nisovin.magicspells.util.magicitems.MagicItemData.MagicItemAtt
 public class MagicItems {
 
 	private static final Map<String, MagicItem> magicItems = new HashMap<>();
-	private static final Map<ItemStack, MagicItemData> itemStackCache = new HashMap<>();
+
+	private static final Cache<ItemStack, MagicItemData> itemStackCache = Caffeine.newBuilder()
+		.expireAfterAccess(Duration.ofMinutes(5))
+		.maximumSize(10000)
+		.build();
 
 	public static Map<String, MagicItem> getMagicItems() {
 		return magicItems;
@@ -58,37 +66,36 @@ public class MagicItems {
 		return magicItems.get(internalName).getMagicItemData();
 	}
 
-	public static MagicItemData getMagicItemDataFromItemStack(ItemStack itemStack) {
-		if (itemStack == null) return null;
+	public static MagicItemData getMagicItemDataFromItemStack(ItemStack item) {
+		if (item == null) return null;
 
-		MagicItemData cached = itemStackCache.get(itemStack);
-		// We can do this because itemStackCache doesn't have any null values
-		if (cached != null) return cached;
+		MagicItemData data = itemStackCache.getIfPresent(item);
+		if (data != null) return data;
 
+		data = getMagicItemDataFromItemStackInternal(item);
+		itemStackCache.put(item.clone(), data);
+
+		return data;
+	}
+
+	private static MagicItemData getMagicItemDataFromItemStackInternal(ItemStack item) {
 		MagicItemData data = new MagicItemData();
 
 		// type
-		data.setAttribute(TYPE, itemStack.getType());
-
-		if (itemStack.getType().isAir()) {
-			itemStackCache.put(itemStack, data);
-			return data;
-		}
+		data.setAttribute(TYPE, item.getType());
+		if (item.getType().isAir()) return data;
 
 		// amount
-		data.setAttribute(AMOUNT, itemStack.getAmount());
+		data.setAttribute(AMOUNT, item.getAmount());
 
-		ItemMeta meta = itemStack.getItemMeta();
-		if (meta == null) {
-			itemStackCache.put(itemStack, data);
-			return data;
-		}
+		ItemMeta meta = item.getItemMeta();
+		if (meta == null) return data;
 
 		// name
 		NameHandler.processMagicItemData(meta, data);
 
 		// durability
-		if (itemStack.getType().getMaxDurability() > 0) DurabilityHandler.processMagicItemData(meta, data);
+		if (item.getType().getMaxDurability() > 0) DurabilityHandler.processMagicItemData(meta, data);
 
 		// repairCost
 		RepairableHandler.processMagicItemData(meta, data);
@@ -149,9 +156,8 @@ public class MagicItems {
 		BannerHandler.processMagicItemData(meta, data);
 
 		// block data
-		BlockDataHandler.processMagicItemData(meta, data, itemStack.getType());
+		BlockDataHandler.processMagicItemData(meta, data, item.getType());
 
-		itemStackCache.put(itemStack, data);
 		return data;
 	}
 

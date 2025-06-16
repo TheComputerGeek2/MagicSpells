@@ -54,3 +54,7 @@ The project includes software developed by third parties. For their full license
 - packetevents:
   - Repository: `retrooper/packetevents`
   - License: **General Public License v3.0** (See `3rd_party_licenses/LICENSE-GPLv3`)
+
+- Caffeine:
+  - Repository: `ben-manes/caffeine`
+  - License: **Apache-2.0 License** (See `3rd_party_licenses/LICENSE-Apache_v2`)
