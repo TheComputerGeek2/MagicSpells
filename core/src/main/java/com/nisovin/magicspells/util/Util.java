@@ -15,6 +15,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.Predicate;
 
+import net.kyori.adventure.text.format.NamedTextColor;
+
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.*;
@@ -738,6 +740,12 @@ public class Util {
 		return getLegacyFromComponent(getMiniMessage(input));
 	}
 
+	public static String getPlainString(String string) {
+		if (string == null) return null;
+
+		return PlainTextComponentSerializer.plainText().serialize(getMiniMessage(string));
+	}
+
 	public static String getPlainString(Component component) {
 		if (component == null) return "";
 
@@ -811,8 +819,45 @@ public class Util {
 		return component == null ? "" : MiniMessage.miniMessage().serialize(component);
 	}
 
-	public static String getStrictStringFromComponent(Component component) {
+	public static String getStrictString(Component component) {
 		return component == null ? "" : STRICT_SERIALIZER.serialize(component);
+	}
+
+	public static String getStrictString(String string) {
+		if (string == null) return null;
+
+		return STRICT_SERIALIZER.serialize(getMiniMessage(string));
+	}
+
+	public static Style getStyle(@Nullable String style, @NotNull Style def) {
+		return switch (style) {
+			case "0" -> Style.style(NamedTextColor.BLACK);
+			case "1" -> Style.style(NamedTextColor.DARK_BLUE);
+			case "2" -> Style.style(NamedTextColor.DARK_GREEN);
+			case "3" -> Style.style(NamedTextColor.DARK_AQUA);
+			case "4" -> Style.style(NamedTextColor.DARK_RED);
+			case "5" -> Style.style(NamedTextColor.DARK_PURPLE);
+			case "6" -> Style.style(NamedTextColor.GOLD);
+			case "7" -> Style.style(NamedTextColor.GRAY);
+			case "8" -> Style.style(NamedTextColor.DARK_GRAY);
+			case "9" -> Style.style(NamedTextColor.BLUE);
+			case "a" -> Style.style(NamedTextColor.GREEN);
+			case "b" -> Style.style(NamedTextColor.AQUA);
+			case "c" -> Style.style(NamedTextColor.RED);
+			case "d" -> Style.style(NamedTextColor.LIGHT_PURPLE);
+			case "e" -> Style.style(NamedTextColor.YELLOW);
+			case "f" -> Style.style(NamedTextColor.WHITE);
+			case "k" -> Style.style(TextDecoration.OBFUSCATED);
+			case "l" -> Style.style(TextDecoration.BOLD);
+			case "m" -> Style.style(TextDecoration.STRIKETHROUGH);
+			case "n" -> Style.style(TextDecoration.UNDERLINED);
+			case "o" -> Style.style(TextDecoration.ITALIC);
+			case null -> def;
+			default -> {
+				Component component = MiniMessage.miniMessage().deserialize(style);
+				yield component.style();
+			}
+		};
 	}
 
 	public static String colorize(String string) {
