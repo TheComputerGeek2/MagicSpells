@@ -1848,16 +1848,25 @@ public class MagicSpells extends JavaPlugin {
 		if (replacements != null) replacementList.addAll(Arrays.asList(replacements));
 
 		if (data.hasRecipient()) {
+			replacementList.add("%r_uuid");
+			replacementList.add(data.recipient().getUniqueId().toString());
+
 			replacementList.add("%r");
 			replacementList.add(getTargetName(data.recipient()));
 		}
 
 		if (data.hasCaster()) {
+			replacementList.add("%a_uuid");
+			replacementList.add(data.caster().getUniqueId().toString());
+
 			replacementList.add("%a");
 			replacementList.add(getTargetName(data.caster()));
 		}
 
 		if (data.hasTarget()) {
+			replacementList.add("%t_uuid");
+			replacementList.add(data.target().getUniqueId().toString());
+
 			replacementList.add("%t");
 			replacementList.add(getTargetName(data.target()));
 		}

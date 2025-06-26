@@ -31,7 +31,7 @@ public class StringData implements ConfigData<String> {
 		(?<papi>(?<papiOwner>papi|casterpapi|targetpapi):(?<papiValue>[^%]+))|\
 		(?<playerPapi>playerpapi:(?<playerPapiUser>[^:]+):(?<playerPapiValue>[^%]+))\
 		)%|\
-		(?<entityName>%[art])""", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+		(?<entityData>%[art](?:_uuid)?)""", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
 	private final List<ConfigData<String>> values;
 	private final List<String> fragments;
@@ -129,10 +129,13 @@ public class StringData implements ConfigData<String> {
 			return new PlayerPAPIData(matcher.group(), papiPlaceholder, player);
 		}
 
-		return switch (matcher.group("entityName")) {
+		return switch (matcher.group("entityData")) {
 			case "%r" -> new DefaultNameData();
+			case "%r_uuid" -> new DefaultUUIDData();
 			case "%a" -> new CasterNameData();
+			case "%a_uuid" -> new CasterUUIDData();
 			case "%t" -> new TargetNameData();
+			case "%t_uuid" -> new TargetUUIDData();
 			default -> null;
 		};
 	}
@@ -420,6 +423,20 @@ public class StringData implements ConfigData<String> {
 
 	}
 
+	public static class DefaultUUIDData extends PlaceholderData {
+
+		public DefaultUUIDData() {
+			super("%r_uuid");
+		}
+
+		@Override
+		public String get(@NotNull SpellData data) {
+			if (!data.hasRecipient()) return placeholder;
+			return data.recipient().getUniqueId().toString();
+		}
+
+	}
+
 	public static class CasterNameData extends PlaceholderData {
 
 		public CasterNameData() {
@@ -434,6 +451,20 @@ public class StringData implements ConfigData<String> {
 
 	}
 
+	public static class CasterUUIDData extends PlaceholderData {
+
+		public CasterUUIDData() {
+			super("%a_uuid");
+		}
+
+		@Override
+		public String get(@NotNull SpellData data) {
+			if (!data.hasCaster()) return placeholder;
+			return data.caster().getUniqueId().toString();
+		}
+
+	}
+
 	public static class TargetNameData extends PlaceholderData {
 
 		public TargetNameData() {
@@ -444,6 +475,20 @@ public class StringData implements ConfigData<String> {
 		public String get(@NotNull SpellData data) {
 			if (!data.hasTarget()) return placeholder;
 			return MagicSpells.getTargetName(data.target());
+		}
+
+	}
+
+	public static class TargetUUIDData extends PlaceholderData {
+
+		public TargetUUIDData() {
+			super("%t_uuid");
+		}
+
+		@Override
+		public String get(@NotNull SpellData data) {
+			if (!data.hasTarget()) return placeholder;
+			return data.target().getUniqueId().toString();
 		}
 
 	}
