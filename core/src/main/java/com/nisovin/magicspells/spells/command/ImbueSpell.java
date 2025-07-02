@@ -1,7 +1,13 @@
 package com.nisovin.magicspells.spells.command;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 import java.util.regex.Pattern;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -16,16 +22,20 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+
 import com.nisovin.magicspells.Perm;
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
+import com.nisovin.magicspells.commands.parsers.OwnedSpellParser;
 
 // Advanced perm is for specifying the number of uses if it isn't normally allowed
 
-public class ImbueSpell extends CommandSpell {
+@SuppressWarnings("UnstableApiUsage")
+public class ImbueSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private static final Pattern CAST_ARG_USES_PATTERN = Pattern.compile("\\d+");
 	private static final NamespacedKey KEY = new NamespacedKey(MagicSpells.getInstance(), "imbue_data");
@@ -147,11 +157,15 @@ public class ImbueSpell extends CommandSpell {
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (!(sender instanceof Player)) return null;
-		if (args.length == 1) return TxtUtil.tabCompleteSpellName(sender);
-		if (args.length == 2) return List.of("1");
-		return null;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (!(executor instanceof Player caster)) return Collections.emptyList();
+
+		return OwnedSpellParser.suggest(caster,
+			requireTeachPerm.get(new SpellData(caster)) ? MagicSpells.getSpellbook(caster)::canTeach : null
+		);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
