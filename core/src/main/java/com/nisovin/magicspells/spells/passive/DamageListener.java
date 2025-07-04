@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.passive;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 import net.kyori.adventure.key.Key;
 
@@ -31,6 +32,7 @@ import com.nisovin.magicspells.util.OverridePriority;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
+import com.nisovin.magicspells.util.RegistryEntryPredicate;
 import com.nisovin.magicspells.util.magicitems.MagicItemData;
 import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 
@@ -40,7 +42,7 @@ public class DamageListener extends PassiveListener {
 
 	private Mode mode;
 
-	private Set<Key> damageTypes;
+	private Predicate<DamageType> damageTypes;
 
 	private List<MagicItemData> projectileItems;
 	private List<MagicItemData> weaponItems;
@@ -88,7 +90,12 @@ public class DamageListener extends PassiveListener {
 		};
 	}
 
-	private Set<Key> initializeDamageTypes(@NotNull ConfigurationSection config) {
+	private Predicate<DamageType> initializeDamageTypes(@NotNull ConfigurationSection config) {
+		if (config.isString("damage-types")) {
+			String damageTypesString = config.getString("damage-types");
+			return RegistryEntryPredicate.fromString(RegistryKey.DAMAGE_TYPE, damageTypesString);
+		}
+
 		List<String> damageTypeStrings = config.getStringList("damage-types");
 		if (damageTypeStrings.isEmpty()) return null;
 
@@ -123,7 +130,7 @@ public class DamageListener extends PassiveListener {
 			tag.values().forEach(typedKey -> types.add(typedKey.key()));
 		}
 
-		return types;
+		return entry -> types.contains(entry.key());
 	}
 
 	private List<MagicItemData> initializeItems(@NotNull ConfigurationSection config, @NotNull String path) {
@@ -151,7 +158,7 @@ public class DamageListener extends PassiveListener {
 		if (!isCancelStateOk(event.isCancelled())) return;
 
 		DamageSource source = event.getDamageSource();
-		if (damageTypes != null && !damageTypes.contains(source.getDamageType().key())) return;
+		if (damageTypes != null && !damageTypes.test(source.getDamageType())) return;
 
 		Entity damaged = event.getEntity();
 

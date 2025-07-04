@@ -963,6 +963,15 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		return SpellFilter.fromSection(config.getMainConfig(), internalKey);
 	}
 
+	protected <T extends Keyed> Predicate<T> getConfigRegistryEntryPredicate(String path, RegistryKey<T> registryKey) {
+		if (config.isList(internalKey + path)) {
+			Set<Key> keys = getConfigRegistryKeys(path, registryKey);
+			return entry -> keys.contains(entry.key());
+		}
+
+		return RegistryEntryPredicate.fromString(registryKey, config.getString(internalKey + path, null));
+	}
+
 	@SuppressWarnings("UnstableApiUsage")
 	protected <T extends Keyed> Set<Key> getConfigRegistryKeys(String path, RegistryKey<T> registryKey) {
 		List<String> keyStrings = config.getStringList(internalKey + path, null);

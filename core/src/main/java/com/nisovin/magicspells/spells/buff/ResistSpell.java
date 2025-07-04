@@ -1,12 +1,12 @@
 package com.nisovin.magicspells.spells.buff;
 
 import java.util.*;
-
-import net.kyori.adventure.key.Key;
+import java.util.function.Predicate;
 
 import org.jetbrains.annotations.NotNull;
 
 import org.bukkit.entity.Entity;
+import org.bukkit.damage.DamageType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -34,8 +34,8 @@ public class ResistSpell extends BuffSpell {
 
 	private final Map<UUID, ResistData> entities;
 
-	private final Set<Key> damageTypes;
 	private final Set<String> spellDamageTypes;
+	private final Predicate<DamageType> damageTypes;
 	private final Set<DamageCause> normalDamageTypes;
 
 	private final ConfigData<Double> flatModifier;
@@ -60,7 +60,7 @@ public class ResistSpell extends BuffSpell {
 		powerAffectsMultiplier = getConfigDataBoolean("power-affects-multiplier", true);
 		powerAffectsFlatModifier = getConfigDataBoolean("power-affects-flat-modifier", true);
 
-		damageTypes = getConfigRegistryKeys("damage-types", RegistryKey.DAMAGE_TYPE);
+		damageTypes = getConfigRegistryEntryPredicate("damage-types", RegistryKey.DAMAGE_TYPE);
 		damageWildcard = getConfigBoolean("damage-types", false);
 
 		List<String> causes = getConfigStringList("normal-damage-types", null);
@@ -161,7 +161,7 @@ public class ResistSpell extends BuffSpell {
 			if (damageTypes == null && normalDamageTypes == null) return;
 
 			if (damageTypes != null) {
-				if (!damageTypes.contains(event.getDamageSource().getDamageType().key())) return;
+				if (!damageTypes.test(event.getDamageSource().getDamageType())) return;
 			} else if (!normalDamageTypes.contains(event.getCause())) return;
 		}
 
