@@ -1,8 +1,6 @@
 package com.nisovin.magicspells.variables.meta;
 
-import org.bukkit.World;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 
 import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
@@ -13,20 +11,23 @@ public class AltitudeVariable extends MetaVariable {
 	public double getValue(String player) {
 		Player p = Bukkit.getPlayerExact(player);
 		if (p == null) return 0;
+
 		World world = p.getWorld();
-		Location location = p.getLocation().clone().subtract(0,1,0);
-		int x = location.getBlockX();
-		int y = location.getBlockY();
-		int z = location.getBlockZ();
+		int x = Location.locToBlock(p.getX());
+		int y = Location.locToBlock(p.getY()) - 1;
+		int z = Location.locToBlock(p.getZ());
 
-		// Try to avoid looping through block below the player.
-		int highestPoint = world.getHighestBlockYAt(location);
-		if (highestPoint < y) return y - highestPoint;
+		int highestPoint = world.getHighestBlockYAt(x, z, HeightMap.MOTION_BLOCKING);
+		if (highestPoint <= y) return y - highestPoint;
 
-		for (int i = y; i > 0; i--) {
-			if (world.getBlockAt(x, i, z).getType().isAir()) continue;
+		for (int i = y, min = world.getMinHeight(); i >= min; i--) {
+			// Matches the check for HeightMap.MOTION_BLOCKING
+			if (!world.getBlockAt(x, i, z).isSolid() && world.getFluidData(x, i, z).getFluidType() == Fluid.EMPTY)
+				continue;
+
 			return y - i;
 		}
+
 		return 0;
 	}
 
