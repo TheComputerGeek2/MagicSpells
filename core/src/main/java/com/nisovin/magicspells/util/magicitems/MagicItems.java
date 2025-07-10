@@ -18,7 +18,6 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.util.ItemUtil;
 import com.nisovin.magicspells.util.itemreader.*;
 import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.handlers.EnchantmentHandler;
@@ -134,11 +133,13 @@ public class MagicItems {
 		// author, title, pages
 		WrittenBookHandler.processMagicItemData(meta, data);
 
+		if (meta.hasEnchantmentGlintOverride() && meta.getEnchantmentGlintOverride())
+			data.setAttribute(FAKE_GLINT, true);
+
 		// enchantments
 		Map<Enchantment, Integer> enchants = new HashMap<>(meta.getEnchants());
-		if (ItemUtil.hasFakeEnchantment(meta)) {
+		if (meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS) && meta.getEnchantLevel(Enchantment.FROST_WALKER) == 65535) {
 			enchants.remove(Enchantment.FROST_WALKER);
-
 			data.setAttribute(FAKE_GLINT, true);
 		}
 		if (!enchants.isEmpty()) data.setAttribute(ENCHANTS, enchants);
@@ -218,13 +219,8 @@ public class MagicItems {
 			}
 		}
 
-		if (data.hasAttribute(FAKE_GLINT)) {
-			boolean fakeGlint = (boolean) data.getAttribute(FAKE_GLINT);
-
-			if (fakeGlint && !meta.hasEnchants()) {
-				ItemUtil.addFakeEnchantment(meta);
-			}
-		}
+		if (data.hasAttribute(FAKE_GLINT) && (boolean) data.getAttribute(FAKE_GLINT))
+			meta.setEnchantmentGlintOverride(true);
 
 		// Armor color
 		LeatherArmorHandler.processItemMeta(meta, data);
@@ -412,13 +408,9 @@ public class MagicItems {
 				}
 			}
 
-			if (section.isBoolean("fake-glint")) {
-				boolean fakeGlint = section.getBoolean("fake-glint");
-
-				if (fakeGlint && !meta.hasEnchants()) {
-					ItemUtil.addFakeEnchantment(meta);
-					itemData.setAttribute(FAKE_GLINT, true);
-				}
+			if (section.getBoolean("fake-glint")) {
+				meta.setEnchantmentGlintOverride(true);
+				itemData.setAttribute(FAKE_GLINT, true);
 			}
 
 			// Armor color
