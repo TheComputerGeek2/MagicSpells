@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.HashSet;
 
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
@@ -12,6 +13,7 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class FlySpell extends TargetedSpell implements TargetedEntitySpell {
 
@@ -69,7 +71,7 @@ public class FlySpell extends TargetedSpell implements TargetedEntitySpell {
 				target.setAllowFlight(true);
 				wasAllowedFlight.add(uuid);
 			}
-			if (setFlying) target.teleportAsync(target.getLocation().add(0, 0.25, 0));
+			if (setFlying) target.teleportAsync(target.getLocation().add(0, 0.25, 0), PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 		} else {
 			boolean wasAllowed = wasAllowedFlight.remove(uuid);
 			if (wasAllowed) target.setAllowFlight(false);

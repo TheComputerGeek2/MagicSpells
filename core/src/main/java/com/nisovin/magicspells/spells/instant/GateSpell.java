@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.spells.instant;
 
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.World;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -11,6 +12,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.InstantSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class GateSpell extends InstantSpell {
 
@@ -97,7 +99,7 @@ public class GateSpell extends InstantSpell {
 			sendMessage(strGateFailed, data.caster(), data);
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
-		data.caster().teleportAsync(location);
+		data.caster().teleportAsync(location, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 
 		playSpellEffects(EffectPosition.CASTER, from, data);
 		playSpellEffects(EffectPosition.TARGET, location, data);

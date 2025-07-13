@@ -1,6 +1,8 @@
 package com.nisovin.magicspells.spells.targeted;
 
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Location;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.LivingEntity;
 
@@ -66,7 +68,7 @@ public class GripSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 
 		if (checkGround.get(data) && !loc.getBlock().isPassable()) return noTarget(strCantGrip, data);
 
-		data.target().teleportAsync(loc);
+		data.target().teleportAsync(loc, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 		playSpellEffects(data);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);

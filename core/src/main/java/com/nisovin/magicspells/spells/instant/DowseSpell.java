@@ -3,11 +3,13 @@ package com.nisovin.magicspells.spells.instant;
 import java.util.List;
 import java.util.TreeSet;
 
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.World;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -114,7 +116,7 @@ public class DowseSpell extends InstantSpell {
 
 			if (rotatePlayer.get(data)) {
 				Vector v = foundBlock.getLocation().add(0.5, 0.5, 0.5).subtract(caster.getEyeLocation()).toVector().normalize();
-				caster.teleport(caster.getLocation().setDirection(v));
+				caster.teleport(caster.getLocation().setDirection(v), PlayerTeleportEvent.TeleportCause.PLUGIN, TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 			}
 
 			if (setCompass.get(data)) caster.setCompassTarget(foundBlock.getLocation());
@@ -169,7 +171,7 @@ public class DowseSpell extends InstantSpell {
 			if (rotatePlayer.get(data)) {
 				Location l = foundEntity instanceof LivingEntity ? ((LivingEntity) foundEntity).getEyeLocation() : foundEntity.getLocation();
 				Vector v = l.subtract(caster.getEyeLocation()).toVector().normalize();
-				caster.teleport(caster.getLocation().setDirection(v));
+				caster.teleport(caster.getLocation().setDirection(v), PlayerTeleportEvent.TeleportCause.PLUGIN, TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 			}
 
 			if (setCompass.get(data)) caster.setCompassTarget(foundEntity.getLocation());

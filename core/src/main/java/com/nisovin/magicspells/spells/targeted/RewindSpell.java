@@ -5,6 +5,7 @@ import java.util.*;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.LinkedHashMultimap;
 
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,6 +21,7 @@ import com.nisovin.magicspells.mana.ManaChangeReason;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 
@@ -219,7 +221,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 
 			if (locations != null && !locations.isEmpty()) tempLocation = locations.get(counter - 1);
 			if (tempLocation != null) {
-				data.target().teleportAsync(tempLocation);
+				data.target().teleportAsync(tempLocation, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 				locations.remove(tempLocation);
 				if (delayedEffectInterval > 0 && counter % delayedEffectInterval == 0)
 					locations.forEach(loc -> playSpellEffects(EffectPosition.DELAYED, loc, data));

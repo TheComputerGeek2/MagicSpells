@@ -3,9 +3,11 @@ package com.nisovin.magicspells.spells.targeted;
 import java.util.List;
 import java.util.ArrayList;
 
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Registry;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -145,7 +147,7 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 
 		event.setCancelled(true);
 		arrow.setVelocity(arrow.getVelocity().multiply(-1));
-		arrow.teleportAsync(arrow.getLocation().add(arrow.getVelocity()));
+		arrow.teleportAsync(arrow.getLocation().add(arrow.getVelocity()), PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 	}
 
 	private class ArrowShooter implements Runnable {

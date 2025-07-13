@@ -1,7 +1,9 @@
 package com.nisovin.magicspells.spells.targeted;
 
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.util.RayTraceResult;
 
 import com.nisovin.magicspells.util.SpellData;
@@ -67,7 +69,7 @@ public class BlinkSpell extends TargetedSpell implements TargetedLocationSpell {
 		data = data.location(target);
 
 		playSpellEffects(data);
-		data.caster().teleportAsync(target);
+		data.caster().teleportAsync(target, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}
