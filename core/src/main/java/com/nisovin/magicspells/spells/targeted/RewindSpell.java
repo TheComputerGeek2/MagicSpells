@@ -36,7 +36,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 	private final ConfigData<Boolean> allowForceRewind;
 
 	private Subspell rewindSpell;
-	private String rewindSpellName;
+	private final String rewindSpellName;
 
 	public RewindSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -219,7 +219,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 
 			if (locations != null && !locations.isEmpty()) tempLocation = locations.get(counter - 1);
 			if (tempLocation != null) {
-				data.target().teleportAsync(tempLocation);
+				Util.tryTeleportMountedAsync(data.target(), tempLocation);
 				locations.remove(tempLocation);
 				if (delayedEffectInterval > 0 && counter % delayedEffectInterval == 0)
 					locations.forEach(loc -> playSpellEffects(EffectPosition.DELAYED, loc, data));

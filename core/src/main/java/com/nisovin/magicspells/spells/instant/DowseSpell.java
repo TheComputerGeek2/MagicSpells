@@ -8,11 +8,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+
+import io.papermc.paper.entity.LookAnchor;
 
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
@@ -112,10 +113,7 @@ public class DowseSpell extends InstantSpell {
 				return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 			}
 
-			if (rotatePlayer.get(data)) {
-				Vector v = foundBlock.getLocation().add(0.5, 0.5, 0.5).subtract(caster.getEyeLocation()).toVector().normalize();
-				caster.teleport(caster.getLocation().setDirection(v));
-			}
+			if (rotatePlayer.get(data)) caster.lookAt(foundBlock.getLocation().toBlockLocation(), LookAnchor.EYES);
 
 			if (setCompass.get(data)) caster.setCompassTarget(foundBlock.getLocation());
 
@@ -166,11 +164,7 @@ public class DowseSpell extends InstantSpell {
 				return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 			}
 
-			if (rotatePlayer.get(data)) {
-				Location l = foundEntity instanceof LivingEntity ? ((LivingEntity) foundEntity).getEyeLocation() : foundEntity.getLocation();
-				Vector v = l.subtract(caster.getEyeLocation()).toVector().normalize();
-				caster.teleport(caster.getLocation().setDirection(v));
-			}
+			if (rotatePlayer.get(data)) caster.lookAt(foundEntity, LookAnchor.EYES, LookAnchor.EYES);
 
 			if (setCompass.get(data)) caster.setCompassTarget(foundEntity.getLocation());
 
@@ -220,8 +214,8 @@ public class DowseSpell extends InstantSpell {
 
 	private static class NearbyEntity implements Comparable<NearbyEntity> {
 
-		private Entity entity;
-		private double distanceSquared;
+		private final Entity entity;
+		private final double distanceSquared;
 
 		private NearbyEntity(Entity entity, double distanceSquared) {
 			this.entity = entity;

@@ -80,7 +80,7 @@ public class EntombSpell extends TargetedSpell implements TargetedEntitySpell {
 		Location tpLoc = feet.getLocation().add(0.5, 0, 0.5);
 		tpLoc.setYaw(yaw);
 		tpLoc.setPitch(pitch);
-		target.teleportAsync(tpLoc);
+		Util.tryTeleportMountedAsync(target, tpLoc);
 
 		tempBlocks.add(feet.getRelative(1, 0, 0));
 		tempBlocks.add(feet.getRelative(1, 1, 0));
