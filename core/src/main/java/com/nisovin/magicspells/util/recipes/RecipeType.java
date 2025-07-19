@@ -15,6 +15,7 @@ public enum RecipeType {
 	SMITHING(new SmithingRecipeFactory()),
 	SHAPELESS(new ShapelessRecipeFactory()),
 	SHAPED(new ShapedRecipeFactory()),
+	POTION(new PotionRecipeFactory()),
 
 	;
 
