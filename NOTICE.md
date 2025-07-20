@@ -15,6 +15,14 @@ The project includes software developed by third parties. For their full license
     - *This product includes software developed at The Apache Software Foundation (http://www.apache.org/).*
     - *This product includes software developed for Orekit by CS Systèmes d'Information (http://www.c-s.fr/)*
 
+- EvalEx:
+  - Repository: `ezylang/EvalEx`
+  - Licensed by: **Udo Klimaschewski**, with thanks to contributors.
+  - License: **Apache-2.0 License** (See `3rd_party_licenses/LICENSE-Apache_v2`)
+  - Attributions:
+    - *The "power of" operator (^) implementation was copied from [Stack Overflow](https://stackoverflow.com/questions/3579779/how-to-do-a-fractional-power-on-bigdecimal-in-java). Thanks to Eugene Marin.*
+    - *The `SQRT()` function implementation was taken from the book [The Java Programmers Guide To numerical Computing](https://www.amazon.de/Java-Number-Cruncher-Programmers-Numerical/dp/0130460419) (Ronald Mak, 2002)*
+
 - EffectLib:
   - Repository: `Chronoken/EffectLib`
   - Licensed by: **Slikey**
