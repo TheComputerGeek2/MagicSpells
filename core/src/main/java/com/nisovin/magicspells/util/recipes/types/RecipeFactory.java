@@ -43,12 +43,10 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 
 	@Nullable
 	public final CustomRecipe create(ConfigurationSection config) {
-		String keyString = config.getString("namespace-key", config.getName());
-		NamespacedKey key;
-		try {
-			key = new NamespacedKey(MagicSpells.getInstance(), keyString);
-		} catch (IllegalArgumentException e) {
-			MagicSpells.error("Invalid 'namespace-key' on custom recipe '%s': %s".formatted(config.getName(), keyString));
+		String keyString = config.getString("namespaced-key", config.getString("namespace-key", config.getName()));
+		NamespacedKey key = NamespacedKey.fromString(keyString, MagicSpells.getInstance());
+		if (key == null) {
+			MagicSpells.error("Invalid 'namespaced-key' on custom recipe '%s': %s".formatted(config.getName(), keyString));
 			return null;
 		}
 
