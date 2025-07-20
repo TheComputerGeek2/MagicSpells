@@ -17,7 +17,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.configuration.ConfigurationSection;
 
 import net.kyori.adventure.text.Component;
@@ -75,11 +74,11 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 			}
 
 			MagicItem magicItem = getMagicItem(object);
-			if (magicItem == null) {
+			if (magicItem == null || magicItem.getItemStack() == null) {
 				MagicSpells.error("Invalid magic item defined for '%s' on custom recipe '%s'.".formatted(path, config.getName()));
 				return null;
 			}
-			return new RecipeChoice.ExactChoice(getLoreVariants(magicItem));
+			return new RecipeChoice.ExactChoice(getItalicVariants(magicItem.getItemStack()));
 		}
 
 		List<ItemStack> items = new ArrayList<>();
@@ -101,11 +100,11 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 			}
 
 			MagicItem magicItem = getMagicItem(object);
-			if (magicItem == null) {
+			if (magicItem == null || magicItem.getItemStack() == null) {
 				MagicSpells.error("Invalid magic item listed on custom recipe '%s' at index %d of '%s'.".formatted(config.getName(), i, path));
 				return null;
 			}
-			items.addAll(getLoreVariants(magicItem));
+			items.addAll(getItalicVariants(magicItem.getItemStack()));
 		}
 
 		return materials.isEmpty() ?
@@ -113,22 +112,20 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 			new RecipeChoice.MaterialChoice(materials);
 	}
 
-	private List<ItemStack> getLoreVariants(MagicItem magicItem) {
-		List<ItemStack> list = new ArrayList<>();
-		ItemStack originalItem = magicItem.getItemStack().clone();
-		list.add(originalItem);
-		ItemStack item = originalItem.clone();
+	/*
+	 * If the item has italics, allow items with unset italics to work.
+	 */
+	private List<ItemStack> getItalicVariants(ItemStack original) {
+		ItemStack clone = original.clone();
+		if (!original.hasItemMeta()) return List.of(clone);
 
-		ItemMeta meta = item.getItemMeta();
-		if (meta == null) return list;
-		Component displayName = meta.displayName();
-		if (displayName == null) return list;
-		if (displayName.hasDecoration(TextDecoration.ITALIC)) return list;
-		// Remove default "false" italics.
-		meta.displayName(displayName.decoration(TextDecoration.ITALIC, TextDecoration.State.NOT_SET));
-		item.setItemMeta(meta);
-		list.add(item);
-		return list;
+		Component displayName = original.getItemMeta().displayName();
+		if (displayName == null || !displayName.hasDecoration(TextDecoration.ITALIC))
+			return List.of(clone);
+
+		ItemStack item = original.clone();
+		item.editMeta(meta -> meta.displayName(displayName.decoration(TextDecoration.ITALIC, TextDecoration.State.NOT_SET)));
+		return List.of(clone, item);
 	}
 
 	private MagicItem getMagicItem(Object object) {
