@@ -11,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 import com.destroystokyo.paper.MaterialTags;
 import com.destroystokyo.paper.MaterialSetTag;
 
+import org.bukkit.Tag;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -30,7 +32,7 @@ import com.nisovin.magicspells.util.recipes.wrapper.CustomRecipe;
 
 public abstract class RecipeFactory<R extends CustomRecipe> {
 
-	private static final Map<String, MaterialSetTag> MATERIAL_TAGS = new HashMap<>();
+	private static final Map<String, Tag<Material>> MATERIAL_TAGS = new HashMap<>();
 	static {
 		for (Field field : MaterialTags.class.getDeclaredFields()) {
 			try {
@@ -67,8 +69,8 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 	protected final RecipeChoice resolveRecipeChoice(ConfigurationSection config, String path) {
 		if (!config.isList(path)) {
 			Object object = config.get(path);
-			if (object instanceof String tagName && tagName.startsWith("tag:")) {
-				MaterialSetTag tag = resolveMaterialTag(config, path, tagName);
+			if (object instanceof String tagName && (tagName.startsWith("tag:") || tagName.startsWith("#"))) {
+				Tag<Material> tag = resolveMaterialTag(config, path, tagName);
 				return tag == null ? null : new RecipeChoice.MaterialChoice(tag);
 			}
 
@@ -80,22 +82,20 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 			return new RecipeChoice.ExactChoice(getLoreVariants(magicItem));
 		}
 
-		boolean isExpectingTags = false;
 		List<ItemStack> items = new ArrayList<>();
 		List<Material> materials = new ArrayList<>();
 		List<?> list = config.getList(path, new ArrayList<>());
 		for (int i = 0; i < list.size(); i++) {
 			Object object = list.get(i);
 
-			if (object instanceof String tagName && tagName.startsWith("tag:")) {
-				isExpectingTags = true;
-				MaterialSetTag tag = resolveMaterialTag(config, path, tagName);
+			if (object instanceof String tagName && (tagName.startsWith("tag:") || tagName.startsWith("#"))) {
+				Tag<Material> tag = resolveMaterialTag(config, path, tagName);
 				if (tag == null) return null;
 				materials.addAll(tag.getValues());
 				continue;
 			}
 
-			if (isExpectingTags) {
+			if (!materials.isEmpty()) {
 				MagicSpells.error("Invalid entry on custom recipe '%s' at index %d of '%s' - you cannot mix material tags and item-based recipe choices together.".formatted(config.getName(), i, path));
 				return null;
 			}
@@ -107,9 +107,10 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 			}
 			items.addAll(getLoreVariants(magicItem));
 		}
-		return isExpectingTags ?
-				new RecipeChoice.MaterialChoice(materials) :
-				new RecipeChoice.ExactChoice(items);
+
+		return materials.isEmpty() ?
+			new RecipeChoice.ExactChoice(items) :
+			new RecipeChoice.MaterialChoice(materials);
 	}
 
 	private List<ItemStack> getLoreVariants(MagicItem magicItem) {
@@ -138,10 +139,19 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 		};
 	}
 
-	private MaterialSetTag resolveMaterialTag(ConfigurationSection config, String path, String tagName) {
-		tagName = tagName.replaceFirst("tag:", "");
-		MaterialSetTag tag = MATERIAL_TAGS.get(tagName.toUpperCase());
+	private Tag<Material> resolveMaterialTag(ConfigurationSection config, String path, String tagName) {
+		String tagString = tagName.replaceFirst("tag:|#", "");
+		Tag<Material> tag = MATERIAL_TAGS.get(tagString.toUpperCase());
 		if (tag != null) return tag;
+
+		NamespacedKey key = NamespacedKey.fromString(tagString);
+		if (key != null) {
+			tag = Bukkit.getTag(Tag.REGISTRY_ITEMS, key, Material.class);
+			if (tag != null) return tag;
+
+			tag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class);
+			if (tag != null) return tag;
+		}
 
 		MagicSpells.error("Invalid material tag '%s' on option '%s' of custom recipe '%s'.".formatted(tagName, path, config.getName()));
 		return null;
