@@ -469,19 +469,11 @@ public class MagicSpells extends JavaPlugin {
 		}
 		log("..." + MagicItems.getMagicItems().size() + " magic items loaded");
 
-		// Load crafting recipes.
-		log("Loading recipes...");
-		if (config.contains(path + "recipes") && config.isSection(path + "recipes")) {
-			ConfigurationSection recipeSec = config.getSection(path + "recipes");
-			ConfigurationSection recipe;
-			for (String recipeKey : recipeSec.getKeys(false)) {
-				recipe = recipeSec.getConfigurationSection(recipeKey);
-				if (recipe == null) continue;
-				CustomRecipes.create(recipe);
-			}
-			Bukkit.updateRecipes();
+		if (config.isSection(path + "recipes")) {
+			log("Loading recipes...");
+			CustomRecipes.load(config.getSection(path + "recipes"));
+			log("..." + CustomRecipes.getRecipes().size() + " recipes loaded");
 		}
-		log("..." + CustomRecipes.getRecipes().size() + " recipes loaded");
 
 		// Load spells
 		loadSpells();

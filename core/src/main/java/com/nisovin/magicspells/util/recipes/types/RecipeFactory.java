@@ -1,13 +1,15 @@
-package com.nisovin.magicspells.util.recipes;
+package com.nisovin.magicspells.util.recipes.types;
 
-import java.util.*;
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
+import java.util.ArrayList;
 import java.lang.reflect.Field;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.destroystokyo.paper.MaterialTags;
 import com.destroystokyo.paper.MaterialSetTag;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -17,13 +19,17 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.configuration.ConfigurationSection;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.handlers.DebugHandler;
 import com.nisovin.magicspells.util.ConfigReaderUtil;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
+import com.nisovin.magicspells.util.recipes.wrapper.CustomRecipe;
 
-public abstract class CustomRecipe {
+public abstract class RecipeFactory {
 
 	private static final Map<String, MaterialSetTag> MATERIAL_TAGS = new HashMap<>();
 	static {
@@ -36,66 +42,45 @@ public abstract class CustomRecipe {
 		}
 	}
 
-	protected void error(String path, String message) {
-		MagicSpells.error("Error on recipe '" + config.getName() + "', option '" + path + "': " + message);
-		hadError = true;
-	}
+	@Nullable
+	public final CustomRecipe create(ConfigurationSection config) {
+		String keyString = config.getString("namespace-key", config.getName());
+		NamespacedKey key;
+		try {
+			key = new NamespacedKey(MagicSpells.getInstance(), keyString);
+		} catch (IllegalArgumentException e) {
+			MagicSpells.error("Invalid 'namespace-key' on custom recipe '%s': %s".formatted(config.getName(), keyString));
+			return null;
+		}
 
-	private boolean hadError = false;
-
-	protected ConfigurationSection config;
-
-	protected String group;
-	protected ItemStack result;
-	protected NamespacedKey namespaceKey;
-
-	private CustomRecipe() {}
-
-	public CustomRecipe(ConfigurationSection config) {
-		this.config = config;
-
-		// Recipe group
-		group = config.getString("group", "");
-
-		// Result item
 		MagicItem magicItem = getMagicItem(config.get("result"));
 		if (magicItem == null) {
-			error("result", "Invalid magic item defined.");
-			return;
+			MagicSpells.error("Invalid magic item defined for 'result' on custom recipe '%s'.".formatted(config.getName()));
+			return null;
 		}
-		result = magicItem.getItemStack().clone();
+		ItemStack result = magicItem.getItemStack().clone();
+		result.setAmount(Math.max(1, config.getInt("quantity", 1)));
 
-		// Result quantity
-		int quantity = config.getInt("quantity", 1);
-		result.setAmount(Math.max(1, quantity));
+		Recipe recipe = createCrafting(config, key, result);
+		if (recipe == null) return null;
 
-		// Namespace key
-		String namespaceKeyString = config.getString("namespace-key", config.getName());
-		try {
-			namespaceKey = new NamespacedKey(MagicSpells.getInstance(), namespaceKeyString);
-		} catch (IllegalArgumentException e) {
-			error("namespace-key", "Invalid namespace key: " + namespaceKeyString);
-			MagicSpells.handleException(e);
-		}
+		return new CustomRecipe(key, recipe);
 	}
 
-	public boolean hadError() {
-		return hadError;
-	}
+	@Nullable
+	protected abstract Recipe createCrafting(ConfigurationSection config, NamespacedKey key, ItemStack result);
 
-	public abstract Recipe build();
-
-	protected RecipeChoice resolveRecipeChoice(String path) {
+	protected final RecipeChoice resolveRecipeChoice(ConfigurationSection config, String path) {
 		if (!config.isList(path)) {
 			Object object = config.get(path);
 			if (object instanceof String tagName && tagName.startsWith("tag:")) {
-				MaterialSetTag tag = resolveMaterialTag(path, tagName);
+				MaterialSetTag tag = resolveMaterialTag(config, path, tagName);
 				return tag == null ? null : new RecipeChoice.MaterialChoice(tag);
 			}
 
 			MagicItem magicItem = getMagicItem(object);
 			if (magicItem == null) {
-				error(path, "Invalid magic item.");
+				MagicSpells.error("Invalid magic item defined for '%s' on custom recipe '%s'.".formatted(path, config.getName()));
 				return null;
 			}
 			return new RecipeChoice.ExactChoice(getLoreVariants(magicItem));
@@ -110,20 +95,20 @@ public abstract class CustomRecipe {
 
 			if (object instanceof String tagName && tagName.startsWith("tag:")) {
 				isExpectingTags = true;
-				MaterialSetTag tag = resolveMaterialTag(path, tagName);
+				MaterialSetTag tag = resolveMaterialTag(config, path, tagName);
 				if (tag == null) return null;
 				materials.addAll(tag.getValues());
 				continue;
 			}
 
 			if (isExpectingTags) {
-				error(path, "You cannot mix material tags and item-based recipe choices together.");
+				MagicSpells.error("Invalid entry on custom recipe '%s' at index %d of '%s' - you cannot mix material tags and item-based recipe choices together.".formatted(config.getName(), i, path));
 				return null;
 			}
 
 			MagicItem magicItem = getMagicItem(object);
 			if (magicItem == null) {
-				error(path, "Invalid magic item listed at index " + i);
+				MagicSpells.error("Invalid magic item listed on custom recipe '%s' at index %d of '%s'.".formatted(config.getName(), i, path));
 				return null;
 			}
 			items.addAll(getLoreVariants(magicItem));
@@ -149,36 +134,33 @@ public abstract class CustomRecipe {
 		item.setItemMeta(meta);
 		list.add(item);
 		return list;
-
 	}
 
-	protected MaterialSetTag resolveMaterialTag(String path, String tagName) {
+	private MagicItem getMagicItem(Object object) {
+		return switch (object) {
+			case String string -> MagicItems.getMagicItemFromString(string);
+			case Map<?, ?> map -> MagicItems.getMagicItemFromSection(ConfigReaderUtil.mapToSection(map));
+			case null, default -> null;
+		};
+	}
+
+	private MaterialSetTag resolveMaterialTag(ConfigurationSection config, String path, String tagName) {
 		tagName = tagName.replaceFirst("tag:", "");
 		MaterialSetTag tag = MATERIAL_TAGS.get(tagName.toUpperCase());
-		if (tag == null) error(path, "Invalid material tag '" + tagName + "'. Must be one of: " + String.join(", " + MATERIAL_TAGS.keySet()));
-		return tag;
-	}
+		if (tag != null) return tag;
 
-	protected MagicItem getMagicItem(Object object) {
-		if (object instanceof String string) return MagicItems.getMagicItemFromString(string);
-		if (object instanceof Map<?, ?> map) {
-			ConfigurationSection config = ConfigReaderUtil.mapToSection(map);
-			return MagicItems.getMagicItemFromSection(config);
-		}
+		MagicSpells.error("Invalid material tag '%s' on option '%s' of custom recipe '%s'.".formatted(tagName, path, config.getName()));
 		return null;
 	}
 
-	protected <T extends Enum<T>> T resolveEnum(Class<T> enumClass, String path, T def) {
+	protected final <E extends Enum<E>> E resolveEnum(ConfigurationSection config, String path, Class<E> enumClass) {
 		String received = config.getString(path);
-		if (received == null) return def;
-		try {
-			return Enum.valueOf(enumClass, received.toUpperCase());
-		}
-		catch (IllegalArgumentException e) {
-			// DebugHandler sends a sufficient error message.
-			error(path, "");
-			DebugHandler.debugBadEnumValue(enumClass, received);
-		}
+		if (received == null) return null;
+
+		E value = Util.enumValueSafe(enumClass, received.toUpperCase());
+		if (value != null) return value;
+
+		MagicSpells.error("Invalid %s '%s' for option '%s' on custom recipe '%s'.".formatted(enumClass.getSimpleName(), received, path, config.getName()));
 		return null;
 	}
 
