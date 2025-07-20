@@ -15,10 +15,9 @@ import com.nisovin.magicspells.util.recipes.wrapper.*;
 public class CustomRecipes {
 
 	private static final List<CustomRecipe> RECIPES = new ArrayList<>();
+	private static final List<NamespacedKey> AUTO_DISCOVER = new ArrayList<>();
 
 	public static void load(ConfigurationSection recipesSection) {
-		List<NamespacedKey> discover = new ArrayList<>();
-
 		for (String recipeKey : recipesSection.getKeys(false)) {
 			ConfigurationSection config = recipesSection.getConfigurationSection(recipeKey);
 			if (config == null) {
@@ -33,45 +32,48 @@ public class CustomRecipes {
 				continue;
 			}
 
-			CustomRecipe customRecipe = null;
+			CustomRecipe recipe = null;
 			try {
-				customRecipe = type.create(config);
+				recipe = type.create(config);
 			} catch (Exception e) {
 				MagicSpells.error("Encountered error while loading recipe '%s'.".formatted(recipeKey));
 				e.printStackTrace();
 			}
-			if (customRecipe == null) continue;
+			if (recipe == null) continue;
 
-			RECIPES.add(customRecipe);
-			customRecipe.add();
-			discover.add(customRecipe.getKey());
+			RECIPES.add(recipe);
+			recipe.add();
+
+			if (!(recipe instanceof CraftingRecipe crafting) || !crafting.isAutoDiscover()) continue;
+			AUTO_DISCOVER.add(crafting.getKey());
 		}
 
 		if (RECIPES.isEmpty()) return;
 		Bukkit.updateRecipes();
 
-		if (!discover.isEmpty())
+		if (!AUTO_DISCOVER.isEmpty())
 			for (Player player : Bukkit.getOnlinePlayers())
-				player.discoverRecipes(discover);
+				player.discoverRecipes(AUTO_DISCOVER);
 	}
 
 	public static void clearRecipes() {
-		List<NamespacedKey> undiscover = new ArrayList<>();
-		for (CustomRecipe recipe : RECIPES) {
-			recipe.remove();
-			undiscover.add(recipe.getKey());
-		}
+		RECIPES.forEach(CustomRecipe::remove);
 
-		if (!undiscover.isEmpty())
+		if (!AUTO_DISCOVER.isEmpty())
 			for (Player player : Bukkit.getOnlinePlayers())
-				player.undiscoverRecipes(undiscover);
+				player.undiscoverRecipes(AUTO_DISCOVER);
 
 		RECIPES.clear();
+		AUTO_DISCOVER.clear();
 		Bukkit.updateRecipes();
 	}
 
 	public static List<CustomRecipe> getRecipes() {
 		return RECIPES;
+	}
+
+	public static List<NamespacedKey> getAutoDiscover() {
+		return AUTO_DISCOVER;
 	}
 
 }

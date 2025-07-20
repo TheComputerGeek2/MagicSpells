@@ -15,7 +15,6 @@ import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.SpellUtil;
 import com.nisovin.magicspells.util.recipes.CustomRecipes;
-import com.nisovin.magicspells.util.recipes.wrapper.CustomRecipe;
 
 public class MagicPlayerListener implements Listener {
 
@@ -27,11 +26,7 @@ public class MagicPlayerListener implements Listener {
 
 		if (MagicSpells.getManaHandler() != null) MagicSpells.getManaHandler().createManaBar(player);
 
-		player.discoverRecipes(CustomRecipes.getRecipes()
-			.stream()
-			.map(CustomRecipe::getKey)
-			.toList()
-		);
+		player.discoverRecipes(CustomRecipes.getAutoDiscover());
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -41,11 +36,7 @@ public class MagicPlayerListener implements Listener {
 		Spellbook spellbook = MagicSpells.getSpellbooks().remove(player.getName());
 		if (spellbook != null) spellbook.destroy();
 
-		player.undiscoverRecipes(CustomRecipes.getRecipes()
-			.stream()
-			.map(CustomRecipe::getKey)
-			.toList()
-		);
+		player.undiscoverRecipes(CustomRecipes.getAutoDiscover());
 	}
 	
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

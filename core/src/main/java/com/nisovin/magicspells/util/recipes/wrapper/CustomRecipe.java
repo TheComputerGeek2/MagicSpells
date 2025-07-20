@@ -1,21 +1,16 @@
 package com.nisovin.magicspells.util.recipes.wrapper;
 
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.Recipe;
 
 import org.jetbrains.annotations.NotNull;
 
-public class CustomRecipe {
+public abstract class CustomRecipe {
 
 	@NotNull
 	private final NamespacedKey key;
-	@NotNull
-	private final Recipe recipe;
 
-	public CustomRecipe(@NotNull NamespacedKey key, @NotNull Recipe recipe) {
+	public CustomRecipe(@NotNull NamespacedKey key) {
 		this.key = key;
-		this.recipe = recipe;
 	}
 
 	@NotNull
@@ -23,12 +18,8 @@ public class CustomRecipe {
 		return key;
 	}
 
-	public void add() {
-		Bukkit.addRecipe(recipe);
-	}
+	public abstract void add();
 
-	public void remove() {
-		Bukkit.removeRecipe(getKey());
-	}
+	public abstract void remove();
 
 }

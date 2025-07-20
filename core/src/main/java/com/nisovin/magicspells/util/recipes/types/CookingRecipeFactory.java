@@ -7,7 +7,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.recipe.CookingBookCategory;
 
-public abstract class CookingRecipeFactory<R extends CookingRecipe<R>> extends RecipeFactory {
+public abstract class CookingRecipeFactory<R extends CookingRecipe<R>> extends CraftingRecipeFactory {
 
 	@Override
 	protected final Recipe createCrafting(ConfigurationSection config, NamespacedKey key, ItemStack result) {

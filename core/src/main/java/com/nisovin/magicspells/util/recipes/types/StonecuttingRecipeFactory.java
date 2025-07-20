@@ -9,7 +9,7 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.StonecuttingRecipe;
 import org.bukkit.configuration.ConfigurationSection;
 
-public class StonecuttingRecipeFactory extends RecipeFactory {
+public class StonecuttingRecipeFactory extends CraftingRecipeFactory {
 
 	@Override
 	@Nullable

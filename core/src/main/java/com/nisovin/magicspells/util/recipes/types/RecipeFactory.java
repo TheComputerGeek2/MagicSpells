@@ -13,7 +13,6 @@ import com.destroystokyo.paper.MaterialSetTag;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -29,7 +28,7 @@ import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.recipes.wrapper.CustomRecipe;
 
-public abstract class RecipeFactory {
+public abstract class RecipeFactory<R extends CustomRecipe> {
 
 	private static final Map<String, MaterialSetTag> MATERIAL_TAGS = new HashMap<>();
 	static {
@@ -61,14 +60,11 @@ public abstract class RecipeFactory {
 		ItemStack result = magicItem.getItemStack().clone();
 		result.setAmount(Math.max(1, config.getInt("quantity", 1)));
 
-		Recipe recipe = createCrafting(config, key, result);
-		if (recipe == null) return null;
-
-		return new CustomRecipe(key, recipe);
+		return createRecipe(config, key, result);
 	}
 
 	@Nullable
-	protected abstract Recipe createCrafting(ConfigurationSection config, NamespacedKey key, ItemStack result);
+	protected abstract R createRecipe(ConfigurationSection config, NamespacedKey key, ItemStack result);
 
 	protected final RecipeChoice resolveRecipeChoice(ConfigurationSection config, String path) {
 		if (!config.isList(path)) {

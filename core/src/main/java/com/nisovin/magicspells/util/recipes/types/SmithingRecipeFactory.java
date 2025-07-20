@@ -9,7 +9,7 @@ import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.SmithingTransformRecipe;
 import org.bukkit.configuration.ConfigurationSection;
 
-public class SmithingRecipeFactory extends RecipeFactory {
+public class SmithingRecipeFactory extends CraftingRecipeFactory {
 
 	@Override
 	@Nullable

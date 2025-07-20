@@ -14,7 +14,7 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 
-public class ShapedRecipeFactory extends RecipeFactory {
+public class ShapedRecipeFactory extends CraftingRecipeFactory {
 
 	@Override
 	@Nullable
