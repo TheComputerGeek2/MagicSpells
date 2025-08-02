@@ -474,7 +474,7 @@ public class EntityData {
 			Class<? extends Entity> entityClass = entityType.getEntityClass();
 			if (entityClass == null) continue;
 
-			for (Class<?> transformerType : transformers.keys())
+			for (Class<?> transformerType : transformers.keySet())
 				if (transformerType.isAssignableFrom(entityClass))
 					options.putAll(entityType, transformers.get(transformerType));
 		}
