@@ -16,12 +16,13 @@ import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class BindSpell extends CommandSpell {
-	
+
 	private Set<CastItem> bindableItems;
 
 	private Set<Spell> allowedSpells;
 
 	private final ConfigData<Boolean> allowBindToFist;
+	private final ConfigData<Boolean> checkCanCastWithItem;
 
 	private String strUsage;
 	private String strNoSpell;
@@ -51,6 +52,7 @@ public class BindSpell extends CommandSpell {
 		}
 
 		allowBindToFist = getConfigDataBoolean("allow-bind-to-fist", false);
+		checkCanCastWithItem = getConfigDataBoolean("check-can-cast-with-item", true);
 
 		strUsage = getConfigString("str-usage", "You must specify a spell name and hold an item in your hand.");
 		strNoSpell = getConfigString("str-no-spell", "You do not know a spell by that name.");
@@ -89,7 +91,7 @@ public class BindSpell extends CommandSpell {
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
 
-		if (!spell.canCastWithItem()) {
+		if (checkCanCastWithItem.get(data) && !spell.canCastWithItem()) {
 			sendMessage(strCantBindSpell, caster, data);
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
