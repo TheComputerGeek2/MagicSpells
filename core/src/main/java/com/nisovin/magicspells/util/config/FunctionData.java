@@ -1,30 +1,30 @@
 package com.nisovin.magicspells.util.config;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.function.Function;
 
-import de.slikey.exp4j.Expression;
-import de.slikey.exp4j.ValidationResult;
-import de.slikey.exp4j.ExpressionBuilder;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 
 import org.apache.commons.numbers.core.Precision;
+
+import com.ezylang.evalex.Expression;
+import com.ezylang.evalex.parser.ParseException;
 
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.RegexUtil;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.variables.Variable;
 import com.nisovin.magicspells.variables.variabletypes.GlobalVariable;
+import com.nisovin.magicspells.util.config.expression.ExpressionDictionary;
 import com.nisovin.magicspells.variables.variabletypes.GlobalStringVariable;
 import com.nisovin.magicspells.variables.variabletypes.PlayerStringVariable;
 
@@ -132,23 +132,12 @@ public class FunctionData<T extends Number> implements ConfigData<T> {
 		}
 		matcher.appendTail(builder);
 
-		Expression expression;
+		ExpressionDictionary dictionary = MagicSpells.getExpressionDictionary();
+		Expression expression = new Expression(builder.toString(), dictionary.getExpressionConfiguration()).withValues(dictionary.getConstants());
 		try {
-			expression = new ExpressionBuilder(builder.toString())
-				.functions(CustomFunctions.getFunctions())
-				.variables(variables.keySet())
-				.variable("power")
-				.build();
-
-			ValidationResult result = expression.validate(false);
-			if (!result.isValid()) {
-				if (!silent)
-					MagicSpells.error("Invalid expression '" + expressionString + "': [" + String.join(", ", result.getErrors()) + "]");
-				return null;
-			}
-
+			expression.validate();
 			return expression;
-		} catch (IllegalArgumentException e) {
+		} catch (ParseException e) {
 			if (!silent) {
 				MagicSpells.error("Invalid expression '" + expressionString + "'.");
 				e.printStackTrace();
@@ -235,12 +224,12 @@ public class FunctionData<T extends Number> implements ConfigData<T> {
 	@Override
 	public T get(@NotNull SpellData data) {
 		for (Map.Entry<String, ConfigData<Double>> entry : variables.entrySet())
-			expression.setVariable(entry.getKey(), entry.getValue().get(data));
+			expression.with(entry.getKey(), entry.getValue().get(data));
 
-		expression.setVariable("power", data.power());
+		expression.with("power", data.power());
 
 		try {
-			return converter.apply(expression.evaluate());
+			return converter.apply(expression.evaluate().getNumberValue().doubleValue());
 		} catch (Exception e) {
 			return dataDef != null ? dataDef.get(data) : def;
 		}

@@ -9,6 +9,7 @@ dependencies {
     shadow(group: "com.github.Chronoken", name: "EffectLib", version: "753da6c")
     shadow(group: "co.aikar", name: "acf-paper", version: "0.5.1-SNAPSHOT")
     shadow(group: "org.bstats", name: "bstats-bukkit", version: "3.0.2")
+    shadow(group: "com.github.ezylang", name: "EvalEx", version: "0dcb042")
 
     shadow(group: "org.antlr", name: "antlr4-runtime", version: "4.13.2")
     antlr(group: "org.antlr", name: "antlr4", version: "4.13.2")
@@ -55,6 +56,8 @@ shadowJar {
     relocate("co.aikar.commands", "com.nisovin.magicspells.shaded.acf")
     relocate("co.aikar.locales", "com.nisovin.magicspells.shaded.locales")
     relocate("org.bstats", "com.nisovin.magicspells.shaded.bstats")
+    relocate("de.slikey.exp4j", "com.nisovin.magicspells.shaded.exp4j")
+    relocate("com.ezylang.evalex", "com.nisovin.magicspells.shaded.evalex")
 
     // Included by apache/commons-math, copied by this project.
     exclude("META-INF/LICENSE")

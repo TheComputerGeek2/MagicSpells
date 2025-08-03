@@ -88,6 +88,7 @@ import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 import com.nisovin.magicspells.variables.variabletypes.GlobalVariable;
 import com.nisovin.magicspells.spelleffects.trackers.AsyncEffectTracker;
 import com.nisovin.magicspells.spelleffects.effecttypes.EffectLibEffect;
+import com.nisovin.magicspells.util.config.expression.ExpressionDictionary;
 import com.nisovin.magicspells.variables.variabletypes.GlobalStringVariable;
 import com.nisovin.magicspells.variables.variabletypes.PlayerStringVariable;
 import com.nisovin.magicspells.spells.targeted.cleanse.util.CleanserManager;
@@ -142,6 +143,8 @@ public class MagicSpells extends JavaPlugin {
 	private CustomGoalsManager customGoalsManager;
 	private PaperCommandManager commandManager;
 	private ExperienceBarManager expBarManager;
+
+	private ExpressionDictionary expressionDictionary;
 
 	private MagicConfig config;
 	private MagicLogger magicLogger;
@@ -429,6 +432,7 @@ public class MagicSpells extends JavaPlugin {
 		bossBarManager = new BossBarManager();
 		if (CompatBasics.pluginEnabled("Vault")) moneyHandler = new MoneyHandler();
 		lifeLengthTracker = new LifeLengthTracker();
+		expressionDictionary = new ExpressionDictionary();
 
 		// Call loading event
 		Bukkit.getPluginManager().callEvent(new MagicSpellsLoadingEvent(this));
@@ -1442,6 +1446,10 @@ public class MagicSpells extends JavaPlugin {
 		return plugin.spellEffectManager;
 	}
 
+	public static ExpressionDictionary getExpressionDictionary() {
+		return plugin.expressionDictionary;
+	}
+
 	public static MoneyHandler getMoneyHandler() {
 		return plugin.moneyHandler;
 	}
@@ -2295,6 +2303,7 @@ public class MagicSpells extends JavaPlugin {
 		strMissingReagents = null;
 		strSpellChangeEmpty = null;
 		soundFailOnCooldown = null;
+		expressionDictionary = null;
 		soundFailMissingReagents = null;
 
 		// Remove star permissions (to allow new spells to be added to them)
