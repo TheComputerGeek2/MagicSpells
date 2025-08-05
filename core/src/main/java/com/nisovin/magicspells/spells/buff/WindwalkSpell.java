@@ -4,8 +4,6 @@ import java.util.*;
 
 import org.jetbrains.annotations.NotNull;
 
-import io.papermc.paper.entity.TeleportFlag;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -95,7 +93,7 @@ public class WindwalkSpell extends BuffSpell {
 
 		float launchSpeed = this.launchSpeed.get(data);
 		if (launchSpeed > 0) {
-			target.teleport(target.getLocation().add(0, 0.25, 0), TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+			Util.tryTeleportMounted(target, target.getLocation().add(0, 0.25, 0));
 			target.setVelocity(new Vector(0, launchSpeed, 0));
 		}
 		target.setAllowFlight(true);
@@ -191,7 +189,7 @@ public class WindwalkSpell extends BuffSpell {
 			if (!isActive(player) || player.getLocation().subtract(0, 1, 0).getBlock().getType().isAir()) return;
 
 			if (alwaysFly) {
-				player.teleport(player.getLocation().add(0, 0.25, 0), TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+				Util.tryTeleportMounted(player, player.getLocation().add(0, 0.25, 0));
 				player.setFlying(true);
 			} else if (cancelOnLand) turnOff(player);
 		}

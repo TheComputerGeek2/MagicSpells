@@ -133,7 +133,7 @@ public class DodgeSpell extends BuffSpell {
 		}
 
 		if (!targetLoc.getBlock().isPassable() || !targetLoc.getBlock().getRelative(BlockFace.UP).isPassable()) return;
-		caster.teleportAsync(targetLoc);
+		Util.tryTeleportMountedAsync(caster, targetLoc);
 		addUseAndChargeCost(caster);
 
 		playSpellEffectsTrail(casterLoc, targetLoc, subData);
