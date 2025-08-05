@@ -2,6 +2,8 @@ package com.nisovin.magicspells.spells.buff;
 
 import java.util.*;
 
+import io.papermc.paper.entity.TeleportFlag;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.NotNull;
 
 import org.bukkit.Location;
@@ -133,7 +135,7 @@ public class DodgeSpell extends BuffSpell {
 		}
 
 		if (!targetLoc.getBlock().isPassable() || !targetLoc.getBlock().getRelative(BlockFace.UP).isPassable()) return;
-		caster.teleportAsync(targetLoc);
+		caster.teleportAsync(targetLoc, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 		addUseAndChargeCost(caster);
 
 		playSpellEffectsTrail(casterLoc, targetLoc, subData);
