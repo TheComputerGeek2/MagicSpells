@@ -22,6 +22,7 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.configuration.ConfigurationSection;
 
 import io.papermc.paper.entity.TeleportFlag;
 
@@ -38,10 +39,18 @@ import com.nisovin.magicspells.util.itemreader.AttributeHandler;
 
 public class MinionSpell extends BuffSpell {
 
+	private static final DeprecationNotice BABY_DEPRECATION_NOTICE = new DeprecationNotice(
+		"The 'baby' option of '.buff.MinionSpell' overrides the one from 'minion' Entity Data option.",
+		"Use the 'baby' option in the 'minion' Entity Data to avoid the override.",
+		"https://github.com/TheComputerGeek2/MagicSpells/wiki/Deprecations#buffminionspell-baby"
+	);
+
 	private final Map<UUID, Mob> minions = new HashMap<>();
 	private final Map<LivingEntity, UUID> players = new HashMap<>();
 	private final Map<EntityType, Integer> mobChances = new HashMap<>();
 	private final Map<UUID, LivingEntity> targets = new ConcurrentHashMap<>();
+
+	private EntityData entityData;
 
 	private ValidTargetList minionTargetList;
 
@@ -89,6 +98,9 @@ public class MinionSpell extends BuffSpell {
 
 	public MinionSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
+
+		ConfigurationSection minionSection = getConfigSection("minion");
+		if (minionSection != null) entityData = new EntityData(minionSection);
 
 		// Formatted as <entity type> <chance>
 		List<String> mobChanceList = getConfigStringList("mob-chances", new ArrayList<>());
@@ -207,6 +219,10 @@ public class MinionSpell extends BuffSpell {
 		gravity = getConfigDataBoolean("gravity", true);
 		preventCombust = getConfigBoolean("prevent-sun-burn", true);
 		powerAffectsHealth = getConfigDataBoolean("power-affects-health", false);
+
+		MagicSpells.getDeprecationManager().addDeprecation(this, BABY_DEPRECATION_NOTICE,
+			entityData != null && (!baby.isConstant() || baby.get())
+		);
 	}
 
 	@Override
@@ -230,17 +246,20 @@ public class MinionSpell extends BuffSpell {
 		if (!(data.target() instanceof Player target)) return false;
 		// Selecting the mob
 		EntityType entityType = null;
-		int total = mobChances.values().stream().mapToInt(Integer::intValue).sum();
-		int selected = random.nextInt(total);
+		if (entityData == null) {
+			int total = mobChances.values().stream().mapToInt(Integer::intValue).sum();
+			int selected = random.nextInt(total);
 
-		int current = 0;
-		for (Map.Entry<EntityType, Integer> entry : mobChances.entrySet()) {
-			current += entry.getValue();
-			if (selected >= current) continue;
+			int current = 0;
+			for (Map.Entry<EntityType, Integer> entry : mobChances.entrySet()) {
+				current += entry.getValue();
+				if (selected >= current) continue;
 
-			entityType = entry.getKey();
-			break;
+				entityType = entry.getKey();
+				break;
+			}
 		}
+		else entityType = entityData.getEntityType().get(data);
 
 		if (entityType == null) {
 			MagicSpells.error("MinionSpell '" + internalName + "' is missing entity type!");
@@ -262,13 +281,15 @@ public class MinionSpell extends BuffSpell {
 		Util.applyRelativeOffset(loc, spawnOffset.setY(0));
 
 		// Spawn creature
-		Mob minion = target.getWorld().spawn(loc, mobClass, mob -> {
+		Mob minion;
+		if (entityData == null) minion = target.getWorld().spawn(loc, mobClass, mob -> {
 			prepareMob(mob, target, data);
 
 			if (!(mob instanceof Ageable ageable)) return;
 			if (baby.get(data)) ageable.setBaby();
 			else ageable.setAdult();
 		});
+		else minion = entityData.spawn(loc, data, mobClass, mob -> prepareMob(mob, target, data), null);
 
 		if (spawnSpell != null) {
 			SpellData castData = data.builder().caster(target).target(minion).location(minion.getLocation()).recipient(null).build();
