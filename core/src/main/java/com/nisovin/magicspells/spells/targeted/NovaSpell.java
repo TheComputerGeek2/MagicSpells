@@ -14,9 +14,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 
+import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
@@ -37,6 +37,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 
 	private final ConfigData<Double> visibleRange;
 
+	private final ConfigData<Boolean> fakeBlocks;
 	private final ConfigData<Boolean> pointBlank;
 	private final ConfigData<Boolean> circleShape;
 	private final ConfigData<Boolean> removePreviousBlocks;
@@ -68,6 +69,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 
 		visibleRange = getConfigDataDouble("visible-range", 20);
 
+		fakeBlocks = getConfigDataBoolean("fake-blocks", true);
 		pointBlank = getConfigDataBoolean("point-blank", true);
 		circleShape = getConfigDataBoolean("circle-shape", false);
 		removePreviousBlocks = getConfigDataBoolean("remove-previous-blocks", true);
@@ -134,6 +136,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 		protected final Set<Block> blocks;
 		protected final Set<Player> nearby;
 
+		protected final boolean fakeBlocks;
 		protected final boolean removePreviousBlocks;
 
 		protected final int taskId;
@@ -158,6 +161,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 
 			data = data.location(center);
 
+			fakeBlocks = NovaSpell.this.fakeBlocks.get(data);
 			removePreviousBlocks = NovaSpell.this.removePreviousBlocks.get(data);
 
 			radius = NovaSpell.this.radius.get(data);
@@ -205,7 +209,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 					spell.subcast(subData);
 				}
 			}
-			for (Player p : nearby) p.sendMultiBlockChange(update);
+			updateBlocks(update);
 
 			blocks.clear();
 			nearby.clear();
@@ -228,6 +232,14 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 				SpellData subData = data.location(block.getLocation().add(0.5, 0, 0.5));
 				locationSpell.subcast(subData);
 			}
+		}
+
+		protected void updateBlocks(Map<Location, BlockData> update) {
+			if (fakeBlocks) {
+				nearby.forEach(p -> p.sendMultiBlockChange(update));
+				return;
+			}
+			update.forEach((location, data) -> location.getBlock().setBlockData(data, false));
 		}
 
 		protected void stop() {
@@ -258,8 +270,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 					checkBlock(center.getWorld().getBlockAt(x, y, z), update);
 				}
 			}
-
-			for (Player p : nearby) p.sendMultiBlockChange(update);
+			updateBlocks(update);
 		}
 
 	}
@@ -282,7 +293,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 
 			if (startRadius == 0 && currentRadius == 0) {
 				checkBlock(center.getWorld().getBlockAt(Location.locToBlock(cx), y, Location.locToBlock(cz)), update);
-				for (Player p : nearby) p.sendMultiBlockChange(update);
+				updateBlocks(update);
 				return;
 			}
 
@@ -295,8 +306,7 @@ public class NovaSpell extends TargetedSpell implements TargetedLocationSpell, T
 
 				checkBlock(center.getWorld().getBlockAt(x, y, z), update);
 			}
-
-			for (Player p : nearby) p.sendMultiBlockChange(update);
+			updateBlocks(update);
 		}
 
 	}
