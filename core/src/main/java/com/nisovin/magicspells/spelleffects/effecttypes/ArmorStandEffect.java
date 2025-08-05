@@ -7,7 +7,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.Name;
-import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.EntityData;
 import com.nisovin.magicspells.util.config.ConfigData;
@@ -23,11 +22,7 @@ public class ArmorStandEffect extends SpellEffect {
 
 	private EntityData entityData;
 
-	private boolean gravity;
-
-	private String customName;
-	private boolean customNameVisible;
-
+	private ConfigData<Boolean> gravity;
 	private ConfigData<Boolean> disableSlots;
 
 	private ItemStack headItem;
@@ -41,11 +36,7 @@ public class ArmorStandEffect extends SpellEffect {
 
 		entityData = new EntityData(section);
 
-		gravity = section.getBoolean("gravity", false);
-
-		customName = section.getString("custom-name", "");
-		customNameVisible = section.getBoolean("custom-name-visible", false);
-
+		gravity = ConfigDataUtil.getBoolean(section, "gravity", false);
 		disableSlots = ConfigDataUtil.getBoolean(section, "disable-slots", true);
 
 		MagicItem item = MagicItems.getMagicItemFromString(section.getString("head"));
@@ -60,20 +51,20 @@ public class ArmorStandEffect extends SpellEffect {
 
 	@Override
 	protected ArmorStand playArmorStandEffectLocation(Location location, SpellData data) {
+		boolean gravity = this.gravity.get(data);
+		boolean disableSlots = this.disableSlots.get(data);
+
 		return entityData.spawn(location, data, ArmorStand.class, stand -> {
 			stand.setSilent(true);
 			stand.addScoreboardTag(ENTITY_TAG);
 
 			stand.setGravity(gravity);
-			stand.setCustomNameVisible(customNameVisible);
-			stand.customName(Util.getMiniMessage(customName, data));
-
-			if (this.disableSlots.get(data)) stand.setDisabledSlots(EquipmentSlot.values());
+			if (disableSlots) stand.setDisabledSlots(EquipmentSlot.values());
 
 			stand.setItem(EquipmentSlot.HEAD, headItem);
 			stand.setItem(EquipmentSlot.HAND, mainHandItem);
 			stand.setItem(EquipmentSlot.OFF_HAND, offHandItem);
-		});
+		}, stand -> stand.setPersistent(false));
 	}
 
 }
