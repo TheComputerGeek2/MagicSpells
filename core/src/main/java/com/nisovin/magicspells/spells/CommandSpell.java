@@ -5,6 +5,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 
 import com.nisovin.magicspells.Spell;
+import com.nisovin.magicspells.util.CastItem;
 import com.nisovin.magicspells.util.MagicConfig;
 
 public abstract class CommandSpell extends Spell {
@@ -12,7 +13,12 @@ public abstract class CommandSpell extends Spell {
 	public CommandSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 	}
-	
+
+	@Override
+	public boolean canBind(CastItem item) {
+		return false;
+	}
+
 	@Override
 	public boolean canCastWithItem() {
 		return false;

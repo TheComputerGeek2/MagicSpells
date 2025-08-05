@@ -191,32 +191,33 @@ public class Spellbook {
 		if (spell == null) return;
 		MagicSpells.debug(3, "    Added spell '" + spell.getInternalName() + "'.");
 		spells.add(spell);
-		if (spell.canCastWithItem()) {
-			CastItem[] items = spell.getCastItems();
-			if (castItems != null && castItems.length > 0) {
-				items = castItems;
-				Set<CastItem> set = new HashSet<>();
-				for (CastItem item : items) {
-					if (item == null) continue;
-					set.add(item);
-				}
-				customBindings.put(spell, set);
-			} else if (MagicSpells.ignoreDefaultBindings()) return;
 
+		// Add cast items
+		CastItem[] items = spell.getCastItems();
+		if (castItems != null && castItems.length > 0) {
+			items = castItems;
+			Set<CastItem> set = new HashSet<>();
 			for (CastItem item : items) {
-				MagicSpells.debug(3, "        Cast item: " + item + (castItems != null ? " (custom)" : " (default)"));
 				if (item == null) continue;
-				List<Spell> temp = itemSpells.get(item);
-				if (temp != null) {
-					temp.add(spell);
-					continue;
-				}
-				temp = new ArrayList<>();
-				temp.add(spell);
-				itemSpells.put(item, temp);
-				activeSpells.put(item, MagicSpells.canCycleToNoSpell() ? -1 : 0);
+				set.add(item);
 			}
+			customBindings.put(spell, set);
+		} else if (MagicSpells.ignoreDefaultBindings()) return;
+
+		for (CastItem item : items) {
+			MagicSpells.debug(3, "        Cast item: " + item + (castItems != null ? " (custom)" : " (default)"));
+			if (item == null) continue;
+			List<Spell> temp = itemSpells.get(item);
+			if (temp != null) {
+				temp.add(spell);
+				continue;
+			}
+			temp = new ArrayList<>();
+			temp.add(spell);
+			itemSpells.put(item, temp);
+			activeSpells.put(item, MagicSpells.canCycleToNoSpell() ? -1 : 0);
 		}
+
 		// Remove any spells that this spell replaces
 		if (spell.getReplaces() != null) {
 			for (String spellName : spell.getReplaces()) {
