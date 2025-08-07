@@ -235,15 +235,14 @@ public class MinionSpell extends BuffSpell {
 		if (!(data.target() instanceof Player target)) return false;
 		// Selecting the mob
 		EntityType creatureType = null;
-		int num = random.nextInt(100);
+		int total = Arrays.stream(chances).sum();
+		int num = random.nextInt(total);
 		int n = 0;
 		for (int i = 0; i < creatureTypes.length; i++) {
-			if (num < chances[i] + n) {
-				creatureType = creatureTypes[i];
-				break;
-			}
-
 			n += chances[i];
+			if (num >= n) continue;
+			creatureType = creatureTypes[i];
+			break;
 		}
 
 		if (creatureType == null) return false;
