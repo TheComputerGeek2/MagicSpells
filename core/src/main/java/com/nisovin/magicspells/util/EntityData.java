@@ -85,7 +85,7 @@ public class EntityData {
 	private final ConfigData<Horse.Style> horseStyle;
 
 	// Item
-	private final ConfigData<Material> dropItemMaterial;
+	private final ConfigData<ItemStack> dropItem;
 
 	// Llama
 	private final ConfigData<Llama.Color> llamaColor;
@@ -304,7 +304,10 @@ public class EntityData {
 		);
 
 		// Item
-		dropItemMaterial = addOptMaterial(transformers, config, "material", Item.class, (item, material) -> item.setItemStack(new ItemStack(material)));
+		dropItem = fallback(
+			key -> addOptItemStack(transformers, config, key, Item.class, Item::setItemStack),
+			"material", "item"
+		);
 
 		addOptInteger(transformers, config, "pickup-delay", Item.class, Item::setPickupDelay);
 
@@ -748,17 +751,20 @@ public class EntityData {
 		return supplier;
 	}
 
-	private <T> void addOptItemStack(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, ItemStack> setter) {
+	private <T> ConfigData<ItemStack> addOptItemStack(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, ItemStack> setter) {
 		ConfigData<String> supplier = ConfigDataUtil.getString(config, name, null);
 		if (supplier.isConstant()) {
 			ItemStack item = getItemStack(supplier.get());
-			if (item == null) return;
+			if (item == null) return data -> null;
 
 			transformers.put(type, new TransformerImpl<>(data -> item, setter, true));
-			return;
+			return data -> item;
 		}
 
-		transformers.put(type, new TransformerImpl<>(data -> getItemStack(supplier.get(data)), setter, true));
+		ConfigData<ItemStack> itemSupplier = data -> getItemStack(supplier.get(data));
+		transformers.put(type, new TransformerImpl<>(itemSupplier, setter, true));
+
+		return itemSupplier;
 	}
 
 	private ItemStack getItemStack(String string) {
@@ -1063,8 +1069,8 @@ public class EntityData {
 	}
 
 	@ApiStatus.Internal
-	public ConfigData<Material> getDroppedItemStack() {
-		return dropItemMaterial;
+	public ConfigData<ItemStack> getDroppedItemStack() {
+		return dropItem;
 	}
 
 	@ApiStatus.Internal
