@@ -787,7 +787,10 @@ public class ConfigDataUtil {
 	public static ConfigData<NamespacedKey> getNamespacedKey(@NotNull ConfigurationSection config, @NotNull String path, @Nullable NamespacedKey def) {
 		String value = config.getString(path);
 		if (value == null) return data -> def;
+		return getNamespacedKey(value, def);
+	}
 
+	public static ConfigData<NamespacedKey> getNamespacedKey(@NotNull String value, @Nullable NamespacedKey def) {
 		NamespacedKey val = NamespacedKey.fromString(value.toLowerCase());
 		if (val != null) return data -> val;
 
