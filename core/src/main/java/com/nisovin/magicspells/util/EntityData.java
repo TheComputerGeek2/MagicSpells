@@ -36,6 +36,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.entity.minecart.CommandMinecart;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -55,6 +56,8 @@ import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.itemreader.AttributeHandler;
 
 public class EntityData {
+
+	public static final NamespacedKey MS_PASSENGER = new NamespacedKey(MagicSpells.getInstance(), "entity_passenger");
 
 	private final Multimap<EntityType, Transformer<?>> options = MultimapBuilder.enumKeys(EntityType.class).arrayListValues().build();
 	private final List<DelayedEntityData> delayedEntityData = new ArrayList<>();
@@ -575,6 +578,19 @@ public class EntityData {
 		addOptBoolean(transformers, config, "see-through", TextDisplay.class, TextDisplay::setSeeThrough);
 		addOptBoolean(transformers, config, "default-background", TextDisplay.class, TextDisplay::setDefaultBackground);
 		addOptEnum(transformers, config, "alignment", TextDisplay.class, TextDisplay.TextAlignment.class, TextDisplay::setAlignment);
+
+		// Passengers
+		for (Object object : config.getList("passengers", new ArrayList<>())) {
+			if (!(object instanceof Map<?, ?> map)) continue;
+			EntityData passengerData = new EntityData(ConfigReaderUtil.mapToSection(map));
+
+			transformers.put(Entity.class, (Entity entity, SpellData data) -> {
+				passengerData.spawn(entity.getLocation(), data, passenger -> {
+					entity.addPassenger(passenger);
+					passenger.getPersistentDataContainer().set(MS_PASSENGER, PersistentDataType.BOOLEAN, true);
+				});
+			});
+		}
 
 		// Mob Goals
 		ConfigurationSection mobGoals = config.getConfigurationSection("mob-goals");
