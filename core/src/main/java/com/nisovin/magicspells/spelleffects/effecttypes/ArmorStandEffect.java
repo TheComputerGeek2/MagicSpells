@@ -7,6 +7,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.Name;
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.EntityData;
 import com.nisovin.magicspells.util.config.ConfigData;
@@ -64,7 +65,10 @@ public class ArmorStandEffect extends SpellEffect {
 			stand.setItem(EquipmentSlot.HEAD, headItem);
 			stand.setItem(EquipmentSlot.HAND, mainHandItem);
 			stand.setItem(EquipmentSlot.OFF_HAND, offHandItem);
-		}, stand -> stand.setPersistent(false));
+		}, stand -> {
+			stand.setPersistent(false);
+			Util.forEachPassenger(stand, e -> e.setPersistent(false));
+		});
 	}
 
 }

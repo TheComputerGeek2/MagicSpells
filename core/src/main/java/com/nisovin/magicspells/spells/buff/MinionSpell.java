@@ -289,7 +289,10 @@ public class MinionSpell extends BuffSpell {
 			if (baby.get(data)) ageable.setBaby();
 			else ageable.setAdult();
 		});
-		else minion = entityData.spawn(loc, data, mobClass, mob -> prepareMob(mob, target, data), null);
+		else minion = entityData.spawn(loc, data, mobClass, mob -> prepareMob(mob, target, data), mob -> {
+			mob.setPersistent(false);
+			Util.forEachPassenger(mob, e -> e.setPersistent(false));
+		});
 
 		if (spawnSpell != null) {
 			SpellData castData = data.builder().caster(target).target(minion).location(minion.getLocation()).recipient(null).build();
