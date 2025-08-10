@@ -3,8 +3,8 @@ package com.nisovin.magicspells.variables.meta;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
 
 public class CoordZVariable extends MetaVariable {
@@ -23,7 +23,7 @@ public class CoordZVariable extends MetaVariable {
 
 		Location to = p.getLocation();
 		to.setZ(amount);
-		p.teleport(to, TeleportCause.PLUGIN);
+		Util.tryTeleportMountedAsync(p, to);
 	}
 
 }

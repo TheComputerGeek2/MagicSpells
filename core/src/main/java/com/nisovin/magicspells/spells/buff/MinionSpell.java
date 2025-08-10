@@ -23,8 +23,6 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-import io.papermc.paper.entity.TeleportFlag;
-
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.MagicSpells;
@@ -563,7 +561,7 @@ public class MinionSpell extends BuffSpell {
 			if (!owner.isOnline()) continue;
 			if (owner.isDead()) continue;
 
-			minion.teleport(owner.getLocation(), TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+			Util.tryTeleportMounted(minion, owner.getLocation());
 		}
 	}
 

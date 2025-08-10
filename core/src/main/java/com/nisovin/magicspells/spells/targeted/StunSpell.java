@@ -6,8 +6,6 @@ import java.util.UUID;
 import java.util.HashSet;
 import java.util.HashMap;
 
-import io.papermc.paper.entity.TeleportFlag;
-
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -121,8 +119,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 			boolean stunBody = info.stunBody && event.hasExplicitlyChangedPosition();
 			boolean stunMonitor = info.stunMonitor && event.hasChangedOrientation();
 			if (!stunBody && !stunMonitor) return;
-			Location to = info.useTargetLocation ? info.targetLocation : event.getFrom();
-			player.teleport(to, TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+			Util.tryTeleportMounted(player, info.useTargetLocation ? info.targetLocation : event.getFrom());
 		}
 
 		@EventHandler
@@ -160,7 +157,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 				if (entity instanceof Player) continue;
 
 				if (entity.isValid() && until > System.currentTimeMillis()) {
-					entity.teleport(info.targetLocation, TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+					Util.tryTeleportMounted(entity, info.targetLocation);
 					continue;
 				}
 

@@ -4,22 +4,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.ApiStatus;
 
-import io.papermc.paper.entity.TeleportFlag;
-
 import java.util.function.Function;
 import java.util.function.Consumer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CancellationException;
 
-import com.nisovin.magicspells.MagicSpells;
-
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.bukkit.event.player.PlayerTeleportEvent;
+
+import com.nisovin.magicspells.MagicSpells;
 
 /**
- * A wrapper class which holds an {@link Entity} which may be immediately available, or delayed.
+ * A wrapper class, which holds an {@link Entity} which may be immediately available, or delayed.
  */
 public class DelayableEntity<E extends Entity> {
 
@@ -75,12 +72,7 @@ public class DelayableEntity<E extends Entity> {
 	public void teleport(@NotNull Location location) {
 		E entity = now();
 		if (entity == null) spawnLocation = location;
-		else entity.teleportAsync(
-				location,
-				PlayerTeleportEvent.TeleportCause.PLUGIN,
-				TeleportFlag.EntityState.RETAIN_PASSENGERS,
-				TeleportFlag.EntityState.RETAIN_VEHICLE
-		);
+		else Util.tryTeleportMountedAsync(entity, location);
 	}
 
 	/**
@@ -95,7 +87,7 @@ public class DelayableEntity<E extends Entity> {
 	 * Defer an {@link Entity}'s spawn with the provided delay. If {@link DelayableEntity#teleport(Location)}
 	 * is called before the entity is present, its teleport location is overridden. If the {@code delay} is {@code <= 0},
 	 * the underlying {@link CompletableFuture} is completed instantly.
-	 * @param function Function which spawns the {@link Entity} after the {@code delay}.
+	 * @param function Function, which spawns the {@link Entity} after the {@code delay}.
 	 * @param location Initial {@link Location} to spawn the entity at.
 	 * @param delay Delay in server ticks.
 	 */

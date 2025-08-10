@@ -69,7 +69,7 @@ public class FlySpell extends TargetedSpell implements TargetedEntitySpell {
 				target.setAllowFlight(true);
 				wasAllowedFlight.add(uuid);
 			}
-			if (setFlying) target.teleportAsync(target.getLocation().add(0, 0.25, 0));
+			if (setFlying) Util.tryTeleportMounted(target, target.getLocation().add(0, 0.25, 0));
 		} else {
 			boolean wasAllowed = wasAllowedFlight.remove(uuid);
 			if (wasAllowed) target.setAllowFlight(false);

@@ -105,7 +105,7 @@ public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, T
 			pending.put(target.getUniqueId(), new SummonData(landLoc, System.currentTimeMillis(), maxAcceptDelay.get(data), data));
 			sendMessage(strSummonPending, target, data);
 		} else {
-			target.teleportAsync(landLoc);
+			Util.tryTeleportMountedAsync(target, landLoc);
 			sendMessage(strSummonAccepted, target, data);
 		}
 
@@ -121,7 +121,7 @@ public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, T
 			pending.put(target.getUniqueId(), new SummonData(data.caster().getLocation(), System.currentTimeMillis(), maxAcceptDelay.get(data), data));
 			sendMessage(strSummonPending, target, data);
 		} else {
-			data.target().teleportAsync(data.caster().getLocation());
+			Util.tryTeleportMountedAsync(data.target(), data.caster().getLocation());
 			sendMessage(strSummonAccepted, data.target(), data);
 		}
 
@@ -135,7 +135,7 @@ public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, T
 			pending.put(target.getUniqueId(), new SummonData(data.location(), System.currentTimeMillis(), maxAcceptDelay.get(data), data));
 			sendMessage(strSummonPending, target, data);
 		} else {
-			data.target().teleportAsync(data.location());
+			Util.tryTeleportMountedAsync(data.target(), data.location());
 			sendMessage(strSummonAccepted, data.target(), data);
 		}
 
@@ -159,7 +159,7 @@ public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, T
 			return;
 		}
 
-		player.teleportAsync(data.location);
+		Util.tryTeleportMountedAsync(player, data.location);
 		sendMessage(strSummonAccepted, player, data.spellData);
 		playSpellEffects(EffectPosition.DELAYED, player, data.spellData);
 	}
