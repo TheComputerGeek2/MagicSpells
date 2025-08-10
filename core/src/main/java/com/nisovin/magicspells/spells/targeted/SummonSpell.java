@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.HashMap;
 
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
@@ -13,6 +14,7 @@ import org.bukkit.block.sign.Side;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -159,7 +161,7 @@ public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, T
 			return;
 		}
 
-		player.teleportAsync(data.location);
+		player.teleportAsync(data.location, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 		sendMessage(strSummonAccepted, player, data.spellData);
 		playSpellEffects(EffectPosition.DELAYED, player, data.spellData);
 	}
