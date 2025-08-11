@@ -4,13 +4,16 @@ import org.jetbrains.annotations.NotNull;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import com.nisovin.magicspells.util.Name;
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.OverridePriority;
+import com.nisovin.magicspells.util.config.ConfigData;
+import com.nisovin.magicspells.util.config.ConfigDataUtil;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.magicitems.MagicItemData;
 import com.nisovin.magicspells.spells.passive.util.PassiveListener;
@@ -18,9 +21,10 @@ import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 @Name("inventoryclick")
 public class InventoryClickListener extends PassiveListener {
 
-	private MagicItemData itemCurrent = null;
-	private MagicItemData itemCursor = null;
-	private InventoryAction action = null;
+	private ConfigData<InventoryAction> action;
+
+	private MagicItemData itemCursor;
+	private MagicItemData itemCurrent;
 
 	@Override
 	public void initialize(@NotNull String var) {
@@ -29,9 +33,10 @@ public class InventoryClickListener extends PassiveListener {
 
 		if (!splits[0].equals("null")) {
 			try {
-				action = InventoryAction.valueOf(splits[0].toUpperCase());
+				InventoryAction invAction = InventoryAction.valueOf(splits[0].toUpperCase());
+				action = data -> invAction;
 			} catch (IllegalArgumentException e) {
-				MagicSpells.error("Invalid inventory action '" + splits[0] + "' in inventoryclick trigger on passive spell '" + passiveSpell.getInternalName() + "'");
+				MagicSpells.error("Invalid inventory action '" + splits[0] + "' in 'inventoryclick' trigger on PassiveSpell '" + passiveSpell.getInternalName() + "'");
 			}
 		}
 
@@ -39,7 +44,7 @@ public class InventoryClickListener extends PassiveListener {
 			itemCurrent = MagicItems.getMagicItemDataFromString(splits[1]);
 
 			if (itemCurrent == null) {
-				MagicSpells.error("Invalid magic item '" + splits[1] + "' in inventoryclick trigger on passive spell '" + passiveSpell.getInternalName() + "'");
+				MagicSpells.error("Invalid magic item '" + splits[1] + "' in 'inventoryclick' trigger on PassiveSpell '" + passiveSpell.getInternalName() + "'");
 			}
 		}
 
@@ -47,9 +52,30 @@ public class InventoryClickListener extends PassiveListener {
 			itemCursor = MagicItems.getMagicItemDataFromString(splits[2]);
 
 			if (itemCursor == null) {
-				MagicSpells.error("Invalid magic item '" + splits[2] + "' in inventoryclick trigger on passive spell '" + passiveSpell.getInternalName() + "'");
+				MagicSpells.error("Invalid magic item '" + splits[2] + "' in 'inventoryclick' trigger on PassiveSpell '" + passiveSpell.getInternalName() + "'");
 			}
 		}
+	}
+
+	@Override
+	public boolean initialize(@NotNull ConfigurationSection config) {
+		action = ConfigDataUtil.getEnum(config, "action", InventoryAction.class, null);
+
+		String currentString = config.getString("current-item");
+		itemCurrent = MagicItems.getMagicItemDataFromString(currentString);
+		if (currentString != null && itemCurrent == null) {
+			MagicSpells.error("Invalid 'current-item' Magic Item specified in 'inventoryclick' trigger on PassiveSpell '" + passiveSpell.getInternalName() + "': " + currentString);
+			return false;
+		}
+
+		String cursorString = config.getString("cursor-item");
+		itemCursor = MagicItems.getMagicItemDataFromString(cursorString);
+		if (cursorString != null && itemCursor == null) {
+			MagicSpells.error("Invalid 'cursor-item' Magic Item specified in 'inventoryclick' trigger on PassiveSpell '" + passiveSpell.getInternalName() + "': " + cursorString);
+			return false;
+		}
+
+		return true;
 	}
 
 	@OverridePriority
@@ -57,33 +83,22 @@ public class InventoryClickListener extends PassiveListener {
 	public void onInvClick(InventoryClickEvent event) {
 		if (!(event.getWhoClicked() instanceof Player player)) return;
 		if (!canTrigger(player)) return;
+		SpellData data = new SpellData(player);
 
-		// Valid action, but not used.
+		InventoryAction action = this.action.get(data);
 		if (action != null && !event.getAction().equals(action)) return;
 
-		// Valid clicked item, but not used.
 		if (itemCurrent != null) {
-			ItemStack item = event.getCurrentItem();
-			if (item == null) return;
-
-			MagicItemData itemData = MagicItems.getMagicItemDataFromItemStack(item);
-			if (itemData == null) return;
-
-			if (!itemCurrent.matches(itemData)) return;
+			MagicItemData item = MagicItems.getMagicItemDataFromItemStack(event.getCurrentItem());
+			if (item == null || !itemCurrent.matches(item)) return;
 		}
 
-		// Valid cursor item, but not used.
 		if (itemCursor != null) {
-			ItemStack item = event.getCursor();
-			if (item.isEmpty()) return;
-
-			MagicItemData itemData = MagicItems.getMagicItemDataFromItemStack(item);
-			if (itemData == null) return;
-
-			if (!itemCursor.matches(itemData)) return;
+			MagicItemData item = MagicItems.getMagicItemDataFromItemStack(event.getCursor());
+			if (item == null || !itemCursor.matches(item)) return;
 		}
 
-		boolean casted = passiveSpell.activate(player);
+		boolean casted = passiveSpell.activate(data);
 		if (cancelDefaultAction(casted)) event.setCancelled(true);
 	}
 
