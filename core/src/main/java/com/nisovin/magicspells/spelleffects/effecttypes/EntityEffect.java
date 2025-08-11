@@ -66,7 +66,7 @@ public class EntityEffect extends SpellEffect {
 
 	@Override
 	public void turnOff() {
-		for (Entity entity : entities) entity.remove();
+		entities.forEach(Entity::remove);
 		entities.clear();
 	}
 
