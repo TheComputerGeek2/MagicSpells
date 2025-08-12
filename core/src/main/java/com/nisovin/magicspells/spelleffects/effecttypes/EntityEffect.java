@@ -5,10 +5,10 @@ import java.util.HashSet;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.Name;
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.EntityData;
@@ -27,9 +27,7 @@ public class EntityEffect extends SpellEffect {
 
 	private ConfigData<Integer> duration;
 
-	private ConfigData<Boolean> silent;
 	private ConfigData<Boolean> gravity;
-	private ConfigData<Boolean> enableAI;
 
 	@Override
 	protected void loadFromConfig(ConfigurationSection config) {
@@ -40,9 +38,7 @@ public class EntityEffect extends SpellEffect {
 
 		duration = ConfigDataUtil.getInteger(section, "duration", 0);
 
-		silent = ConfigDataUtil.getBoolean(section, "silent", false);
 		gravity = ConfigDataUtil.getBoolean(section, "gravity", false);
-		enableAI = ConfigDataUtil.getBoolean(section, "ai", true);
 	}
 
 	@Override
@@ -50,10 +46,9 @@ public class EntityEffect extends SpellEffect {
 		return entityData.spawn(location, data, entity -> {
 			entity.addScoreboardTag(ENTITY_TAG);
 			entity.setGravity(gravity.get(data));
-			entity.setSilent(silent.get(data));
+		}, entity -> {
 			entity.setPersistent(false);
-
-			if (entity instanceof LivingEntity livingEntity) livingEntity.setAI(enableAI.get(data));
+			Util.forEachPassenger(entity, e -> e.setPersistent(false));
 		});
 	}
 
@@ -75,7 +70,7 @@ public class EntityEffect extends SpellEffect {
 
 	@Override
 	public void turnOff() {
-		for (Entity entity : entities) entity.remove();
+		entities.forEach(Entity::remove);
 		entities.clear();
 	}
 
