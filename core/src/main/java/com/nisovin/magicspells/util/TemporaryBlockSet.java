@@ -51,6 +51,7 @@ public class TemporaryBlockSet implements Runnable {
 	}
 	
 	public void add(Block block) {
+		if (replaceMaterials.isEmpty()) return;
 		if (block.getType() != original) return;
 		int r = random.nextInt(replaceMaterials.size());
 		if (!callPlaceEvent) {

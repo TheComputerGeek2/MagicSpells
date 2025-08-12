@@ -393,6 +393,7 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	}
 
 	private Location getRandomLocationFrom(Location location, SpellData data, int range) {
+		if (range <= 0) return location;
 		World world = location.getWorld();
 		int x;
 		int y;
