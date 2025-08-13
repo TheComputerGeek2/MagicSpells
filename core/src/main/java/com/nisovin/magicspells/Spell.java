@@ -358,10 +358,11 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 				float min = Math.min(minCooldown, maxCooldown);
 				float max = Math.max(minCooldown, maxCooldown);
 
-				if (usePreciseCooldowns) cooldown = data -> min + (max - min) * random.nextFloat();
-				else cooldown = data -> min + random.nextInt((int) max - (int) min + 1);
-			} catch (NumberFormatException ignored) {
-			}
+				if (min >= 0 && max >= 0) {
+					if (usePreciseCooldowns) cooldown = data -> min + (max - min) * random.nextFloat();
+					else cooldown = data -> min + random.nextInt((int) max - (int) min + 1);
+				}
+			} catch (NumberFormatException ignored) {}
 		}
 
 		if (cooldown == null) cooldown = getConfigDataFloat("cooldown", 0);

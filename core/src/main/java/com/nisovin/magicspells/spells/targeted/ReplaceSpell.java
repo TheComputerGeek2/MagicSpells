@@ -148,6 +148,8 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 
 	@Override
 	public CastResult castAtLocation(SpellData data) {
+		if (replace.isEmpty() || replaceWith.isEmpty()) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
+
 		boolean replaced = false;
 		Block block;
 
