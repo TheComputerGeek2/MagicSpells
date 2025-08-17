@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.ArrayList;
 
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -19,6 +20,7 @@ import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class EntombSpell extends TargetedSpell implements TargetedEntitySpell {
 	
@@ -80,7 +82,7 @@ public class EntombSpell extends TargetedSpell implements TargetedEntitySpell {
 		Location tpLoc = feet.getLocation().add(0.5, 0, 0.5);
 		tpLoc.setYaw(yaw);
 		tpLoc.setPitch(pitch);
-		target.teleportAsync(tpLoc);
+		target.teleportAsync(tpLoc, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 
 		tempBlocks.add(feet.getRelative(1, 0, 0));
 		tempBlocks.add(feet.getRelative(1, 1, 0));
