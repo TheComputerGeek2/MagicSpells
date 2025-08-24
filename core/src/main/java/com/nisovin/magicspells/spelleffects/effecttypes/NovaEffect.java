@@ -39,6 +39,7 @@ public class NovaEffect extends SpellEffect {
 	private ConfigData<Integer> expandInterval;
 	private ConfigData<Integer> expandingRadiusChange;
 
+	private ConfigData<Boolean> fakeBlocks;
 	private ConfigData<Boolean> circleShape;
 	private ConfigData<Boolean> removePreviousBlocks;
 
@@ -75,6 +76,7 @@ public class NovaEffect extends SpellEffect {
 		expandInterval = ConfigDataUtil.getInteger(config, "expand-interval", 5);
 		expandingRadiusChange = ConfigDataUtil.getInteger(config, "expanding-radius-change", 1);
 
+		fakeBlocks = ConfigDataUtil.getBoolean(config, "fake-blocks", true);
 		circleShape = ConfigDataUtil.getBoolean(config, "circle-shape", false);
 		removePreviousBlocks = ConfigDataUtil.getBoolean(config, "remove-previous-blocks", true);
 	}
@@ -116,6 +118,7 @@ public class NovaEffect extends SpellEffect {
 		protected final Map<Location, BlockData> previousBlocks;
 		protected final Map<Location, BlockData> currentBlocks;
 
+		protected final boolean fakeBlocks;
 		protected final boolean removePreviousBlocks;
 
 		protected final int radius;
@@ -135,6 +138,7 @@ public class NovaEffect extends SpellEffect {
 			previousBlocks = new HashMap<>();
 			currentBlocks = new HashMap<>();
 
+			fakeBlocks = NovaEffect.this.fakeBlocks.get(data);
 			removePreviousBlocks = NovaEffect.this.removePreviousBlocks.get(data);
 
 			radius = NovaEffect.this.radius.get(data);
@@ -146,14 +150,19 @@ public class NovaEffect extends SpellEffect {
 			expandingRadiusChange = radiusChange;
 		}
 
+		public void updateBlocks(Map<Location, BlockData> update) {
+			if (fakeBlocks) {
+				nearby.forEach(p -> p.sendMultiBlockChange(update));
+				return;
+			}
+			update.forEach((location, data) -> location.getBlock().setBlockData(data, false));
+		}
+
 		@Override
 		public void stop() {
 			super.stop();
 
-			for (Player p : nearby) {
-				p.sendMultiBlockChange(previousBlocks);
-			}
-
+			updateBlocks(previousBlocks);
 			previousBlocks.clear();
 			currentBlocks.clear();
 		}
@@ -177,10 +186,7 @@ public class NovaEffect extends SpellEffect {
 
 			// Remove old blocks
 			if (removePreviousBlocks) {
-				for (Player p : nearby) {
-					p.sendMultiBlockChange(previousBlocks);
-				}
-
+				updateBlocks(previousBlocks);
 				previousBlocks.clear();
 			}
 
@@ -227,10 +233,7 @@ public class NovaEffect extends SpellEffect {
 				}
 			}
 
-			for (Player p : nearby) {
-				p.sendMultiBlockChange(currentBlocks);
-			}
-
+			updateBlocks(currentBlocks);
 			currentBlocks.clear();
 		}
 
@@ -253,10 +256,7 @@ public class NovaEffect extends SpellEffect {
 
 			// Remove old blocks
 			if (removePreviousBlocks) {
-				for (Player p : nearby) {
-					p.sendMultiBlockChange(previousBlocks);
-				}
-
+				updateBlocks(previousBlocks);
 				previousBlocks.clear();
 			}
 
@@ -331,12 +331,8 @@ public class NovaEffect extends SpellEffect {
 				previousBlocks.put(b.getLocation(), b.getBlockData());
 			}
 
-			for (Player p : nearby) {
-				p.sendMultiBlockChange(currentBlocks);
-			}
-
+			updateBlocks(currentBlocks);
 			currentBlocks.clear();
-
 		}
 
 	}
