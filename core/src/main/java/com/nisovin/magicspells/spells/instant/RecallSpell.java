@@ -112,7 +112,7 @@ public class RecallSpell extends InstantSpell implements TargetedEntitySpell {
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
 
-		entity.teleportAsync(markLocation);
+		Util.tryTeleportMountedAsync(entity, markLocation);
 		playSpellEffects(EffectPosition.CASTER, data.caster(), data);
 		playSpellEffects(EffectPosition.TARGET, markLocation, data);
 		playSpellEffects(EffectPosition.START_POSITION, from, data);

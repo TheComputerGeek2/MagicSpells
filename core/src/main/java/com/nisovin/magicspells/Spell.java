@@ -1240,7 +1240,6 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		return null;
 	}
 
-	// TODO can this safely be made varargs?
 	/**
 	 * This method is called when the spell is cast from the console.
 	 *
@@ -1553,7 +1552,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		World world = caster.getWorld();
 
 		boolean targetPlayers = forceTargetPlayers || validTargetList.canTargetPlayers();
-		if (targetPlayers && MagicSpells.checkWorldPvpFlag() && caster instanceof Player && !isBeneficial() && !world.getPVP()){
+		if (targetPlayers && MagicSpells.checkWorldPvpFlag() && caster instanceof Player && !isBeneficial() && !world.getPVP()) {
 			if (forceTargetPlayers) return new TargetInfo<>(null, data, false);
 			targetPlayers = false;
 		}

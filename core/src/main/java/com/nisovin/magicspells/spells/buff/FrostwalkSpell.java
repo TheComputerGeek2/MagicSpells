@@ -105,7 +105,7 @@ public class FrostwalkSpell extends BuffSpell {
 		if (teleportUp) {
 			Location loc = entity.getLocation().clone();
 			loc.setY(to.getBlockY() + 1);
-			entity.teleportAsync(loc);
+			Util.tryTeleportMounted(entity, loc);
 		}
 	}
 

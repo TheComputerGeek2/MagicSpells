@@ -66,7 +66,7 @@ public class GripSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 
 		if (checkGround.get(data) && !loc.getBlock().isPassable()) return noTarget(strCantGrip, data);
 
-		data.target().teleportAsync(loc);
+		Util.tryTeleportMountedAsync(data.target(), loc);
 		playSpellEffects(data);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
