@@ -24,9 +24,9 @@ import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 @Name("inventoryclick")
 public class InventoryClickListener extends PassiveListener {
 
-	private ConfigData<ClickType> click;
-	private ConfigData<InventoryAction> action;
-	private ConfigData<InventoryType.SlotType> slotType;
+	private ConfigData<ClickType> click = data -> null;
+	private ConfigData<InventoryAction> action = data -> null;
+	private ConfigData<InventoryType.SlotType> slotType = data -> null;
 
 	private MagicItemData itemHotbar;
 	private MagicItemData itemCursor;
