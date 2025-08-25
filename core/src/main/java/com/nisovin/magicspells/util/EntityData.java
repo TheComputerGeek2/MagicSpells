@@ -4,10 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
@@ -18,7 +15,12 @@ import org.joml.Quaternionf;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
+import net.kyori.adventure.util.TriState;
 import net.kyori.adventure.text.Component;
+
+import com.destroystokyo.paper.entity.ai.Goal;
+import com.destroystokyo.paper.entity.ai.GoalKey;
+import com.destroystokyo.paper.entity.ai.GoalType;
 
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -34,14 +36,18 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.entity.minecart.CommandMinecart;
 import org.bukkit.configuration.ConfigurationSection;
 
+import io.papermc.paper.entity.Frictional;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.entity.CollarColorable;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.ai.CustomGoal;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.config.FunctionData;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
@@ -50,6 +56,8 @@ import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.itemreader.AttributeHandler;
 
 public class EntityData {
+
+	public static final NamespacedKey MS_PASSENGER = new NamespacedKey(MagicSpells.getInstance(), "entity_passenger");
 
 	private final Multimap<EntityType, Transformer<?>> options = MultimapBuilder.enumKeys(EntityType.class).arrayListValues().build();
 	private final List<DelayedEntityData> delayedEntityData = new ArrayList<>();
@@ -85,7 +93,7 @@ public class EntityData {
 	private final ConfigData<Horse.Style> horseStyle;
 
 	// Item
-	private final ConfigData<Material> dropItemMaterial;
+	private final ConfigData<ItemStack> dropItem;
 
 	// Llama
 	private final ConfigData<Llama.Color> llamaColor;
@@ -129,18 +137,47 @@ public class EntityData {
 		addOptBoolean(transformers, config, "silent", Entity.class, Entity::setSilent);
 		addOptBoolean(transformers, config, "glowing", Entity.class, Entity::setGlowing);
 		addOptBoolean(transformers, config, "gravity", Entity.class, Entity::setGravity);
+		addOptBoolean(transformers, config, "no-physics", Entity.class, Entity::setNoPhysics);
+		addOptBoolean(transformers, config, "persistent", Entity.class, Entity::setPersistent);
+		addOptBoolean(transformers, config, "visual-fire", Entity.class, Entity::setVisualFire);
+		addOptBoolean(transformers, config, "invulnerable", Entity.class, Entity::setInvulnerable);
 		addOptBoolean(transformers, config, "visible-by-default", Entity.class, Entity::setVisibleByDefault);
+		addOptBoolean(transformers, config, "custom-name-visible", Entity.class, Entity::setCustomNameVisible);
+
+		addOptInteger(transformers, config, "fire-ticks", Entity.class, Entity::setFireTicks);
+		addOptInteger(transformers, config, "freeze-ticks", Entity.class, Entity::setFreezeTicks);
+
 		addOptVector(transformers, config, "velocity", Entity.class, Entity::setVelocity);
 
-		if (config.isList("scoreboard-tags")) {
-			List<String> tagStrings = config.getStringList("scoreboard-tags");
-			if (!tagStrings.isEmpty()) {
-				List<ConfigData<String>> tags = new ArrayList<>();
-				for (String tagString : tagStrings) tags.add(ConfigDataUtil.getString(tagString));
+		for (Object object : config.getList("scoreboard-tags", new ArrayList<>())) {
+			switch (object) {
+				case String string -> {
+					ConfigData<String> tag = ConfigDataUtil.getString(string);
+					transformers.put(Entity.class, (Entity entity, SpellData data) -> entity.addScoreboardTag(tag.get(data)));
+				}
+				case Map<?, ?> map -> {
+					ConfigurationSection section = ConfigReaderUtil.mapToSection(map);
 
-				transformers.put(Entity.class, (Entity entity, SpellData data) -> {
-					for (ConfigData<String> tag : tags) entity.addScoreboardTag(tag.get(data));
-				});
+					ConfigData<EntityTagOperation> operation = ConfigDataUtil.getEnum(section, "operation", EntityTagOperation.class, EntityTagOperation.ADD);
+					ConfigData<String> tagData = ConfigDataUtil.getString(section, "tag", null);
+
+					transformers.put(Entity.class, (Entity entity, SpellData data) -> {
+						switch (operation.get(data)) {
+							case ADD -> {
+								String tag = tagData.get(data);
+								if (tag == null) break;
+								entity.addScoreboardTag(tag);
+							}
+							case REMOVE -> {
+								String tag = tagData.get(data);
+								if (tag == null) break;
+								entity.removeScoreboardTag(tag);
+							}
+							case CLEAR -> entity.getScoreboardTags().clear();
+						}
+					});
+				}
+				default -> {}
 			}
 		}
 
@@ -153,10 +190,9 @@ public class EntityData {
 		addOptInteger(transformers, config, "age", Ageable.class, Ageable::setAge);
 
 		// Attributable
-		List<?> attributeModifierStrings = config.getList("attribute-modifiers");
-		if (attributeModifierStrings != null && !attributeModifierStrings.isEmpty()) {
-			Multimap<Attribute, AttributeModifier> attributeModifiers = AttributeHandler.getAttributeModifiers(attributeModifierStrings, null);
-
+		List<?> attributeModifierStrings = config.getList("attribute-modifiers", new ArrayList<>());
+		Multimap<Attribute, AttributeModifier> attributeModifiers = AttributeHandler.getAttributeModifiers(attributeModifierStrings, null);
+		if (!attributeModifiers.isEmpty()) {
 			transformers.put(Attributable.class, (Attributable entity, SpellData data) -> {
 				attributeModifiers.asMap().forEach((attribute, modifiers) -> {
 					AttributeInstance attributeInstance = entity.getAttribute(attribute);
@@ -170,8 +206,15 @@ public class EntityData {
 		// Damageable
 		addOptDouble(transformers, config, "health", Damageable.class, Damageable::setHealth);
 
+		// Nameable
+		addOptComponent(transformers, config, "custom-name", Nameable.class, Nameable::customName);
+
 		// LivingEntity
 		addOptBoolean(transformers, config, "ai", LivingEntity.class, LivingEntity::setAI);
+		addOptBoolean(transformers, config, "can-pickup-items", LivingEntity.class, LivingEntity::setCanPickupItems);
+
+		addOptDouble(transformers, config, "max-health", LivingEntity.class, Util::setMaxHealth);
+
 		addOptEquipment(transformers, config, "equipment.main-hand", EquipmentSlot.HAND);
 		addOptEquipment(transformers, config, "equipment.off-hand", EquipmentSlot.OFF_HAND);
 		addOptEquipment(transformers, config, "equipment.helmet", EquipmentSlot.HEAD);
@@ -180,17 +223,16 @@ public class EntityData {
 		addOptEquipment(transformers, config, "equipment.boots", EquipmentSlot.FEET);
 		addOptEquipment(transformers, config, "equipment.body", Mob.class, EquipmentSlot.BODY);
 
-		List<?> potionEffectData = config.getList("potion-effects");
-		if (potionEffectData != null && !potionEffectData.isEmpty()) {
-			List<ConfigData<PotionEffect>> effects = Util.getPotionEffects(potionEffectData, null);
-			if (effects != null) {
-				transformers.put(LivingEntity.class, (LivingEntity entity, SpellData data) -> {
-					effects.forEach(effect -> entity.addPotionEffect(effect.get(data)));
-				});
-			}
+		List<ConfigData<PotionEffect>> potionEffects = Util.getPotionEffects(config.getList("potion-effects", new ArrayList<>()), null);
+		if (potionEffects != null) {
+			transformers.put(LivingEntity.class, (LivingEntity entity, SpellData data) -> {
+				potionEffects.forEach(effect -> entity.addPotionEffect(effect.get(data)));
+			});
 		}
 
 		// Mob
+		addOptBoolean(transformers, config, "aware", Mob.class, Mob::setAware);
+
 		addOptEquipmentDropChance(transformers, config, "equipment.main-hand-drop-chance", EquipmentSlot.HAND);
 		addOptEquipmentDropChance(transformers, config, "equipment.off-hand-drop-chance", EquipmentSlot.OFF_HAND);
 		addOptEquipmentDropChance(transformers, config, "equipment.helmet-drop-chance", EquipmentSlot.HEAD);
@@ -201,6 +243,12 @@ public class EntityData {
 
 		// Tameable
 		tamed = addBoolean(transformers, config, "tamed", false, Tameable.class, Tameable::setTamed, forceOptional);
+		if (config.getBoolean("tamed-owner")) {
+			transformers.put(Tameable.class, (Tameable tameable, SpellData data) -> {
+				if (!(data.recipient() instanceof AnimalTamer tamer)) return;
+				tameable.setOwner(tamer);
+			});
+		}
 
 		// AbstractHorse
 		saddled = addBoolean(transformers, config, "saddled", false, AbstractHorse.class, (horse, saddled) -> {
@@ -213,6 +261,9 @@ public class EntityData {
 		addBoolean(transformers, config, "visible", true, ArmorStand.class, ArmorStand::setVisible, forceOptional);
 		addBoolean(transformers, config, "has-arms", true, ArmorStand.class, ArmorStand::setArms, forceOptional);
 		addBoolean(transformers, config, "has-base-plate", true, ArmorStand.class, ArmorStand::setBasePlate, forceOptional);
+		addBoolean(transformers, config, "disable-slots", false, ArmorStand.class, (stand, disabled) -> {
+			if (disabled) stand.setDisabledSlots(EquipmentSlot.values());
+		}, forceOptional);
 
 		addEulerAngle(transformers, config, "head-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setHeadPose, forceOptional);
 		addEulerAngle(transformers, config, "body-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setBodyPose, forceOptional);
@@ -220,6 +271,33 @@ public class EntityData {
 		addEulerAngle(transformers, config, "right-arm-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setRightArmPose, forceOptional);
 		addEulerAngle(transformers, config, "left-leg-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setLeftLegPose, forceOptional);
 		addEulerAngle(transformers, config, "right-leg-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setRightLegPose, forceOptional);
+
+		for (String slotName : config.getStringList("disable-slots")) {
+			ConfigData<EquipmentSlot> slotData = ConfigDataUtil.getEnum(slotName, EquipmentSlot.class, null);
+
+			transformers.put(ArmorStand.class, (ArmorStand stand, SpellData data) -> {
+				EquipmentSlot slot = slotData.get(data);
+				if (slot == null) return;
+
+				stand.addDisabledSlots(slot);
+			});
+		}
+
+		for (Object object : config.getList("equipment-locks", new ArrayList<>())) {
+			if (!(object instanceof Map<?,?> map)) continue;
+			ConfigurationSection section = ConfigReaderUtil.mapToSection(map);
+
+			ConfigData<EquipmentSlot> slotData = ConfigDataUtil.getEnum(section, "slot", EquipmentSlot.class, null);
+			ConfigData<ArmorStand.LockType> lockData = ConfigDataUtil.getEnum(section, "lock", ArmorStand.LockType.class, null);
+
+			transformers.put(ArmorStand.class, (ArmorStand stand, SpellData data) -> {
+				EquipmentSlot slot = slotData.get(data);
+				ArmorStand.LockType lock = lockData.get(data);
+				if (slot == null || lock == null) return;
+
+				stand.addEquipmentLock(slot, lock);
+			});
+		}
 
 		// Axolotl
 		fallback(
@@ -239,6 +317,9 @@ public class EntityData {
 			"collar-color", "color"
 		);
 
+		// CommandMinecart
+		addOptString(transformers, config, "command", CommandMinecart.class, CommandMinecart::setCommand);
+
 		// ChestedHorse
 		chested = addBoolean(transformers, config, "chested", false, ChestedHorse.class, ChestedHorse::setCarryingChest, forceOptional);
 
@@ -257,17 +338,36 @@ public class EntityData {
 			"falling-block", "material"
 		);
 
+		addOptBoolean(transformers, config, "cancel-drop", FallingBlock.class, FallingBlock::setCancelDrop);
+		addOptBoolean(transformers, config, "hurt-entities", FallingBlock.class, FallingBlock::setHurtEntities);
+
+		addOptFloat(transformers, config, "damage-per-block", FallingBlock.class, FallingBlock::setDamagePerBlock);
+
+		addOptInteger(transformers, config, "max-damage", FallingBlock.class, FallingBlock::setMaxDamage);
+
 		// Fox
 		fallback(
 			key -> addOptEnum(transformers, config, key, Fox.class, Fox.Type.class, Fox::setFoxType),
 			"fox-type", "type"
 		);
 
+		// Frictional
+		addOptEnum(transformers, config, "friction-state", Frictional.class, TriState.class, Frictional::setFrictionState);
+
 		// Frog
 		fallback(
 			key -> addOptRegistryEntry(transformers, config, key, Frog.class, Registry.FROG_VARIANT, Frog::setVariant),
 			"frog-variant", "type"
 		);
+
+		// Goat
+		addOptBoolean(transformers, config, "left-horn", Goat.class, Goat::setLeftHorn);
+		addOptBoolean(transformers, config, "right-horn", Goat.class, Goat::setRightHorn);
+		addOptBoolean(transformers, config, "screaming", Goat.class, Goat::setScreaming);
+
+		// Hoglin
+		addOptBoolean(transformers, config, "immune-to-zombification", Hoglin.class, Hoglin::setImmuneToZombification);
+		addOptBoolean(transformers, config, "able-to-be-hunted", Hoglin.class, Hoglin::setIsAbleToBeHunted);
 
 		// Horse
 		horseColor = fallback(
@@ -280,9 +380,14 @@ public class EntityData {
 		);
 
 		// Item
-		dropItemMaterial = addOptMaterial(transformers, config, "material", Item.class, (item, material) -> item.setItemStack(new ItemStack(material)));
-		addOptBoolean(transformers, config, "will-age", Item.class, Item::setWillAge);
+		dropItem = fallback(
+			key -> addOptItemStack(transformers, config, key, Item.class, Item::setItemStack),
+			"material", "item"
+		);
+
 		addOptInteger(transformers, config, "pickup-delay", Item.class, Item::setPickupDelay);
+
+		addOptBoolean(transformers, config, "will-age", Item.class, Item::setWillAge);
 		addOptBoolean(transformers, config, "can-mob-pickup", Item.class, Item::setCanMobPickup);
 		addOptBoolean(transformers, config, "can-player-pickup", Item.class, Item::setCanPlayerPickup);
 
@@ -300,6 +405,15 @@ public class EntityData {
 			key -> addOptMaterial(transformers, config, key, Llama.class, (llama, material) -> llama.getInventory().setDecor(new ItemStack(material))),
 			"llama-decor", "material"
 		);
+
+		// Minecart
+		addOptDouble(transformers, config, "max-speed", Minecart.class, Minecart::setMaxSpeed);
+
+		addOptBoolean(transformers, config, "slow-when-empty", Minecart.class, Minecart::setSlowWhenEmpty);
+
+		addOptInteger(transformers, config, "display-block-offset", Minecart.class, Minecart::setDisplayBlockOffset);
+
+		addOptBlockData(transformers, config, "display-block", Minecart.class, Minecart::setDisplayBlockData);
 
 		// Mushroom Cow
 		fallback(
@@ -321,6 +435,13 @@ public class EntityData {
 		addInteger(transformers, config, "size", 0, Phantom.class, Phantom::setSize, forceOptional);
 		addOptBoolean(transformers, config, "should-burn-in-day", Phantom.class, Phantom::setShouldBurnInDay);
 
+		// Piglin
+		addOptBoolean(transformers, config, "able-to-hunt", Piglin.class, Piglin::setIsAbleToHunt);
+		addOptInteger(transformers, config, "dancing", Piglin.class, Piglin::setDancing);
+
+		// Piglin Abstract
+		addOptBoolean(transformers, config, "immune-to-zombification", PiglinAbstract.class, PiglinAbstract::setImmuneToZombification);
+
 		// Puffer Fish
 		size = addInteger(transformers, config, "size", 0, PufferFish.class, PufferFish::setPuffState, forceOptional);
 
@@ -329,6 +450,11 @@ public class EntityData {
 			key -> addOptEnum(transformers, config, key, Rabbit.class, Rabbit.Type.class, Rabbit::setRabbitType),
 			"rabbit-type", "type"
 		);
+
+		// Raider
+		addOptBoolean(transformers, config, "patrol-leader", Raider.class, Raider::setPatrolLeader);
+		addOptBoolean(transformers, config, "can-join-raid", Raider.class, Raider::setCanJoinRaid);
+		addOptBoolean(transformers, config, "celebrating", Raider.class, Raider::setCelebrating);
 
 		// Sheep
 		sheared = addBoolean(transformers, config, "sheared", false, Sheep.class, Sheep::setSheared, forceOptional);
@@ -366,6 +492,9 @@ public class EntityData {
 			"tropical-fish.pattern", "type"
 		);
 
+		// Salmon
+		addOptEnum(transformers, config, "salmon-variant", Salmon.class, Salmon.Variant.class, Salmon::setVariant);
+
 		// Villager
 		profession = fallback(
 			key -> addOptRegistryEntry(transformers, config, key, Villager.class, Registry.VILLAGER_PROFESSION, Villager::setProfession),
@@ -373,12 +502,19 @@ public class EntityData {
 		);
 		addOptRegistryEntry(transformers, config, "villager-type", Villager.class, Registry.VILLAGER_TYPE, Villager::setVillagerType);
 
+		// Vindicator
+		addOptBoolean(transformers, config, "johnny", Vindicator.class, Vindicator::setJohnny);
+
 		// Wolf
 		addBoolean(transformers, config, "angry", false, Wolf.class, Wolf::setAngry, forceOptional);
 		addOptRegistryEntry(transformers, config, "wolf-variant", Wolf.class, RegistryKey.WOLF_VARIANT, Wolf::setVariant);
 
 		// Zombie
 		addOptBoolean(transformers, config, "should-burn-in-day", Zombie.class, Zombie::setShouldBurnInDay);
+
+		// Zombie Villager
+		addOptRegistryEntry(transformers, config, "villager-profession", ZombieVillager.class, Registry.VILLAGER_PROFESSION, ZombieVillager::setVillagerProfession);
+		addOptRegistryEntry(transformers, config, "villager-type", ZombieVillager.class, Registry.VILLAGER_TYPE, ZombieVillager::setVillagerType);
 
 		// Display
 		ConfigData<Quaternionf> leftRotation = getQuaternion(config, "transformation.left-rotation");
@@ -470,15 +606,100 @@ public class EntityData {
 		addOptBoolean(transformers, config, "default-background", TextDisplay.class, TextDisplay::setDefaultBackground);
 		addOptEnum(transformers, config, "alignment", TextDisplay.class, TextDisplay.TextAlignment.class, TextDisplay::setAlignment);
 
+		// Passengers
+		for (Object object : config.getList("passengers", new ArrayList<>())) {
+			if (!(object instanceof Map<?, ?> map)) continue;
+			EntityData passengerData = new EntityData(ConfigReaderUtil.mapToSection(map));
+
+			transformers.put(Entity.class, (Entity entity, SpellData data) -> {
+				passengerData.spawn(entity.getLocation(), data, passenger -> {
+					entity.addPassenger(passenger);
+					passenger.getPersistentDataContainer().set(MS_PASSENGER, PersistentDataType.BOOLEAN, true);
+				});
+			});
+		}
+
+		// Mob Goals
+		ConfigurationSection mobGoals = config.getConfigurationSection("mob-goals");
+		if (mobGoals != null) {
+			if (mobGoals.getBoolean("remove-all"))
+				transformers.put(Mob.class, (Mob mob, SpellData data) -> Bukkit.getMobGoals().removeAllGoals(mob));
+
+			for (String string : mobGoals.getStringList("remove-types")) {
+				ConfigData<GoalType> typeData = ConfigDataUtil.getEnum(string, GoalType.class, null);
+
+				transformers.put(Mob.class, (Mob mob, SpellData data) -> {
+					GoalType type = typeData.get(data);
+					if (type == null) return;
+
+					Bukkit.getMobGoals().removeAllGoals(mob, type);
+				});
+			}
+
+			for (String string : mobGoals.getStringList("remove")) {
+				ConfigData<NamespacedKey> keyData = ConfigDataUtil.getNamespacedKey(string, null);
+
+				transformers.put(Mob.class, (Mob mob, SpellData data) -> {
+					NamespacedKey key = keyData.get(data);
+					if (key == null) return;
+
+					Bukkit.getMobGoals().removeGoal(mob, GoalKey.of(Mob.class, key));
+				});
+			}
+
+			for (String string : mobGoals.getStringList("remove-vanilla")) {
+				ConfigData<String> stringData = ConfigDataUtil.getString(string);
+
+				transformers.put(Mob.class, (Mob mob, SpellData data) -> {
+					String value = stringData.get(data);
+					if (value == null) return;
+
+					GoalKey<?> key = MagicSpells.getCustomGoalsManager().getVanillaGoal(value);
+					if (key == null) return;
+
+					// We have to loop through because casting to parameter types is tricky.
+					// It loops through on each MobGoals#removeGoal call anyway.
+					for (Goal<@NotNull Mob> goal : Bukkit.getMobGoals().getAllGoals(mob)) {
+						if (!goal.getKey().equals(key)) continue;
+						Bukkit.getMobGoals().removeGoal(mob, goal);
+					}
+				});
+			}
+
+			for (Object object : mobGoals.getList("add", new ArrayList<>())) {
+				if (!(object instanceof Map<?, ?> map)) continue;
+				ConfigurationSection section = ConfigReaderUtil.mapToSection(map);
+
+				ConfigData<Integer> priorityData = ConfigDataUtil.getInteger(section, "priority", 0);
+				ConfigData<String> goalNameData = ConfigDataUtil.getString(section, "goal", "");
+
+				ConfigurationSection goalSection = section.getConfigurationSection("data");
+				if (goalSection == null) continue;
+
+				transformers.put(Mob.class, (Mob mob, SpellData data) -> {
+					int priority = priorityData.get(data);
+					String goalName = goalNameData.get(data);
+
+					CustomGoal goal = MagicSpells.getCustomGoalsManager().getGoal(goalName, mob, data);
+					if (goal == null) return;
+
+					boolean success = goal.initialize(goalSection);
+					if (success) Bukkit.getMobGoals().addGoal(mob, priority, goal);
+				});
+			}
+		}
+
+		// Apply transformers
 		for (EntityType entityType : EntityType.values()) {
 			Class<? extends Entity> entityClass = entityType.getEntityClass();
 			if (entityClass == null) continue;
 
-			for (Class<?> transformerType : transformers.keys())
+			for (Class<?> transformerType : transformers.keySet())
 				if (transformerType.isAssignableFrom(entityClass))
 					options.putAll(entityType, transformers.get(transformerType));
 		}
 
+		// Delayed Entity Data
 		List<?> delayedDataEntries = config.getList("delayed-entity-data");
 		if (delayedDataEntries == null || delayedDataEntries.isEmpty()) return;
 
@@ -505,12 +726,42 @@ public class EntityData {
 	}
 
 	@Nullable
-	public Entity spawn(@NotNull Location location, @Nullable Consumer<Entity> consumer) {
-		return spawn(location, SpellData.NULL, consumer);
+	public Entity spawn(@NotNull Location location, @Nullable Consumer<Entity> postConsumer) {
+		return spawn(location, SpellData.NULL, postConsumer);
 	}
 
 	@Nullable
-	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> consumer) {
+	public Entity spawn(@NotNull Location location, @Nullable Consumer<Entity> preConsumer, @Nullable Consumer<Entity> postConsumer) {
+		return spawn(location, SpellData.NULL, preConsumer, postConsumer);
+	}
+
+	@Nullable
+	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> postConsumer) {
+		return spawn(location, data, (Consumer<Entity>) null, postConsumer);
+	}
+
+	@Nullable
+	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> preConsumer, @Nullable Consumer<Entity> postConsumer) {
+		EntityType type = this.entityType.get(data);
+		if (type == null || !type.isSpawnable()) return null;
+
+		Class<? extends Entity> entityClass = type.getEntityClass();
+		if (entityClass == null) return null;
+
+		return spawn(location, data, entityClass, entity -> {
+			if (preConsumer != null) preConsumer.accept(entity);
+		}, entity -> {
+			if (postConsumer != null) postConsumer.accept(entity);
+		});
+	}
+
+	@NotNull
+	public <T extends Entity> T spawn(@NotNull Location location, @NotNull SpellData data, @NotNull Class<T> entityClass, @Nullable Consumer<T> postConsumer) {
+		return spawn(location, data, entityClass, null, postConsumer);
+	}
+
+	@NotNull
+	public <T extends Entity> T spawn(@NotNull Location location, @NotNull SpellData data, @NotNull Class<T> entityClass, @Nullable Consumer<T> preConsumer, @Nullable Consumer<T> postConsumer) {
 		Location spawnLocation = location.clone();
 
 		Vector relativeOffset = this.relativeOffset.get(data);
@@ -520,17 +771,12 @@ public class EntityData {
 		spawnLocation.setYaw(yaw.get(data).apply(spawnLocation.getYaw()));
 		spawnLocation.setPitch(pitch.get(data).apply(spawnLocation.getPitch()));
 
-		EntityType type = this.entityType.get(data);
-		if (type == null || (!type.isSpawnable() && type != EntityType.FALLING_BLOCK && type != EntityType.ITEM))
-			return null;
-
-		Class<? extends Entity> entityClass = type.getEntityClass();
-		if (entityClass == null) return null;
-
 		return spawnLocation.getWorld().spawn(spawnLocation, entityClass, entity -> {
+			if (preConsumer != null) preConsumer.accept(entity);
+
 			apply(entity, data);
 
-			if (consumer != null) consumer.accept(entity);
+			if (postConsumer != null) postConsumer.accept(entity);
 		});
 	}
 
@@ -661,6 +907,11 @@ public class EntityData {
 		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
 	}
 
+	private <T> void addOptString(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, String> setter) {
+		ConfigData<String> supplier = ConfigDataUtil.getString(config, name, null);
+		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
+	}
+
 	private <T, E extends Enum<E>> ConfigData<E> addOptEnum(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, Class<E> enumType, BiConsumer<T, E> setter) {
 		ConfigData<E> supplier = ConfigDataUtil.getEnum(config, name, enumType, null);
 		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
@@ -697,17 +948,20 @@ public class EntityData {
 		return supplier;
 	}
 
-	private <T> void addOptItemStack(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, ItemStack> setter) {
+	private <T> ConfigData<ItemStack> addOptItemStack(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, ItemStack> setter) {
 		ConfigData<String> supplier = ConfigDataUtil.getString(config, name, null);
 		if (supplier.isConstant()) {
 			ItemStack item = getItemStack(supplier.get());
-			if (item == null) return;
+			if (item == null) return data -> null;
 
 			transformers.put(type, new TransformerImpl<>(data -> item, setter, true));
-			return;
+			return data -> item;
 		}
 
-		transformers.put(type, new TransformerImpl<>(data -> getItemStack(supplier.get(data)), setter, true));
+		ConfigData<ItemStack> itemSupplier = data -> getItemStack(supplier.get(data));
+		transformers.put(type, new TransformerImpl<>(itemSupplier, setter, true));
+
+		return itemSupplier;
 	}
 
 	private ItemStack getItemStack(String string) {
@@ -1003,13 +1257,17 @@ public class EntityData {
 		return relativeOffset;
 	}
 
+	/**
+	 * @deprecated Use {@link EntityData#spawn(Location, SpellData, Class, Consumer)}
+	 */
+	@Deprecated(forRemoval = true)
 	public void setEntityType(ConfigData<EntityType> entityType) {
 		this.entityType = entityType;
 	}
 
 	@ApiStatus.Internal
-	public ConfigData<Material> getDroppedItemStack() {
-		return dropItemMaterial;
+	public ConfigData<ItemStack> getDroppedItemStack() {
+		return dropItem;
 	}
 
 	@ApiStatus.Internal
@@ -1095,6 +1353,12 @@ public class EntityData {
 	@ApiStatus.Internal
 	public ConfigData<Villager.Profession> getProfession() {
 		return profession;
+	}
+
+	private enum EntityTagOperation {
+		ADD,
+		REMOVE,
+		CLEAR,
 	}
 
 	private record DelayedEntityData(EntityData data, ConfigData<Long> delay, ConfigData<Long> interval, ConfigData<Long> iterations) {

@@ -2,7 +2,6 @@ package com.nisovin.magicspells.spelleffects.effecttypes;
 
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.configuration.ConfigurationSection;
@@ -11,9 +10,11 @@ import com.nisovin.magicspells.util.Name;
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.EntityData;
+import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
+import com.nisovin.magicspells.util.config.ConfigDataUtil;
 
 @Name("armorstand")
 public class ArmorStandEffect extends SpellEffect {
@@ -22,14 +23,12 @@ public class ArmorStandEffect extends SpellEffect {
 
 	private EntityData entityData;
 
-	private boolean gravity;
-
-	private String customName;
-	private boolean customNameVisible;
+	private ConfigData<Boolean> gravity;
+	private ConfigData<Boolean> disableSlots;
 
 	private ItemStack headItem;
-	private ItemStack mainhandItem;
-	private ItemStack offhandItem;
+	private ItemStack offHandItem;
+	private ItemStack mainHandItem;
 
 	@Override
 	protected void loadFromConfig(ConfigurationSection config) {
@@ -37,41 +36,38 @@ public class ArmorStandEffect extends SpellEffect {
 		if (section == null) return;
 
 		entityData = new EntityData(section);
-		entityData.setEntityType(data -> EntityType.ARMOR_STAND);
 
-		gravity = section.getBoolean("gravity", false);
+		gravity = ConfigDataUtil.getBoolean(section, "gravity", false);
+		disableSlots = ConfigDataUtil.getBoolean(section, "disable-slots", true);
 
-		customName = section.getString("custom-name", "");
-		customNameVisible = section.getBoolean("custom-name-visible", false);
+		MagicItem item = MagicItems.getMagicItemFromString(section.getString("head"));
+		if (item != null) headItem = item.getItemStack();
 
-		String strMagicItem = section.getString("head", "");
-		MagicItem magicItem = MagicItems.getMagicItemFromString(strMagicItem);
-		if (magicItem != null) headItem = magicItem.getItemStack();
+		item = MagicItems.getMagicItemFromString(section.getString("offhand"));
+		if (item != null) offHandItem = item.getItemStack();
 
-		strMagicItem = section.getString("mainhand", "");
-		magicItem = MagicItems.getMagicItemFromString(strMagicItem);
-		if (magicItem != null) mainhandItem = magicItem.getItemStack();
-
-		strMagicItem = section.getString("offhand", "");
-		magicItem = MagicItems.getMagicItemFromString(strMagicItem);
-		if (magicItem != null) offhandItem = magicItem.getItemStack();
-
+		item = MagicItems.getMagicItemFromString(section.getString("mainhand"));
+		if (item != null) mainHandItem = item.getItemStack();
 	}
 
 	@Override
 	protected ArmorStand playArmorStandEffectLocation(Location location, SpellData data) {
-		return (ArmorStand) entityData.spawn(location, data, entity -> {
-			ArmorStand armorStand = (ArmorStand) entity;
+		boolean gravity = this.gravity.get(data);
+		boolean disableSlots = this.disableSlots.get(data);
 
-			armorStand.addScoreboardTag(ENTITY_TAG);
-			armorStand.setGravity(gravity);
-			armorStand.setSilent(true);
-			armorStand.customName(Util.getMiniMessage(customName, data));
-			armorStand.setCustomNameVisible(customNameVisible);
+		return entityData.spawn(location, data, ArmorStand.class, stand -> {
+			stand.setSilent(true);
+			stand.addScoreboardTag(ENTITY_TAG);
 
-			armorStand.setItem(EquipmentSlot.HEAD, headItem);
-			armorStand.setItem(EquipmentSlot.HAND, mainhandItem);
-			armorStand.setItem(EquipmentSlot.OFF_HAND, offhandItem);
+			stand.setGravity(gravity);
+			if (disableSlots) stand.setDisabledSlots(EquipmentSlot.values());
+
+			stand.setItem(EquipmentSlot.HEAD, headItem);
+			stand.setItem(EquipmentSlot.HAND, mainHandItem);
+			stand.setItem(EquipmentSlot.OFF_HAND, offHandItem);
+		}, stand -> {
+			stand.setPersistent(false);
+			Util.forEachPassenger(stand, e -> e.setPersistent(false));
 		});
 	}
 

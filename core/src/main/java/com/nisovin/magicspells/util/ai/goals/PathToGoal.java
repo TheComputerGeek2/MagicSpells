@@ -35,7 +35,7 @@ public class PathToGoal extends CustomGoal {
 	@Override
 	public boolean initialize(@Nullable ConfigurationSection config) {
 		if (config == null) return false;
-		speed = ConfigDataUtil.getDouble(config, "speed", 0.2);
+		speed = ConfigDataUtil.getDouble(config, "speed", 1);
 		position = ConfigDataUtil.getVector(config, "position", new Vector());
 		distanceAllowed = ConfigDataUtil.getDouble(config, "distance-allowed", 1);
 		return true;

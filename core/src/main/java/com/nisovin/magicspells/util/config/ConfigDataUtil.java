@@ -509,7 +509,13 @@ public class ConfigDataUtil {
 															@NotNull String path,
 															@NotNull Class<T> type,
 															@Nullable T def) {
-		String value = config.getString(path);
+		return getEnum(config.getString(path), type, def);
+	}
+
+	@NotNull
+	public static <T extends Enum<T>> ConfigData<T> getEnum(@Nullable String value,
+	                                                        @NotNull Class<T> type,
+	                                                        @Nullable T def) {
 		if (value == null) return data -> def;
 
 		try {
@@ -781,7 +787,10 @@ public class ConfigDataUtil {
 	public static ConfigData<NamespacedKey> getNamespacedKey(@NotNull ConfigurationSection config, @NotNull String path, @Nullable NamespacedKey def) {
 		String value = config.getString(path);
 		if (value == null) return data -> def;
+		return getNamespacedKey(value, def);
+	}
 
+	public static ConfigData<NamespacedKey> getNamespacedKey(@NotNull String value, @Nullable NamespacedKey def) {
 		NamespacedKey val = NamespacedKey.fromString(value.toLowerCase());
 		if (val != null) return data -> val;
 
