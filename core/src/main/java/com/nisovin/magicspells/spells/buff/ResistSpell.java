@@ -34,8 +34,8 @@ public class ResistSpell extends BuffSpell {
 
 	private final Map<UUID, ResistData> entities;
 
+	private Predicate<DamageType> damageTypes;
 	private final Set<String> spellDamageTypes;
-	private final Predicate<DamageType> damageTypes;
 	private final Set<DamageCause> normalDamageTypes;
 
 	private final ConfigData<Double> flatModifier;
@@ -60,8 +60,9 @@ public class ResistSpell extends BuffSpell {
 		powerAffectsMultiplier = getConfigDataBoolean("power-affects-multiplier", true);
 		powerAffectsFlatModifier = getConfigDataBoolean("power-affects-flat-modifier", true);
 
-		damageTypes = getConfigRegistryEntryPredicate("damage-types", RegistryKey.DAMAGE_TYPE);
-		damageWildcard = getConfigBoolean("damage-types", false);
+		if (config.isBoolean(internalKey + "damage-types"))
+			damageWildcard = getConfigBoolean("damage-types", false);
+		else damageTypes = getConfigRegistryEntryPredicate("damage-types", RegistryKey.DAMAGE_TYPE);
 
 		List<String> causes = getConfigStringList("normal-damage-types", null);
 		if (causes != null) {
