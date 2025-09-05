@@ -23,6 +23,7 @@ public class ArmorStandEffect extends SpellEffect {
 	private EntityData entityData;
 
 	private ConfigData<Boolean> gravity;
+	private ConfigData<Boolean> disableSlots;
 
 	private ItemStack headItem;
 	private ItemStack offhandItem;
@@ -36,6 +37,7 @@ public class ArmorStandEffect extends SpellEffect {
 		entityData = new EntityData(section);
 
 		gravity = ConfigDataUtil.getBoolean(section, "gravity", false);
+		disableSlots = ConfigDataUtil.getBoolean(section, "disable-slots", true);
 
 		MagicItem item = MagicItems.getMagicItemFromString(section.getString("head"));
 		if (item != null) headItem = item.getItemStack();
@@ -54,6 +56,7 @@ public class ArmorStandEffect extends SpellEffect {
 			stand.addScoreboardTag(ENTITY_TAG);
 
 			stand.setGravity(gravity.get(data));
+			if (disableSlots.get(data)) stand.setDisabledSlots(EquipmentSlot.values());
 
 			stand.setItem(EquipmentSlot.HEAD, headItem);
 			stand.setItem(EquipmentSlot.HAND, mainhandItem);
