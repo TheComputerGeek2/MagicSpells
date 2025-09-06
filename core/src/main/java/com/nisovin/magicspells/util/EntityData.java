@@ -123,7 +123,7 @@ public class EntityData {
 		pitch = ConfigDataUtil.getAngle(config, "pitch", Angle.DEFAULT);
 		relativeOffset = ConfigDataUtil.getVector(config, "relative-offset", new Vector(0, 0, 0));
 
-		Multimap<Class<?>, Transformer<?>> transformers = MultimapBuilder.linkedHashKeys().arrayListValues().build();
+		Multimap<@NotNull Class<?>, @NotNull Transformer<?>> transformers = MultimapBuilder.linkedHashKeys().arrayListValues().build();
 
 		// Entity
 		addOptBoolean(transformers, config, "silent", Entity.class, Entity::setSilent);
@@ -134,16 +134,9 @@ public class EntityData {
 
 		addOptVector(transformers, config, "velocity", Entity.class, Entity::setVelocity);
 
-		if (config.isList("scoreboard-tags")) {
-			List<String> tagStrings = config.getStringList("scoreboard-tags");
-			if (!tagStrings.isEmpty()) {
-				List<ConfigData<String>> tags = new ArrayList<>();
-				for (String tagString : tagStrings) tags.add(ConfigDataUtil.getString(tagString));
-
-				transformers.put(Entity.class, (Entity entity, SpellData data) -> {
-					for (ConfigData<String> tag : tags) entity.addScoreboardTag(tag.get(data));
-				});
-			}
+		for (String tagString : config.getStringList("scoreboard-tags")) {
+			ConfigData<String> tag = ConfigDataUtil.getString(tagString);
+			transformers.put(Entity.class, (Entity entity, SpellData data) -> entity.addScoreboardTag(tag.get(data)));
 		}
 
 		// Ageable
@@ -155,10 +148,9 @@ public class EntityData {
 		addOptInteger(transformers, config, "age", Ageable.class, Ageable::setAge);
 
 		// Attributable
-		List<?> attributeModifierStrings = config.getList("attribute-modifiers");
-		if (attributeModifierStrings != null && !attributeModifierStrings.isEmpty()) {
-			Multimap<Attribute, AttributeModifier> attributeModifiers = AttributeHandler.getAttributeModifiers(attributeModifierStrings, null);
-
+		List<?> attributeModifierStrings = config.getList("attribute-modifiers", new ArrayList<>());
+		Multimap<@NotNull Attribute, @NotNull AttributeModifier> attributeModifiers = AttributeHandler.getAttributeModifiers(attributeModifierStrings, null);
+		if (!attributeModifiers.isEmpty()) {
 			transformers.put(Attributable.class, (Attributable entity, SpellData data) -> {
 				attributeModifiers.asMap().forEach((attribute, modifiers) -> {
 					AttributeInstance attributeInstance = entity.getAttribute(attribute);
@@ -185,14 +177,11 @@ public class EntityData {
 		addOptEquipment(transformers, config, "equipment.boots", EquipmentSlot.FEET);
 		addOptEquipment(transformers, config, "equipment.body", Mob.class, EquipmentSlot.BODY);
 
-		List<?> potionEffectData = config.getList("potion-effects");
-		if (potionEffectData != null && !potionEffectData.isEmpty()) {
-			List<ConfigData<PotionEffect>> effects = Util.getPotionEffects(potionEffectData, null);
-			if (effects != null) {
-				transformers.put(LivingEntity.class, (LivingEntity entity, SpellData data) -> {
-					effects.forEach(effect -> entity.addPotionEffect(effect.get(data)));
-				});
-			}
+		List<ConfigData<PotionEffect>> potionEffects = Util.getPotionEffects(config.getList("potion-effects", new ArrayList<>()), null);
+		if (potionEffects != null) {
+			transformers.put(LivingEntity.class, (LivingEntity entity, SpellData data) -> {
+				potionEffects.forEach(effect -> entity.addPotionEffect(effect.get(data)));
+			});
 		}
 
 		// Mob
@@ -286,8 +275,10 @@ public class EntityData {
 
 		// Item
 		dropItemMaterial = addOptMaterial(transformers, config, "material", Item.class, (item, material) -> item.setItemStack(new ItemStack(material)));
-		addOptBoolean(transformers, config, "will-age", Item.class, Item::setWillAge);
+
 		addOptInteger(transformers, config, "pickup-delay", Item.class, Item::setPickupDelay);
+
+		addOptBoolean(transformers, config, "will-age", Item.class, Item::setWillAge);
 		addOptBoolean(transformers, config, "can-mob-pickup", Item.class, Item::setCanMobPickup);
 		addOptBoolean(transformers, config, "can-player-pickup", Item.class, Item::setCanPlayerPickup);
 
@@ -527,8 +518,7 @@ public class EntityData {
 	@Nullable
 	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> preConsumer, @Nullable Consumer<Entity> postConsumer) {
 		EntityType type = this.entityType.get(data);
-		if (type == null || (!type.isSpawnable() && type != EntityType.FALLING_BLOCK && type != EntityType.ITEM))
-			return null;
+		if (type == null || !type.isSpawnable()) return null;
 
 		Class<? extends Entity> entityClass = type.getEntityClass();
 		if (entityClass == null) return null;
@@ -769,11 +759,11 @@ public class EntityData {
 		});
 	}
 
-	private <T, R extends Keyed> void addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, RegistryKey<R> key, BiConsumer<T, R> setter) {
+	private <T, R extends Keyed> void addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, RegistryKey<@NotNull R> key, BiConsumer<T, R> setter) {
 		addOptRegistryEntry(transformers, config, name, type, RegistryAccess.registryAccess().getRegistry(key), setter);
 	}
 
-	private <T, R extends Keyed> ConfigData<R> addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, Registry<R> registry, BiConsumer<T, R> setter) {
+	private <T, R extends Keyed> ConfigData<R> addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, Registry<@NotNull R> registry, BiConsumer<T, R> setter) {
 		ConfigData<R> supplier = ConfigDataUtil.getRegistryEntry(config, name, registry, null);
 		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
 
