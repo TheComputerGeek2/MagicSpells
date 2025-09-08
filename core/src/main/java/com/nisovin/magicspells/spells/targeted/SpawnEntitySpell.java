@@ -440,7 +440,10 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		}
 
 		SpellData finalData = data;
-		Entity entity = entityData.spawn(loc, data, mob -> prepMob(mob, finalData));
+		Entity entity = entityData.spawn(loc, data,
+			mob -> prepMob(mob, finalData),
+			mob -> mob.setPersistent(!removeMob)
+		);
 		if (entity == null) return noTarget(data);
 
 		UUID uuid = entity.getUniqueId();
@@ -484,8 +487,6 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	}
 
 	private void prepMob(Entity entity, SpellData data) {
-		if (removeMob) entity.setPersistent(false);
-
 		entity.setGravity(gravity.get(data));
 		entity.setInvulnerable(invulnerable.get(data));
 

@@ -130,6 +130,8 @@ public class EntityData {
 		addOptBoolean(transformers, config, "glowing", Entity.class, Entity::setGlowing);
 		addOptBoolean(transformers, config, "gravity", Entity.class, Entity::setGravity);
 		addOptBoolean(transformers, config, "visible-by-default", Entity.class, Entity::setVisibleByDefault);
+		addOptBoolean(transformers, config, "custom-name-visible", Entity.class, Entity::setCustomNameVisible);
+
 		addOptVector(transformers, config, "velocity", Entity.class, Entity::setVelocity);
 
 		if (config.isList("scoreboard-tags")) {
@@ -169,6 +171,9 @@ public class EntityData {
 
 		// Damageable
 		addOptDouble(transformers, config, "health", Damageable.class, Damageable::setHealth);
+
+		// Nameable
+		addOptComponent(transformers, config, "custom-name", Nameable.class, Nameable::customName);
 
 		// LivingEntity
 		addOptBoolean(transformers, config, "ai", LivingEntity.class, LivingEntity::setAI);
@@ -505,12 +510,39 @@ public class EntityData {
 	}
 
 	@Nullable
-	public Entity spawn(@NotNull Location location, @Nullable Consumer<Entity> consumer) {
-		return spawn(location, SpellData.NULL, consumer);
+	public Entity spawn(@NotNull Location location, @Nullable Consumer<Entity> postConsumer) {
+		return spawn(location, SpellData.NULL, postConsumer);
 	}
 
 	@Nullable
-	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> consumer) {
+	public Entity spawn(@NotNull Location location, @Nullable Consumer<Entity> preConsumer, @Nullable Consumer<Entity> postConsumer) {
+		return spawn(location, SpellData.NULL, preConsumer, postConsumer);
+	}
+
+	@Nullable
+	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> postConsumer) {
+		return spawn(location, data, (Consumer<Entity>) null, postConsumer);
+	}
+
+	@Nullable
+	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> preConsumer, @Nullable Consumer<Entity> postConsumer) {
+		EntityType type = this.entityType.get(data);
+		if (type == null || (!type.isSpawnable() && type != EntityType.FALLING_BLOCK && type != EntityType.ITEM))
+			return null;
+
+		Class<? extends Entity> entityClass = type.getEntityClass();
+		if (entityClass == null) return null;
+
+		return spawn(location, data, entityClass, preConsumer, postConsumer);
+	}
+
+	@NotNull
+	public <T extends Entity> T spawn(@NotNull Location location, @NotNull SpellData data, @NotNull Class<T> entityClass, @Nullable Consumer<? super T> postConsumer) {
+		return spawn(location, data, entityClass, null, postConsumer);
+	}
+
+	@NotNull
+	public <T extends Entity> T spawn(@NotNull Location location, @NotNull SpellData data, @NotNull Class<T> entityClass, @Nullable Consumer<? super T> preConsumer, @Nullable Consumer<? super T> postConsumer) {
 		Location spawnLocation = location.clone();
 
 		Vector relativeOffset = this.relativeOffset.get(data);
@@ -520,17 +552,12 @@ public class EntityData {
 		spawnLocation.setYaw(yaw.get(data).apply(spawnLocation.getYaw()));
 		spawnLocation.setPitch(pitch.get(data).apply(spawnLocation.getPitch()));
 
-		EntityType type = this.entityType.get(data);
-		if (type == null || (!type.isSpawnable() && type != EntityType.FALLING_BLOCK && type != EntityType.ITEM))
-			return null;
-
-		Class<? extends Entity> entityClass = type.getEntityClass();
-		if (entityClass == null) return null;
-
 		return spawnLocation.getWorld().spawn(spawnLocation, entityClass, entity -> {
+			if (preConsumer != null) preConsumer.accept(entity);
+
 			apply(entity, data);
 
-			if (consumer != null) consumer.accept(entity);
+			if (postConsumer != null) postConsumer.accept(entity);
 		});
 	}
 
@@ -1003,6 +1030,10 @@ public class EntityData {
 		return relativeOffset;
 	}
 
+	/**
+	 * @deprecated Use {@link EntityData#spawn(Location, SpellData, Class, Consumer)}
+	 */
+	@Deprecated(forRemoval = true)
 	public void setEntityType(ConfigData<EntityType> entityType) {
 		this.entityType = entityType;
 	}
