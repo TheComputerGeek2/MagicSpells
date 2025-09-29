@@ -33,7 +33,6 @@ import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 
 import net.kyori.adventure.text.Component;
 
-import com.destroystokyo.paper.entity.ai.MobGoals;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 
 import com.nisovin.magicspells.util.*;
@@ -185,11 +184,11 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		setOwner = getConfigDataBoolean("set-owner", true);
 		removeAI = getConfigDataBoolean("remove-ai", false);
 		invulnerable = getConfigDataBoolean("invulnerable", false);
+		cancelAttack = getConfigDataBoolean("cancel-attack", true);
 		useCasterName = getConfigDataBoolean("use-caster-name", false);
 		centerLocation = getConfigDataBoolean("center-location", false);
 		addLookAtPlayerAI = getConfigDataBoolean("add-look-at-player-ai", false);
 		allowSpawnInMidair = getConfigDataBoolean("allow-spawn-in-midair", false);
-		cancelAttack = getConfigDataBoolean("cancel-attack", true);
 
 		attackSpellName = getConfigString("attack-spell", "");
 		spellOnSpawnName = getConfigString("spell-on-spawn", "");
@@ -440,7 +439,10 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		}
 
 		SpellData finalData = data;
-		Entity entity = entityData.spawn(loc, data, mob -> prepMob(mob, finalData));
+		Entity entity = entityData.spawn(loc, data,
+			mob -> prepMob(mob, finalData),
+			mob -> mob.setPersistent(!removeMob)
+		);
 		if (entity == null) return noTarget(data);
 
 		UUID uuid = entity.getUniqueId();
@@ -484,8 +486,6 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 	}
 
 	private void prepMob(Entity entity, SpellData data) {
-		if (removeMob) entity.setPersistent(false);
-
 		entity.setGravity(gravity.get(data));
 		entity.setInvulnerable(invulnerable.get(data));
 
@@ -546,10 +546,8 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 
 			if (removeAI.get(data)) {
 				if (addLookAtPlayerAI.get(data) && livingEntity instanceof Mob mob) {
-					MobGoals mobGoals = Bukkit.getMobGoals();
-
-					mobGoals.removeAllGoals(mob);
-					mobGoals.addGoal(mob, 1, new LookAtEntityTypeGoal(mob, data));
+					Bukkit.getMobGoals().removeAllGoals(mob);
+					Bukkit.getMobGoals().addGoal(mob, 1, new LookAtEntityTypeGoal(mob, data));
 				} else livingEntity.setAI(false);
 			}
 
