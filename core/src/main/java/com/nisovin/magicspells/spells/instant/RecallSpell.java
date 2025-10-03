@@ -2,7 +2,6 @@ package com.nisovin.magicspells.spells.instant;
 
 import java.util.List;
 
-import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -18,7 +17,6 @@ import com.nisovin.magicspells.spells.InstantSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
-import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class RecallSpell extends InstantSpell implements TargetedEntitySpell {
 
@@ -114,7 +112,7 @@ public class RecallSpell extends InstantSpell implements TargetedEntitySpell {
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
 
-		entity.teleportAsync(markLocation, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+		Util.tryTeleportMountedAsync(entity, markLocation);
 		playSpellEffects(EffectPosition.CASTER, data.caster(), data);
 		playSpellEffects(EffectPosition.TARGET, markLocation, data);
 		playSpellEffects(EffectPosition.START_POSITION, from, data);

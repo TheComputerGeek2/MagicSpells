@@ -22,8 +22,7 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-
-import io.papermc.paper.entity.TeleportFlag;
+import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Subspell;
@@ -38,26 +37,32 @@ import com.nisovin.magicspells.util.itemreader.AttributeHandler;
 
 public class MinionSpell extends BuffSpell {
 
-	private final Map<UUID, LivingEntity> minions;
-	private final Map<LivingEntity, UUID> players;
-	private final Map<UUID, LivingEntity> targets;
+	private static final DeprecationNotice BABY_DEPRECATION_NOTICE = new DeprecationNotice(
+		"The 'baby' option of '.buff.MinionSpell' overrides the one from 'minion' Entity Data option.",
+		"Use the 'baby' option in the 'minion' Entity Data to avoid the override.",
+		"https://github.com/TheComputerGeek2/MagicSpells/wiki/Deprecations#buffminionspell-baby"
+	);
 
-	private final int[] chances;
+	private final Map<UUID, Mob> minions = new HashMap<>();
+	private final Map<LivingEntity, UUID> players = new HashMap<>();
+	private final Map<EntityType, Integer> mobChances = new HashMap<>();
+	private final Map<UUID, LivingEntity> targets = new ConcurrentHashMap<>();
+
+	private EntityData entityData;
 
 	private ValidTargetList minionTargetList;
-	private EntityType[] creatureTypes;
 
-	private final ConfigData<Boolean> powerAffectsHealth;
-	private final ConfigData<Boolean> gravity;
-	private final ConfigData<Boolean> baby;
 	private boolean preventCombust;
+	private final ConfigData<Boolean> baby;
+	private final ConfigData<Boolean> gravity;
+	private final ConfigData<Boolean> powerAffectsHealth;
 
-	private final ConfigData<Double> powerHealthFactor;
-	private final ConfigData<Double> maxHealth;
-	private final ConfigData<Double> health;
 	private double followRange;
 	private double followSpeed;
 	private double maxDistance;
+	private final ConfigData<Double> health;
+	private final ConfigData<Double> maxHealth;
+	private final ConfigData<Double> powerHealthFactor;
 
 	private final ConfigData<Vector> spawnOffset;
 
@@ -92,29 +97,27 @@ public class MinionSpell extends BuffSpell {
 	public MinionSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		minions = new HashMap<>();
-		players = new HashMap<>();
-		targets = new ConcurrentHashMap<>();
+		ConfigurationSection minionSection = getConfigSection("minion");
+		if (minionSection != null) entityData = new EntityData(minionSection);
 
 		// Formatted as <entity type> <chance>
-		List<String> c = getConfigStringList("mob-chances", new ArrayList<>());
-		if (c.isEmpty()) c.add("Zombie 100");
+		List<String> mobChanceList = getConfigStringList("mob-chances", new ArrayList<>());
+		if (mobChanceList.isEmpty()) mobChanceList.add("Zombie 100");
 
-		creatureTypes = new EntityType[c.size()];
-		chances = new int[c.size()];
-		for (int i = 0; i < c.size(); i++) {
-			String[] data = c.get(i).split(" ");
-			EntityType creatureType = MobUtil.getEntityType(data[0]);
-			int chance = 0;
-			if (creatureType != null) {
-				try {
-					chance = Integer.parseInt(data[1]);
-				} catch (NumberFormatException e) {
-					// No op
-				}
+		for (int i = 0; i < mobChanceList.size(); i++) {
+			String[] splits = mobChanceList.get(i).split(" ");
+
+			EntityType type = MobUtil.getEntityType(splits[0]);
+			if (type == null) {
+				MagicSpells.error("MinionSpell '" + internalName + "' has an invalid Entity Type specified in 'mob-chances' at index " + i + ": " + splits[0]);
+				continue;
 			}
-			creatureTypes[i] = creatureType;
-			chances[i] = chance;
+
+			try {
+				mobChances.put(type, Integer.parseInt(splits[1]));
+			} catch (NumberFormatException ignored) {
+				MagicSpells.error("MinionSpell '" + internalName + "' has an invalid chance value specified in 'mob-chances' at index " + i + ": " + splits[1]);
+			}
 		}
 
 		// Potion effects
@@ -196,22 +199,28 @@ public class MinionSpell extends BuffSpell {
 		leggingsDropChance = getConfigFloat("leggings-drop-chance", 0) / 100F;
 		bootsDropChance = getConfigFloat("boots-drop-chance", 0) / 100F;
 
+		minionName = getConfigString("minion-name", "");
 		spawnSpellName = getConfigString("spell-on-spawn", "");
-		attackSpellName = getConfigString("spell-on-attack", "");
 		deathSpellName = getConfigString("spell-on-death", "");
+		attackSpellName = getConfigString("spell-on-attack", "");
 
 		spawnOffset = getConfigDataVector("spawn-offset", new Vector(1, 0, 0));
-		followRange = getConfigDouble("follow-range", 1.5) * -1;
+
+		health = getConfigDataDouble("health", 20);
 		followSpeed = getConfigDouble("follow-speed", 1);
 		maxDistance = getConfigDouble("max-distance", 30);
-		powerAffectsHealth = getConfigDataBoolean("power-affects-health", false);
-		powerHealthFactor = getConfigDataDouble("power-health-factor", 1);
 		maxHealth = getConfigDataDouble("max-health", 20);
-		health = getConfigDataDouble("health", 20);
-		minionName = getConfigString("minion-name", "");
-		gravity = getConfigDataBoolean("gravity", true);
+		followRange = getConfigDouble("follow-range", 1.5) * -1;
+		powerHealthFactor = getConfigDataDouble("power-health-factor", 1);
+
 		baby = getConfigDataBoolean("baby", false);
+		gravity = getConfigDataBoolean("gravity", true);
 		preventCombust = getConfigBoolean("prevent-sun-burn", true);
+		powerAffectsHealth = getConfigDataBoolean("power-affects-health", false);
+
+		MagicSpells.getDeprecationManager().addDeprecation(this, BABY_DEPRECATION_NOTICE,
+			entityData != null && (!baby.isConstant() || baby.get())
+		);
 	}
 
 	@Override
@@ -233,45 +242,71 @@ public class MinionSpell extends BuffSpell {
 	@Override
 	public boolean castBuff(SpellData data) {
 		if (!(data.target() instanceof Player target)) return false;
+
 		// Selecting the mob
-		EntityType creatureType = null;
-		int num = random.nextInt(100);
-		int n = 0;
-		for (int i = 0; i < creatureTypes.length; i++) {
-			if (num < chances[i] + n) {
-				creatureType = creatureTypes[i];
+		EntityType entityType = entityData == null ? null : entityData.getEntityType().get(data);
+		if (entityType == null) {
+			int total = mobChances.values().stream().mapToInt(Integer::intValue).sum();
+			int selected = random.nextInt(total);
+
+			int current = 0;
+			for (Map.Entry<EntityType, Integer> entry : mobChances.entrySet()) {
+				current += entry.getValue();
+				if (selected >= current) continue;
+
+				entityType = entry.getKey();
 				break;
 			}
-
-			n += chances[i];
 		}
 
-		if (creatureType == null) return false;
+		if (entityType == null) {
+			MagicSpells.error("MinionSpell '" + internalName + "' is missing entity type!");
+			return false;
+		}
+		Class<? extends Entity> entityClass = entityType.getEntityClass();
+		if (!entityType.isSpawnable() || entityClass == null || !Mob.class.isAssignableFrom(entityClass)) {
+			MagicSpells.error("MinionSpell '" + internalName + "' can only summon mobs!");
+			return false;
+		}
+		//noinspection unchecked
+		Class<? extends Mob> mobClass = (Class<? extends Mob>) entityClass;
 
 		// Spawn location
 		Location loc = target.getLocation().clone();
 		loc.setPitch(0);
-
 		Vector spawnOffset = this.spawnOffset.get(data);
 		loc.add(0, spawnOffset.getY(), 0);
 		Util.applyRelativeOffset(loc, spawnOffset.setY(0));
 
 		// Spawn creature
-		LivingEntity minion = (LivingEntity) target.getWorld().spawnEntity(loc, creatureType);
-		if (!(minion instanceof Mob)) {
-			minion.remove();
-			MagicSpells.error("MinionSpell '" + internalName + "' can only summon mobs!");
-			return false;
-		}
+		Mob minion;
+		if (entityData == null) minion = target.getWorld().spawn(loc, mobClass, mob -> {
+			prepareMob(mob, target, data);
 
-		if (minion instanceof Ageable ageable) {
+			if (!(mob instanceof Ageable ageable)) return;
 			if (baby.get(data)) ageable.setBaby();
 			else ageable.setAdult();
+		});
+		else minion = entityData.spawn(loc, data, mobClass, mob -> prepareMob(mob, target, data), null);
+
+		if (spawnSpell != null) {
+			SpellData castData = data.builder().caster(target).target(minion).location(minion.getLocation()).recipient(null).build();
+			spawnSpell.subcast(castData);
 		}
 
+		minions.put(target.getUniqueId(), minion);
+		players.put(minion, target.getUniqueId());
+		return true;
+	}
+
+	private void prepareMob(Mob minion, Player target, SpellData data) {
 		minion.setGravity(gravity.get(data));
-		minion.customName(Util.getMiniMessage(MagicSpells.doReplacements(minionName, target, data, "%c", target.getName())));
-		minion.setCustomNameVisible(true);
+
+		String customName = MagicSpells.doReplacements(minionName, target, data, "%c", target.getName());
+		if (!customName.isEmpty()) {
+			minion.customName(Util.getMiniMessage(customName));
+			minion.setCustomNameVisible(true);
+		}
 
 		double powerHealthFactor = this.powerHealthFactor.get(data);
 		double maxHealth = this.maxHealth.get(data);
@@ -284,15 +319,8 @@ public class MinionSpell extends BuffSpell {
 			minion.setHealth(health);
 		}
 
-		if (spawnSpell != null) {
-			SpellData castData = data.builder().caster(target).target(minion).location(minion.getLocation()).recipient(null).build();
-			spawnSpell.subcast(castData);
-		}
-
-		// Apply potion effects
 		if (potionEffects != null) minion.addPotionEffects(potionEffects);
 
-		// Apply attributes
 		if (attributes != null) {
 			attributes.asMap().forEach((attribute, modifiers) -> {
 				AttributeInstance attributeInstance = minion.getAttribute(attribute);
@@ -302,8 +330,7 @@ public class MinionSpell extends BuffSpell {
 			});
 		}
 
-		// Equip the minion
-		final EntityEquipment eq = minion.getEquipment();
+		EntityEquipment eq = minion.getEquipment();
 		if (mainHandItem != null) eq.setItemInMainHand(mainHandItem.clone());
 		if (offHandItem != null) eq.setItemInOffHand(offHandItem.clone());
 		if (helmet != null) eq.setHelmet(helmet.clone());
@@ -311,17 +338,12 @@ public class MinionSpell extends BuffSpell {
 		if (leggings != null) eq.setLeggings(leggings.clone());
 		if (boots != null) eq.setBoots(boots.clone());
 
-		// Equipment drop chance
 		eq.setItemInMainHandDropChance(mainHandItemDropChance);
 		eq.setItemInOffHandDropChance(offHandItemDropChance);
 		eq.setHelmetDropChance(helmetDropChance);
 		eq.setChestplateDropChance(chestplateDropChance);
 		eq.setLeggingsDropChance(leggingsDropChance);
 		eq.setBootsDropChance(bootsDropChance);
-
-		minions.put(target.getUniqueId(), minion);
-		players.put(minion, target.getUniqueId());
-		return true;
 	}
 
 	@Override
@@ -330,7 +352,7 @@ public class MinionSpell extends BuffSpell {
 	}
 
 	public boolean isMinion(LivingEntity entity) {
-		return minions.containsValue(entity);
+		return minions.values().stream().anyMatch(mob -> mob.getUniqueId().equals(entity.getUniqueId()));
 	}
 
 	@Override
@@ -356,7 +378,7 @@ public class MinionSpell extends BuffSpell {
 		Player pl = Bukkit.getPlayer(players.get(minion));
 		if (pl == null) return;
 
-		if (targets.get(pl.getUniqueId()) == null || !targets.containsKey(pl.getUniqueId()) || !targets.get(pl.getUniqueId()).isValid()) {
+		if (!targets.containsKey(pl.getUniqueId()) || !targets.get(pl.getUniqueId()).isValid()) {
 			e.setCancelled(true);
 			return;
 		}
@@ -453,7 +475,7 @@ public class MinionSpell extends BuffSpell {
 			// Check if the entity can be targeted by the minion
 			if (!minionTargetList.canTarget(pl, entity)) return;
 
-			targets.put(pl.getUniqueId(),entity);
+			targets.put(pl.getUniqueId(), entity);
 			MobUtil.setTarget(minions.get(pl.getUniqueId()), entity);
 			addUseAndChargeCost(pl);
 
@@ -479,7 +501,7 @@ public class MinionSpell extends BuffSpell {
 
 				Location loc = pl.getLocation().clone();
 				loc.add(loc.getDirection().setY(0).normalize().multiply(followRange));
-				((Mob) minions.get(pl.getUniqueId())).getPathfinder().moveTo(loc, followSpeed);
+				minions.get(pl.getUniqueId()).getPathfinder().moveTo(loc, followSpeed);
 			}
 		}
 	}
@@ -527,10 +549,9 @@ public class MinionSpell extends BuffSpell {
 		if (e.getFrom().getBlock().equals(e.getTo().getBlock())) return;
 		Player pl = e.getPlayer();
 		if (!isActive(pl)) return;
-		LivingEntity minion = minions.get(pl.getUniqueId());
+		Mob minion = minions.get(pl.getUniqueId());
 
 		if ((pl.getWorld().equals(minion.getWorld()) && pl.getLocation().distanceSquared(minion.getLocation()) > maxDistance * maxDistance) || targets.get(pl.getUniqueId()) == null || !targets.containsKey(pl.getUniqueId())) {
-
 			// The minion has a target, but he is far away from his owner, remove his current target
 			if (targets.get(pl.getUniqueId()) != null) {
 				targets.remove(pl.getUniqueId());
@@ -540,7 +561,7 @@ public class MinionSpell extends BuffSpell {
 			// The distance between minion and his owner is greater that the defined max distance or the minion has no targets, he will follow his owner
 			Location loc = pl.getLocation().clone();
 			loc.add(loc.getDirection().setY(0).normalize().multiply(followRange));
-			((Mob) minions.get(pl.getUniqueId())).getPathfinder().moveTo(loc, followSpeed);
+			minion.getPathfinder().moveTo(loc, followSpeed);
 		}
 	}
 
@@ -563,11 +584,11 @@ public class MinionSpell extends BuffSpell {
 			if (!owner.isOnline()) continue;
 			if (owner.isDead()) continue;
 
-			minion.teleport(owner.getLocation(), TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+			Util.tryTeleportMounted(minion, owner.getLocation());
 		}
 	}
 
-	public Map<UUID, LivingEntity> getMinions() {
+	public Map<UUID, Mob> getMinions() {
 		return minions;
 	}
 
@@ -593,14 +614,6 @@ public class MinionSpell extends BuffSpell {
 
 	public void setMinionTargetList(ValidTargetList minionTargetList) {
 		this.minionTargetList = minionTargetList;
-	}
-
-	public EntityType[] getCreatureTypes() {
-		return creatureTypes;
-	}
-
-	public void setCreatureTypes(EntityType[] creatureTypes) {
-		this.creatureTypes = creatureTypes;
 	}
 
 	public boolean shouldPreventCombust() {

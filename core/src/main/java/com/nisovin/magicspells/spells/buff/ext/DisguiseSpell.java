@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.inventory.ItemStack;
 
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.DependsOn;
@@ -151,7 +150,7 @@ public class DisguiseSpell extends BuffSpell {
 			creeperWatcher.setPowered(entityData.getPowered().get(data));
 
 		if (watcher instanceof DroppedItemWatcher droppedItemWatcher)
-			droppedItemWatcher.setItemStack(new ItemStack(entityData.getDroppedItemStack().get(data)));
+			droppedItemWatcher.setItemStack(entityData.getDroppedItemStack().get(data));
 
 		if (watcher instanceof EndermanWatcher endermanWatcher)
 			endermanWatcher.setItemInMainHand(entityData.getCarriedBlockData().get(data).getMaterial());

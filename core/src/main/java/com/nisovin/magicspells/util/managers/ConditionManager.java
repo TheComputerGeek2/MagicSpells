@@ -113,6 +113,7 @@ public class ConditionManager {
 		addCondition(DurabilityCondition.class);
 		addCondition(HasItemCondition.class);
 		addCondition(HasItemAmountCondition.class);
+		addCondition(HasRecipeCondition.class);
 		addCondition(OpenSlotsCondition.class);
 		addCondition(OnTeamCondition.class);
 		addCondition(OnSameTeamCondition.class);

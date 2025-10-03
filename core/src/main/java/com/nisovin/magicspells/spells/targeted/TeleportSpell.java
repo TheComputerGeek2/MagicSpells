@@ -1,8 +1,6 @@
 package com.nisovin.magicspells.spells.targeted;
 
-import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Location;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.LivingEntity;
 
@@ -60,7 +58,7 @@ public class TeleportSpell extends TargetedSpell implements TargetedEntitySpell 
 		playSpellEffects(EffectPosition.TARGET, data.target(), data);
 		playSpellEffectsTrail(startLoc, targetLoc, data);
 
-		data.caster().teleportAsync(targetLoc, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+		Util.tryTeleportMountedAsync(data.caster(), targetLoc);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}
 

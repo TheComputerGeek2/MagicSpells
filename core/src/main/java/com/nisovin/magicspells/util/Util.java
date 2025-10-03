@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.Predicate;
+import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -28,6 +29,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,6 +39,7 @@ import org.apache.commons.math4.core.jdkmath.AccurateMath;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 
+import io.papermc.paper.entity.TeleportFlag;
 import io.papermc.paper.block.fluid.FluidData;
 
 import com.nisovin.magicspells.MagicSpells;
@@ -608,74 +611,45 @@ public class Util {
 		entity.getAttribute(Attribute.MAX_HEALTH).setBaseValue(maxHealth);
 	}
 
+	private static TeleportFlag[] tryMountedFlags(Entity entity, Location destination) {
+		return entity.getWorld() == destination.getWorld() ?
+			new TeleportFlag.EntityState[] {TeleportFlag.EntityState.RETAIN_VEHICLE, TeleportFlag.EntityState.RETAIN_PASSENGERS} :
+			new TeleportFlag.EntityState[0];
+	}
+
+	public static boolean tryTeleportMounted(Entity entity, Location destination) {
+		return entity.teleport(destination, tryMountedFlags(entity, destination));
+	}
+
+	public static CompletableFuture<Boolean> tryTeleportMountedAsync(Entity entity, Location destination) {
+		return entity.teleportAsync(destination, TeleportCause.PLUGIN, tryMountedFlags(entity, destination));
+	}
+
+	private static double finiteDouble(double x) {
+		return Double.isNaN(x) ? 0 : Double.isInfinite(x) ? Math.copySign(1, x) : x;
+	}
+
+	private static float finiteFloat(float x) {
+		return Float.isNaN(x) ? 0 : Float.isInfinite(x) ? Math.copySign(1, x) : x;
+	}
+
 	public static Vector makeFinite(Vector vector) {
-		double x = vector.getX();
-		double y = vector.getY();
-		double z = vector.getZ();
-
-		if (Double.isNaN(x)) x = 0.0D;
-		if (Double.isNaN(y)) y = 0.0D;
-		if (Double.isNaN(z)) z = 0.0D;
-
-		if (Double.isInfinite(x)) {
-			boolean negative = (x < 0.0D);
-			x = negative ? -1 : 1;
-		}
-
-		if (Double.isInfinite(y)) {
-			boolean negative = (y < 0.0D);
-			y = negative ? -1 : 1;
-		}
-
-		if (Double.isInfinite(z)) {
-			boolean negative = (z < 0.0D);
-			z = negative ? -1 : 1;
-		}
-
-		return new Vector(x, y, z);
+		return new Vector(
+			finiteDouble(vector.getX()),
+			finiteDouble(vector.getY()),
+			finiteDouble(vector.getZ())
+		);
 	}
 
 	public static Location makeFinite(Location location) {
-		double x = location.getX();
-		double y = location.getY();
-		double z = location.getZ();
-
-		float yaw = location.getYaw();
-		float pitch = location.getPitch();
-
-		if (Float.isNaN(yaw)) yaw = 0.0F;
-		if (Float.isNaN(pitch)) pitch = 0.0F;
-
-		if (Float.isInfinite(yaw)) {
-			boolean negative = (yaw < 0.0F);
-			yaw = negative ? -1F : 1F;
-		}
-
-		if (Float.isInfinite(pitch)) {
-			boolean negative = (pitch < 0.0F);
-			pitch = negative ? -1F : 1F;
-		}
-
-		if (Double.isNaN(x)) x = 0.0D;
-		if (Double.isNaN(y)) y = 0.0D;
-		if (Double.isNaN(z)) z = 0.0D;
-
-		if (Double.isInfinite(x)) {
-			boolean negative = (x < 0.0D);
-			x = negative ? -1 : 1;
-		}
-
-		if (Double.isInfinite(y)) {
-			boolean negative = (y < 0.0D);
-			y = negative ? -1 : 1;
-		}
-
-		if (Double.isInfinite(z)) {
-			boolean negative = (z < 0.0D);
-			z = negative ? -1 : 1;
-		}
-
-		return new Location(location.getWorld(), x, y, z, yaw, pitch);
+		return new Location(
+			location.getWorld(),
+			finiteDouble(location.x()),
+			finiteDouble(location.y()),
+			finiteDouble(location.z()),
+			finiteFloat(location.getYaw()),
+			finiteFloat(location.getPitch())
+		);
 	}
 
 	public static boolean checkPluginsEnabled(String[] plugins) {
@@ -740,22 +714,16 @@ public class Util {
 
 	public static String getPlainString(Component component) {
 		if (component == null) return "";
-
-		// Return plain text component
 		return PlainTextComponentSerializer.plainText().serialize(component);
 	}
 
 	public static Component getPlainComponent(Component input) {
 		if (input == null) return Component.empty();
-
-		// Serialize a plain text component and create a new component of the string.
 		return Component.text(PlainTextComponentSerializer.plainText().serialize(input));
 	}
 
 	public static Component getPlainComponentFromString(String input) {
 		if (input.isEmpty()) return Component.empty();
-
-		// Convert legacy color patterns to MiniMessage format, then deserialize it.
 		Component component = MiniMessage.miniMessage().deserialize(getMiniMessageFromLegacy(input));
 
 		// Convert mini message component to a plain string and deserialize string to plain component.
@@ -775,8 +743,6 @@ public class Util {
 	public static Component getMiniMessage(String input) {
 		if (input == null) return null;
 		if (input.isEmpty()) return Component.empty();
-
-		// Convert legacy color patterns to MiniMessage format, then deserialize it.
 		Component component = MiniMessage.miniMessage().deserialize(getMiniMessageFromLegacy(input));
 
 		// Remove italics if they aren't present. Otherwise, item name and lore will render italic text.

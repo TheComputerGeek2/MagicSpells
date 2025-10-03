@@ -358,10 +358,11 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 				float min = Math.min(minCooldown, maxCooldown);
 				float max = Math.max(minCooldown, maxCooldown);
 
-				if (usePreciseCooldowns) cooldown = data -> min + (max - min) * random.nextFloat();
-				else cooldown = data -> min + random.nextInt((int) max - (int) min + 1);
-			} catch (NumberFormatException ignored) {
-			}
+				if (min >= 0 && max >= 0) {
+					if (usePreciseCooldowns) cooldown = data -> min + (max - min) * random.nextFloat();
+					else cooldown = data -> min + random.nextInt((int) max - (int) min + 1);
+				}
+			} catch (NumberFormatException ignored) {}
 		}
 
 		if (cooldown == null) cooldown = getConfigDataFloat("cooldown", 0);
@@ -1239,7 +1240,6 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		return null;
 	}
 
-	// TODO can this safely be made varargs?
 	/**
 	 * This method is called when the spell is cast from the console.
 	 *
@@ -1552,7 +1552,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		World world = caster.getWorld();
 
 		boolean targetPlayers = forceTargetPlayers || validTargetList.canTargetPlayers();
-		if (targetPlayers && MagicSpells.checkWorldPvpFlag() && caster instanceof Player && !isBeneficial() && !world.getPVP()){
+		if (targetPlayers && MagicSpells.checkWorldPvpFlag() && caster instanceof Player && !isBeneficial() && !world.getPVP()) {
 			if (forceTargetPlayers) return new TargetInfo<>(null, data, false);
 			targetPlayers = false;
 		}

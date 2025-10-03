@@ -2,8 +2,6 @@ package com.nisovin.magicspells.spells.buff;
 
 import java.util.*;
 
-import io.papermc.paper.entity.TeleportFlag;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.NotNull;
 
 import org.bukkit.Location;
@@ -107,7 +105,7 @@ public class FrostwalkSpell extends BuffSpell {
 		if (teleportUp) {
 			Location loc = entity.getLocation().clone();
 			loc.setY(to.getBlockY() + 1);
-			entity.teleportAsync(loc, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+			Util.tryTeleportMounted(entity, loc);
 		}
 	}
 

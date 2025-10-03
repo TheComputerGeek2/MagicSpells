@@ -57,6 +57,11 @@ public final class MultiSpell extends InstantSpell {
 				String[] splits = spellString.split(" ");
 				int minDelay = Integer.parseInt(splits[1]);
 				int maxDelay = Integer.parseInt(splits[2]);
+
+				if (minDelay <= 0 || minDelay >= maxDelay) {
+					MagicSpells.error("MultiSpell '" + internalName + "' has an invalid ranged DELAY interval specified in '" + spellString + "'");
+					continue;
+				}
 				actions.add(new ActionChance(new Action(minDelay, maxDelay), chance));
 			} else if (BASIC_DELAY_PATTERN.asMatchPredicate().test(spellString)) {
 				int delay = Integer.parseInt(spellString.split(" ")[1]);
@@ -89,17 +94,18 @@ public final class MultiSpell extends InstantSpell {
 			}
 		} else {
 			if (customSpellCastChance.get(data)) {
-				double total = 0;
-				for (ActionChance actionChance : actions) total += actionChance.chance;
+				double total = actions.stream().mapToDouble(ActionChance::chance).sum();
+				if (total <= 0) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 
-				double index = random.nextDouble(total);
+				double selected = random.nextDouble(total);
+
 				Action action = null;
-				double subChance = 0;
+				double current = 0;
 				for (ActionChance actionChance : actions) {
-					subChance += actionChance.chance;
-
+					current += actionChance.chance;
+					if (selected >= current) continue;
 					action = actionChance.action;
-					if (subChance > index) break;
+					break;
 				}
 
 				if (action != null && action.isSpell()) action.getSpell().subcast(data);
@@ -111,7 +117,7 @@ public final class MultiSpell extends InstantSpell {
 						action.getSpell().subcast(data);
 					}
 				}
-			} else {
+			} else if (!actions.isEmpty()) {
 				Action action = actions.get(random.nextInt(actions.size())).action();
 				action.getSpell().subcast(data);
 			}
@@ -141,17 +147,19 @@ public final class MultiSpell extends InstantSpell {
 			}
 		} else {
 			if (customSpellCastChance.get(subData)) {
-				double total = 0;
-				for (ActionChance actionChance : actions) total += actionChance.chance;
+				double total = actions.stream().mapToDouble(ActionChance::chance).sum();
+				if (total <= 0) return false;
 
-				double index = random.nextDouble(total);
+				double selected = random.nextDouble(total);
+
 				Action action = null;
-				double subChance = 0;
+				double current = 0;
 				for (ActionChance actionChance : actions) {
-					subChance += actionChance.chance;
+					current += actionChance.chance;
+					if (selected >= current) continue;
 
 					action = actionChance.action;
-					if (subChance > index) break;
+					break;
 				}
 
 				if (action != null && action.isSpell()) action.getSpell().getSpell().castFromConsole(sender, args);
@@ -163,7 +171,7 @@ public final class MultiSpell extends InstantSpell {
 						action.getSpell().getSpell().castFromConsole(sender, args);
 					}
 				}
-			} else {
+			} else if (!actions.isEmpty()) {
 				Action action = actions.get(random.nextInt(actions.size())).action();
 				action.getSpell().getSpell().castFromConsole(sender, args);
 			}

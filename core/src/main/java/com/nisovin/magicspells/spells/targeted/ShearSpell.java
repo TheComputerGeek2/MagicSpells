@@ -80,9 +80,11 @@ public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 			int minWool = this.minWool.get(data);
 			int maxWool = this.maxWool.get(data);
 
-			int count;
-			if (maxWool != 0) count = random.nextInt((maxWool - minWool) + 1) + minWool;
-			else count = random.nextInt(minWool + 1);
+			int count = 1;
+			if (minWool >= 0) {
+				if (maxWool >= 0) count = random.nextInt((maxWool - minWool) + 1) + minWool;
+				else count = random.nextInt(minWool + 1);
+			}
 
 			sheep.setSheared(true);
 			sheep.getWorld().dropItemNaturally(sheep.getLocation().add(0, dropOffset.get(data), 0), new ItemStack(wool, count));

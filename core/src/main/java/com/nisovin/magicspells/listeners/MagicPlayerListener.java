@@ -14,24 +14,29 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.SpellUtil;
+import com.nisovin.magicspells.util.recipes.CustomRecipes;
 
 public class MagicPlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		final Player player = event.getPlayer();
-		// Setup spell book
-		Spellbook spellbook = new Spellbook(player);
-		MagicSpells.getSpellbooks().put(player.getName(), spellbook);
-		
-		// Setup mana bar
+		Player player = event.getPlayer();
+
+		MagicSpells.getSpellbooks().put(player.getName(), new Spellbook(player));
+
 		if (MagicSpells.getManaHandler() != null) MagicSpells.getManaHandler().createManaBar(player);
+
+		player.discoverRecipes(CustomRecipes.getAutoDiscover());
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerQuit(PlayerQuitEvent event) {
-		Spellbook spellbook = MagicSpells.getSpellbooks().remove(event.getPlayer().getName());
+		Player player = event.getPlayer();
+
+		Spellbook spellbook = MagicSpells.getSpellbooks().remove(player.getName());
 		if (spellbook != null) spellbook.destroy();
+
+		player.undiscoverRecipes(CustomRecipes.getAutoDiscover());
 	}
 	
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

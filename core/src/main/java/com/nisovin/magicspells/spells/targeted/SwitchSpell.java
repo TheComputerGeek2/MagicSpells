@@ -1,6 +1,5 @@
 package com.nisovin.magicspells.spells.targeted;
 
-import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 
@@ -9,7 +8,6 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
-import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class SwitchSpell extends TargetedSpell implements TargetedEntitySpell {
 
@@ -35,8 +33,8 @@ public class SwitchSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		Location targetLoc = data.target().getLocation();
 		Location casterLoc = data.caster().getLocation();
-		data.caster().teleportAsync(targetLoc, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
-		data.target().teleportAsync(casterLoc, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+		Util.tryTeleportMounted(data.caster(), targetLoc);
+		Util.tryTeleportMounted(data.target(), casterLoc);
 		playSpellEffects(data);
 
 		int switchBack = this.switchBack.get(data);
@@ -46,8 +44,8 @@ public class SwitchSpell extends TargetedSpell implements TargetedEntitySpell {
 			if (!data.caster().isValid() || !data.target().isValid()) return;
 			Location targetLoc1 = data.target().getLocation();
 			Location casterLoc1 = data.caster().getLocation();
-			data.target().teleportAsync(targetLoc1, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
-			data.caster().teleportAsync(casterLoc1, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+			Util.tryTeleportMounted(data.target(), targetLoc1);
+			Util.tryTeleportMounted(data.caster(), casterLoc1);
 		}, switchBack);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);

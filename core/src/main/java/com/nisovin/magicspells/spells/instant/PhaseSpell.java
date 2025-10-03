@@ -3,11 +3,9 @@ package com.nisovin.magicspells.spells.instant;
 import java.util.List;
 import java.util.ArrayList;
 
-import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.util.BlockIterator;
 
 import com.nisovin.magicspells.util.*;
@@ -102,7 +100,7 @@ public class PhaseSpell extends InstantSpell {
 		location.setYaw(casterLoc.getYaw());
 		data = data.location(location);
 
-		data.caster().teleportAsync(location, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+		Util.tryTeleportMountedAsync(data.caster(), location);
 		playSpellEffects(data);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);

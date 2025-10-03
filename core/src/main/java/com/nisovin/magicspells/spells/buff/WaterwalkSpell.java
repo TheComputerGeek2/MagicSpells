@@ -13,8 +13,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 
-import io.papermc.paper.entity.TeleportFlag;
-
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.BuffSpell;
@@ -130,10 +128,10 @@ public class WaterwalkSpell extends BuffSpell {
 
 				if (isWater(feet.getLocation())) {
 					loc.setY(Math.floor(loc.getY() + 1) + 0.01);
-					pl.teleport(loc, TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+					Util.tryTeleportMounted(pl, loc);
 				} else if (pl.isFlying() && underfeet.getType().isAir()) {
 					loc.setY(Math.floor(loc.getY() - 1) + 0.01);
-					pl.teleport(loc, TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
+					Util.tryTeleportMounted(pl, loc);
 				}
 
 				feet = pl.getLocation().getBlock();

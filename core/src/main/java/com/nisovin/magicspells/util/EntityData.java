@@ -85,7 +85,7 @@ public class EntityData {
 	private final ConfigData<Horse.Style> horseStyle;
 
 	// Item
-	private final ConfigData<Material> dropItemMaterial;
+	private final ConfigData<ItemStack> dropItem;
 
 	// Llama
 	private final ConfigData<Llama.Color> llamaColor;
@@ -123,25 +123,20 @@ public class EntityData {
 		pitch = ConfigDataUtil.getAngle(config, "pitch", Angle.DEFAULT);
 		relativeOffset = ConfigDataUtil.getVector(config, "relative-offset", new Vector(0, 0, 0));
 
-		Multimap<Class<?>, Transformer<?>> transformers = MultimapBuilder.linkedHashKeys().arrayListValues().build();
+		Multimap<@NotNull Class<?>, @NotNull Transformer<?>> transformers = MultimapBuilder.linkedHashKeys().arrayListValues().build();
 
 		// Entity
 		addOptBoolean(transformers, config, "silent", Entity.class, Entity::setSilent);
 		addOptBoolean(transformers, config, "glowing", Entity.class, Entity::setGlowing);
 		addOptBoolean(transformers, config, "gravity", Entity.class, Entity::setGravity);
 		addOptBoolean(transformers, config, "visible-by-default", Entity.class, Entity::setVisibleByDefault);
+		addOptBoolean(transformers, config, "custom-name-visible", Entity.class, Entity::setCustomNameVisible);
+
 		addOptVector(transformers, config, "velocity", Entity.class, Entity::setVelocity);
 
-		if (config.isList("scoreboard-tags")) {
-			List<String> tagStrings = config.getStringList("scoreboard-tags");
-			if (!tagStrings.isEmpty()) {
-				List<ConfigData<String>> tags = new ArrayList<>();
-				for (String tagString : tagStrings) tags.add(ConfigDataUtil.getString(tagString));
-
-				transformers.put(Entity.class, (Entity entity, SpellData data) -> {
-					for (ConfigData<String> tag : tags) entity.addScoreboardTag(tag.get(data));
-				});
-			}
+		for (String tagString : config.getStringList("scoreboard-tags")) {
+			ConfigData<String> tag = ConfigDataUtil.getString(tagString);
+			transformers.put(Entity.class, (Entity entity, SpellData data) -> entity.addScoreboardTag(tag.get(data)));
 		}
 
 		// Ageable
@@ -153,10 +148,9 @@ public class EntityData {
 		addOptInteger(transformers, config, "age", Ageable.class, Ageable::setAge);
 
 		// Attributable
-		List<?> attributeModifierStrings = config.getList("attribute-modifiers");
-		if (attributeModifierStrings != null && !attributeModifierStrings.isEmpty()) {
-			Multimap<Attribute, AttributeModifier> attributeModifiers = AttributeHandler.getAttributeModifiers(attributeModifierStrings, null);
-
+		List<?> attributeModifierStrings = config.getList("attribute-modifiers", new ArrayList<>());
+		Multimap<@NotNull Attribute, @NotNull AttributeModifier> attributeModifiers = AttributeHandler.getAttributeModifiers(attributeModifierStrings, null);
+		if (!attributeModifiers.isEmpty()) {
 			transformers.put(Attributable.class, (Attributable entity, SpellData data) -> {
 				attributeModifiers.asMap().forEach((attribute, modifiers) -> {
 					AttributeInstance attributeInstance = entity.getAttribute(attribute);
@@ -170,6 +164,9 @@ public class EntityData {
 		// Damageable
 		addOptDouble(transformers, config, "health", Damageable.class, Damageable::setHealth);
 
+		// Nameable
+		addOptComponent(transformers, config, "custom-name", Nameable.class, Nameable::customName);
+
 		// LivingEntity
 		addOptBoolean(transformers, config, "ai", LivingEntity.class, LivingEntity::setAI);
 		addOptEquipment(transformers, config, "equipment.main-hand", EquipmentSlot.HAND);
@@ -180,14 +177,11 @@ public class EntityData {
 		addOptEquipment(transformers, config, "equipment.boots", EquipmentSlot.FEET);
 		addOptEquipment(transformers, config, "equipment.body", Mob.class, EquipmentSlot.BODY);
 
-		List<?> potionEffectData = config.getList("potion-effects");
-		if (potionEffectData != null && !potionEffectData.isEmpty()) {
-			List<ConfigData<PotionEffect>> effects = Util.getPotionEffects(potionEffectData, null);
-			if (effects != null) {
-				transformers.put(LivingEntity.class, (LivingEntity entity, SpellData data) -> {
-					effects.forEach(effect -> entity.addPotionEffect(effect.get(data)));
-				});
-			}
+		List<ConfigData<PotionEffect>> potionEffects = Util.getPotionEffects(config.getList("potion-effects", new ArrayList<>()), null);
+		if (potionEffects != null) {
+			transformers.put(LivingEntity.class, (LivingEntity entity, SpellData data) -> {
+				potionEffects.forEach(effect -> entity.addPotionEffect(effect.get(data)));
+			});
 		}
 
 		// Mob
@@ -280,9 +274,14 @@ public class EntityData {
 		);
 
 		// Item
-		dropItemMaterial = addOptMaterial(transformers, config, "material", Item.class, (item, material) -> item.setItemStack(new ItemStack(material)));
-		addOptBoolean(transformers, config, "will-age", Item.class, Item::setWillAge);
+		dropItem = fallback(
+			key -> addOptItemStack(transformers, config, key, Item.class, Item::setItemStack),
+			"material", "item"
+		);
+
 		addOptInteger(transformers, config, "pickup-delay", Item.class, Item::setPickupDelay);
+
+		addOptBoolean(transformers, config, "will-age", Item.class, Item::setWillAge);
 		addOptBoolean(transformers, config, "can-mob-pickup", Item.class, Item::setCanMobPickup);
 		addOptBoolean(transformers, config, "can-player-pickup", Item.class, Item::setCanPlayerPickup);
 
@@ -474,7 +473,7 @@ public class EntityData {
 			Class<? extends Entity> entityClass = entityType.getEntityClass();
 			if (entityClass == null) continue;
 
-			for (Class<?> transformerType : transformers.keys())
+			for (Class<?> transformerType : transformers.keySet())
 				if (transformerType.isAssignableFrom(entityClass))
 					options.putAll(entityType, transformers.get(transformerType));
 		}
@@ -505,12 +504,38 @@ public class EntityData {
 	}
 
 	@Nullable
-	public Entity spawn(@NotNull Location location, @Nullable Consumer<Entity> consumer) {
-		return spawn(location, SpellData.NULL, consumer);
+	public Entity spawn(@NotNull Location location, @Nullable Consumer<Entity> postConsumer) {
+		return spawn(location, SpellData.NULL, postConsumer);
 	}
 
 	@Nullable
-	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> consumer) {
+	public Entity spawn(@NotNull Location location, @Nullable Consumer<Entity> preConsumer, @Nullable Consumer<Entity> postConsumer) {
+		return spawn(location, SpellData.NULL, preConsumer, postConsumer);
+	}
+
+	@Nullable
+	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> postConsumer) {
+		return spawn(location, data, (Consumer<Entity>) null, postConsumer);
+	}
+
+	@Nullable
+	public Entity spawn(@NotNull Location location, @NotNull SpellData data, @Nullable Consumer<Entity> preConsumer, @Nullable Consumer<Entity> postConsumer) {
+		EntityType type = this.entityType.get(data);
+		if (type == null || !type.isSpawnable()) return null;
+
+		Class<? extends Entity> entityClass = type.getEntityClass();
+		if (entityClass == null) return null;
+
+		return spawn(location, data, entityClass, preConsumer, postConsumer);
+	}
+
+	@NotNull
+	public <T extends Entity> T spawn(@NotNull Location location, @NotNull SpellData data, @NotNull Class<T> entityClass, @Nullable Consumer<? super T> postConsumer) {
+		return spawn(location, data, entityClass, null, postConsumer);
+	}
+
+	@NotNull
+	public <T extends Entity> T spawn(@NotNull Location location, @NotNull SpellData data, @NotNull Class<T> entityClass, @Nullable Consumer<? super T> preConsumer, @Nullable Consumer<? super T> postConsumer) {
 		Location spawnLocation = location.clone();
 
 		Vector relativeOffset = this.relativeOffset.get(data);
@@ -520,17 +545,12 @@ public class EntityData {
 		spawnLocation.setYaw(yaw.get(data).apply(spawnLocation.getYaw()));
 		spawnLocation.setPitch(pitch.get(data).apply(spawnLocation.getPitch()));
 
-		EntityType type = this.entityType.get(data);
-		if (type == null || (!type.isSpawnable() && type != EntityType.FALLING_BLOCK && type != EntityType.ITEM))
-			return null;
-
-		Class<? extends Entity> entityClass = type.getEntityClass();
-		if (entityClass == null) return null;
-
 		return spawnLocation.getWorld().spawn(spawnLocation, entityClass, entity -> {
+			if (preConsumer != null) preConsumer.accept(entity);
+
 			apply(entity, data);
 
-			if (consumer != null) consumer.accept(entity);
+			if (postConsumer != null) postConsumer.accept(entity);
 		});
 	}
 
@@ -697,17 +717,20 @@ public class EntityData {
 		return supplier;
 	}
 
-	private <T> void addOptItemStack(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, ItemStack> setter) {
+	private <T> ConfigData<ItemStack> addOptItemStack(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, ItemStack> setter) {
 		ConfigData<String> supplier = ConfigDataUtil.getString(config, name, null);
 		if (supplier.isConstant()) {
 			ItemStack item = getItemStack(supplier.get());
-			if (item == null) return;
+			if (item == null) return data -> null;
 
 			transformers.put(type, new TransformerImpl<>(data -> item, setter, true));
-			return;
+			return data -> item;
 		}
 
-		transformers.put(type, new TransformerImpl<>(data -> getItemStack(supplier.get(data)), setter, true));
+		ConfigData<ItemStack> itemSupplier = data -> getItemStack(supplier.get(data));
+		transformers.put(type, new TransformerImpl<>(itemSupplier, setter, true));
+
+		return itemSupplier;
 	}
 
 	private ItemStack getItemStack(String string) {
@@ -742,11 +765,11 @@ public class EntityData {
 		});
 	}
 
-	private <T, R extends Keyed> void addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, RegistryKey<R> key, BiConsumer<T, R> setter) {
+	private <T, R extends Keyed> void addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, RegistryKey<@NotNull R> key, BiConsumer<T, R> setter) {
 		addOptRegistryEntry(transformers, config, name, type, RegistryAccess.registryAccess().getRegistry(key), setter);
 	}
 
-	private <T, R extends Keyed> ConfigData<R> addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, Registry<R> registry, BiConsumer<T, R> setter) {
+	private <T, R extends Keyed> ConfigData<R> addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, Registry<@NotNull R> registry, BiConsumer<T, R> setter) {
 		ConfigData<R> supplier = ConfigDataUtil.getRegistryEntry(config, name, registry, null);
 		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
 
@@ -1003,13 +1026,17 @@ public class EntityData {
 		return relativeOffset;
 	}
 
+	/**
+	 * @deprecated Use {@link EntityData#spawn(Location, SpellData, Class, Consumer)}
+	 */
+	@Deprecated(forRemoval = true)
 	public void setEntityType(ConfigData<EntityType> entityType) {
 		this.entityType = entityType;
 	}
 
 	@ApiStatus.Internal
-	public ConfigData<Material> getDroppedItemStack() {
-		return dropItemMaterial;
+	public ConfigData<ItemStack> getDroppedItemStack() {
+		return dropItem;
 	}
 
 	@ApiStatus.Internal

@@ -222,7 +222,7 @@ public class ScrollSpell extends CommandSpell {
 			meta.lore(Collections.singletonList(lore));
 		}
 
-		ItemUtil.addFakeEnchantment(meta);
+		meta.setEnchantmentGlintOverride(true);
 		meta.getPersistentDataContainer().set(KEY, PersistentDataType.STRING, spell.getInternalName() + (uses > 0 ? "," + uses : ""));
 		item.setItemMeta(meta);
 
