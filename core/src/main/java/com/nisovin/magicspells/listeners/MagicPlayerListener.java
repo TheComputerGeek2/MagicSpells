@@ -22,7 +22,7 @@ public class MagicPlayerListener implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 
-		MagicSpells.getSpellbooks().put(player.getName(), new Spellbook(player));
+		MagicSpells.getSpellbooks().put(player.getUniqueId(), new Spellbook(player));
 
 		if (MagicSpells.getManaHandler() != null) MagicSpells.getManaHandler().createManaBar(player);
 
@@ -33,7 +33,7 @@ public class MagicPlayerListener implements Listener {
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 
-		Spellbook spellbook = MagicSpells.getSpellbooks().remove(player.getName());
+		Spellbook spellbook = MagicSpells.getSpellbooks().remove(player.getUniqueId());
 		if (spellbook != null) spellbook.destroy();
 
 		player.undiscoverRecipes(CustomRecipes.getAutoDiscover());

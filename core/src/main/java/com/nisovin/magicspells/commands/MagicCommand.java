@@ -242,12 +242,12 @@ public class MagicCommand extends BaseCommand {
 		if (player == null) return;
 
 		// Remove old spellbook
-		Spellbook spellbook = MagicSpells.getSpellbooks().get(player.getName());
+		Spellbook spellbook = MagicSpells.getSpellbooks().get(player.getUniqueId());
 		if (spellbook != null) spellbook.destroy();
 
 		// Create new spellbook
 		spellbook = new Spellbook(player);
-		MagicSpells.getSpellbooks().put(player.getName(), spellbook);
+		MagicSpells.getSpellbooks().put(player.getUniqueId(), spellbook);
 		Bukkit.getPluginManager().callEvent(new SpellbookReloadEvent(player, spellbook));
 
 		issuer.sendMessage(MagicSpells.getTextColor() + "Spellbook for player '" + TxtUtil.getPossessiveName(player.getName()) + "' has been reloaded.");

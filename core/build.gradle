@@ -19,7 +19,7 @@ dependencies {
     shadow(project(path: ":nms:v1_21_4")) { transitive = false }
 
     implementation(group: "com.github.retrooper", name: "packetevents-spigot", version: "2.7.0")
-    implementation(group: "com.comphenix.protocol", name: "ProtocolLib", version: "5.3.0") { transitive = false }
+    implementation(group: "net.dmulloy2", name: "ProtocolLib", version: "5.3.0") { transitive = false }
     implementation(group: "me.libraryaddict.disguises", name: "libsdisguises", version: "10.0.44-SNAPSHOT") { transitive = false }
     implementation(group: "net.milkbowl.vault", name: "VaultAPI", version: "1.7") { transitive = false }
     implementation(group: "me.clip", name: "placeholderapi", version: "2.11.6") { transitive = false }
