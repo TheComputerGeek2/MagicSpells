@@ -3,9 +3,11 @@ package com.nisovin.magicspells.spells.instant;
 import java.util.UUID;
 import java.util.Collection;
 
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.Location;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Item;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
@@ -101,7 +103,7 @@ public class MagnetSpell extends InstantSpell implements TargetedLocationSpell {
 
 			playSpellEffects(EffectPosition.PROJECTILE, item, data);
 
-			if (teleport) item.teleportAsync(location);
+			if (teleport) item.teleportAsync(location, PlayerTeleportEvent.TeleportCause.PLUGIN , TeleportFlag.EntityState.RETAIN_PASSENGERS, TeleportFlag.EntityState.RETAIN_VEHICLE);
 			else {
 				if (resolveVelocityPerItem) {
 					velocity = this.velocity.get(data);
