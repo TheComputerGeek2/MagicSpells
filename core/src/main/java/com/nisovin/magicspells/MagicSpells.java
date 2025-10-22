@@ -118,7 +118,7 @@ public class MagicSpells extends JavaPlugin {
 	private Map<String, Spell> spells; // Map internal names to spells
 	private Map<String, Spell> spellNames; // Map configured names to spells
 	private Map<String, Spell> incantations; // Map incantation strings to spells
-	private Map<String, Spellbook> spellbooks; // Player spellbooks
+	private Map<UUID, Spellbook> spellbooks; // Player spellbooks
 	private SetMultimap<String, Spell> spellsByTag; // Map of tag -> spell
 
 	private List<Spell> spellsOrdered; // Spells ordered
@@ -504,7 +504,7 @@ public class MagicSpells extends JavaPlugin {
 
 		// Load online player spellbooks
 		log("Loading online player spellbooks...");
-		Util.forEachPlayerOnline(pl -> spellbooks.put(pl.getName(), new Spellbook(pl)));
+		Util.forEachPlayerOnline(pl -> spellbooks.put(pl.getUniqueId(), new Spellbook(pl)));
 		log("...done");
 
 		// Load saved cooldowns
@@ -1074,7 +1074,7 @@ public class MagicSpells extends JavaPlugin {
 	 * @return the player's spellbook
 	 */
 	public static Spellbook getSpellbook(Player player) {
-		return plugin.spellbooks.computeIfAbsent(player.getName(), playerName -> new Spellbook(player));
+		return plugin.spellbooks.computeIfAbsent(player.getUniqueId(), uuid -> new Spellbook(player));
 	}
 
 	public static ChatColor getTextColor() {
@@ -1474,7 +1474,7 @@ public class MagicSpells extends JavaPlugin {
 		return plugin.deprecationHandler;
 	}
 
-	public static Map<String, Spellbook> getSpellbooks() {
+	public static Map<UUID, Spellbook> getSpellbooks() {
 		return plugin.spellbooks;
 	}
 
