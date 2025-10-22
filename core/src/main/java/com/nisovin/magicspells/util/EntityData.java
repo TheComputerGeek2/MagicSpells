@@ -276,7 +276,7 @@ public class EntityData {
 		// Item
 		dropItem = fallback(
 			key -> addOptItemStack(transformers, config, key, Item.class, Item::setItemStack),
-			"material", "dropped-item"
+			"dropped-item", "material"
 		);
 
 		addOptInteger(transformers, config, "pickup-delay", Item.class, Item::setPickupDelay);
