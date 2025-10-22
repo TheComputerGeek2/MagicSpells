@@ -241,13 +241,16 @@ public class MagicCommand extends BaseCommand {
 		Player player = ACFBukkitUtil.findPlayerSmart(issuer, args[0]);
 		if (player == null) return;
 
+		Map<UUID, Spellbook> spellbooks = MagicSpells.getSpellbooks();
+		UUID uuid = player.getUniqueId();
+
 		// Remove old spellbook
-		Spellbook spellbook = MagicSpells.getSpellbooks().get(player.getName());
+		Spellbook spellbook = spellbooks.get(uuid);
 		if (spellbook != null) spellbook.destroy();
 
 		// Create new spellbook
 		spellbook = new Spellbook(player);
-		MagicSpells.getSpellbooks().put(player.getName(), spellbook);
+		spellbooks.put(uuid, spellbook);
 		Bukkit.getPluginManager().callEvent(new SpellbookReloadEvent(player, spellbook));
 
 		issuer.sendMessage(MagicSpells.getTextColor() + "Spellbook for player '" + TxtUtil.getPossessiveName(player.getName()) + "' has been reloaded.");
