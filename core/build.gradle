@@ -16,7 +16,6 @@ dependencies {
 
     shadow(project(path: ":nms:shared", configuration: "apiElements"))
     shadow(project(path: ":nms:latest")) { transitive = false }
-    shadow(project(path: ":nms:v1_21_4")) { transitive = false }
 
     implementation("com.github.retrooper:packetevents-spigot:2.7.0")
     implementation("com.comphenix.protocol:ProtocolLib:5.3.0") { transitive = false }

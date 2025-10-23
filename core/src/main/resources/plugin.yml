@@ -3,7 +3,7 @@ main: com.nisovin.magicspells.MagicSpells
 version: $version
 authors: [nisovin, TheComputerGeek2, Chronoken, tonythemacaroni, JasperLorelai]
 website: "https://github.com/TheComputerGeek2/MagicSpells/"
-api-version: "1.21.4"
+api-version: "1.21.10"
 softdepend:
     - GriefPrevention
     - Vault

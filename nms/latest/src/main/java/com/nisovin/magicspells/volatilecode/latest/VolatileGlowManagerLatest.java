@@ -6,7 +6,6 @@ import java.util.*;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.util.function.Function;
 
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.ChannelPipeline;
@@ -89,8 +88,8 @@ public class VolatileGlowManagerLatest extends PacketBasedGlowManager<Packet<?>,
 
 		ConfigurationSection config = helper.getMainConfig();
 		boolean seeFriendlyInvisibles = config.getBoolean("general.glow-spell-scoreboard-teams.see-friendly-invisibles", false);
-		CollisionRule collision = getStringOption("collision-rule", CollisionRule.ALWAYS, StringRepresentable.createNameLookup(CollisionRule.values(), Function.identity()), config, helper::error);
-		Visibility visibility = getStringOption("name-tag-visibility", Visibility.ALWAYS, StringRepresentable.createNameLookup(Visibility.values(), Function.identity()), config, helper::error);
+		CollisionRule collision = getStringOption("collision-rule", CollisionRule.ALWAYS, StringRepresentable.createNameLookup(CollisionRule.values()), config, helper::error);
+		Visibility visibility = getStringOption("name-tag-visibility", Visibility.ALWAYS, StringRepresentable.createNameLookup(Visibility.values()), config, helper::error);
 
 		Scoreboard scoreboard = new Scoreboard();
 		for (ChatFormatting formatting : ChatFormatting.values()) {
