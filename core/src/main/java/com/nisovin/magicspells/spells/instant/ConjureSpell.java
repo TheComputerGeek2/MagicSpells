@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import net.kyori.adventure.text.Component;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.ChatColor;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Item;
@@ -25,7 +24,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 
-import com.destroystokyo.paper.MaterialTags;
+import io.papermc.paper.datacomponent.item.Equippable;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
@@ -291,6 +291,7 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 		playSpellEffects(data);
 	}
 
+	@SuppressWarnings("UnstableApiUsage")
 	private void conjureItems(Player player, SpellData data) {
 		List<ItemStack> items = new ArrayList<>();
 		if (calculateDropsIndividually.get(data)) individual(items, data);
@@ -322,19 +323,9 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 			boolean added = false;
 			PlayerInventory inv = player.getInventory();
 			if (autoEquip && item.getAmount() == 1) {
-				Material type = item.getType();
-
-				if (MaterialTags.HEAD_EQUIPPABLE.isTagged(type) && isNothing(inv.getHelmet())) {
-					inv.setHelmet(item);
-					added = true;
-				} else if (MaterialTags.CHEST_EQUIPPABLE.isTagged(type) && isNothing(inv.getChestplate())) {
-					inv.setChestplate(item);
-					added = true;
-				} else if (MaterialTags.LEGGINGS.isTagged(type) && isNothing(inv.getLeggings())) {
-					inv.setLeggings(item);
-					added = true;
-				} else if (MaterialTags.BOOTS.isTagged(type) && isNothing(inv.getBoots())) {
-					inv.setBoots(item);
+				Equippable equippable =	item.getData(DataComponentTypes.EQUIPPABLE);
+				if (equippable != null && player.canUseEquipmentSlot(equippable.slot()) && inv.getItem(equippable.slot()).isEmpty()) {
+					inv.setItem(equippable.slot(), item);
 					added = true;
 				}
 			}
@@ -360,7 +351,7 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 						inv.setItem(requiredSlot, item);
 						added = true;
 						updateInv = true;
-					} else if (preferredSlot >= 0 && isNothing(preferredItem)) {
+					} else if (preferredSlot >= 0 && (preferredItem == null || preferredItem.isEmpty())) {
 						inv.setItem(preferredSlot, item);
 						added = true;
 						updateInv = true;
@@ -394,10 +385,6 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 
 		if (updateInv && forceUpdateInventory) player.updateInventory();
 		playSpellEffects(EffectPosition.CASTER, player, data);
-	}
-
-	private boolean isNothing(ItemStack item) {
-		return item == null || item.isEmpty();
 	}
 
 	private void individual(List<ItemStack> items, SpellData data) {

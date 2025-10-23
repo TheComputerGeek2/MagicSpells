@@ -223,7 +223,7 @@ public class EntityData {
 
 		// Cat
 		fallback(
-			key -> addOptRegistryEntry(transformers, config, key, Cat.class, Registry.CAT_VARIANT, Cat::setCatType),
+			key -> addOptRegistryEntry(transformers, config, key, Cat.class, RegistryKey.CAT_VARIANT, Cat::setCatType),
 			"cat-variant", "type"
 		);
 
@@ -259,7 +259,7 @@ public class EntityData {
 
 		// Frog
 		fallback(
-			key -> addOptRegistryEntry(transformers, config, key, Frog.class, Registry.FROG_VARIANT, Frog::setVariant),
+			key -> addOptRegistryEntry(transformers, config, key, Frog.class, RegistryKey.FROG_VARIANT, Frog::setVariant),
 			"frog-variant", "type"
 		);
 
@@ -765,8 +765,8 @@ public class EntityData {
 		});
 	}
 
-	private <T, R extends Keyed> void addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, RegistryKey<@NotNull R> key, BiConsumer<T, R> setter) {
-		addOptRegistryEntry(transformers, config, name, type, RegistryAccess.registryAccess().getRegistry(key), setter);
+	private <T, R extends Keyed> ConfigData<@NotNull R> addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, RegistryKey<@NotNull R> key, BiConsumer<T, R> setter) {
+		return addOptRegistryEntry(transformers, config, name, type, RegistryAccess.registryAccess().getRegistry(key), setter);
 	}
 
 	private <T, R extends Keyed> ConfigData<R> addOptRegistryEntry(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, Registry<@NotNull R> registry, BiConsumer<T, R> setter) {
