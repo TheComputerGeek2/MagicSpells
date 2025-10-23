@@ -121,7 +121,6 @@ public class LightningSpell extends TargetedSpell implements TargetedLocationSpe
 
 		private final Map<UUID, ChargeOption> striking = new HashMap<>();
 
-		@SuppressWarnings("UnstableApiUsage")
 		@EventHandler
 		public void onLightningDamage(EntityDamageByEntityEvent event) {
 			if (!(event.getDamager() instanceof LightningStrike strike)) return;

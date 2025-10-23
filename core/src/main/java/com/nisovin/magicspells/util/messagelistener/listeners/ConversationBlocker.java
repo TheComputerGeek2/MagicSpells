@@ -10,6 +10,7 @@ import org.bukkit.conversations.Conversation;
 import com.nisovin.magicspells.util.messagelistener.MessageListener;
 import com.nisovin.magicspells.util.messagelistener.MagicConversation;
 
+@SuppressWarnings("removal")
 public class ConversationBlocker implements MessageListener {
 
 	private final Map<UUID, Conversation> conversations = new HashMap<>();

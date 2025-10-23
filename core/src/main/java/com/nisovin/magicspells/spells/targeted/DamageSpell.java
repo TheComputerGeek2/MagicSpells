@@ -17,7 +17,6 @@ import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.events.SpellApplyDamageEvent;
 import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 
-@SuppressWarnings("UnstableApiUsage")
 public class DamageSpell extends TargetedSpell implements TargetedEntitySpell, TargetedEntityFromLocationSpell {
 
 	private final ConfigData<String> spellDamageType;
