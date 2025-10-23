@@ -34,10 +34,6 @@ public abstract class VolatileCodeHandle {
 
 	public abstract void sendToastEffect(Player receiver, ItemStack icon, Frame frameType, Component text);
 
-	public abstract void addGameTestMarker(Player player, Location location, int color, String name, int lifetime);
-
-	public abstract void clearGameTestMarkers(Player player);
-
 	public abstract byte getEntityMetadata(Entity entity);
 
 	public abstract Entity getEntityFromId(World world, int id);

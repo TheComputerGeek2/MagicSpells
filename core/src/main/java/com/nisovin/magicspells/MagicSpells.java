@@ -2017,7 +2017,7 @@ public class MagicSpells extends JavaPlugin {
 
 			plugin.getLogger().severe("This error has been saved in the errors folder.");
 			writer.println("Server version: " + Bukkit.getVersion());
-			writer.println("MagicSpells version: " + plugin.getDescription().getVersion());
+			writer.println("MagicSpells version: " + plugin.getPluginMeta().getVersion());
 			writer.println("Error log date: " + new Date());
 		} catch (Exception e) {
 			plugin.getLogger().severe("ERROR WHILE HANDLING EXCEPTION:");

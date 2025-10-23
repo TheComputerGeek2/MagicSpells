@@ -66,7 +66,7 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 	public void initialize() {
 		super.initialize();
 
-		ClipboardFormat format = ClipboardFormats.findByFile(file);
+		ClipboardFormat format = ClipboardFormats.findByPath(file.toPath());
 		if (format != null) {
 			try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
 				clipboard = reader.read();
