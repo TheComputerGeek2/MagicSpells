@@ -12,6 +12,7 @@ import org.bukkit.conversations.FixedSetPrompt;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.configuration.ConfigurationSection;
 
+@SuppressWarnings("removal")
 public class MagicFixedSetPrompt extends FixedSetPrompt {
 
 	private String promptText;

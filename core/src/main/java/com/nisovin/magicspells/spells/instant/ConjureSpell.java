@@ -320,67 +320,68 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 		for (ItemStack item : items) {
 			if (item == null) continue;
 
-			boolean added = false;
 			PlayerInventory inv = player.getInventory();
 			if (autoEquip && item.getAmount() == 1) {
 				Equippable equippable =	item.getData(DataComponentTypes.EQUIPPABLE);
 				if (equippable != null && player.canUseEquipmentSlot(equippable.slot()) && inv.getItem(equippable.slot()).isEmpty()) {
 					inv.setItem(equippable.slot(), item);
-					added = true;
+					updateInv = true;
+					continue;
 				}
 			}
 
-			if (!added) {
-				if (addToEnderChest)
-					added = Util.addToInventory(player.getEnderChest(), item, stackExisting, ignoreMaxStackSize);
-				if (!added && addToInventory) {
+			if (addToEnderChest) {
+				boolean added = Util.addToInventory(player.getEnderChest(), item, stackExisting, ignoreMaxStackSize);
+				if (added) continue;
+			}
 
-					ItemStack preferredItem = null;
-					if (preferredSlot >= 0) {
-						preferredItem = inv.getItem(preferredSlot);
-					}
+			if (addToInventory) {
+				ItemStack preferredItem = preferredSlot >= 0 ? inv.getItem(preferredSlot) : null;
 
-					if (offhand) {
-						player.getEquipment().setItemInOffHand(item);
-						added = true;
-						updateInv = true;
-					}
-					else if (requiredSlot >= 0) {
-						ItemStack old = inv.getItem(requiredSlot);
-						if (old != null && item.isSimilar(old)) item.setAmount(item.getAmount() + old.getAmount());
-						inv.setItem(requiredSlot, item);
-						added = true;
-						updateInv = true;
-					} else if (preferredSlot >= 0 && (preferredItem == null || preferredItem.isEmpty())) {
-						inv.setItem(preferredSlot, item);
-						added = true;
-						updateInv = true;
-					} else if (preferredSlot >= 0 && item.isSimilar(preferredItem) && preferredItem.getAmount() + item.getAmount() < item.getType().getMaxStackSize()) {
-						item.setAmount(item.getAmount() + preferredItem.getAmount());
-						inv.setItem(preferredSlot, item);
-						added = true;
-						updateInv = true;
-					} else {
-						added = Util.addToInventory(inv, item, stackExisting, ignoreMaxStackSize);
-						if (added) updateInv = true;
-					}
+				if (offhand) {
+					player.getEquipment().setItemInOffHand(item);
+					updateInv = true;
+					continue;
 				}
 
-				if (!added && (dropIfInventoryFull || !addToInventory)) {
-					Item i = player.getWorld().dropItem(loc, item, it -> {
-						it.setPickupDelay(pickupDelay);
-						it.setGravity(itemHasGravity);
-
-						if (randomVelocity > 0) {
-							Vector v = new Vector(random.nextDouble() - 0.5, random.nextDouble() / 2, random.nextDouble() - 0.5);
-							v.normalize().multiply(randomVelocity);
-							it.setVelocity(v);
-						}
-					});
-
-					playSpellEffects(EffectPosition.SPECIAL, i, data);
+				else if (requiredSlot >= 0) {
+					ItemStack old = inv.getItem(requiredSlot);
+					if (old != null && item.isSimilar(old)) item.setAmount(item.getAmount() + old.getAmount());
+					inv.setItem(requiredSlot, item);
+					updateInv = true;
+					continue;
+				} else if (preferredSlot >= 0 && (preferredItem == null || preferredItem.isEmpty())) {
+					inv.setItem(preferredSlot, item);
+					updateInv = true;
+					continue;
+				} else if (preferredSlot >= 0 && item.isSimilar(preferredItem) && preferredItem.getAmount() + item.getAmount() < item.getType().getMaxStackSize()) {
+					item.setAmount(item.getAmount() + preferredItem.getAmount());
+					inv.setItem(preferredSlot, item);
+					updateInv = true;
+					continue;
+				} else {
+					boolean added = Util.addToInventory(inv, item, stackExisting, ignoreMaxStackSize);
+					if (added) {
+						updateInv = true;
+						continue;
+					}
 				}
-			} else updateInv = true;
+			}
+
+			if (dropIfInventoryFull || !addToInventory) {
+				Item i = player.getWorld().dropItem(loc, item, it -> {
+					it.setPickupDelay(pickupDelay);
+					it.setGravity(itemHasGravity);
+
+					if (randomVelocity > 0) {
+						Vector v = new Vector(random.nextDouble() - 0.5, random.nextDouble() / 2, random.nextDouble() - 0.5);
+						v.normalize().multiply(randomVelocity);
+						it.setVelocity(v);
+					}
+				});
+
+				playSpellEffects(EffectPosition.SPECIAL, i, data);
+			}
 		}
 
 		if (updateInv && forceUpdateInventory) player.updateInventory();

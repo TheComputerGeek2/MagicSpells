@@ -10,6 +10,7 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
+@SuppressWarnings("removal")
 public class ConversationSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private final ConversationFactory conversationFactory;

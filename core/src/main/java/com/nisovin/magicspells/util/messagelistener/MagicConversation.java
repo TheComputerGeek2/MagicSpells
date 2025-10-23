@@ -12,6 +12,7 @@ import com.nisovin.magicspells.MagicSpells;
  * A Conversation implementation that sends one {@link StringPrompt} with prompt text and blocks chat until abandoned.
  * Prompt message output is overridden to send MiniMessage to players or nothing if prompt text is blank.
  */
+@SuppressWarnings("removal")
 public class MagicConversation extends Conversation {
 
 	public MagicConversation(@NotNull Conversable forWhom, String strBlockedOutput) {
