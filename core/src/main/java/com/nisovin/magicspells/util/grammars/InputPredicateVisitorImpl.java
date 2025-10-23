@@ -6,7 +6,6 @@ import org.bukkit.Input;
 
 import static com.nisovin.magicspells.util.grammars.InputPredicateParser.*;
 
-@SuppressWarnings("UnstableApiUsage")
 public class InputPredicateVisitorImpl extends InputPredicateBaseVisitor<Predicate<Input>> {
 
 	@Override

@@ -93,7 +93,7 @@ public class WindwalkSpell extends BuffSpell {
 
 		float launchSpeed = this.launchSpeed.get(data);
 		if (launchSpeed > 0) {
-			Util.tryTeleportMounted(target, target.getLocation().add(0, 0.25, 0));
+			target.teleport(target.getLocation().add(0, 0.25, 0));
 			target.setVelocity(new Vector(0, launchSpeed, 0));
 		}
 		target.setAllowFlight(true);
@@ -189,7 +189,7 @@ public class WindwalkSpell extends BuffSpell {
 			if (!isActive(player) || player.getLocation().subtract(0, 1, 0).getBlock().getType().isAir()) return;
 
 			if (alwaysFly) {
-				Util.tryTeleportMounted(player, player.getLocation().add(0, 0.25, 0));
+				player.teleport(player.getLocation().add(0, 0.25, 0));
 				player.setFlying(true);
 			} else if (cancelOnLand) turnOff(player);
 		}

@@ -15,7 +15,8 @@ public class MagicPromptResponder {
 	public MagicPromptResponder(ConfigurationSection section) {
 		variableName = section.getString("variable-name", null);
 	}
-	
+
+	@SuppressWarnings("removal")
 	public Prompt acceptValidatedInput(ConversationContext paramConversationContext, String paramString) {
 		String playerName = null;
 		Conversable who = paramConversationContext.getForWhom();

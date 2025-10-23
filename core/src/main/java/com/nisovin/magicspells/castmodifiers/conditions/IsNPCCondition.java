@@ -1,6 +1,7 @@
 package com.nisovin.magicspells.castmodifiers.conditions;
 
 import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +33,7 @@ public class IsNPCCondition extends Condition {
 	}
 
 	private boolean isNPC(LivingEntity target) {
-		return target.hasMetadata("NPC");
+		return target.hasMetadata("NPC") || target.getType() == EntityType.MANNEQUIN;
 	}
 
 }

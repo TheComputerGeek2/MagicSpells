@@ -15,6 +15,7 @@ import org.bukkit.conversations.FixedSetPrompt;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.conversations.ConversationContext;
 
+@SuppressWarnings("removal")
 public class MagicEnumSetPrompt extends FixedSetPrompt {
 
 	private static Map<String, List<String>> enumToNames = null;

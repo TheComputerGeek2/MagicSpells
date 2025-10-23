@@ -584,7 +584,7 @@ public class MinionSpell extends BuffSpell {
 			if (!owner.isOnline()) continue;
 			if (owner.isDead()) continue;
 
-			Util.tryTeleportMounted(minion, owner.getLocation());
+			minion.teleport(owner.getLocation());
 		}
 	}
 

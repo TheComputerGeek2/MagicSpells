@@ -1,5 +1,9 @@
 grammar SpellFilter;
 
+@header {
+    package com.nisovin.magicspells.util.grammars;
+}
+
 options {
     language = Java;
 }

@@ -1,5 +1,9 @@
 grammar RegistryEntryPredicate;
 
+@header {
+    package com.nisovin.magicspells.util.grammars;
+}
+
 options {
     language = Java;
     caseInsensitive = true;

@@ -10,7 +10,6 @@ import com.nisovin.magicspells.util.Name;
 import com.nisovin.magicspells.util.InputPredicate;
 import com.nisovin.magicspells.castmodifiers.Condition;
 
-@SuppressWarnings("UnstableApiUsage")
 @Name("input")
 public class InputCondition extends Condition {
 

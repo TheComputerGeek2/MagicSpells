@@ -72,7 +72,7 @@ public class DelayableEntity<E extends Entity> {
 	public void teleport(@NotNull Location location) {
 		E entity = now();
 		if (entity == null) spawnLocation = location;
-		else Util.tryTeleportMountedAsync(entity, location);
+		else entity.teleportAsync(location);
 	}
 
 	/**
