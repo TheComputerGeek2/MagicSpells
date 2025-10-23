@@ -65,7 +65,7 @@ public class BlinkSpell extends TargetedSpell implements TargetedLocationSpell {
 		data = data.location(target);
 
 		playSpellEffects(data);
-		Util.tryTeleportMountedAsync(data.caster(), target);
+		data.caster().teleportAsync(target);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}

@@ -97,7 +97,7 @@ public class GateSpell extends InstantSpell {
 			sendMessage(strGateFailed, data.caster(), data);
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
-		Util.tryTeleportMountedAsync(data.caster(), location);
+		data.caster().teleportAsync(location);
 
 		playSpellEffects(EffectPosition.CASTER, from, data);
 		playSpellEffects(EffectPosition.TARGET, location, data);

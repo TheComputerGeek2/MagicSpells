@@ -33,8 +33,8 @@ public class SwitchSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		Location targetLoc = data.target().getLocation();
 		Location casterLoc = data.caster().getLocation();
-		Util.tryTeleportMounted(data.caster(), targetLoc);
-		Util.tryTeleportMounted(data.target(), casterLoc);
+		data.caster().teleport(targetLoc);
+		data.target().teleport(casterLoc);
 		playSpellEffects(data);
 
 		int switchBack = this.switchBack.get(data);
@@ -44,8 +44,8 @@ public class SwitchSpell extends TargetedSpell implements TargetedEntitySpell {
 			if (!data.caster().isValid() || !data.target().isValid()) return;
 			Location targetLoc1 = data.target().getLocation();
 			Location casterLoc1 = data.caster().getLocation();
-			Util.tryTeleportMounted(data.target(), targetLoc1);
-			Util.tryTeleportMounted(data.caster(), casterLoc1);
+			data.target().teleport(targetLoc1);
+			data.caster().teleport(casterLoc1);
 		}, switchBack);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);

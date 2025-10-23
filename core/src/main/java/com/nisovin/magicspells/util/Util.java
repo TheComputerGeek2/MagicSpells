@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.Predicate;
-import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -29,7 +28,6 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +37,6 @@ import org.apache.commons.math4.core.jdkmath.AccurateMath;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 
-import io.papermc.paper.entity.TeleportFlag;
 import io.papermc.paper.block.fluid.FluidData;
 
 import com.nisovin.magicspells.MagicSpells;
@@ -609,20 +606,6 @@ public class Util {
 
 	public static void setMaxHealth(LivingEntity entity, double maxHealth) {
 		entity.getAttribute(Attribute.MAX_HEALTH).setBaseValue(maxHealth);
-	}
-
-	private static TeleportFlag[] tryMountedFlags(Entity entity, Location destination) {
-		return entity.getWorld() == destination.getWorld() ?
-			new TeleportFlag.EntityState[] {TeleportFlag.EntityState.RETAIN_VEHICLE, TeleportFlag.EntityState.RETAIN_PASSENGERS} :
-			new TeleportFlag.EntityState[0];
-	}
-
-	public static boolean tryTeleportMounted(Entity entity, Location destination) {
-		return entity.teleport(destination, tryMountedFlags(entity, destination));
-	}
-
-	public static CompletableFuture<Boolean> tryTeleportMountedAsync(Entity entity, Location destination) {
-		return entity.teleportAsync(destination, TeleportCause.PLUGIN, tryMountedFlags(entity, destination));
 	}
 
 	private static double finiteDouble(double x) {
