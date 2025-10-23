@@ -64,7 +64,7 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 		if (!b.isPassable() || !b.getRelative(BlockFace.UP).isPassable()) return noTarget(strNoLandingSpot, data);
 
 		playSpellEffects(data.caster(), targetLoc, data);
-		Util.tryTeleportMountedAsync(data.caster(), targetLoc);
+		data.caster().teleportAsync(targetLoc);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}

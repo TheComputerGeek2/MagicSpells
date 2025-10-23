@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.variables.variabletypes.MetaVariable;
 
 public class CoordPitchVariable extends MetaVariable {
@@ -23,7 +22,7 @@ public class CoordPitchVariable extends MetaVariable {
 
 		Location to = p.getLocation();
 		to.setPitch((float) amount);
-		Util.tryTeleportMountedAsync(p, to);
+		p.teleportAsync(to);
 	}
 
 }

@@ -58,7 +58,7 @@ public class TeleportSpell extends TargetedSpell implements TargetedEntitySpell 
 		playSpellEffects(EffectPosition.TARGET, data.target(), data);
 		playSpellEffectsTrail(startLoc, targetLoc, data);
 
-		Util.tryTeleportMountedAsync(data.caster(), targetLoc);
+		data.caster().teleportAsync(targetLoc);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}
 
