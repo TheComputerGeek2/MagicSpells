@@ -49,9 +49,10 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.advancements.critereon.ImpossibleTrigger;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.custom.GameTestAddMarkerDebugPayload;
-import net.minecraft.network.protocol.common.custom.GameTestClearMarkersDebugPayload;
+// FIXME
+//import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+//import net.minecraft.network.protocol.common.custom.GameTestAddMarkerDebugPayload;
+//import net.minecraft.network.protocol.common.custom.GameTestClearMarkersDebugPayload;
 
 public class VolatileCodeLatest extends VolatileCodeHandle {
 
@@ -213,14 +214,16 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 
 	@Override
 	public void addGameTestMarker(Player player, Location location, int color, String name, int lifetime) {
-		GameTestAddMarkerDebugPayload payload = new GameTestAddMarkerDebugPayload(CraftLocation.toBlockPosition(location), color, name, lifetime);
-		((CraftPlayer) player).getHandle().connection.send(new ClientboundCustomPayloadPacket(payload));
+// FIXME
+//		GameTestAddMarkerDebugPayload payload = new GameTestAddMarkerDebugPayload(CraftLocation.toBlockPosition(location), color, name, lifetime);
+//		((CraftPlayer) player).getHandle().connection.send(new ClientboundCustomPayloadPacket(payload));
 	}
 
 	@Override
 	public void clearGameTestMarkers(Player player) {
-		GameTestClearMarkersDebugPayload payload = new GameTestClearMarkersDebugPayload();
-		((CraftPlayer) player).getHandle().connection.send(new ClientboundCustomPayloadPacket(payload));
+// FIXME
+//		GameTestClearMarkersDebugPayload payload = new GameTestClearMarkersDebugPayload();
+//		((CraftPlayer) player).getHandle().connection.send(new ClientboundCustomPayloadPacket(payload));
 	}
 
 	@Override

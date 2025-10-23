@@ -7,7 +7,7 @@ subprojects {
     apply plugin: "dev.magicspells.msjava"
 
     dependencies {
-        implementation("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+        implementation("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
     }
 
     processResources {
