@@ -1,3 +1,3 @@
 dependencies {
-    implementation(group: "me.libraryaddict.disguises", name: "libsdisguises", version: "10.0.44-SNAPSHOT") { transitive = false }
+    implementation("me.libraryaddict.disguises:libsdisguises:10.0.44-SNAPSHOT") { transitive = false }
 }
