@@ -181,7 +181,7 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell {
 			}
 
 			SpellApplyDamageEvent event = new SpellApplyDamageEvent(DotSpell.this, data.caster(), data.target(), localDamage, damageType, spellDamageType);
-			EventUtil.call(event);
+			event.callEvent();
 			localDamage = event.getFinalDamage();
 
 			if (ignoreArmor) {
