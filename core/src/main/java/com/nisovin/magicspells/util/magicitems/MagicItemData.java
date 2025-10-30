@@ -8,6 +8,8 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Iterables;
 
@@ -21,8 +23,12 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.banner.PatternType;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.attribute.AttributeModifier;
+
+import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.RegistryAccess;
 
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.AttributeUtil;
@@ -413,10 +419,14 @@ public class MagicItemData {
 
 		if (hasAttribute(MagicItemAttribute.PATTERNS)) {
 			List<Pattern> patterns = (List<Pattern>) getAttribute(MagicItemAttribute.PATTERNS);
+			Registry<@NotNull PatternType> registry = RegistryAccess.registryAccess().getRegistry(RegistryKey.BANNER_PATTERN);
 
 			JsonArray patternsArray = new JsonArray(patterns.size());
 			for (Pattern pattern : patterns) {
-				String patternString = pattern.getPattern().key().asMinimalString().toLowerCase() + " " + pattern.getColor().name().toLowerCase();
+				NamespacedKey key = registry.getKey(pattern.getPattern());
+				if (key == null) continue;
+
+				String patternString = key.asMinimalString().toLowerCase() + " " + pattern.getColor().name().toLowerCase();
 				patternsArray.add(patternString);
 			}
 

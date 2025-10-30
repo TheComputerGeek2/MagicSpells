@@ -12,10 +12,12 @@ import com.nisovin.magicspells.util.prompt.PromptType;
 
 public class ConfigReaderUtil {
 
+	@SuppressWarnings("removal")
 	public static Prompt readPrompt(ConfigurationSection section) {
 		return readPrompt(section, Prompt.END_OF_CONVERSATION);
 	}
 
+	@SuppressWarnings("removal")
 	public static Prompt readPrompt(ConfigurationSection section, Prompt defaultPrompt) {
 		if (section == null) return defaultPrompt;
 		String type = section.getString("prompt-type");
@@ -29,6 +31,7 @@ public class ConfigReaderUtil {
 	// first-prompt accepts a configuration section in prompt format
 	// timeout-seconds accepts an integer and defaults to 30
 	// escape-sequence accepts a string and defaults to null
+	@SuppressWarnings("removal")
 	public static ConversationFactory readConversationFactory(ConfigurationSection section) {
 		ConversationFactory ret = new ConversationFactory(MagicSpells.plugin);
 

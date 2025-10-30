@@ -1,6 +1,7 @@
 package com.nisovin.magicspells.spells.instant;
 
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.MenuType;
 
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.CastResult;
@@ -17,7 +18,7 @@ public class CraftSpell extends InstantSpell {
 	public CastResult cast(SpellData data) {
 		if (!(data.caster() instanceof Player caster)) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 
-		caster.openWorkbench(null, true);
+		MenuType.CRAFTING.create(caster).open();
 		playSpellEffects(data);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);

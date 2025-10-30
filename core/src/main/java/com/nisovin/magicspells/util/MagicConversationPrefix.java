@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.bukkit.conversations.ConversationPrefix;
 import org.bukkit.conversations.ConversationContext;
 
+@SuppressWarnings("removal")
 public class MagicConversationPrefix implements ConversationPrefix {
 
 	private String prefix;

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.configuration.ConfigurationSection;
 
+@SuppressWarnings("removal")
 public enum PromptType {
 
 	REGEX_PROMPT("regex") {

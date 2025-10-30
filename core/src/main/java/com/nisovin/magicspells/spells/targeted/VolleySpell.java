@@ -1,7 +1,6 @@
 package com.nisovin.magicspells.spells.targeted;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -9,21 +8,21 @@ import org.bukkit.Registry;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
+import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.event.EventPriority;
 import org.bukkit.entity.AbstractArrow;
-import org.bukkit.metadata.MetadataValue;
-import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.event.entity.EntityRemoveEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.events.SpellPreImpactEvent;
@@ -34,7 +33,9 @@ import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 
 public class VolleySpell extends TargetedSpell implements TargetedLocationSpell, TargetedEntityFromLocationSpell {
 
-	private static final String METADATA_KEY = "MagicSpellsSource";
+	private static final Map<UUID, VolleyData> ARROW_DATA = new HashMap<>();
+
+	private static ArrowListener arrowListener;
 
 	private final ConfigData<Integer> fire;
 	private final ConfigData<Integer> arrows;
@@ -92,6 +93,11 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 		color = getConfigDataColor("color", null);
 		potionType = getConfigDataRegistryEntry("potion-type", Registry.POTION, null);
 		potionEffects = Util.getPotionEffects(getConfigList("potion-effects", null), internalName);
+
+		if (arrowListener == null) {
+			arrowListener = new ArrowListener();
+			registerEvents(arrowListener);
+		}
 	}
 
 	@Override
@@ -124,28 +130,40 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}
 
-	@EventHandler
-	public void onArrowHit(EntityDamageByEntityEvent event) {
-		if (event.getCause() != DamageCause.PROJECTILE || !(event.getEntity() instanceof LivingEntity target)) return;
+	@Override
+	public void turnOff() {
+		arrowListener = null;
+		ARROW_DATA.clear();
+	}
 
-		Entity damagerEntity = event.getDamager();
-		if (!(damagerEntity instanceof Arrow arrow) || !damagerEntity.hasMetadata(METADATA_KEY)) return;
+	private static class ArrowListener implements Listener {
 
-		MetadataValue meta = damagerEntity.getMetadata(METADATA_KEY).iterator().next();
-		if (meta == null) return;
+		@EventHandler
+		public void onArrowHit(EntityDamageByEntityEvent event) {
+			if (event.getCause() != DamageCause.PROJECTILE || !(event.getEntity() instanceof LivingEntity target)) return;
 
-		VolleyData data = (VolleyData) meta.value();
-		if (data == null || !data.identifier.equals("VolleySpell" + internalName)) return;
+			Entity damagerEntity = event.getDamager();
+			if (!(damagerEntity instanceof Arrow arrow)) return;
 
-		event.setDamage(data.damage);
+			VolleyData data = ARROW_DATA.get(arrow.getUniqueId());
+			if (data == null) return;
 
-		SpellPreImpactEvent preImpactEvent = new SpellPreImpactEvent(this, this, (LivingEntity) arrow.getShooter(), target, 1);
-		EventUtil.call(preImpactEvent);
-		if (!preImpactEvent.getRedirected()) return;
+			event.setDamage(data.damage);
 
-		event.setCancelled(true);
-		arrow.setVelocity(arrow.getVelocity().multiply(-1));
-		arrow.teleportAsync(arrow.getLocation().add(arrow.getVelocity()));
+			SpellPreImpactEvent preImpactEvent = new SpellPreImpactEvent(data.spell, data.spell, (LivingEntity) arrow.getShooter(), target, 1);
+			preImpactEvent.callEvent();
+			if (!preImpactEvent.getRedirected()) return;
+
+			event.setCancelled(true);
+			arrow.setVelocity(arrow.getVelocity().multiply(-1));
+			arrow.teleportAsync(arrow.getLocation().add(arrow.getVelocity()));
+		}
+
+		@EventHandler(priority = EventPriority.MONITOR)
+		public void onRemove(EntityRemoveEvent event) {
+			ARROW_DATA.remove(event.getEntity().getUniqueId());
+		}
+
 	}
 
 	private class ArrowShooter implements Runnable {
@@ -251,7 +269,7 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 					arrow.addCustomEffect(potionEffectData, false);
 
 			arrow.setDamage(damage);
-			arrow.setMetadata(METADATA_KEY, new FixedMetadataValue(MagicSpells.plugin, new VolleyData("VolleySpell" + internalName, damage)));
+			ARROW_DATA.put(arrow.getUniqueId(), new VolleyData(VolleySpell.this, damage));
 
 			if (fire > 0) arrow.setFireTicks(fire);
 			if (data.hasCaster()) arrow.setShooter(data.caster(), false);
@@ -270,7 +288,7 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 
 	}
 
-	private record VolleyData(String identifier, double damage) {
+	private record VolleyData(VolleySpell spell, double damage) {
 	}
 
 }
