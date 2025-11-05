@@ -10,11 +10,18 @@ import com.nisovin.magicspells.util.Name;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.config.ConfigData;
+import com.nisovin.magicspells.util.DeprecationNotice;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
 
 @Name("gametestaddmarker")
 public class GameTestAddMarkerEffect extends SpellEffect {
+
+	private static final DeprecationNotice DEPRECATION_NOTICE = new DeprecationNotice(
+		"The 'gametestaddmarker' spell effect has stopped functioning.",
+		"No alternative.",
+		"https://github.com/TheComputerGeek2/MagicSpells/wiki/Deprecations#spell-effect-gametestaddmarker"
+	);
 
 	private ConfigData<Color> color;
 	private ConfigData<String> name;
@@ -26,6 +33,8 @@ public class GameTestAddMarkerEffect extends SpellEffect {
 
 	@Override
 	protected void loadFromConfig(ConfigurationSection config) {
+		MagicSpells.getDeprecationManager().addDeprecation(DEPRECATION_NOTICE);
+
 		name = ConfigDataUtil.getString(config, "name", "");
 		color = ConfigDataUtil.getARGBColor(config, "color", Color.BLACK);
 		viewer = ConfigDataUtil.getEnum(config, "viewer", MarkerViewer.class, MarkerViewer.POSITION);
@@ -52,7 +61,7 @@ public class GameTestAddMarkerEffect extends SpellEffect {
 		String name = this.name.get(data);
 		Color color = this.color.get(data);
 		int lifetime = this.lifetime.get(data);
-		MagicSpells.getVolatileCodeHandler().addGameTestMarker(viewer, location, color.asARGB(), name, lifetime);
+//		MagicSpells.getVolatileCodeHandler().addGameTestMarker(viewer, location, color.asARGB(), name, lifetime);
 
 		return null;
 	}
@@ -74,7 +83,7 @@ public class GameTestAddMarkerEffect extends SpellEffect {
 		String name = this.name.get(data);
 		Color color = this.color.get(data);
 		int lifetime = this.lifetime.get(data);
-		MagicSpells.getVolatileCodeHandler().addGameTestMarker(viewer, entity.getLocation(), color.asARGB(), name, lifetime);
+//		MagicSpells.getVolatileCodeHandler().addGameTestMarker(viewer, entity.getLocation(), color.asARGB(), name, lifetime);
 
 		return null;
 	}
@@ -104,7 +113,7 @@ public class GameTestAddMarkerEffect extends SpellEffect {
 				lifetime = this.lifetime.get(spellData);
 			}
 
-			MagicSpells.getVolatileCodeHandler().addGameTestMarker(viewer, location, color.asARGB(), name, lifetime);
+//			MagicSpells.getVolatileCodeHandler().addGameTestMarker(viewer, location, color.asARGB(), name, lifetime);
 		}
 	}
 

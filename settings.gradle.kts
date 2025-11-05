@@ -9,7 +9,6 @@ include("towny")
 
 include(":nms:shared")
 include(":nms:latest")
-include(":nms:v1_21_4")
 
 pluginManagement {
     repositories {

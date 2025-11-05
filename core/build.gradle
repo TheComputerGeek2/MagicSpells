@@ -1,37 +1,36 @@
 plugins {
-    id('com.gradleup.shadow') version '8.3.2'
+    id("com.gradleup.shadow") version "9.2.2"
     id("antlr")
 }
 
 dependencies {
-    shadow(group: "org.apache.commons", name: "commons-math4-core", version: "4.0-beta1")
-    shadow(group: "com.github.ben-manes.caffeine", name: "caffeine", version: "3.2.1")
-    shadow(group: "com.github.Chronoken", name: "EffectLib", version: "753da6c")
-    shadow(group: "co.aikar", name: "acf-paper", version: "0.5.1-SNAPSHOT")
-    shadow(group: "org.bstats", name: "bstats-bukkit", version: "3.0.2")
-    shadow(group: "com.github.ezylang", name: "EvalEx", version: "0dcb042")
+    shadow("org.apache.commons:commons-math4-core:4.0-beta1")
+    shadow("com.github.ben-manes.caffeine:caffeine:3.2.1")
+    shadow("com.github.Chronoken:EffectLib:753da6c")
+    shadow("co.aikar:acf-paper:0.5.1-SNAPSHOT")
+    shadow("org.bstats:bstats-bukkit:3.0.2")
+    shadow("com.github.ezylang:EvalEx:0dcb042")
 
-    shadow(group: "org.antlr", name: "antlr4-runtime", version: "4.13.2")
-    antlr(group: "org.antlr", name: "antlr4", version: "4.13.2")
+    shadow("org.antlr:antlr4-runtime:4.13.2")
+    antlr("org.antlr:antlr4:4.13.2")
 
     shadow(project(path: ":nms:shared", configuration: "apiElements"))
     shadow(project(path: ":nms:latest")) { transitive = false }
-    shadow(project(path: ":nms:v1_21_4")) { transitive = false }
 
-    implementation(group: "com.github.retrooper", name: "packetevents-spigot", version: "2.7.0")
-    implementation(group: "com.comphenix.protocol", name: "ProtocolLib", version: "5.3.0") { transitive = false }
-    implementation(group: "me.libraryaddict.disguises", name: "libsdisguises", version: "10.0.44-SNAPSHOT") { transitive = false }
-    implementation(group: "net.milkbowl.vault", name: "VaultAPI", version: "1.7") { transitive = false }
-    implementation(group: "me.clip", name: "placeholderapi", version: "2.11.6") { transitive = false }
-    implementation(group: "com.github.GriefPrevention", name: "GriefPrevention", version: "17.0.0") { transitive = false }
-    implementation(group: "com.github.Xezard", name: "XGlow", version: "1.1.0") {
+    implementation("com.github.retrooper:packetevents-spigot:2.7.0")
+    implementation("com.comphenix.protocol:ProtocolLib:5.3.0") { transitive = false }
+    implementation("me.libraryaddict.disguises:libsdisguises:10.0.44-SNAPSHOT") { transitive = false }
+    implementation("net.milkbowl.vault:VaultAPI:1.7") { transitive = false }
+    implementation("me.clip:placeholderapi:2.11.6") { transitive = false }
+    implementation("com.github.GriefPrevention:GriefPrevention:17.0.0") { transitive = false }
+    implementation("com.github.Xezard:XGlow:1.1.0") {
         exclude(module: "XGlowPlugin")
         exclude(module: "XGlowExample")
     }
-    implementation(group: "com.sk89q.worldguard", name: "worldguard-core", version: "7.1.0-SNAPSHOT") { transitive = false }
-    implementation(group: "com.sk89q.worldguard", name: "worldguard-bukkit", version: "7.1.0-SNAPSHOT") { transitive = false }
-    implementation(group: "com.sk89q.worldedit", name: "worldedit-core", version: "7.4.0-SNAPSHOT") { transitive = false }
-    implementation(group: "com.sk89q.worldedit", name: "worldedit-bukkit", version: "7.4.0-SNAPSHOT") { transitive = false }
+    implementation("com.sk89q.worldguard:worldguard-core:7.1.0-SNAPSHOT") { transitive = false }
+    implementation("com.sk89q.worldguard:worldguard-bukkit:7.1.0-SNAPSHOT") { transitive = false }
+    implementation("com.sk89q.worldedit:worldedit-core:7.4.0-SNAPSHOT") { transitive = false }
+    implementation("com.sk89q.worldedit:worldedit-bukkit:7.4.0-SNAPSHOT") { transitive = false }
 
 }
 
@@ -72,20 +71,9 @@ shadowJar {
     archiveClassifier.set("")
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir file("generated-src/antlr/main/")
-        }
-    }
-}
-
 generateGrammarSource {
-    arguments += ["-package", "com.nisovin.magicspells.util.grammars", "-visitor", "-no-listener"]
-}
-
-artifacts {
-    archives shadowJar
+    packageName = "com.nisovin.magicspells.util.grammars"
+    arguments += ["-visitor", "-no-listener"]
 }
 
 publishing {

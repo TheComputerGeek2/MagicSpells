@@ -12,7 +12,6 @@ import org.bukkit.Input;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.grammars.*;
 
-@SuppressWarnings("UnstableApiUsage")
 public class InputPredicate implements Predicate<Input> {
 
 	private final Predicate<Input> predicate;

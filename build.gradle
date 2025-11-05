@@ -1,13 +1,13 @@
 plugins {
     id("dev.magicspells.msjava")
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.17" apply false
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.19" apply false
 }
 
 subprojects {
     apply plugin: "dev.magicspells.msjava"
 
     dependencies {
-        implementation(group: "io.papermc.paper", name: "paper-api", version: "1.21.4-R0.1-SNAPSHOT")
+        implementation("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
     }
 
     processResources {

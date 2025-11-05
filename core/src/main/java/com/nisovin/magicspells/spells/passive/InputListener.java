@@ -19,7 +19,6 @@ import com.nisovin.magicspells.util.InputPredicate;
 import com.nisovin.magicspells.util.OverridePriority;
 import com.nisovin.magicspells.spells.passive.util.PassiveListener;
 
-@SuppressWarnings("UnstableApiUsage")
 @Name("input")
 public class InputListener extends PassiveListener {
 

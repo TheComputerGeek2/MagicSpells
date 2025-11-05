@@ -1,6 +1,6 @@
 dependencies {
     implementation project(":core")
-    implementation(group: "com.palmergames.bukkit.towny", name: "towny", version: "0.100.1.0") { transitive = false }
+    implementation("com.palmergames.bukkit.towny:towny:0.100.1.0") { transitive = false }
 }
 
 jar {

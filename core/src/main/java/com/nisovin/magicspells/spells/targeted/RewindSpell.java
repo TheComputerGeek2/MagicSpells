@@ -219,7 +219,7 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 
 			if (locations != null && !locations.isEmpty()) tempLocation = locations.get(counter - 1);
 			if (tempLocation != null) {
-				Util.tryTeleportMountedAsync(data.target(), tempLocation);
+				data.target().teleportAsync(tempLocation);
 				locations.remove(tempLocation);
 				if (delayedEffectInterval > 0 && counter % delayedEffectInterval == 0)
 					locations.forEach(loc -> playSpellEffects(EffectPosition.DELAYED, loc, data));

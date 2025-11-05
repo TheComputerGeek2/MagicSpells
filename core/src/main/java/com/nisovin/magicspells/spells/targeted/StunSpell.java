@@ -119,7 +119,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 			boolean stunBody = info.stunBody && event.hasExplicitlyChangedPosition();
 			boolean stunMonitor = info.stunMonitor && event.hasChangedOrientation();
 			if (!stunBody && !stunMonitor) return;
-			Util.tryTeleportMounted(player, info.useTargetLocation ? info.targetLocation : event.getFrom());
+			player.teleport(info.useTargetLocation ? info.targetLocation : event.getFrom());
 		}
 
 		@EventHandler
@@ -157,7 +157,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 				if (entity instanceof Player) continue;
 
 				if (entity.isValid() && until > System.currentTimeMillis()) {
-					Util.tryTeleportMounted(entity, info.targetLocation);
+					entity.teleport(info.targetLocation);
 					continue;
 				}
 

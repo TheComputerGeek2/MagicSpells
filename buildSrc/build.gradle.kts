@@ -14,13 +14,13 @@ java {
 
 gradlePlugin {
     plugins {
-        create("msjava") {
+        create("msjava", Action {
             id = "dev.magicspells.msjava"
             implementationClass = "dev.magicspells.gradle.MSJavaPlugin"
-        }
-        create("mspaperweight") {
+        })
+        create("mspaperweight", Action {
             id = "dev.magicspells.mspaperweight"
             implementationClass = "dev.magicspells.gradle.MSPaperweight"
-        }
+        })
     }
 }

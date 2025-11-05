@@ -1,7 +1,6 @@
 package com.nisovin.magicspells.spells;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
@@ -13,15 +12,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventPriority;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.MetadataValue;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.event.entity.EntityRemoveEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 import net.kyori.adventure.text.Component;
+
+import com.google.common.collect.Multimap;
+import com.google.common.collect.ArrayListMultimap;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
@@ -38,7 +38,8 @@ import com.nisovin.magicspells.events.SpellTargetLocationEvent;
 
 public class BowSpell extends Spell {
 
-	private static final String METADATA_KEY = "MSBowSpell";
+	private static final Multimap<UUID, ArrowData> ARROW_DATA = ArrayListMultimap.create();
+
 	private static HitListener hitListener;
 
 	private final Component bowName;
@@ -174,6 +175,7 @@ public class BowSpell extends Spell {
 	@Override
 	public void turnOff() {
 		hitListener = null;
+		ARROW_DATA.clear();
 	}
 
 	@Override
@@ -254,24 +256,7 @@ public class BowSpell extends Spell {
 			Entity projectile = event.getProjectile();
 
 			ArrowData arrowData = new ArrowData(this, data, removeArrow.get(data));
-			List<ArrowData> arrowDataList = null;
-			if (projectile.hasMetadata(METADATA_KEY)) {
-				List<MetadataValue> metas = projectile.getMetadata(METADATA_KEY);
-				for (MetadataValue meta : metas) {
-					if (!MagicSpells.plugin.equals(meta.getOwningPlugin())) continue;
-
-					arrowDataList = (List<ArrowData>) meta.value();
-					if (arrowDataList != null) arrowDataList.add(arrowData);
-					break;
-				}
-			}
-
-			if (arrowDataList == null) {
-				arrowDataList = new ArrayList<>();
-				arrowDataList.add(arrowData);
-
-				projectile.setMetadata(METADATA_KEY, new FixedMetadataValue(MagicSpells.plugin, arrowDataList));
-			}
+			ARROW_DATA.put(projectile.getUniqueId(), arrowData);
 
 			playSpellEffects(EffectPosition.PROJECTILE, projectile, arrowData.spellData);
 			playTrackingLinePatterns(EffectPosition.DYNAMIC_CASTER_PROJECTILE_LINE, caster.getLocation(), projectile.getLocation(), caster, projectile, arrowData.spellData);
@@ -308,84 +293,62 @@ public class BowSpell extends Spell {
 			if (event.getHitBlock() == null) return;
 
 			Projectile proj = event.getEntity();
-			if (!proj.hasMetadata(METADATA_KEY)) return;
+			if (!(proj.getShooter() instanceof LivingEntity)) return;
 
-			List<MetadataValue> metas = proj.getMetadata(METADATA_KEY);
+			Collection<ArrowData> arrowDataList = ARROW_DATA.get(proj.getUniqueId());
+			if (arrowDataList.isEmpty()) return;
+
 			boolean remove = false;
-			for (MetadataValue meta : metas) {
-				if (!MagicSpells.plugin.equals(meta.getOwningPlugin())) continue;
+			for (ArrowData data : arrowDataList) {
+				Subspell groundSpell = data.bowSpell.spellOnHitGround;
+				if (groundSpell == null) continue;
 
-				ProjectileSource shooter = proj.getShooter();
-				if (!(shooter instanceof LivingEntity)) break;
+				SpellTargetLocationEvent targetEvent = new SpellTargetLocationEvent(data.bowSpell, data.spellData, proj.getLocation());
+				if (!targetEvent.callEvent()) continue;
 
-				List<ArrowData> arrowDataList = (List<ArrowData>) meta.value();
-				if (arrowDataList == null || arrowDataList.isEmpty()) break;
+				groundSpell.subcast(targetEvent.getSpellData());
 
-				for (ArrowData data : arrowDataList) {
-					Subspell groundSpell = data.bowSpell.spellOnHitGround;
-					if (groundSpell == null) continue;
-
-					SpellTargetLocationEvent targetEvent = new SpellTargetLocationEvent(data.bowSpell, data.spellData, proj.getLocation());
-					if (!targetEvent.callEvent()) continue;
-
-					groundSpell.subcast(targetEvent.getSpellData());
-
-					if (data.removeArrow) remove = true;
-				}
-
-				break;
+				if (data.removeArrow) remove = true;
 			}
 
-			proj.removeMetadata(METADATA_KEY, MagicSpells.plugin);
 			if (remove) proj.remove();
 		}
 
 		@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 		public void onArrowHitEntity(EntityDamageByEntityEvent event) {
-			Entity damager = event.getDamager();
-			if (!(damager instanceof Arrow arrow)) return;
-			if (!damager.hasMetadata(METADATA_KEY)) return;
+			if (!(event.getDamager() instanceof Arrow arrow)) return;
+			if (!(arrow.getShooter() instanceof LivingEntity)) return;
+			if (!(event.getEntity() instanceof LivingEntity target)) return;
 
-			List<MetadataValue> metas = damager.getMetadata(METADATA_KEY);
+			Collection<ArrowData> arrowDataList = ARROW_DATA.get(arrow.getUniqueId());
+			if (arrowDataList.isEmpty()) return;
+
 			boolean remove = false;
-			for (MetadataValue meta : metas) {
-				if (!MagicSpells.plugin.equals(meta.getOwningPlugin())) continue;
+			for (ArrowData data : arrowDataList) {
+				Subspell entitySpell = data.bowSpell.spellOnHitEntity;
+				Subspell entityLocationSpell = data.bowSpell.spellOnEntityLocation;
 
-				Entity damaged = event.getEntity();
-				if (!(damaged instanceof LivingEntity target)) break;
+				SpellTargetEvent targetEvent = new SpellTargetEvent(data.bowSpell, data.spellData, target);
+				if (!targetEvent.callEvent()) continue;
 
-				ProjectileSource shooter = arrow.getShooter();
-				if (!(shooter instanceof LivingEntity)) break;
+				SpellData subData = targetEvent.getSpellData().location(arrow.getLocation());
 
-				List<ArrowData> arrowDataList = (List<ArrowData>) meta.value();
-				if (arrowDataList == null || arrowDataList.isEmpty()) break;
+				if (entitySpell != null) entitySpell.subcast(subData);
+				if (entityLocationSpell != null) entityLocationSpell.subcast(subData.noTarget());
 
-				for (ArrowData data : arrowDataList) {
-					Subspell entitySpell = data.bowSpell.spellOnHitEntity;
-					Subspell entityLocationSpell = data.bowSpell.spellOnEntityLocation;
-
-					SpellTargetEvent targetEvent = new SpellTargetEvent(data.bowSpell, data.spellData, target);
-					if (!targetEvent.callEvent()) continue;
-
-					SpellData subData = targetEvent.getSpellData().location(arrow.getLocation());
-
-					if (entitySpell != null) entitySpell.subcast(subData);
-					if (entityLocationSpell != null) entityLocationSpell.subcast(subData.noTarget());
-
-					if (data.removeArrow) remove = true;
-				}
-
-				break;
+				if (data.removeArrow) remove = true;
 			}
 
-			damager.removeMetadata(METADATA_KEY, MagicSpells.plugin);
-			if (remove) damager.remove();
+			if (remove) arrow.remove();
+		}
+
+		@EventHandler(priority = EventPriority.MONITOR)
+		public void onRemove(EntityRemoveEvent event) {
+			ARROW_DATA.removeAll(event.getEntity().getUniqueId());
 		}
 
 	}
 
-	private record ArrowData(BowSpell bowSpell, SpellData spellData, boolean removeArrow) {
-
-	}
+	private record ArrowData(BowSpell bowSpell, SpellData spellData, boolean removeArrow) {}
 
 }

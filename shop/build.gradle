@@ -1,6 +1,6 @@
 dependencies {
     implementation project(":core")
-    implementation(group: "net.milkbowl.vault", name: "VaultAPI", version: "1.7") { transitive = false }
+    implementation("net.milkbowl.vault:VaultAPI:1.7") { transitive = false }
 }
 
 jar {

@@ -11,6 +11,7 @@ import org.bukkit.conversations.RegexPrompt;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.conversations.ConversationContext;
 
+@SuppressWarnings("removal")
 public class MagicRegexPrompt extends RegexPrompt {
 	
 	private String promptText;

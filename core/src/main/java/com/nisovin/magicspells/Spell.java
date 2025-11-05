@@ -1552,7 +1552,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		World world = caster.getWorld();
 
 		boolean targetPlayers = forceTargetPlayers || validTargetList.canTargetPlayers();
-		if (targetPlayers && MagicSpells.checkWorldPvpFlag() && caster instanceof Player && !isBeneficial() && !world.getPVP()) {
+		if (targetPlayers && MagicSpells.checkWorldPvpFlag() && caster instanceof Player && !isBeneficial() && Boolean.FALSE.equals(world.getGameRuleValue(GameRule.PVP))) {
 			if (forceTargetPlayers) return new TargetInfo<>(null, data, false);
 			targetPlayers = false;
 		}

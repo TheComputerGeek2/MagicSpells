@@ -57,16 +57,6 @@ public class VolatileCodeDisabled extends VolatileCodeHandle {
 	}
 
 	@Override
-	public void addGameTestMarker(Player player, Location location, int color, String name, int lifetime) {
-
-	}
-
-	@Override
-	public void clearGameTestMarkers(Player player) {
-
-	}
-
-	@Override
 	public byte getEntityMetadata(Entity entity) {
 		return 0;
 	}

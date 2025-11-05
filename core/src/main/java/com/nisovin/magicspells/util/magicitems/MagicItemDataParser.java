@@ -4,15 +4,10 @@ import java.util.*;
 import java.io.IOException;
 import java.io.StringReader;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonElement;
-import com.google.gson.TypeAdapter;
+import com.google.gson.*;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import com.google.gson.JsonSyntaxException;
 
 import com.google.common.collect.Multimap;
 
@@ -84,7 +79,7 @@ public class MagicItemDataParser {
 		}
 
 		JsonReader jsonReader = new JsonReader(new StringReader(args[1]));
-		jsonReader.setLenient(true);
+		jsonReader.setStrictness(Strictness.LENIENT);
 
 		try {
 			while (jsonReader.peek() != JsonToken.END_DOCUMENT) {
