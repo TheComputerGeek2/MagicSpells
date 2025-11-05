@@ -17,7 +17,7 @@ dependencies {
     shadow(project(path: ":nms:shared", configuration: "apiElements"))
     shadow(project(path: ":nms:latest")) { transitive = false }
 
-    implementation("com.github.retrooper:packetevents-spigot:2.7.0")
+    implementation("com.github.retrooper:packetevents-spigot:2.10.1")
     implementation("com.comphenix.protocol:ProtocolLib:5.3.0") { transitive = false }
     implementation("me.libraryaddict.disguises:libsdisguises:10.0.44-SNAPSHOT") { transitive = false }
     implementation("net.milkbowl.vault:VaultAPI:1.7") { transitive = false }

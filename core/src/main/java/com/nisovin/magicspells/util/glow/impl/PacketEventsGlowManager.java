@@ -105,7 +105,7 @@ public class PacketEventsGlowManager extends PacketBasedGlowManager<PacketWrappe
 
 		return new WrapperPlayServerEntityMetadata(
 			entity.getEntityId(),
-			List.of(new EntityData(0, EntityDataTypes.BYTE, metadata))
+			List.of(new EntityData<>(0, EntityDataTypes.BYTE, metadata))
 		);
 	}
 
@@ -190,13 +190,15 @@ public class PacketEventsGlowManager extends PacketBasedGlowManager<PacketWrappe
 		private void handleEntityData(PacketSendEvent event) {
 			WrapperPlayServerEntityMetadata packet = new WrapperPlayServerEntityMetadata(event);
 
-			List<EntityData> metadata = packet.getEntityMetadata();
+			List<EntityData<?>> metadata = packet.getEntityMetadata();
 			if (metadata.isEmpty()) return;
 
-			EntityData entityData = metadata.getFirst();
-			if (entityData.getIndex() != 0) return;
+			EntityData<?> entityData = metadata.getFirst();
+			if (entityData.getIndex() != 0 || entityData.getType() != EntityDataTypes.BYTE) return;
 
-			byte flags = (byte) entityData.getValue();
+			EntityData<Byte> flagData = (EntityData<Byte>) entityData;
+
+			byte flags = flagData.getValue();
 			if ((flags & 0x40) > 0) return;
 
 			Player player = event.getPlayer();
@@ -213,7 +215,7 @@ public class PacketEventsGlowManager extends PacketBasedGlowManager<PacketWrappe
 			if (data == null) return;
 
 			flags |= 0x40;
-			entityData.setValue(flags);
+			flagData.setValue(flags);
 		}
 
 		private void handleTeams(PacketSendEvent event) {
