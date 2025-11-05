@@ -57,7 +57,7 @@ public class PacketEventsGlowManager extends PacketBasedGlowManager<PacketWrappe
 
 	@Override
 	protected Collection<WrapperPlayServerTeams> createAddTeamPackets() {
-		ConfigurationSection config = MagicSpells.getInstance().getMagicConfig().getMainConfig();
+		ConfigurationSection config = MagicSpells.getMagicConfig().getMainConfig();
 
 		boolean seeFriendlyInvisibles = config.getBoolean("general.glow-spell-scoreboard-teams.see-friendly-invisibles", false);
 		OptionData optionData = seeFriendlyInvisibles ? OptionData.ALL : OptionData.FRIENDLY_FIRE;
