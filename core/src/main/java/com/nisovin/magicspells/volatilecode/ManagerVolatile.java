@@ -38,7 +38,7 @@ public class ManagerVolatile {
 
 		@Override
 		public YamlConfiguration getMainConfig() {
-			return MagicSpells.getInstance().getMagicConfig().getMainConfig();
+			return MagicSpells.getMagicConfig().getMainConfig();
 		}
 
 	};
