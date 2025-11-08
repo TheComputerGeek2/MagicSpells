@@ -210,8 +210,7 @@ public abstract class PacketBasedGlowManager<TPacket, TEntityDataPacket extends 
 	protected void updateGlow(@Nullable Player player, @NotNull Entity entity, @Nullable GlowData prev, @NotNull GlowData curr) {
 		if (prev == curr) return;
 
-		Set<Player> trackedBy = entity.getTrackedBy();
-		if (player != null && !player.equals(entity) && !trackedBy.contains(player)) return;
+		if (player != null && !player.equals(entity) && !entity.isTrackedBy(player)) return;
 
 		if (prev != null && player != null && prev.color() == curr.color()) {
 			curr.lastScoreboardEntry(prev.lastScoreboardEntry);
@@ -245,7 +244,7 @@ public abstract class PacketBasedGlowManager<TPacket, TEntityDataPacket extends 
 		}
 
 		Pair<UUID, UUID> pair = ObjectObjectMutablePair.of(null, entity.getUniqueId());
-		for (Player viewer : getTrackedBy(entity, trackedBy)) {
+		for (Player viewer : getTrackedBy(entity)) {
 			GlowDataMap targetedMap = perPlayerGlows.get(pair.left(viewer.getUniqueId()));
 			if (targetedMap != null) {
 				GlowData perPlayerData = targetedMap.get();
@@ -276,8 +275,7 @@ public abstract class PacketBasedGlowManager<TPacket, TEntityDataPacket extends 
 	}
 
 	protected void resetGlow(@Nullable Player player, @NotNull Entity entity, @NotNull GlowData data) {
-		Set<Player> trackedBy = entity.getTrackedBy();
-		if (player != null && !player.equals(entity) && !trackedBy.contains(player)) return;
+		if (player != null && !player.equals(entity) && !entity.isTrackedBy(player)) return;
 
 		Scoreboard mainScoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 
@@ -296,7 +294,7 @@ public abstract class PacketBasedGlowManager<TPacket, TEntityDataPacket extends 
 		}
 
 		Pair<UUID, UUID> pair = ObjectObjectMutablePair.of(null, entity.getUniqueId());
-		for (Player viewer : getTrackedBy(entity, trackedBy)) {
+		for (Player viewer : getTrackedBy(entity)) {
 			GlowDataMap targetedMap = perPlayerGlows.get(pair.left(viewer.getUniqueId()));
 			if (targetedMap != null) {
 				GlowData perPlayerData = targetedMap.get();
@@ -377,12 +375,14 @@ public abstract class PacketBasedGlowManager<TPacket, TEntityDataPacket extends 
 		return LibsDisguiseHelper.getDisguisedScoreboardEntry(player, entity);
 	}
 
-	protected Iterable<Player> getTrackedBy(@NotNull Entity entity, @NotNull Set<Player> trackedBy) {
+	protected Iterable<Player> getTrackedBy(@NotNull Entity entity) {
+		Set<Player> trackedBy = entity.getTrackedBy();
 		if (!(entity instanceof Player player) || trackedBy.contains(player)) return trackedBy;
 		return Iterables.concat(trackedBy, Collections.singleton(player));
 	}
 
-	protected <T> T getStringOption(@NotNull String name, T def, @NotNull Function<String, T> converter, @NotNull ConfigurationSection config, @NotNull Consumer<String> onError) {
+	@NotNull
+	protected <T> T getStringOption(@NotNull String name, @NotNull T def, @NotNull Function<String, T> converter, @NotNull ConfigurationSection config, @NotNull Consumer<String> onError) {
 		String string = config.getString("general.glow-spell-scoreboard-teams." + name);
 		if (string == null) return def;
 

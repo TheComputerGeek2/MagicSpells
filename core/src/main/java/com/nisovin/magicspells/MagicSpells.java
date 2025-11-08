@@ -2339,8 +2339,8 @@ public class MagicSpells extends JavaPlugin {
 		return getClassLoader();
 	}
 
-	public MagicConfig getMagicConfig() {
-		return config;
+	public static MagicConfig getMagicConfig() {
+		return plugin.config;
 	}
 
 }

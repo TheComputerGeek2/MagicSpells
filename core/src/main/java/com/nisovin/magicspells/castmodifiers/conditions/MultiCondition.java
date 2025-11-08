@@ -63,7 +63,7 @@ public class MultiCondition extends Condition implements IModifier {
 	@Override
 	public boolean initialize(@NotNull String var) {
 		configPrefix += var;
-		MagicConfig config = MagicSpells.plugin.getMagicConfig();
+		MagicConfig config = MagicSpells.getMagicConfig();
 		if (!(config.contains(configPrefix) && config.isSection(configPrefix))) return false;
 		
 		List<String> modifierStrings = config.getStringList(configPrefix + ".checks", null);
