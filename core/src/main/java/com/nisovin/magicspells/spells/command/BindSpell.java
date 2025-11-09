@@ -1,11 +1,21 @@
 package com.nisovin.magicspells.spells.command;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
+import java.util.Objects;
+import java.util.Collections;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
+
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
@@ -14,8 +24,9 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
+import com.nisovin.magicspells.commands.parsers.OwnedSpellParser;
 
-public class BindSpell extends CommandSpell {
+public class BindSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private Set<CastItem> bindableItems;
 
@@ -127,7 +138,7 @@ public class BindSpell extends CommandSpell {
 		spellbook.save();
 		MagicSpells.debug(3, "    Bind successful.");
 
-		sendMessage(strCastSelf, caster, data, "%s", spell.getName());
+		sendMessage(strCastSelf, caster, data, "%s", Util.getStrictString(spell.getName()));
 		playSpellEffects(EffectPosition.CASTER, caster, data);
 
 		return new CastResult(PostCastAction.NO_MESSAGES, data);
@@ -139,8 +150,20 @@ public class BindSpell extends CommandSpell {
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		return sender instanceof Player && args.length == 1 ? TxtUtil.tabCompleteSpellName(sender) : null;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (!(executor instanceof Player caster)) return Collections.emptyList();
+
+		CastItem castItem = new CastItem(caster.getInventory().getItemInMainHand());
+		if (bindableItems != null && !bindableItems.contains(castItem)) return Collections.emptyList();
+
+		return OwnedSpellParser.suggest(caster, spell -> {
+			if (spell.isHelperSpell() || !spell.canCastWithItem()) return false;
+			if (allowedSpells != null && !allowedSpells.contains(spell)) return false;
+			return spell.canBind(castItem);
+		});
 	}
 
 	public Set<CastItem> getBindableItems() {

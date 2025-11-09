@@ -79,12 +79,12 @@ public class BowSpell extends Spell {
 		List<String> names = getConfigStringList("bow-names", null);
 		if (names != null) {
 			bowNames = new ArrayList<>();
-			names.forEach(str -> bowNames.add(Util.getMiniMessage(str)));
+			names.forEach(str -> bowNames.add(Util.getItemMiniMessage(str)));
 
 			bowName = null;
 		} else {
 			String bowNameString = getConfigString("bow-name", null);
-			bowName = Util.getMiniMessage(bowNameString);
+			bowName = Util.getItemMiniMessage(bowNameString);
 
 			bowNames = null;
 		}
@@ -92,7 +92,7 @@ public class BowSpell extends Spell {
 		List<String> disallowedNames = getConfigStringList("disallowed-bow-names", null);
 		if (disallowedNames != null) {
 			disallowedBowNames = new ArrayList<>();
-			disallowedNames.forEach(str -> disallowedBowNames.add(Util.getMiniMessage(str)));
+			disallowedNames.forEach(str -> disallowedBowNames.add(Util.getItemMiniMessage(str)));
 		} else disallowedBowNames = null;
 
 		if (config.isList(internalKey + "can-trigger")) {
