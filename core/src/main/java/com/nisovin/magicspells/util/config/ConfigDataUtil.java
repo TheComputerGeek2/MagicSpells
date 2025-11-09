@@ -364,21 +364,11 @@ public class ConfigDataUtil {
 			return data -> component;
 		}
 
-		return new ConfigData<>() {
+		return (VariableConfigData<Component>) data -> {
+			String value = supplier.get(data);
+			if (value == null) return def;
 
-			@Override
-			public Component get(@NotNull SpellData data) {
-				String value = supplier.get(data);
-				if (value == null) return def;
-
-				return Util.getMiniMessage(value);
-			}
-
-			@Override
-			public boolean isConstant() {
-				return false;
-			}
-
+			return Util.getMiniMessage(value);
 		};
 	}
 
@@ -393,21 +383,30 @@ public class ConfigDataUtil {
 			return data -> component;
 		}
 
-		return new ConfigData<>() {
+		return (VariableConfigData<Component>) data -> {
+			String val = supplier.get(data);
+			if (val == null) return null;
 
-			@Override
-			public Component get(@NotNull SpellData data) {
-				String value = supplier.get(data);
-				if (value == null) return null;
+			return Util.getMiniMessage(val);
+		};
+	}
 
-				return Util.getMiniMessage(value);
-			}
+	@NotNull
+	public static ConfigData<Component> getItemComponent(@NotNull ConfigurationSection config, @NotNull String path, @Nullable Component def) {
+		ConfigData<String> supplier = getString(config, path, null);
+		if (supplier.isConstant()) {
+			String value = supplier.get();
+			if (value == null) return data -> def;
 
-			@Override
-			public boolean isConstant() {
-				return false;
-			}
+			Component component = Util.getItemMiniMessage(value);
+			return data -> component;
+		}
 
+		return (VariableConfigData<Component>) data -> {
+			String value = supplier.get(data);
+			if (value == null) return def;
+
+			return Util.getItemMiniMessage(value);
 		};
 	}
 

@@ -65,11 +65,11 @@ public class CaptureSpell extends TargetedSpell implements TargetedEntitySpell {
 			String[] replacements = {"%name%", getTargetName(target)};
 
 			item.editMeta(meta -> {
-				if (itemName != null) meta.displayName(Util.getMiniMessage(itemName, data, replacements));
+				if (itemName != null) meta.displayName(Util.getItemMiniMessage(itemName, data, replacements));
 
 				if (itemLore != null) {
 					List<Component> lore = new ArrayList<>();
-					for (String line : itemLore) lore.add(Util.getMiniMessage(line, data, replacements));
+					for (String line : itemLore) lore.add(Util.getItemMiniMessage(line, data, replacements));
 					meta.lore(lore);
 				}
 			});

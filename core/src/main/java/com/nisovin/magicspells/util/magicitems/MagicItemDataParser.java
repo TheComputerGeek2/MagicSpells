@@ -95,7 +95,7 @@ public class MagicItemDataParser {
 
 					switch (key.toLowerCase()) {
 						case "name":
-							data.setAttribute(NAME, Util.getMiniMessage(value.getAsString()));
+							data.setAttribute(NAME, Util.getItemMiniMessage(value.getAsString()));
 							break;
 						case "amount":
 							data.setAttribute(AMOUNT, value.getAsInt());
@@ -196,10 +196,10 @@ public class MagicItemDataParser {
 							data.setAttribute(SKULL_OWNER, value.getAsString());
 							break;
 						case "title":
-							data.setAttribute(TITLE, Util.getMiniMessage(value.getAsString()));
+							data.setAttribute(TITLE, Util.getItemMiniMessage(value.getAsString()));
 							break;
 						case "author":
-							data.setAttribute(AUTHOR, Util.getMiniMessage(value.getAsString()));
+							data.setAttribute(AUTHOR, Util.getItemMiniMessage(value.getAsString()));
 							break;
 						case "uuid":
 							String uuidString = value.getAsString();
@@ -272,7 +272,7 @@ public class MagicItemDataParser {
 							List<Component> lore = new ArrayList<>();
 							JsonArray jsonArray = value.getAsJsonArray();
 							for (JsonElement elementInside : jsonArray) {
-								lore.add(Util.getMiniMessage(elementInside.getAsString()));
+								lore.add(Util.getItemMiniMessage(elementInside.getAsString()));
 							}
 
 							if (!lore.isEmpty()) data.setAttribute(LORE, lore);
@@ -283,7 +283,7 @@ public class MagicItemDataParser {
 							List<Component> pages = new ArrayList<>();
 							JsonArray pageArray = value.getAsJsonArray();
 							for (JsonElement page : pageArray) {
-								pages.add(Util.getMiniMessage(page.getAsString()));
+								pages.add(Util.getItemMiniMessage(page.getAsString()));
 							}
 
 							if (!pages.isEmpty()) data.setAttribute(PAGES, pages);

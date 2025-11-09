@@ -75,7 +75,7 @@ public class SignTextCondition extends Condition {
 
 		List<Component> lines = ((Sign) block.getState()).getSide(side).lines();
 		for (int i = 0; i < lines.size(); i++) {
-			String signLine = Util.getStrictStringFromComponent(lines.get(i));
+			String signLine = Util.getStrictString(lines.get(i));
 			String checkLine = text.size() - 1 >= i ? text.get(i) : "";
 			if (signLine.equals(checkLine)) continue;
 			return false;

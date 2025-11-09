@@ -22,9 +22,9 @@ public class LoreHandler {
 		List<Component> lore = new ArrayList<>();
 		if (config.isList(CONFIG_NAME)) {
 			for (String line : config.getStringList(CONFIG_NAME))
-				lore.add(Util.getMiniMessage(line));
+				lore.add(Util.getItemMiniMessage(line));
 		} else if (config.isString(CONFIG_NAME)) {
-			lore.add(Util.getMiniMessage(config.getString(CONFIG_NAME)));
+			lore.add(Util.getItemMiniMessage(config.getString(CONFIG_NAME)));
 		}
 		if (lore.isEmpty()) return;
 

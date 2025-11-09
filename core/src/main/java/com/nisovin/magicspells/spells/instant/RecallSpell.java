@@ -1,6 +1,13 @@
 package com.nisovin.magicspells.spells.instant;
 
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
+import java.util.Collections;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -8,17 +15,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
+
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
+import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.InstantSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 
-public class RecallSpell extends InstantSpell implements TargetedEntitySpell {
+public class RecallSpell extends InstantSpell implements TargetedEntitySpell, BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private final ConfigData<Double> maxRange;
 
@@ -77,14 +86,16 @@ public class RecallSpell extends InstantSpell implements TargetedEntitySpell {
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (args.length != 1) return null;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
 
-		if (sender instanceof Player player) {
-			if (!MagicSpells.getSpellbook(player).hasAdvancedPerm(internalName)) return null;
-		} else if (!(sender instanceof ConsoleCommandSender)) return null;
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (!(executor instanceof Player caster)) return Collections.emptyList();
 
-		return TxtUtil.tabCompletePlayerName(sender);
+		Spellbook spellbook = MagicSpells.getSpellbook(caster);
+		if (!spellbook.hasAdvancedPerm(internalName)) return Collections.emptyList();
+
+		return TxtUtil.tabCompletePlayerName(executor);
 	}
 
 	private CastResult recall(SpellData data, LivingEntity entity, Location markLocation) {

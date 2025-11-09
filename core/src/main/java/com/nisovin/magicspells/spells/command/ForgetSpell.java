@@ -1,13 +1,23 @@
 package com.nisovin.magicspells.spells.command;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Collections;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+
+import com.nisovin.magicspells.Perm;
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Spellbook;
@@ -15,11 +25,12 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellForgetEvent;
+import com.nisovin.magicspells.commands.parsers.OwnedSpellParser;
 
 // Advanced perm allows you to make others forget a spell
 // Put * for the spell to forget all of them
 
-public class ForgetSpell extends CommandSpell {
+public class ForgetSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private final ConfigData<Boolean> allowSelfForget;
 
@@ -155,48 +166,57 @@ public class ForgetSpell extends CommandSpell {
 		if (!forgetEvent.callEvent()) return false;
 
 		String consoleName = MagicSpells.getConsoleName();
-		String targetDisplayName = Util.getStringFromComponent(target.displayName());
+		String targetDisplayName = Util.getStrictString(target.displayName());
 		if (!all) {
 			targetSpellbook.removeSpell(spell);
 			targetSpellbook.save();
-			sendMessage(strCastTarget, target, args, "%a", consoleName, "%s", spell.getName(), "%t", targetDisplayName);
-			sender.sendMessage(formatMessage(strCastSelf, "%a", consoleName, "%s", spell.getName(), "%t", targetDisplayName));
+
+			String spellName = Util.getStrictString(spell.getName());
+			sendMessage(strCastTarget, target, args, "%a", consoleName, "%s", spellName, "%t", targetDisplayName);
+			sender.sendMessage(Util.getMiniMessage(formatMessage(strCastSelf, "%a", consoleName, "%s", spellName, "%t", targetDisplayName)));
 		} else {
 			targetSpellbook.removeAllSpells();
 			targetSpellbook.save();
-			sender.sendMessage(formatMessage(strResetTarget, "%a", consoleName, "%t", targetDisplayName));
+
+			sender.sendMessage(Util.getMiniMessage(formatMessage(strResetTarget, "%a", consoleName, "%t", targetDisplayName)));
 		}
 		return true;
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (sender instanceof ConsoleCommandSender) {
-			if (args.length == 1) return TxtUtil.tabCompletePlayerName(sender);
-			if (args.length == 2) {
-				List<String> ret = new ArrayList<>();
-				ret.add("*");
-				ret.addAll(TxtUtil.tabCompleteSpellName(sender));
-				return ret;
-			}
-		} else if (sender instanceof Player player) {
-			if (args.length == 1) {
-				List<String> ret = new ArrayList<>();
-				if (MagicSpells.getSpellbook(player).hasAdvancedPerm("forget")) {
-					ret.addAll(TxtUtil.tabCompletePlayerName(sender));
-				}
-				ret.add("*");
-				ret.addAll(TxtUtil.tabCompleteSpellName(sender));
-				return ret;
-			}
-			if (args.length == 2 && Bukkit.getPlayer(args[0]) != null) {
-				List<String> ret = new ArrayList<>();
-				ret.add("*");
-				ret.addAll(TxtUtil.tabCompleteSpellName(sender));
-				return ret;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (!(executor instanceof ConsoleCommandSender) && !executor.hasPermission(Perm.ADVANCED.getNode() + "forget")) {
+			if (!(executor instanceof Player caster) || !allowSelfForget.get(new SpellData(caster)))
+				return Collections.emptyList();
+
+			return OwnedSpellParser.suggest(caster);
+		}
+
+		CommandInput original = input.copy();
+
+		String playerName = input.readString();
+		if (!input.isEmpty() || input.input().endsWith(" ")) {
+			Player target = Bukkit.getPlayer(playerName);
+
+			if (target != null) {
+				String prefix = original.difference(input.skipWhitespace(), true);
+
+				return OwnedSpellParser.suggest(target).stream()
+					.map(s -> prefix + s)
+					.toList();
 			}
 		}
-		return null;
+
+		List<String> suggestions = TxtUtil.tabCompletePlayerName(executor);
+		if (executor instanceof Player caster && allowSelfForget.get(new SpellData(caster))) {
+			suggestions.add("*");
+			suggestions.addAll(OwnedSpellParser.suggest(caster));
+		}
+
+		return suggestions;
 	}
 
 	public String getStrUsage() {

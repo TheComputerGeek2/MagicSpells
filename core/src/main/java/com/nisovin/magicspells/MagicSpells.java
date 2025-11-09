@@ -1,5 +1,7 @@
 package com.nisovin.magicspells;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 
 import java.util.*;
@@ -25,16 +27,14 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 
+import net.kyori.adventure.text.format.NamedTextColor;
+
 import de.slikey.effectlib.EffectManager;
 
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.DrilldownPie;
-
-import org.jetbrains.annotations.NotNull;
-
-import co.aikar.commands.PaperCommandManager;
 
 import org.bukkit.*;
 import org.bukkit.event.Event;
@@ -53,6 +53,11 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.configuration.ConfigurationSection;
 
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+
+import org.incendo.cloud.paper.PaperCommandManager;
+import org.incendo.cloud.execution.ExecutionCoordinator;
+
 import me.clip.placeholderapi.PlaceholderAPI;
 
 import com.nisovin.magicspells.util.*;
@@ -64,8 +69,8 @@ import com.nisovin.magicspells.mana.ManaSystem;
 import com.nisovin.magicspells.mana.ManaHandler;
 import com.nisovin.magicspells.variables.Variable;
 import com.nisovin.magicspells.spells.PassiveSpell;
-import com.nisovin.magicspells.commands.MagicCommand;
 import com.nisovin.magicspells.util.compat.EventUtil;
+import com.nisovin.magicspells.commands.MagicCommands;
 import com.nisovin.magicspells.storage.StorageHandler;
 import com.nisovin.magicspells.util.prompt.PromptType;
 import com.nisovin.magicspells.util.compat.CompatBasics;
@@ -73,7 +78,6 @@ import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
-import com.nisovin.magicspells.commands.CommandHelpFilter;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.recipes.CustomRecipes;
 import com.nisovin.magicspells.util.ai.CustomGoalsManager;
@@ -141,7 +145,7 @@ public class MagicSpells extends JavaPlugin {
 	private NoMagicZoneManager zoneManager;
 	private CleanserManager cleanserManager;
 	private CustomGoalsManager customGoalsManager;
-	private PaperCommandManager commandManager;
+	private PaperCommandManager<CommandSourceStack> commandManager;
 	private ExperienceBarManager expBarManager;
 
 	private ExpressionDictionary expressionDictionary;
@@ -212,7 +216,8 @@ public class MagicSpells extends JavaPlugin {
 
 	private long lastReloadTime = 0;
 
-	private ChatColor textColor;
+	private NamedTextColor textColor;
+	private String textFormat;
 
 	private double losRaySize;
 	private boolean losIgnorePassableBlocks;
@@ -238,45 +243,8 @@ public class MagicSpells extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		load();
-
-		Metrics metrics = new Metrics(this, 892);
-
-		metrics.addCustomChart(new DrilldownPie("spells", () -> {
-			Map<String, Map<String, Integer>> map = new HashMap<>();
-			if (spells == null) return map;
-
-			for (Spell spell : spells.values()) {
-				String name = spell.getClass().getName();
-				if (!name.startsWith("com.nisovin.magicspells.spells")) continue;
-				name = name.replace("com.nisovin.magicspells.spells.", "");
-
-				String[] typeSplit = name.split("\\.", 2);
-				String formalPackage = typeSplit[0].substring(0, 1).toUpperCase() + typeSplit[0].substring(1);
-
-				String spellPackage = (typeSplit.length == 1 ? "General" : formalPackage) + " Spells";
-				String spellClass = typeSplit.length == 1 ? typeSplit[0] : typeSplit[1];
-
-				map.computeIfAbsent(spellPackage, key -> new HashMap<>());
-				map.get(spellPackage).compute(spellClass, (k, v) -> (v == null ? 0 : v) + 1);
-			}
-			return map;
-		}));
-		metrics.addCustomChart(new AdvancedPie("passive_listeners", () -> {
-			IntMap<String> map = new IntMap<>();
-			if (spells == null) return map;
-
-			for (Spell spell : spells.values()) {
-				if (!spell.getClass().getName().startsWith("com.nisovin.magicspells.spells")) continue;
-				if (!(spell instanceof PassiveSpell passiveSpell)) continue;
-
-				for (PassiveListener listener : passiveSpell.getPassiveListeners()) {
-					String name = listener.getClass().getSimpleName();
-					map.increment(name.substring(0, name.lastIndexOf("Listener")));
-				}
-			}
-			return map;
-		}));
-		metrics.addCustomChart(new SimplePie("reload_time", () -> "<" + (lastReloadTime - lastReloadTime % 500 + 500) + " ms"));
+		initMetrics();
+		initCommands();
 	}
 
 	public void load() {
@@ -286,8 +254,6 @@ public class MagicSpells extends JavaPlugin {
 
 		effectManager = new EffectManager(this);
 		effectManager.enableDebug(debug);
-
-		commandManager = new PaperCommandManager(plugin);
 
 		// Create storage stuff
 		spells = new HashMap<>();
@@ -334,7 +300,6 @@ public class MagicSpells extends JavaPlugin {
 		enableErrorLogging = config.getBoolean(path + "enable-error-logging", true);
 		errorLogLimit = config.getInt(path + "error-log-limit", -1);
 		enableProfiling = config.getBoolean(path + "enable-profiling", false);
-		textColor = ChatColor.getByChar(config.getString(path + "text-color", ChatColor.DARK_AQUA.getChar() + ""));
 		broadcastRange = config.getInt(path + "broadcast-range", 20);
 		effectlibInstanceLimit = config.getInt(path + "effectlib-instance-limit", 20000);
 
@@ -404,6 +369,9 @@ public class MagicSpells extends JavaPlugin {
 				entityNames.put(entityType, config.getString(path + "entity-names." + key, ""));
 			}
 		}
+
+		textColor = Util.getLegacyColor(config.getString(path + "text-color", null), NamedTextColor.DARK_AQUA);
+		textFormat = config.getString(path + "text-format", "<" + textColor + "><text></" + textColor + ">");
 
 		soundFailOnCooldown = config.getString(path + "sound-on-cooldown", null);
 		soundFailMissingReagents = config.getString(path + "sound-missing-reagents", null);
@@ -570,12 +538,6 @@ public class MagicSpells extends JavaPlugin {
 			magicLogger = new MagicLogger(this);
 		}
 
-		// Register commands
-		commandManager.enableUnstableAPI("help");
-		commandManager.registerCommand(new MagicCommand());
-		commandManager.setValidNamePredicate(string -> true);
-		CommandHelpFilter.mapPerms();
-
 		// Setup profiling
 		if (enableProfiling) {
 			profilingTotalTime = new HashMap<>();
@@ -586,6 +548,55 @@ public class MagicSpells extends JavaPlugin {
 
 		// Load external data
 		Bukkit.getScheduler().runTaskLater(this, this::loadExternalData, 1);
+	}
+
+	private void initMetrics() {
+		Metrics metrics = new Metrics(this, 892);
+
+		metrics.addCustomChart(new DrilldownPie("spells", () -> {
+			Map<String, Map<String, Integer>> map = new HashMap<>();
+			if (spells == null) return map;
+
+			for (Spell spell : spells.values()) {
+				String name = spell.getClass().getName();
+				if (!name.startsWith("com.nisovin.magicspells.spells")) continue;
+				name = name.replace("com.nisovin.magicspells.spells.", "");
+
+				String[] typeSplit = name.split("\\.", 2);
+				String formalPackage = typeSplit[0].substring(0, 1).toUpperCase() + typeSplit[0].substring(1);
+
+				String spellPackage = (typeSplit.length == 1 ? "General" : formalPackage) + " Spells";
+				String spellClass = typeSplit.length == 1 ? typeSplit[0] : typeSplit[1];
+
+				map.computeIfAbsent(spellPackage, key -> new HashMap<>());
+				map.get(spellPackage).compute(spellClass, (k, v) -> (v == null ? 0 : v) + 1);
+			}
+			return map;
+		}));
+		metrics.addCustomChart(new AdvancedPie("passive_listeners", () -> {
+			IntMap<String> map = new IntMap<>();
+			if (spells == null) return map;
+
+			for (Spell spell : spells.values()) {
+				if (!spell.getClass().getName().startsWith("com.nisovin.magicspells.spells")) continue;
+				if (!(spell instanceof PassiveSpell passiveSpell)) continue;
+
+				for (PassiveListener listener : passiveSpell.getPassiveListeners()) {
+					String name = listener.getClass().getSimpleName();
+					map.increment(name.substring(0, name.lastIndexOf("Listener")));
+				}
+			}
+			return map;
+		}));
+		metrics.addCustomChart(new SimplePie("reload_time", () -> "<" + (lastReloadTime - lastReloadTime % 500 + 500) + " ms"));
+	}
+
+	private void initCommands() {
+		commandManager = PaperCommandManager.builder()
+			.executionCoordinator(ExecutionCoordinator.simpleCoordinator())
+			.buildOnEnable(this);
+
+		MagicCommands.register(commandManager);
 	}
 
 	private void initializeSpells() {
@@ -1077,8 +1088,17 @@ public class MagicSpells extends JavaPlugin {
 		return plugin.spellbooks.computeIfAbsent(player.getUniqueId(), uuid -> new Spellbook(player));
 	}
 
+	@Deprecated(forRemoval = true)
 	public static ChatColor getTextColor() {
+		return ChatColor.valueOf(plugin.textColor.toString().toUpperCase());
+	}
+
+	public static NamedTextColor getLegacyTextColor() {
 		return plugin.textColor;
+	}
+
+	public static String getTextFormat() {
+		return plugin.textFormat;
 	}
 
 	/**
@@ -1244,6 +1264,10 @@ public class MagicSpells extends JavaPlugin {
 
 	public static int getDebugLevelOriginal() {
 		return plugin.debugLevelOriginal;
+	}
+
+	public static int getDebugLevel() {
+		return plugin.debugLevel;
 	}
 
 	public static int getErrorLogLimit() {
@@ -1584,7 +1608,7 @@ public class MagicSpells extends JavaPlugin {
 
 		message = doReplacements(message, recipient, data, replacements);
 
-		recipient.sendMessage(Util.getMiniMessage(getTextColor() + message));
+		recipient.sendMessage(Util.getMessageText(message));
 	}
 
 	private static final Pattern chatVarMatchPattern = Pattern.compile("%var:(\\w+)(?::(\\d+))?%", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
@@ -1898,13 +1922,13 @@ public class MagicSpells extends JavaPlugin {
 	public static String getTargetName(Entity target) {
 		if (target instanceof Player) return target.getName();
 
-		if (target.customName() != null) return Util.getStrictStringFromComponent(target.customName());
+		if (target.customName() != null) return Util.getStrictString(target.customName());
 
 		EntityType type = target.getType();
 		String name = plugin.entityNames.get(type);
 		if (name != null) return name;
 
-		return Util.getStrictStringFromComponent(target.name());
+		return Util.getStrictString(target.name());
 	}
 
 	public static void registerEvents(final Listener listener) {

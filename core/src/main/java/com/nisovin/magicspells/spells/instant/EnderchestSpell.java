@@ -1,18 +1,27 @@
 package com.nisovin.magicspells.spells.instant;
 
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
+import java.util.Collections;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 
+import com.nisovin.magicspells.Perm;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.InstantSpell;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
-public class EnderchestSpell extends InstantSpell implements TargetedEntitySpell {
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+
+public class EnderchestSpell extends InstantSpell implements TargetedEntitySpell, BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	public EnderchestSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -49,14 +58,14 @@ public class EnderchestSpell extends InstantSpell implements TargetedEntitySpell
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (args.length != 1) return null;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
 
-		if (sender instanceof Player player) {
-			if (!MagicSpells.getSpellbook(player).hasAdvancedPerm(internalName)) return null;
-		} else if (!(sender instanceof ConsoleCommandSender)) return null;
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (!(executor instanceof Player player) || !executor.hasPermission(Perm.ADVANCED.getNode(this)))
+			return Collections.emptyList();
 
-		return TxtUtil.tabCompletePlayerName(sender);
+		return TxtUtil.tabCompletePlayerName(player);
 	}
 
 }

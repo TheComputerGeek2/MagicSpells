@@ -7,7 +7,7 @@ terminate-effectlib-instances: true
 enable-error-logging: true
 enable-profiling: false
 error-log-limit: -1
-text-color: 3
+text-style: <dark_aqua>
 broadcast-range: 20
 effectlib-instance-limit: 20000
 ops-have-all-spells: true

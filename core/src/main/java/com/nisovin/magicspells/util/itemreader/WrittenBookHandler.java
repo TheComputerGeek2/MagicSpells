@@ -25,14 +25,14 @@ public class WrittenBookHandler {
 		if (!(meta instanceof BookMeta bookMeta)) return;
 
 		if (config.isString(TITLE_CONFIG_NAME)) {
-			Component title = Util.getMiniMessage(config.getString(TITLE_CONFIG_NAME));
+			Component title = Util.getItemMiniMessage(config.getString(TITLE_CONFIG_NAME));
 
 			bookMeta.title(title);
 			data.setAttribute(TITLE, bookMeta.title());
 		}
 
 		if (config.isString(AUTHOR_CONFIG_NAME)) {
-			Component author = Util.getMiniMessage(config.getString(AUTHOR_CONFIG_NAME));
+			Component author = Util.getItemMiniMessage(config.getString(AUTHOR_CONFIG_NAME));
 
 			bookMeta.author(author);
 			data.setAttribute(AUTHOR, bookMeta.author());
@@ -40,7 +40,7 @@ public class WrittenBookHandler {
 
 		if (config.isList(PAGES_CONFIG_NAME)) {
 			List<Component> pages = new ArrayList<>();
-			for (String page : config.getStringList(PAGES_CONFIG_NAME)) pages.add(Util.getMiniMessage(page));
+			for (String page : config.getStringList(PAGES_CONFIG_NAME)) pages.add(Util.getItemMiniMessage(page));
 
 			if (pages.isEmpty()) return;
 

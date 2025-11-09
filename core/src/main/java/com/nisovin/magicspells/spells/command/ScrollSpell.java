@@ -1,9 +1,15 @@
 package com.nisovin.magicspells.spells.command;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 import java.util.regex.Pattern;
 
 import net.kyori.adventure.text.Component;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -21,14 +27,18 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+
 import com.nisovin.magicspells.Perm;
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
+import com.nisovin.magicspells.commands.parsers.SpellParser;
+import com.nisovin.magicspells.commands.parsers.OwnedSpellParser;
 
-public class ScrollSpell extends CommandSpell {
+public class ScrollSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private static final Pattern SCROLL_DATA_USES_PATTERN = Pattern.compile("^\\d+$");
 	private static final Pattern CAST_ARGUMENT_USE_COUNT_PATTERN = Pattern.compile("^-?\\d+$");
@@ -215,10 +225,10 @@ public class ScrollSpell extends CommandSpell {
 
 		String usageCount = uses >= 0 ? String.valueOf(uses) : "many";
 		String displayName = strScrollName.replace("%s", spell.getName()).replace("%u", usageCount);
-		meta.displayName(Util.getMiniMessage(displayName));
+		meta.displayName(Util.getItemMiniMessage(displayName));
 
 		if (strScrollSubtext != null && !strScrollSubtext.isEmpty()) {
-			Component lore = Util.getMiniMessage(strScrollSubtext.replace("%s", spell.getName()).replace("%u", usageCount));
+			Component lore = Util.getItemMiniMessage(strScrollSubtext.replace("%s", spell.getName()).replace("%u", usageCount));
 			meta.lore(Collections.singletonList(lore));
 		}
 
@@ -228,19 +238,30 @@ public class ScrollSpell extends CommandSpell {
 
 		return item;
 	}
-	
+
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (sender instanceof ConsoleCommandSender) {
-			if (args.length == 1) return TxtUtil.tabCompletePlayerName(sender);
-			if (args.length == 2) return TxtUtil.tabCompleteSpellName(sender);
-			if (args.length == 3) return List.of("1");
-		}
-		else if (sender instanceof Player) {
-			if (args.length == 1) return TxtUtil.tabCompleteSpellName(sender);
-			if (args.length == 2) return List.of("1");
-		}
-		return null;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (executor instanceof Player caster)
+			return OwnedSpellParser.suggest(caster, requireTeachPerm ? MagicSpells.getSpellbook(caster)::canTeach : null);
+
+		if (!(executor instanceof ConsoleCommandSender)) return Collections.emptyList();
+
+		List<String> suggestions = TxtUtil.tabCompletePlayerName(executor);
+		CommandInput original = input.copy();
+
+		String playerName = input.readString();
+		if (playerName.isEmpty() || input.isEmpty() && !input.input().endsWith(" ")) return suggestions;
+
+		Player player = Bukkit.getPlayer(playerName);
+		if (player == null) return suggestions;
+
+		String diff = original.difference(input.skipWhitespace(), true);
+		SpellParser.suggest().stream().map(spell -> diff + spell).forEach(suggestions::add);
+
+		return suggestions;
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR)
