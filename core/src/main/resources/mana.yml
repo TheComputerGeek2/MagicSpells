@@ -3,8 +3,8 @@ enable-mana-system: true
 default-prefix: "Mana:"
 default-symbol: '='
 default-size: 35
-default-color-full: 1
-default-color-empty: 0
+default-style-full: <dark_blue>
+default-style-empty: <black>
 
 default-max-mana: 100
 default-starting-mana: 100
@@ -26,8 +26,8 @@ ranks:
         starting-mana: 200
         regen-amount: 10
         regen-interval: 20
-        color-full: 1
-        color-empty: 0
+        style-full: <dark_blue>
+        style-empty: <black>
     adept:
         prefix: "Mana:"
         symbol: '='
@@ -36,8 +36,8 @@ ranks:
         starting-mana: 150
         regen-amount: 7
         regen-interval: 20
-        color-full: 1
-        color-empty: 0
+        style-full: <dark_blue>
+        style-empty: <black>
     novice:
         prefix: "Mana:"
         symbol: '='
@@ -46,5 +46,5 @@ ranks:
         starting-mana: 100
         regen-amount: 5
         regen-interval: 20
-        color-full: 1
-        color-empty: 0
+        style-full: <dark_blue>
+        style-empty: <black>

@@ -230,11 +230,11 @@ public class PlayerMenuSpell extends TargetedSpell implements TargetedEntitySpel
 			ItemStack head = new ItemStack(Material.PLAYER_HEAD);
 			head.editMeta(SkullMeta.class, meta -> {
 				meta.setOwningPlayer(player);
-				meta.displayName(Util.getMiniMessage(skullName, opener, subData));
+				meta.displayName(Util.getItemMiniMessage(skullName, opener, subData));
 
 				if (skullLore != null) {
 					List<Component> lore = new ArrayList<>();
-					for (String loreLine : skullLore) lore.add(Util.getMiniMessage(loreLine, opener, subData));
+					for (String loreLine : skullLore) lore.add(Util.getItemMiniMessage(loreLine, opener, subData));
 
 					meta.lore(lore);
 				}
@@ -283,7 +283,7 @@ public class PlayerMenuSpell extends TargetedSpell implements TargetedEntitySpel
 
 		OfflinePlayer target = skullMeta.getOwningPlayer();
 		if (target == null || !target.isOnline()) {
-			meta.displayName(Util.getMiniMessage(skullNameOffline, opener, menu.openerData));
+			meta.displayName(Util.getItemMiniMessage(skullNameOffline, opener, menu.openerData));
 			if (spellOffline != null) spellOffline.subcast(menu.openerData);
 
 			if (menu.stayOpen) item.setItemMeta(meta);
@@ -300,11 +300,11 @@ public class PlayerMenuSpell extends TargetedSpell implements TargetedEntitySpel
 
 		SpellData targetData = menu.openerData.target(targetPlayer);
 
-		meta.displayName(Util.getMiniMessage(skullName, opener, targetData));
+		meta.displayName(Util.getItemMiniMessage(skullName, opener, targetData));
 		item.setItemMeta(meta);
 
 		if (menu.radius > 0 && targetPlayer.getLocation().distance(opener.getLocation()) > menu.radius) {
-			meta.displayName(Util.getMiniMessage(skullNameRadius, opener, targetData));
+			meta.displayName(Util.getItemMiniMessage(skullNameRadius, opener, targetData));
 			if (spellRange != null) spellRange.subcast(menu.openerData);
 
 			if (menu.stayOpen) item.setItemMeta(meta);
