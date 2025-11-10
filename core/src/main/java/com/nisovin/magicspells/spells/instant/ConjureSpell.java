@@ -468,8 +468,8 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 			if (lore == null) lore = new ArrayList<>();
 
 			long expiresAt = System.currentTimeMillis() + (long) (expireHours * TimeUtil.MILLISECONDS_PER_HOUR);
-			lore.add(Util.getMiniMessage(getExpiresText(expiresAt)));
-			lore.add(Util.getMiniMessage(expPrefix + expiresAt));
+			lore.add(Util.getItemMiniMessage(getExpiresText(expiresAt)));
+			lore.add(Util.getItemMiniMessage(expPrefix + expiresAt));
 			meta.lore(lore);
 			item.setItemMeta(meta);
 		}
@@ -555,7 +555,7 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 			long expiresAt = Long.parseLong(lastLine.replace(expPrefix, ""));
 			if (expiresAt < System.currentTimeMillis()) return ExpirationResult.EXPIRED;
 
-			lore.set(lore.size() - 2, Util.getMiniMessage(getExpiresText(expiresAt)));
+			lore.set(lore.size() - 2, Util.getItemMiniMessage(getExpiresText(expiresAt)));
 			meta.lore(lore);
 			item.setItemMeta(meta);
 			return ExpirationResult.UPDATE;

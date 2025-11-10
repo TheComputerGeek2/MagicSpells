@@ -115,7 +115,7 @@ public class ConjureBookSpell extends InstantSpell implements TargetedLocationSp
 			if (displayName != null) raw = DISPLAY_NAME_VARIABLE_PATTERN.matcher(raw).replaceAll(displayName);
 			raw = MagicSpells.doReplacements(raw, player, data);
 		}
-		return Util.getMiniMessage(raw);
+		return Util.getItemMiniMessage(raw);
 	}
 
 	private ItemStack createBook(Player player, SpellData data) {
