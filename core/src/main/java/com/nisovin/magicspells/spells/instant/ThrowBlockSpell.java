@@ -30,6 +30,7 @@ import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.util.config.FunctionData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
+import com.nisovin.magicspells.events.SpellApplyDamageEvent;
 
 public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpell {
 
@@ -347,7 +348,6 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 				}
 
 				subData = targetEvent.getSpellData();
-				target = subData.target();
 			}
 
 			double damage = event.getDamage();
@@ -358,7 +358,9 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 				return;
 			}
 
-			event.setDamage(damage);
+			SpellApplyDamageEvent spellEvent = new SpellApplyDamageEvent(info.getSpell(), info.data.caster(), info.data.target(), damage, DamageCause.ENTITY_ATTACK, "");
+			spellEvent.callEvent();
+			event.setDamage(spellEvent.getFinalDamage());
 
 			if (spell.spellOnLand != null && !info.spellActivated) {
 				spell.spellOnLand.subcast(subData.retarget(null, block.getLocation()));

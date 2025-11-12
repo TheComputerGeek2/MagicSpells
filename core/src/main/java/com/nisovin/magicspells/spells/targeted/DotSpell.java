@@ -14,7 +14,6 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -180,18 +179,18 @@ public class DotSpell extends TargetedSpell implements TargetedEntitySpell {
 				data.target().setLastDamageCause(event);
 			}
 
+			if (ignoreArmor && checkPlugins && data.hasCaster()) {
+				EntityDamageEvent damageEvent = createFakeDamageEvent(data.caster(), data.target(), DamageCause.ENTITY_ATTACK, localDamage);
+				if (!damageEvent.callEvent()) return;
+
+				if (!avoidDamageModification) localDamage = damageEvent.getDamage();
+			}
+
 			SpellApplyDamageEvent event = new SpellApplyDamageEvent(DotSpell.this, data.caster(), data.target(), localDamage, damageType, spellDamageType);
-			EventUtil.call(event);
+			event.callEvent();
 			localDamage = event.getFinalDamage();
 
 			if (ignoreArmor) {
-				if (checkPlugins && data.hasCaster()) {
-					EntityDamageEvent damageEvent = createFakeDamageEvent(data.caster(), data.target(), DamageCause.ENTITY_ATTACK, localDamage);
-					if (!damageEvent.callEvent()) return;
-
-					if (!avoidDamageModification) localDamage = event.getDamage();
-				}
-
 				double maxHealth = Util.getMaxHealth(data.target());
 				double health = data.target().getHealth();
 

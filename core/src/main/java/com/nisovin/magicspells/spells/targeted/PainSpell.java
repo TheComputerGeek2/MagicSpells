@@ -85,18 +85,20 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell {
 			data.target().setLastDamageCause(event);
 		}
 
+		boolean ignoreArmor = this.ignoreArmor.get(data);
+
+		if (ignoreArmor && checkPlugins && data.hasCaster()) {
+			EntityDamageEvent damageEvent = createFakeDamageEvent(data.caster(), data.target(), DamageCause.ENTITY_ATTACK, damage);
+			if (!damageEvent.callEvent()) return noTarget(data);
+
+			if (!avoidDamageModification) damage = damageEvent.getDamage();
+		}
+
 		SpellApplyDamageEvent event = new SpellApplyDamageEvent(this, data.caster(), data.target(), damage, damageType, spellDamageType);
 		event.callEvent();
 		damage = event.getFinalDamage();
 
-		if (ignoreArmor.get(data)) {
-			if (checkPlugins && data.hasCaster()) {
-				EntityDamageEvent damageEvent = createFakeDamageEvent(data.caster(), data.target(), DamageCause.ENTITY_ATTACK, damage);
-				if (!damageEvent.callEvent()) return noTarget(data);
-
-				if (!avoidDamageModification) damage = event.getDamage();
-			}
-
+		if (ignoreArmor) {
 			double maxHealth = Util.getMaxHealth(data.target());
 
 			double health = Math.min(data.target().getHealth(), maxHealth);
@@ -106,13 +108,11 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell {
 			data.target().setHealth(health);
 			data.target().setLastDamage(damage);
 			Util.playHurtEffect(data.target(), data.caster());
-
-			playSpellEffects(data);
-			return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 		}
-
-		if (tryAvoidingAntiCheatPlugins.get(data)) data.target().damage(damage);
-		else data.target().damage(damage, data.caster());
+		else {
+			if (tryAvoidingAntiCheatPlugins.get(data)) data.target().damage(damage);
+			else data.target().damage(damage, data.caster());
+		}
 
 		playSpellEffects(data);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
