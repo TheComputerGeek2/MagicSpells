@@ -582,6 +582,13 @@ public class Util {
 		Bukkit.getOnlinePlayers().forEach(consumer);
 	}
 
+	public static void forEachPassenger(Entity entity, Consumer<Entity> consumer) {
+		for (Entity passenger : entity.getPassengers()) {
+			forEachPassenger(passenger, consumer);
+			consumer.accept(passenger);
+		}
+	}
+
 	public static <C extends Collection<Material>> C getMaterialList(List<String> strings, Supplier<C> supplier) {
 		C ret = supplier.get();
 		strings.forEach(string -> ret.add(getMaterial(string)));
