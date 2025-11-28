@@ -1,5 +1,6 @@
 dependencies {
     implementation project(":core")
+    implementation("org.incendo:cloud-paper:2.0.0-beta.13")
     implementation("net.milkbowl.vault:VaultAPI:1.7") { transitive = false }
 }
 

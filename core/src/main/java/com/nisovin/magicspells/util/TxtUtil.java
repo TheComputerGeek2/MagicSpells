@@ -83,9 +83,4 @@ public class TxtUtil {
 		return matches;
 	}
 
-	public static String getPossessiveName(String name) {
-		name = name.trim();
-		return name + "'" + (name.endsWith("s") ? "" : "s");
-	}
-
 }

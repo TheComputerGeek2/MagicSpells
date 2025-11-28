@@ -84,7 +84,7 @@ public class MagicCommands {
 				if (fallbackMapping != null && fallbackMapping.mapper() != null)
 					return fallbackMapping.mapper().apply(fallbackParser);
 
-				ArgumentTypeFactory<?> fallbackFactory =  defaultArgumentFactories.get(GenericTypeReflector.erase(fallbackParserClass));
+				ArgumentTypeFactory<?> fallbackFactory = defaultArgumentFactories.get(GenericTypeReflector.erase(fallbackParserClass));
 				if (fallbackFactory != null)
 					return fallbackFactory.create();
 

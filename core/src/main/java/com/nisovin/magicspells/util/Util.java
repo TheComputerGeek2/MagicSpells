@@ -32,7 +32,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.configuration.ConfigurationSection;
 
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,6 +54,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
@@ -816,37 +816,6 @@ public class Util {
 			case "e" -> NamedTextColor.YELLOW;
 			case "f" -> NamedTextColor.WHITE;
 			case null, default -> def;
-		};
-	}
-
-	public static Style getStyle(@Nullable String style, @NotNull Style def) {
-		return switch (style) {
-			case "0" -> Style.style(NamedTextColor.BLACK);
-			case "1" -> Style.style(NamedTextColor.DARK_BLUE);
-			case "2" -> Style.style(NamedTextColor.DARK_GREEN);
-			case "3" -> Style.style(NamedTextColor.DARK_AQUA);
-			case "4" -> Style.style(NamedTextColor.DARK_RED);
-			case "5" -> Style.style(NamedTextColor.DARK_PURPLE);
-			case "6" -> Style.style(NamedTextColor.GOLD);
-			case "7" -> Style.style(NamedTextColor.GRAY);
-			case "8" -> Style.style(NamedTextColor.DARK_GRAY);
-			case "9" -> Style.style(NamedTextColor.BLUE);
-			case "a" -> Style.style(NamedTextColor.GREEN);
-			case "b" -> Style.style(NamedTextColor.AQUA);
-			case "c" -> Style.style(NamedTextColor.RED);
-			case "d" -> Style.style(NamedTextColor.LIGHT_PURPLE);
-			case "e" -> Style.style(NamedTextColor.YELLOW);
-			case "f" -> Style.style(NamedTextColor.WHITE);
-			case "k" -> Style.style(TextDecoration.OBFUSCATED);
-			case "l" -> Style.style(TextDecoration.BOLD);
-			case "m" -> Style.style(TextDecoration.STRIKETHROUGH);
-			case "n" -> Style.style(TextDecoration.UNDERLINED);
-			case "o" -> Style.style(TextDecoration.ITALIC);
-			case null -> def;
-			default -> {
-				Component component = MiniMessage.miniMessage().deserialize(style);
-				yield component.style();
-			}
 		};
 	}
 

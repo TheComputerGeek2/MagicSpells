@@ -91,7 +91,7 @@ public class SpellCastArgumentsParser implements ArgumentParser.FutureArgumentPa
 							.suggestionProcessor()
 							.process(
 								CommandPreprocessingContext.of(context, input.cursor(preParseCursor)),
-								(Stream<Suggestion>) StreamSupport.stream(result.spliterator(), false)
+								StreamSupport.stream(result.spliterator(), false)
 							)
 							.toList();
 
