@@ -249,19 +249,14 @@ public class ScrollSpell extends CommandSpell implements BlockingSuggestionProvi
 
 		if (!(executor instanceof ConsoleCommandSender)) return Collections.emptyList();
 
-		List<String> suggestions = TxtUtil.tabCompletePlayerName(executor);
 		CommandInput original = input.copy();
 
 		String playerName = input.readString();
-		if (playerName.isEmpty() || input.isEmpty() && !input.input().endsWith(" ")) return suggestions;
-
-		Player player = Bukkit.getPlayer(playerName);
-		if (player == null) return suggestions;
+		if (playerName.isEmpty() || input.isEmpty() || Bukkit.getPlayer(playerName) == null)
+			return TxtUtil.tabCompletePlayerName(executor);
 
 		String diff = original.difference(input.skipWhitespace(), true);
-		SpellParser.suggest().stream().map(spell -> diff + spell).forEach(suggestions::add);
-
-		return suggestions;
+		return SpellParser.suggest().stream().map(spell -> diff + spell).toList();
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR)

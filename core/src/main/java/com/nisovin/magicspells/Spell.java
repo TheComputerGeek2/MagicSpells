@@ -1,7 +1,5 @@
 package com.nisovin.magicspells;
 
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.format.TextDecorationAndState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -1243,6 +1241,11 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 
 	protected boolean preCastTimeCheck(LivingEntity livingEntity, String[] args) {
 		return true;
+	}
+
+	@Deprecated(forRemoval = true)
+	public List<String> tabComplete(CommandSender sender, String[] args) {
+		return null;
 	}
 
 	public SuggestionProvider<CommandSourceStack> suggestionProvider() {

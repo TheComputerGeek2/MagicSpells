@@ -1,10 +1,8 @@
 enable-mana-system: true
 
-default-prefix: "Mana:"
+default-bar-format: "<dark_aqua>Mana: {<dark_blue><full_segment></dark_blue><black><empty_segment></black>} [<mana>/<max_mana>]</dark_aqua>"
 default-symbol: '='
 default-size: 35
-default-style-full: <dark_blue>
-default-style-empty: <black>
 
 default-max-mana: 100
 default-starting-mana: 100
@@ -26,8 +24,7 @@ ranks:
         starting-mana: 200
         regen-amount: 10
         regen-interval: 20
-        style-full: <dark_blue>
-        style-empty: <black>
+        bar-format: "<dark_aqua>Mana: {<dark_blue><full_segment></dark_blue><black><empty_segment></black>} [<mana>/<max_mana>]</dark_aqua>"
     adept:
         prefix: "Mana:"
         symbol: '='
@@ -36,8 +33,7 @@ ranks:
         starting-mana: 150
         regen-amount: 7
         regen-interval: 20
-        style-full: <dark_blue>
-        style-empty: <black>
+        bar-format: "<dark_aqua>Mana: {<blue><full_segment></blue><black><empty_segment></black>} [<mana>/<max_mana>]</dark_aqua>"
     novice:
         prefix: "Mana:"
         symbol: '='
@@ -46,5 +42,4 @@ ranks:
         starting-mana: 100
         regen-amount: 5
         regen-interval: 20
-        style-full: <dark_blue>
-        style-empty: <black>
+        bar-format: "<dark_aqua>Mana: {<aqua><full_segment></aqua><black><empty_segment></black>} [<mana>/<max_mana>]</dark_aqua>"

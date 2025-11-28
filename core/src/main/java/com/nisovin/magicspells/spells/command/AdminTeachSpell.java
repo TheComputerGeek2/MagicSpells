@@ -29,7 +29,7 @@ import com.nisovin.magicspells.commands.parsers.VarargsParser;
 
 public class AdminTeachSpell extends CommandSpell {
 
-	private static final SuggestionProvider<CommandSourceStack> suggestions = AggregateParser
+	private static final SuggestionProvider<CommandSourceStack> SUGGESTIONS = AggregateParser
 		.<CommandSourceStack>builder()
 		.withComponent("player", PlayerParser.playerParser())
 		.withComponent("spells", VarargsParser.varargsParser(new SpellParser<>()))
@@ -68,7 +68,7 @@ public class AdminTeachSpell extends CommandSpell {
 
 	@Override
 	public SuggestionProvider<CommandSourceStack> suggestionProvider() {
-		return suggestions;
+		return SUGGESTIONS;
 	}
 
 	private static class AdminTeachTask extends BukkitRunnable {

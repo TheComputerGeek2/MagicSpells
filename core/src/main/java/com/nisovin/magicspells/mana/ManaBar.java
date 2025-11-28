@@ -1,8 +1,5 @@
 package com.nisovin.magicspells.mana;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.Style;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
