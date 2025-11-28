@@ -15,6 +15,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.Predicate;
 
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.format.NamedTextColor;
+
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.*;
@@ -51,6 +54,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
@@ -695,6 +699,12 @@ public class Util {
 		return getLegacyFromComponent(getMiniMessage(input));
 	}
 
+	public static String getPlainString(String string) {
+		if (string == null) return null;
+
+		return PlainTextComponentSerializer.plainText().serialize(getMiniMessage(string));
+	}
+
 	public static String getPlainString(Component component) {
 		if (component == null) return "";
 		return PlainTextComponentSerializer.plainText().serialize(component);
@@ -723,27 +733,44 @@ public class Util {
 				.build()).append(component).compact();
 	}
 
+	public static Component getMessageText(String input) {
+		if (input == null) return null;
+
+		return MiniMessage.miniMessage().deserialize(MagicSpells.getTextFormat(), Placeholder.parsed("text", getMiniMessageFromLegacy(input)));
+	}
+
+	public static Component getMessageText(ComponentLike input) {
+		if (input == null) return null;
+
+		return MiniMessage.miniMessage().deserialize(MagicSpells.getTextFormat(), Placeholder.component("text", input));
+	}
+
 	public static Component getMiniMessage(String input) {
 		if (input == null) return null;
 		if (input.isEmpty()) return Component.empty();
-		Component component = MiniMessage.miniMessage().deserialize(getMiniMessageFromLegacy(input));
 
-		// Remove italics if they aren't present. Otherwise, item name and lore will render italic text.
-		return component.decoration(TextDecoration.ITALIC, component.hasDecoration(TextDecoration.ITALIC));
-	}
-
-	public static Component getMiniMessage(String input, SpellData data) {
-		return getMiniMessage(MagicSpells.doReplacements(input, data.caster(), data));
-
+		return MiniMessage.miniMessage().deserialize(getMiniMessageFromLegacy(input));
 	}
 
 	public static Component getMiniMessage(String input, SpellData data, String... replacements) {
 		return getMiniMessage(MagicSpells.doReplacements(input, data.caster(), data, replacements));
-
 	}
 
 	public static Component getMiniMessage(String input, LivingEntity recipient, SpellData data) {
 		return getMiniMessage(MagicSpells.doReplacements(input, recipient, data));
+	}
+
+	public static Component getItemMiniMessage(String input) {
+		if (input == null) return null;
+		return getMiniMessage(input).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
+	}
+
+	public static Component getItemMiniMessage(String input, SpellData data, String... replacements) {
+		return getItemMiniMessage(MagicSpells.doReplacements(input, data.caster(), data, replacements));
+	}
+
+	public static Component getItemMiniMessage(String input, LivingEntity recipient, SpellData data) {
+		return getItemMiniMessage(MagicSpells.doReplacements(input, recipient, data));
 	}
 
 	public static Component getMiniMessageWithVars(Player player, String input) {
@@ -760,8 +787,36 @@ public class Util {
 		return component == null ? "" : MiniMessage.miniMessage().serialize(component);
 	}
 
-	public static String getStrictStringFromComponent(Component component) {
+	public static String getStrictString(Component component) {
 		return component == null ? "" : STRICT_SERIALIZER.serialize(component);
+	}
+
+	public static String getStrictString(String string) {
+		if (string == null) return null;
+
+		return STRICT_SERIALIZER.serialize(getMiniMessage(string));
+	}
+
+	public static NamedTextColor getLegacyColor(@Nullable String color, @NotNull NamedTextColor def) {
+		return switch (color) {
+			case "0" -> NamedTextColor.BLACK;
+			case "1" -> NamedTextColor.DARK_BLUE;
+			case "2" -> NamedTextColor.DARK_GREEN;
+			case "3" -> NamedTextColor.DARK_AQUA;
+			case "4" -> NamedTextColor.DARK_RED;
+			case "5" -> NamedTextColor.DARK_PURPLE;
+			case "6" -> NamedTextColor.GOLD;
+			case "7" -> NamedTextColor.GRAY;
+			case "8" -> NamedTextColor.DARK_GRAY;
+			case "9" -> NamedTextColor.BLUE;
+			case "a" -> NamedTextColor.GREEN;
+			case "b" -> NamedTextColor.AQUA;
+			case "c" -> NamedTextColor.RED;
+			case "d" -> NamedTextColor.LIGHT_PURPLE;
+			case "e" -> NamedTextColor.YELLOW;
+			case "f" -> NamedTextColor.WHITE;
+			case null, default -> def;
+		};
 	}
 
 	public static String colorize(String string) {

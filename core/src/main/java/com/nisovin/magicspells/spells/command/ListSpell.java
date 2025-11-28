@@ -1,18 +1,30 @@
 package com.nisovin.magicspells.spells.command;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
+import java.util.Objects;
 import java.util.Collection;
+import java.util.Collections;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.TextComponent;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 
-import net.kyori.adventure.text.Component;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Spell;
-import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.util.*;
+import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.PassiveSpell;
 import com.nisovin.magicspells.spells.CommandSpell;
@@ -20,7 +32,7 @@ import com.nisovin.magicspells.util.config.ConfigData;
 
 // Advanced perm is for listing other player's spells
 
-public class ListSpell extends CommandSpell {
+public class ListSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private final List<String> spellsToHide;
 
@@ -56,12 +68,16 @@ public class ListSpell extends CommandSpell {
 		if (!(data.caster() instanceof Player caster)) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 
 		Spellbook spellbook = MagicSpells.getSpellbook(caster);
-		String extra = "";
+		ComponentLike extra = Component.space();
 		if (data.hasArgs() && spellbook.hasAdvancedPerm("list")) {
-			Player p = Bukkit.getPlayer(data.args()[0]);
-			if (p != null) {
-				spellbook = MagicSpells.getSpellbook(p);
-				extra = '(' + Util.getStringFromComponent(p.displayName()) + ") ";
+			Player player = Bukkit.getPlayer(data.args()[0]);
+			if (player != null) {
+				spellbook = MagicSpells.getSpellbook(player);
+
+				extra = Component.text()
+					.append(Component.text(" ("))
+					.append(player.displayName())
+					.append(Component.text(") "));
 			}
 		}
 
@@ -81,19 +97,21 @@ public class ListSpell extends CommandSpell {
 			return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 		}
 
-		Component message = Util.getMiniMessage(MagicSpells.getTextColor() + strPrefix + " " + extra);
+		TextComponent.Builder message = Component.text()
+			.append(Util.getMiniMessage(strPrefix))
+			.append(extra);
 
 		boolean prev = false;
 		for (Spell spell : spells) {
 			if (shouldListSpell(spell, spellbook, onlyShowCastableSpells)) {
-				if (prev) message = message.append(Component.text(", "));
+				if (prev) message.append(Component.text(", "));
 
-				message = message.append(Util.getMiniMessage(spell.getName()));
+				message.append(Util.getMiniMessage(spell.getName()));
 				prev = true;
 			}
 		}
 
-		caster.sendMessage(message);
+		caster.sendMessage(Util.getMessageText(message));
 		playSpellEffects(data);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
@@ -129,14 +147,16 @@ public class ListSpell extends CommandSpell {
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (args.length != 1) return null;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
 
-		if (sender instanceof Player player) {
-			if (!MagicSpells.getSpellbook(player).hasAdvancedPerm("list")) return null;
-		} else if (!(sender instanceof ConsoleCommandSender)) return null;
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (executor instanceof Player caster) {
+			Spellbook spellbook = MagicSpells.getSpellbook(caster);
+			if (!spellbook.hasAdvancedPerm("list")) return Collections.emptyList();
+		} else if (!(executor instanceof ConsoleCommandSender)) return Collections.emptyList();
 
-		return TxtUtil.tabCompletePlayerName(sender);
+		return TxtUtil.tabCompletePlayerName(executor);
 	}
 
 	private boolean shouldListSpell(Spell spell, Spellbook spellbook, boolean onlyShowCastableSpells) {
