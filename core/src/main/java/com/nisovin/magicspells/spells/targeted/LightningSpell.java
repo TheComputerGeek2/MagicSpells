@@ -23,6 +23,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
+import com.nisovin.magicspells.events.SpellApplyDamageEvent;
 
 public class LightningSpell extends TargetedSpell implements TargetedLocationSpell {
 
@@ -82,8 +83,8 @@ public class LightningSpell extends TargetedSpell implements TargetedLocationSpe
 			if (checkPlugins.get(data) && checkFakeDamageEvent(data.caster(), data.target()))
 				return noTarget(data);
 
-			ChargeOption option = new ChargeOption(additionalDamage, chargeCreepers.get(data), zapPigs.get(data), transformEntities.get(data));
 			LightningStrike strike = data.target().getWorld().strikeLightning(data.target().getLocation());
+			ChargeOption option = new ChargeOption(this, data.caster(), additionalDamage, chargeCreepers.get(data), zapPigs.get(data), transformEntities.get(data));
 			lightningListener.striking.put(strike.getUniqueId(), option);
 
 			return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
@@ -104,8 +105,8 @@ public class LightningSpell extends TargetedSpell implements TargetedLocationSpe
 			double additionalDamage = this.additionalDamage.get(data);
 			if (powerAffectsAdditionalDamage.get(data)) additionalDamage *= data.power();
 
-			ChargeOption option = new ChargeOption(additionalDamage, chargeCreepers.get(data), zapPigs.get(data), transformEntities.get(data));
 			LightningStrike strike = target.getWorld().strikeLightning(target);
+			ChargeOption option = new ChargeOption(this, data.caster(), additionalDamage, chargeCreepers.get(data), zapPigs.get(data), transformEntities.get(data));
 			lightningListener.striking.put(strike.getUniqueId(), option);
 		}
 
@@ -113,8 +114,7 @@ public class LightningSpell extends TargetedSpell implements TargetedLocationSpe
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}
 
-	private record ChargeOption(double additionalDamage, boolean chargeCreeper, boolean changePig, boolean transformEntities) {
-
+	private record ChargeOption(LightningSpell spell, LivingEntity caster, double additionalDamage, boolean chargeCreeper, boolean changePig, boolean transformEntities) {
 	}
 
 	private static class LightningListener implements Listener {
@@ -129,9 +129,18 @@ public class LightningSpell extends TargetedSpell implements TargetedLocationSpe
 			if (source.getDamageType() != DamageType.LIGHTNING_BOLT) return;
 
 			ChargeOption option = striking.get(strike.getUniqueId());
-			if (option == null || option.additionalDamage <= 0) return;
+			if (option == null) return;
 
-			event.setDamage(event.getDamage() + option.additionalDamage);
+			double damage = event.getDamage();
+			if (option.additionalDamage > 0) damage += option.additionalDamage;
+
+			if (event.getEntity() instanceof LivingEntity target) {
+				SpellApplyDamageEvent spellEvent = new SpellApplyDamageEvent(option.spell(), option.caster(), target, damage, source.getDamageType(), "");
+				spellEvent.callEvent();
+				damage = spellEvent.getFinalDamage();
+			}
+
+			event.setDamage(damage);
 		}
 
 		@EventHandler

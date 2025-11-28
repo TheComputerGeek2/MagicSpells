@@ -27,6 +27,7 @@ import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
+import com.nisovin.magicspells.events.SpellApplyDamageEvent;
 import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 
 public class FireballSpell extends TargetedSpell implements TargetedEntityFromLocationSpell {
@@ -200,6 +201,10 @@ public class FireballSpell extends TargetedSpell implements TargetedEntityFromLo
 
 				double noExplosionDamage = this.noExplosionDamage.get(data);
 				if (powerAffectsNoExplosionDamage.get(data)) noExplosionDamage *= data.power();
+
+				SpellApplyDamageEvent spellEvent = new SpellApplyDamageEvent(this, data.caster(), data.target(), noExplosionDamage, "");
+				spellEvent.callEvent();
+				noExplosionDamage = spellEvent.getFinalDamage();
 
 				target.damage(noExplosionDamage, caster);
 			}

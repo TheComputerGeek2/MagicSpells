@@ -18,10 +18,11 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
+import com.nisovin.magicspells.events.SpellApplyDamageEvent;
 
 public class GeyserSpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private ConfigData<BlockData> geyserType;
+	private final ConfigData<BlockData> geyserType;
 
 	private final ConfigData<Double> damage;
 	private final ConfigData<Double> velocity;
@@ -63,24 +64,31 @@ public class GeyserSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	@Override
 	public CastResult castAtEntity(SpellData data) {
+		LivingEntity caster = data.caster();
 		LivingEntity target = data.target();
 
 		double damage = this.damage.get(data);
 		if (powerAffectsDamage.get(data)) damage *= data.power();
 
 		if (damage > 0) {
-			if (ignoreArmor.get(data)) {
-				if (data.hasCaster() && checkPlugins.get(data)) {
-					EntityDamageEvent event = createFakeDamageEvent(data.caster(), target, DamageCause.ENTITY_ATTACK, damage);
-					if (!event.callEvent()) return noTarget(data);
+			boolean ignoreArmor = this.ignoreArmor.get(data);
 
-					if (!avoidDamageModification.get(data)) damage = event.getDamage();
-				}
+			if (ignoreArmor && data.hasCaster() && checkPlugins.get(data)) {
+				EntityDamageEvent event = createFakeDamageEvent(caster, target, DamageCause.ENTITY_ATTACK, damage);
+				if (!event.callEvent()) return noTarget(data);
 
+				if (!avoidDamageModification.get(data)) damage = event.getDamage();
+			}
+
+			SpellApplyDamageEvent spellEvent = new SpellApplyDamageEvent(this, caster, target, damage, "");
+			spellEvent.callEvent();
+			damage = spellEvent.getFinalDamage();
+
+			if (ignoreArmor) {
 				target.setHealth(Math.clamp(target.getHealth() - damage, 0, Util.getMaxHealth(target)));
-				Util.playHurtEffect(data.target(), data.caster());
+				Util.playHurtEffect(target, caster);
 			} else {
-				if (data.hasCaster()) target.damage(damage, data.caster());
+				if (data.hasCaster()) target.damage(damage, caster);
 				else target.damage(damage);
 			}
 		}

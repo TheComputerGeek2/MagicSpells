@@ -7,18 +7,19 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
+import com.nisovin.magicspells.events.SpellApplyDamageEvent;
 
 public class ForcetossSpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private ConfigData<Double> damage;
+	private final ConfigData<Double> damage;
 
-	private ConfigData<Double> vForce;
-	private ConfigData<Double> hForce;
-	private ConfigData<Double> rotation;
+	private final ConfigData<Double> vForce;
+	private final ConfigData<Double> hForce;
+	private final ConfigData<Double> rotation;
 
-	private ConfigData<Boolean> powerAffectsForce;
-	private ConfigData<Boolean> powerAffectsDamage;
-	private ConfigData<Boolean> addVelocityInstead;
+	private final ConfigData<Boolean> powerAffectsForce;
+	private final ConfigData<Boolean> powerAffectsDamage;
+	private final ConfigData<Boolean> addVelocityInstead;
 
 	public ForcetossSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -45,13 +46,17 @@ public class ForcetossSpell extends TargetedSpell implements TargetedEntitySpell
 	@Override
 	public CastResult castAtEntity(SpellData data) {
 		if (!data.hasCaster()) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
-		if (!data.caster().getWorld().equals(data.target().getWorld())) return noTarget(data);
 
 		LivingEntity caster = data.caster();
 		LivingEntity target = data.target();
+		if (!caster.getWorld().equals(target.getWorld())) return noTarget(data);
 
 		double damage = this.damage.get(data);
 		if (powerAffectsDamage.get(data)) damage *= data.power();
+
+		SpellApplyDamageEvent event = new SpellApplyDamageEvent(this, caster, target, damage, "");
+		event.callEvent();
+		damage = event.getFinalDamage();
 
 		if (damage > 0) target.damage(damage, caster);
 

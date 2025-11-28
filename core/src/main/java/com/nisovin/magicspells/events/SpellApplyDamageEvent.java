@@ -22,6 +22,10 @@ public class SpellApplyDamageEvent extends SpellEvent {
 		this(spell, caster, target, damage, DamageType.GENERIC, cause, spellDamageType);
 	}
 
+	public SpellApplyDamageEvent(Spell spell, LivingEntity caster, LivingEntity target, double damage, String spellDamageType) {
+		this(spell, caster, target, damage, DamageType.GENERIC, spellDamageType);
+	}
+
 	public SpellApplyDamageEvent(Spell spell, LivingEntity caster, LivingEntity target, double damage, DamageType damageType, String spellDamageType) {
 		this(spell, caster, target, damage, damageType, DamageCause.ENTITY_ATTACK, spellDamageType);
 	}

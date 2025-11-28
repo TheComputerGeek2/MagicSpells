@@ -13,7 +13,6 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.events.SpellApplyDamageEvent;
@@ -95,8 +94,9 @@ public class CombustSpell extends TargetedSpell implements TargetedEntitySpell {
 			if (powerAffectsFireTickDamage.get(data.spellData)) fireTickDamage *= data.spellData.power();
 		}
 
-		EventUtil.call(new SpellApplyDamageEvent(this, data.spellData.caster(), target, fireTickDamage, DamageCause.FIRE_TICK, ""));
-		event.setDamage(fireTickDamage);
+		SpellApplyDamageEvent spellEvent = new SpellApplyDamageEvent(this, data.spellData.caster(), target, fireTickDamage, DamageCause.FIRE_TICK, "");
+		spellEvent.callEvent();
+		event.setDamage(spellEvent.getFinalDamage());
 
 		if (data.preventImmunity) MagicSpells.scheduleDelayedTask(() -> target.setNoDamageTicks(0), 0);
 	}
