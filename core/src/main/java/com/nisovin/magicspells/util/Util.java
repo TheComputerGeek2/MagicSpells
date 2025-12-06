@@ -1,13 +1,5 @@
 package com.nisovin.magicspells.util;
 
-import java.io.File;
-import java.io.FileOutputStream;
-
-import java.net.URL;
-import java.net.URI;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -536,23 +528,6 @@ public class Util {
 
 	public static Vector getVectorToTarget(Location origin, Location target) {
 		return target.toVector().subtract(origin.toVector());
-	}
-
-	public static boolean downloadFile(String url, File file) {
-		try {
-			URL website = URI.create(url).toURL();
-			ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-			FileOutputStream fos = new FileOutputStream(file);
-
-			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-			fos.close();
-			rbc.close();
-
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
 	}
 
 	private static final Map<String, String> uniqueIds = new HashMap<>();

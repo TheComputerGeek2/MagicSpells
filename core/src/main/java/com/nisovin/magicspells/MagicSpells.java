@@ -943,9 +943,7 @@ public class MagicSpells extends JavaPlugin {
 		permissions.add(new Permission(Perm.COMMAND_VARIABLE_SHOW.getNode(), PermissionDefault.OP));
 		permissions.add(new Permission(Perm.COMMAND_VARIABLE_MODIFY.getNode(), PermissionDefault.OP));
 		permissions.add(new Permission(Perm.COMMAND_MAGIC_ITEM.getNode(), PermissionDefault.OP));
-		permissions.add(new Permission(Perm.COMMAND_UTIL_DOWNLOAD.getNode(), PermissionDefault.OP));
-		permissions.add(new Permission(Perm.COMMAND_UTIL_UPDATE.getNode(), PermissionDefault.OP));
-		permissions.add(new Permission(Perm.COMMAND_UTIL_SAVE_SKIN.getNode(), PermissionDefault.OP));
+		permissions.add(new Permission(Perm.COMMAND_UTIL_LIST_GOALS.getNode(), PermissionDefault.OP));
 		permissions.add(new Permission(Perm.COMMAND_PROFILE_REPORT.getNode(), PermissionDefault.OP));
 		permissions.add(new Permission(Perm.COMMAND_DEBUG.getNode(), PermissionDefault.OP));
 		permissions.add(new Permission(Perm.COMMAND_TASKINFO.getNode(), PermissionDefault.OP));
