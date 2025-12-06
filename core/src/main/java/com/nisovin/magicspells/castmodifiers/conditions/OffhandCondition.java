@@ -40,7 +40,7 @@ public class OffhandCondition extends Condition {
 				if (varData[i].contains("|")) {
 					String[] subVarData = varData[i].split("\\|");
 					varData[i] = subVarData[0];
-					names[i] = Util.getMiniMessage(subVarData[1].replace("__", " "));
+					names[i] = Util.getItemMiniMessage(subVarData[1].replace("__", " "));
 					checkName[i] = true;
 				} else {
 					names[i] = null;

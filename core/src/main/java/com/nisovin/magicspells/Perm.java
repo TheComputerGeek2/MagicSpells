@@ -1,8 +1,12 @@
 package com.nisovin.magicspells;
 
+import org.jetbrains.annotations.NotNull;
+
 import org.bukkit.permissions.Permissible;
 
-public enum Perm {
+import org.incendo.cloud.permission.Permission;
+
+public enum Perm implements Permission {
 	
 	SILENT("magicspells.silent"),
 	NO_REAGENTS("magicspells.noreagents"),
@@ -36,9 +40,6 @@ public enum Perm {
 	COMMAND_VARIABLE_SHOW("magicspells.command.variable.show"),
 	COMMAND_VARIABLE_MODIFY("magicspells.command.variable.modify"),
 	COMMAND_MAGIC_ITEM("magicspells.command.magicitem"),
-	COMMAND_UTIL_DOWNLOAD("magicspells.command.util.download"),
-	COMMAND_UTIL_UPDATE("magicspells.command.util.update"),
-	COMMAND_UTIL_SAVE_SKIN("magicspells.command.util.saveskin"),
 	COMMAND_UTIL_LIST_GOALS("magicspells.command.util.listgoals"),
 	COMMAND_PROFILE_REPORT("magicspells.command.profilereport"),
 	COMMAND_DEBUG("magicspells.command.debug"),
@@ -99,5 +100,10 @@ public enum Perm {
 		if (requiresNode() && !permissible.hasPermission(getNode(spell))) return false;
 		return true;
 	}
-	
+
+	@Override
+	public @NotNull String permissionString() {
+		return node;
+	}
+
 }

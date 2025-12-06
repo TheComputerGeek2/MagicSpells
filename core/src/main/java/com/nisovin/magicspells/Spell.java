@@ -16,6 +16,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import com.google.common.collect.*;
 import com.google.common.base.Functions;
 
+import org.incendo.cloud.suggestion.SuggestionProvider;
+
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.util.Vector;
@@ -47,6 +49,7 @@ import io.papermc.paper.registry.tag.TagKey;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.block.fluid.FluidData;
 import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.events.*;
@@ -287,7 +290,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 				if (spellIcon != null && !spellIcon.getType().isAir()) {
 					if (!magicItem.getMagicItemData().hasAttribute(MagicItemData.MagicItemAttribute.NAME)) {
 						ItemMeta iconMeta = spellIcon.getItemMeta();
-						iconMeta.displayName(Component.text(MagicSpells.getTextColor() + name));
+						iconMeta.itemName(Util.getMiniMessage(name).applyFallbackStyle(MagicSpells.getLegacyTextColor()));
 						spellIcon.setItemMeta(iconMeta);
 					}
 				}
@@ -902,6 +905,10 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		return ConfigDataUtil.getComponent(config.getMainConfig(), internalKey + key, def);
 	}
 
+	protected ConfigData<Component> getConfigDataItemComponent(String key, Component def) {
+		return ConfigDataUtil.getItemComponent(config.getMainConfig(), internalKey + key, def);
+	}
+
 	protected <T extends Enum<T>> ConfigData<T> getConfigDataEnum(String key, Class<T> type, T def) {
 		return ConfigDataUtil.getEnum(config.getMainConfig(), internalKey + key, type, def);
 	}
@@ -1236,8 +1243,13 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		return true;
 	}
 
+	@Deprecated(forRemoval = true)
 	public List<String> tabComplete(CommandSender sender, String[] args) {
 		return null;
+	}
+
+	public SuggestionProvider<CommandSourceStack> suggestionProvider() {
+		return this instanceof SuggestionProvider ? (SuggestionProvider<CommandSourceStack>) this : SuggestionProvider.noSuggestions();
 	}
 
 	/**
@@ -1273,6 +1285,10 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 
 	public boolean isIgnoringGlobalCooldown() {
 		return ignoreGlobalCooldown;
+	}
+
+	public boolean isRequiringCastItemOnCommand() {
+		return requireCastItemOnCommand;
 	}
 
 	public boolean isValidItemForCastCommand(ItemStack item) {

@@ -1,38 +1,35 @@
 package com.nisovin.magicspells.mana;
 
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.format.Style;
 
 public class ManaRank {
 	
 	private String name;
-	private String prefix;
 
+	private String barFormat;
 	private char symbol;
-
 	private int barSize;
+
 	private int maxMana;
 	private int startingMana;
 	private int regenAmount;
 	private int regenInterval;
 
-	private ChatColor colorFull;
-	private ChatColor colorEmpty;
-
 	ManaRank() {
 
 	}
 
-	ManaRank(String name, String prefix, char symbol, int barSize, int maxMana, int startingMana, int regenAmount, int regenInterval, ChatColor colorFull, ChatColor colorEmpty) {
+	ManaRank(String name, char symbol, int barSize, String manaBarFormat, int maxMana, int startingMana, int regenAmount, int regenInterval) {
 		this.name = name;
-		this.prefix = prefix;
+
 		this.symbol = symbol;
 		this.barSize = barSize;
+		this.barFormat = manaBarFormat;
+
 		this.maxMana = maxMana;
-		this.startingMana = startingMana;
 		this.regenAmount = regenAmount;
+		this.startingMana = startingMana;
 		this.regenInterval = regenInterval;
-		this.colorFull = colorFull;
-		this.colorEmpty = colorEmpty;
 	}
 
 	public String getName() {
@@ -43,12 +40,12 @@ public class ManaRank {
 		this.name = name;
 	}
 
-	public String getPrefix() {
-		return prefix;
+	public String getBarFormat() {
+		return barFormat;
 	}
 
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
+	public void setBarFormat(String barFormat) {
+		this.barFormat = barFormat;
 	}
 
 	public char getSymbol() {
@@ -98,36 +95,18 @@ public class ManaRank {
 	public void setRegenInterval(int regenInterval) {
 		this.regenInterval = regenInterval;
 	}
-
-	public ChatColor getColorFull() {
-		return colorFull;
-	}
-
-	public void setColorFull(ChatColor colorFull) {
-		this.colorFull = colorFull;
-	}
-
-	public ChatColor getColorEmpty() {
-		return colorEmpty;
-	}
-
-	public void setColorEmpty(ChatColor colorEmpty) {
-		this.colorEmpty = colorEmpty;
-	}
 	
 	@Override
 	public String toString() {
 		return "ManaRank:["
 			+ "name=" + name
-			+ ",prefix=" + prefix
 			+ ",symbol=" + symbol
-			+ ",barSize" + barSize
+			+ ",barSize=" + barSize
+			+ ",barFormat=" + barFormat
 			+ ",maxMana=" + maxMana
 			+ ",startingMana=" + startingMana
 			+ ",regenAmount=" + regenAmount
 			+ ",regenInterval=" + regenInterval
-			+ ",colorFull=" + colorFull
-			+ ",colorEmpty=" + colorEmpty
 			+ ']';
 	}
 	
