@@ -8,6 +8,8 @@ import org.bukkit.DyeColor;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.LivingEntity;
 
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
+
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.DependsOn;
 import com.nisovin.magicspells.util.SpellData;
@@ -153,7 +155,7 @@ public class DisguiseSpell extends BuffSpell {
 			droppedItemWatcher.setItemStack(entityData.getDroppedItemStack().get(data));
 
 		if (watcher instanceof EndermanWatcher endermanWatcher)
-			endermanWatcher.setItemInMainHand(entityData.getCarriedBlockData().get(data).getMaterial());
+			endermanWatcher.setHeldBlock(SpigotConversionUtil.fromBukkitBlockData(entityData.getCarriedBlockData().get(data)));
 
 		if (watcher instanceof FallingBlockWatcher fallingBlockWatcher)
 			fallingBlockWatcher.setBlockData(entityData.getFallingBlockData().get(data));
