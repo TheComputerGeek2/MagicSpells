@@ -40,4 +40,8 @@ public abstract class VolatileCodeHandle {
 
 	public abstract GlowManager getGlowManager();
 
+	public abstract long countGlobalRegionSchedulerTasks();
+
+	public abstract long countEntitySchedulerTasks();
+
 }

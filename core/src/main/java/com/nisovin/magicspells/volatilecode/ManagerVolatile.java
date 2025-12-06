@@ -3,6 +3,7 @@ package com.nisovin.magicspells.volatilecode;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.event.Listener;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -39,6 +40,11 @@ public class ManagerVolatile {
 		@Override
 		public YamlConfiguration getMainConfig() {
 			return MagicSpells.getMagicConfig().getMainConfig();
+		}
+
+		@Override
+		public Plugin getPlugin() {
+			return MagicSpells.getInstance();
 		}
 
 	};
