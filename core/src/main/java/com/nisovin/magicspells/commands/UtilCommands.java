@@ -59,7 +59,7 @@ public class UtilCommands {
 		if (!(entity instanceof Mob mob))
 			throw new InvalidCommandArgumentException("Invalid entity specified - target is not a mob");
 
-		Collection<Goal<Mob>> goals = Bukkit.getMobGoals().getAllGoals(mob);
+		Collection<Goal<@NotNull Mob>> goals = Bukkit.getMobGoals().getAllGoals(mob);
 		if (goals.isEmpty()) {
 			sender.sendMessage(Util.getMessageText(Component.text("Target has no goals")));
 			return;
@@ -70,8 +70,8 @@ public class UtilCommands {
 			.append(entity.name().hoverEvent(entity))
 			.append(Component.text(":"));
 
-		for (Goal<Mob> goal : goals) {
-			GoalKey<Mob> key = goal.getKey();
+		for (Goal<@NotNull Mob> goal : goals) {
+			GoalKey<@NotNull Mob> key = goal.getKey();
 
 			message.appendNewline();
 			message.append(Component.text("  - " + key.getEntityClass().getSimpleName() + ": "));

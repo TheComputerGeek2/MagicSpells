@@ -36,13 +36,15 @@ public class TaskInfoCommand {
 		context.sender().getSender().sendMessage(Util.getMessageText(
 			Component.text()
 				.content("Tasks:")
+				.appendNewline()
 				.append(Component.text(" * All - ").append(number(msTasks)))
-				.append(Component.text(" * EffectLib - ")).append(number(effectLibTasks))
+				.appendNewline()
+				.append(Component.text(" * EffectLib - ").append(number(effectLibTasks)))
 		));
 	}
 
 	private static Component number(long number) {
-		return Component.text(number + "\n", number > 0 ? NamedTextColor.GREEN : NamedTextColor.GRAY);
+		return Component.text(number, number > 0 ? NamedTextColor.GREEN : NamedTextColor.GRAY);
 	}
 
 }

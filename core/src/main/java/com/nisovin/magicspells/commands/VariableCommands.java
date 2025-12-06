@@ -63,17 +63,6 @@ public class VariableCommands {
 			.permission(Perm.COMMAND_VARIABLE_MODIFY);
 
 		manager.command(modify
-			.literal("*")
-			.required(
-				VARIABLE_MOD_KEY,
-				StringParser.greedyStringParser(),
-				Description.of("A variable modifier.")
-			)
-			.meta(HelpCommand.FILTER_FROM_HELP, true)
-			.handler(VariableCommands::modify)
-		);
-
-		manager.command(modify
 			.literal("-")
 			.required(VARIABLE_MOD_KEY, StringParser.greedyStringParser())
 			.meta(HelpCommand.FILTER_FROM_HELP, true)
