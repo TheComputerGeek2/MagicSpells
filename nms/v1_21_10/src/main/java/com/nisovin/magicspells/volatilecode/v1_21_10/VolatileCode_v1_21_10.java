@@ -1,4 +1,4 @@
-package com.nisovin.magicspells.volatilecode.latest;
+package com.nisovin.magicspells.volatilecode.v1_21_10;
 
 import java.util.*;
 import java.lang.reflect.Field;
@@ -22,8 +22,6 @@ import org.bukkit.craftbukkit.entity.CraftTNTPrimed;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 
-import org.jetbrains.annotations.NotNull;
-
 import net.kyori.adventure.text.Component;
 
 import io.papermc.paper.adventure.PaperAdventure;
@@ -37,46 +35,46 @@ import net.minecraft.util.ARGB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.advancements.*;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.core.particles.ColorParticleOption;
-import net.minecraft.advancements.criterion.ImpossibleTrigger;
+import net.minecraft.advancements.critereon.ImpossibleTrigger;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 
-public class VolatileCodeLatest extends VolatileCodeHandle {
+public class VolatileCode_v1_21_10 extends VolatileCodeHandle {
 
-	private final Identifier TOAST_KEY = Identifier.fromNamespaceAndPath("magicspells", "toast_effect");
+	private final ResourceLocation TOAST_KEY = ResourceLocation.fromNamespaceAndPath("magicspells", "toast_effect");
 
-	private final EntityDataAccessor<@NotNull List<ParticleOptions>> DATA_EFFECT_PARTICLES;
-	private final EntityDataAccessor<@NotNull Boolean> DATA_EFFECT_AMBIENCE_ID;
-	private final EntityDataAccessor<@NotNull Byte> DATA_SHARED_FLAGS_ID;
+	private final EntityDataAccessor<List<ParticleOptions>> DATA_EFFECT_PARTICLES;
+	private final EntityDataAccessor<Boolean> DATA_EFFECT_AMBIENCE_ID;
+	private final EntityDataAccessor<Byte> DATA_SHARED_FLAGS_ID;
 	private final Method UPDATE_EFFECT_PARTICLES;
 
 	@SuppressWarnings("unchecked")
-	public VolatileCodeLatest(VolatileCodeHelper helper) throws Exception {
+	public VolatileCode_v1_21_10(VolatileCodeHelper helper) throws Exception {
 		super(helper);
 
 		Field dataSharedFlagsIdField = net.minecraft.world.entity.Entity.class.getDeclaredField("DATA_SHARED_FLAGS_ID");
 		dataSharedFlagsIdField.setAccessible(true);
-		DATA_SHARED_FLAGS_ID = (EntityDataAccessor<@NotNull Byte>) dataSharedFlagsIdField.get(null);
+		DATA_SHARED_FLAGS_ID = (EntityDataAccessor<Byte>) dataSharedFlagsIdField.get(null);
 
 		Class<?> nmsEntityClass = net.minecraft.world.entity.LivingEntity.class;
 
 		Field dataEffectParticlesField = nmsEntityClass.getDeclaredField("DATA_EFFECT_PARTICLES");
 		dataEffectParticlesField.setAccessible(true);
-		DATA_EFFECT_PARTICLES = (EntityDataAccessor<@NotNull List<ParticleOptions>>) dataEffectParticlesField.get(null);
+		DATA_EFFECT_PARTICLES = (EntityDataAccessor<List<ParticleOptions>>) dataEffectParticlesField.get(null);
 
 		Field dataEffectAmbienceIdField = nmsEntityClass.getDeclaredField("DATA_EFFECT_AMBIENCE_ID");
 		dataEffectAmbienceIdField.setAccessible(true);
-		DATA_EFFECT_AMBIENCE_ID = (EntityDataAccessor<@NotNull Boolean>) dataEffectAmbienceIdField.get(null);
+		DATA_EFFECT_AMBIENCE_ID = (EntityDataAccessor<Boolean>) dataEffectAmbienceIdField.get(null);
 
 		UPDATE_EFFECT_PARTICLES = nmsEntityClass.getDeclaredMethod("updateSynchronizedMobEffectParticles");
 		UPDATE_EFFECT_PARTICLES.setAccessible(true);
@@ -222,7 +220,7 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 
 	@Override
 	public GlowManager getGlowManager() {
-		return new VolatileGlowManagerLatest(helper);
+		return new VolatileGlowManager_v1_21_10(helper);
 	}
 
 }
