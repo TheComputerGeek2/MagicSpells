@@ -1,10 +1,19 @@
 package com.nisovin.magicspells.spells.command;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
+import java.util.Objects;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
+
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
@@ -14,9 +23,11 @@ import com.nisovin.magicspells.spells.CommandSpell;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellLearnEvent;
 import com.nisovin.magicspells.util.config.ConfigData;
+import com.nisovin.magicspells.commands.parsers.SpellParser;
+import com.nisovin.magicspells.commands.parsers.OwnedSpellParser;
 import com.nisovin.magicspells.events.SpellLearnEvent.LearnSource;
 
-public class TeachSpell extends CommandSpell {
+public class TeachSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private ConfigData<Boolean> requireKnownSpell;
 
@@ -144,14 +155,44 @@ public class TeachSpell extends CommandSpell {
 		sender.sendMessage(formatMessage(strCastSelf, "%a", consoleName, "%s", spell.getName(), "%t", displayName));
 		return true;
 	}
-	
+
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (args.length == 1) return TxtUtil.tabCompletePlayerName(sender);
-		if (args.length == 2) return TxtUtil.tabCompleteSpellName(sender);
-		return null;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+
+		CommandInput original = input.copy();
+
+		String playerName = input.readString();
+		if (playerName.isEmpty() || Bukkit.getPlayer(playerName) == null) {
+			return TxtUtil.tabCompletePlayerName(executor,
+				!(executor instanceof Player caster) || !requireKnownSpell.get(new SpellData(caster)));
+		}
+
+		if (executor instanceof Player caster && requireKnownSpell.get(new SpellData(caster))) {
+			if (!input.isEmpty() || input.input().endsWith(" ")) {
+				String diff = original.difference(input.skipWhitespace(), true);
+				Spellbook spellbook = MagicSpells.getSpellbook(caster);
+
+				return OwnedSpellParser.suggest(caster, spellbook::canTeach).stream()
+					.map(s -> diff + s)
+					.toList();
+			}
+
+			return TxtUtil.tabCompletePlayerName(executor, false);
+		}
+
+		if (!input.isEmpty() || input.input().endsWith(" ")) {
+			String diff = original.difference(input.skipWhitespace(), true);
+
+			return SpellParser.suggest().stream()
+				.map(s -> diff + s)
+				.toList();
+		}
+
+		return TxtUtil.tabCompletePlayerName(executor, true);
 	}
-	
+
 	private boolean callEvent(Spell spell, Player learner, Object teacher) {
 		SpellLearnEvent event = new SpellLearnEvent(spell, learner, LearnSource.TEACH, teacher);
 		EventUtil.call(event);

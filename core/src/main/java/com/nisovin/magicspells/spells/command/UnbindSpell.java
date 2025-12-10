@@ -1,12 +1,22 @@
 package com.nisovin.magicspells.spells.command;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.ArrayList;
+import java.util.Collections;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
+
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
@@ -14,8 +24,9 @@ import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
+import com.nisovin.magicspells.commands.parsers.SpellParser;
 
-public class UnbindSpell extends CommandSpell {
+public class UnbindSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private Set<Spell> allowedSpells;
 
@@ -111,12 +122,26 @@ public class UnbindSpell extends CommandSpell {
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (!(sender instanceof Player) || args.length != 1) return null;
-		List<String> ret = new ArrayList<>();
-		ret.add("*");
-		ret.addAll(TxtUtil.tabCompleteSpellName(sender));
-		return ret;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (!(executor instanceof Player caster)) return Collections.emptyList();
+
+		Spellbook spellbook = MagicSpells.getSpellbook(caster);
+		CastItem castItem = new CastItem(caster.getInventory().getItemInMainHand());
+
+		List<Spell> spells = spellbook.getItemSpells().get(castItem);
+		if (spells == null || spells.isEmpty()) return Collections.emptyList();
+
+		List<String> suggestions = new ArrayList<>();
+		for (Spell spell : spells) {
+			if (allowedSpells != null && !allowedSpells.contains(spell)) continue;
+			suggestions.add(SpellParser.escapeIfRequired(Util.getPlainString(spell.getName())));
+		}
+		if (!suggestions.isEmpty()) suggestions.add("*");
+
+		return suggestions;
 	}
 
 	public Set<Spell> getAllowedSpells() {

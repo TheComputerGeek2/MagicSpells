@@ -47,7 +47,7 @@ public class HasItemCondition extends Condition {
 			if (var.contains("|")) {
 				String[] subVarData = var.split("\\|");
 				var = subVarData[0];
-				name = Util.getMiniMessage(subVarData[1].replace("__", " "));
+				name = Util.getItemMiniMessage(subVarData[1].replace("__", " "));
 				checkName = true;
 			} else checkName = false;
 
