@@ -1,10 +1,10 @@
 package com.nisovin.magicspells.volatilecode.v1_21_10;
 
 import java.util.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.invoke.VarHandle;
 import java.util.function.Consumer;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -66,7 +66,7 @@ public class VolatileCode_v1_21_10 extends VolatileCodeHandle {
 	private final EntityDataAccessor<List<ParticleOptions>> DATA_EFFECT_PARTICLES;
 	private final EntityDataAccessor<Boolean> DATA_EFFECT_AMBIENCE_ID;
 	private final EntityDataAccessor<Byte> DATA_SHARED_FLAGS_ID;
-	private final Method UPDATE_EFFECT_PARTICLES;
+	private final MethodHandle UPDATE_EFFECT_PARTICLES;
 
 	private final Long2ObjectOpenHashMap<List<ScheduledTask>> GLOBAL_REGION_TASKS;
 	private final VarHandle CURRENTLY_EXECUTING_HANDLE;
@@ -77,33 +77,31 @@ public class VolatileCode_v1_21_10 extends VolatileCodeHandle {
 	public VolatileCode_v1_21_10(VolatileCodeHelper helper) throws Exception {
 		super(helper);
 
-		Field dataSharedFlagsIdField = net.minecraft.world.entity.Entity.class.getDeclaredField("DATA_SHARED_FLAGS_ID");
-		dataSharedFlagsIdField.setAccessible(true);
-		DATA_SHARED_FLAGS_ID = (EntityDataAccessor<Byte>) dataSharedFlagsIdField.get(null);
+		MethodHandles.Lookup lookup = MethodHandles.lookup();
 
-		Class<?> nmsEntityClass = net.minecraft.world.entity.LivingEntity.class;
+		Class<?> leClass = net.minecraft.world.entity.LivingEntity.class;
+		Class<?> eClass = net.minecraft.world.entity.Entity.class;
 
-		Field dataEffectParticlesField = nmsEntityClass.getDeclaredField("DATA_EFFECT_PARTICLES");
-		dataEffectParticlesField.setAccessible(true);
-		DATA_EFFECT_PARTICLES = (EntityDataAccessor<List<ParticleOptions>>) dataEffectParticlesField.get(null);
+		DATA_SHARED_FLAGS_ID = (EntityDataAccessor<Byte>) lookup
+			.findStaticVarHandle(eClass, "DATA_SHARED_FLAGS_ID", EntityDataAccessor.class).get();
 
-		Field dataEffectAmbienceIdField = nmsEntityClass.getDeclaredField("DATA_EFFECT_AMBIENCE_ID");
-		dataEffectAmbienceIdField.setAccessible(true);
-		DATA_EFFECT_AMBIENCE_ID = (EntityDataAccessor<Boolean>) dataEffectAmbienceIdField.get(null);
+		DATA_EFFECT_PARTICLES = (EntityDataAccessor<List<ParticleOptions>>) lookup
+			.findStaticVarHandle(leClass, "DATA_EFFECT_PARTICLES", EntityDataAccessor.class).get();
 
-		UPDATE_EFFECT_PARTICLES = nmsEntityClass.getDeclaredMethod("updateSynchronizedMobEffectParticles");
-		UPDATE_EFFECT_PARTICLES.setAccessible(true);
+		DATA_EFFECT_AMBIENCE_ID = (EntityDataAccessor<Boolean>) lookup
+			.findStaticVarHandle(leClass, "DATA_EFFECT_AMBIENCE_ID", EntityDataAccessor.class).get();
 
-		VarHandle tasksByDeadlineHandle = MethodHandles.privateLookupIn(FoliaGlobalRegionScheduler.class, MethodHandles.lookup()).findVarHandle(FoliaGlobalRegionScheduler.class, "tasksByDeadline", Long2ObjectOpenHashMap.class);
-		GLOBAL_REGION_TASKS = (Long2ObjectOpenHashMap<List<ScheduledTask>>) tasksByDeadlineHandle.get(Bukkit.getGlobalRegionScheduler());
+		UPDATE_EFFECT_PARTICLES = lookup.findVirtual(leClass, "updateSynchronizedMobEffectParticles", MethodType.methodType(void.class));
 
-		MethodHandles.Lookup privateLookup = MethodHandles.privateLookupIn(EntityScheduler.class, MethodHandles.lookup());
+		GLOBAL_REGION_TASKS = (Long2ObjectOpenHashMap<List<ScheduledTask>>) lookup
+			.findVarHandle(FoliaGlobalRegionScheduler.class, "tasksByDeadline", Long2ObjectOpenHashMap.class)
+			.get(Bukkit.getGlobalRegionScheduler());
 
-		CURRENTLY_EXECUTING_HANDLE = privateLookup.findVarHandle(EntityScheduler.class, "currentlyExecuting", ArrayDeque.class);
-		ONE_TIME_DELAYED_HANDLE = privateLookup.findVarHandle(EntityScheduler.class, "oneTimeDelayed", Long2ObjectOpenHashMap.class);
+		CURRENTLY_EXECUTING_HANDLE = lookup.findVarHandle(EntityScheduler.class, "currentlyExecuting", ArrayDeque.class);
+		ONE_TIME_DELAYED_HANDLE = lookup.findVarHandle(EntityScheduler.class, "oneTimeDelayed", Long2ObjectOpenHashMap.class);
 
-		Class<?> scheduledTaskClass = privateLookup.findClass("io.papermc.paper.threadedregions.EntityScheduler$ScheduledTask");
-		RUN_HANDLE = privateLookup.findVarHandle(scheduledTaskClass, "run", Consumer.class);
+		Class<?> scheduledTaskClass = lookup.findClass("io.papermc.paper.threadedregions.EntityScheduler$ScheduledTask");
+		RUN_HANDLE = lookup.findVarHandle(scheduledTaskClass, "run", Consumer.class);
 	}
 
 	@Override
@@ -122,7 +120,7 @@ public class VolatileCode_v1_21_10 extends VolatileCodeHandle {
 		helper.scheduleDelayedTask(() -> {
 			try {
 				UPDATE_EFFECT_PARTICLES.invoke(nmsEntity);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}, duration);
