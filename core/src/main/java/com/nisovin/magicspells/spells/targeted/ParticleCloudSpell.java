@@ -32,7 +32,9 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 	private final ConfigData<Component> customName;
 
-	private final ConfigData<Color> color;
+	private final ConfigData<Color> rgbColor;
+	private final ConfigData<Color> argbColor;
+
 	private final ConfigData<ItemStack> item;
 	private final ConfigData<BlockData> blockData;
 	private final ConfigData<DustOptions> dustOptions;
@@ -99,8 +101,8 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 		sculkChargeRotation = getConfigDataFloat("sculk-charge-rotation", 0);
 
 		ConfigData<Integer> colorInt = getConfigDataInt("color", 0xFF0000);
-		color = ConfigDataUtil.getARGBColor(config.getMainConfig(), internalKey + "argb-color", null)
-				.orDefault(data -> Color.fromRGB(colorInt.get(data)));
+		rgbColor = getConfigDataColor("color", null).orDefault(data -> Color.fromRGB(colorInt.get(data)));
+		argbColor = ConfigDataUtil.getARGBColor(config.getMainConfig(), internalKey + "argb-color", null).orDefault(rgbColor);
 
 		waitTime = getConfigDataInt("wait-time-ticks", 10);
 		ticksDuration = getConfigDataInt("duration-ticks", 3 * TimeUtil.TICKS_PER_SECOND);
@@ -194,12 +196,17 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	private Object getParticleData(@NotNull Particle particle, @NotNull SpellData data) {
 		Class<?> type = particle.getDataType();
 
-		if (type == Color.class) return color.get(data);
 		if (type == ItemStack.class) return item.get(data);
 		if (type == BlockData.class) return blockData.get(data);
 		if (type == DustOptions.class) return dustOptions.get(data);
 		if (type == Particle.Spell.class) return spellOptions.get(data);
 		if (type == DustTransition.class) return dustTransition.get(data);
+
+		if (type == Color.class) {
+			return particle == Particle.ENTITY_EFFECT ?
+				argbColor.get(data) :
+				rgbColor.get(data);
+		}
 
 		return switch (particle) {
 			case SHRIEK -> shriekDelay.get(data);

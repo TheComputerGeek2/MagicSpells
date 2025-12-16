@@ -32,7 +32,9 @@ public class ParticlesEffect extends SpellEffect {
 
 	protected ConfigData<Particle> particle;
 
+	protected ConfigData<Color> rgbColor;
 	protected ConfigData<Color> argbColor;
+
 	protected ConfigData<Material> material;
 	protected ConfigData<BlockData> blockData;
 	protected ConfigData<DustOptions> dustOptions;
@@ -70,7 +72,9 @@ public class ParticlesEffect extends SpellEffect {
 	public void loadFromConfig(ConfigurationSection config) {
 		particle = ConfigDataUtil.getParticle(config, "particle-name", Particle.POOF);
 
-		argbColor = ConfigDataUtil.getARGBColor(config, "argb-color", null);
+		rgbColor = ConfigDataUtil.getColor(config, "color", null);
+		argbColor = ConfigDataUtil.getARGBColor(config, "argb-color", null).orDefault(rgbColor);
+
 		material = ConfigDataUtil.getMaterial(config, "material", null);
 		blockData = ConfigDataUtil.getBlockData(config, "material", null);
 		dustOptions = ConfigDataUtil.getDustOptions(config, "color", "size", new DustOptions(Color.RED, 1));
@@ -154,6 +158,12 @@ public class ParticlesEffect extends SpellEffect {
 	protected Object getParticleData(@NotNull Particle particle, @Nullable Entity entity, @NotNull Location location, @NotNull SpellData data) {
 		Class<?> type = particle.getDataType();
 
+		if (type == Color.class) {
+			return particle == Particle.ENTITY_EFFECT ?
+				argbColor.get(data) :
+				rgbColor.get(data);
+		}
+
 		if (type == ItemStack.class) {
 			Material material = this.material.get(data);
 			return material == null ? null : new ItemStack(material);
@@ -216,7 +226,6 @@ public class ParticlesEffect extends SpellEffect {
 		if (type == DustOptions.class) return dustOptions.get(data);
 		if (type == Particle.Spell.class) return spellOptions.get(data);
 		if (type == DustTransition.class) return dustTransition.get(data);
-		if (type == Color.class) return argbColor.get(data);
 
 		return switch (particle) {
 			case SHRIEK -> shriekDelay.get(data);
