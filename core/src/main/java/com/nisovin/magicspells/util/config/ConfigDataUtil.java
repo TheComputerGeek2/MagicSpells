@@ -1152,6 +1152,35 @@ public class ConfigDataUtil {
 	}
 
 	@NotNull
+	public static ConfigData<Particle.Spell> getSpellOptions(@NotNull ConfigurationSection config,
+	                                                     @NotNull String colorPath,
+	                                                     @NotNull String powerPath,
+	                                                     @Nullable Particle.Spell def) {
+		ConfigData<Color> color = getColor(config, colorPath, def == null ? null : def.getColor());
+		ConfigData<Float> power = def == null ? getFloat(config, powerPath) : getFloat(config, powerPath, def.getPower());
+
+		if (color.isConstant() && power.isConstant()) {
+			Color c = color.get();
+			if (c == null) return data -> def;
+
+			Float p = power.get();
+			if (p == null) return data -> def;
+
+			return data -> new Particle.Spell(c, p);
+		}
+
+		return (VariableConfigData<Particle.Spell>) data -> {
+			Color c = color.get(data);
+			if (c == null) return def;
+
+			Float p = power.get(data);
+			if (p == null) return def;
+
+			return new Particle.Spell(c, p);
+		};
+	}
+
+	@NotNull
 	public static ConfigData<DustOptions> getDustOptions(@NotNull ConfigurationSection config,
 														 @NotNull String colorPath,
 														 @NotNull String sizePath,

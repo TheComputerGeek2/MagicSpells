@@ -36,11 +36,13 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	private final ConfigData<ItemStack> item;
 	private final ConfigData<BlockData> blockData;
 	private final ConfigData<DustOptions> dustOptions;
+	private final ConfigData<Particle.Spell> spellOptions;
 	private final ConfigData<DustTransition> dustTransition;
 
 	private final ConfigData<Particle> particle;
 
 	private final ConfigData<Integer> waitTime;
+	private final ConfigData<Integer> shriekDelay;
 	private final ConfigData<Integer> ticksDuration;
 	private final ConfigData<Integer> durationOnUse;
 	private final ConfigData<Integer> reapplicationDelay;
@@ -48,6 +50,8 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	private final ConfigData<Float> radius;
 	private final ConfigData<Float> radiusOnUse;
 	private final ConfigData<Float> radiusPerTick;
+	private final ConfigData<Float> dragonBreathPower;
+	private final ConfigData<Float> sculkChargeRotation;
 
 	private final ConfigData<Boolean> useGravity;
 	private final ConfigData<Boolean> canTargetEntities;
@@ -74,6 +78,7 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 				internalKey + "dust-transition.size",
 				new DustTransition(Color.RED, Color.BLACK, 1)
 		);
+		spellOptions = ConfigDataUtil.getSpellOptions(config.getMainConfig(), internalKey + "spell.color", internalKey + "spell.power", null);
 
 		ConfigData<Material> material = getConfigDataMaterial("material", null);
 		if (material.isConstant()) {
@@ -87,6 +92,11 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 				return mat != null && mat.isItem() ? new ItemStack(mat) : null;
 			};
 		}
+
+		shriekDelay = getConfigDataInt("shriek-delay", 0);
+
+		dragonBreathPower = getConfigDataFloat("dragon-breath-power", 1);
+		sculkChargeRotation = getConfigDataFloat("sculk-charge-rotation", 0);
 
 		ConfigData<Integer> colorInt = getConfigDataInt("color", 0xFF0000);
 		color = ConfigDataUtil.getARGBColor(config.getMainConfig(), internalKey + "argb-color", null)
@@ -188,9 +198,15 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 		if (type == ItemStack.class) return item.get(data);
 		if (type == BlockData.class) return blockData.get(data);
 		if (type == DustOptions.class) return dustOptions.get(data);
+		if (type == Particle.Spell.class) return spellOptions.get(data);
 		if (type == DustTransition.class) return dustTransition.get(data);
 
-		return null;
+		return switch (particle) {
+			case SHRIEK -> shriekDelay.get(data);
+			case DRAGON_BREATH -> dragonBreathPower.get(data);
+			case SCULK_CHARGE -> sculkChargeRotation.get(data);
+			default -> null;
+		};
 	}
 
 }
