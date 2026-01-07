@@ -32,10 +32,13 @@ public class ParticlesEffect extends SpellEffect {
 
 	protected ConfigData<Particle> particle;
 
+	protected ConfigData<Color> rgbColor;
 	protected ConfigData<Color> argbColor;
+
 	protected ConfigData<Material> material;
 	protected ConfigData<BlockData> blockData;
 	protected ConfigData<DustOptions> dustOptions;
+	protected ConfigData<Particle.Spell> spellOptions;
 	protected ConfigData<DustTransition> dustTransition;
 
 	protected ConfigData<Vector> vibrationOffset;
@@ -59,6 +62,7 @@ public class ParticlesEffect extends SpellEffect {
 	protected ConfigData<Float> xSpread;
 	protected ConfigData<Float> ySpread;
 	protected ConfigData<Float> zSpread;
+	protected ConfigData<Float> dragonBreathPower;
 	protected ConfigData<Float> sculkChargeRotation;
 
 	protected ConfigData<Boolean> force;
@@ -68,11 +72,14 @@ public class ParticlesEffect extends SpellEffect {
 	public void loadFromConfig(ConfigurationSection config) {
 		particle = ConfigDataUtil.getParticle(config, "particle-name", Particle.POOF);
 
-		argbColor = ConfigDataUtil.getARGBColor(config, "argb-color", null);
+		rgbColor = ConfigDataUtil.getColor(config, "color", null);
+		argbColor = ConfigDataUtil.getARGBColor(config, "argb-color", null).orDefault(rgbColor);
+
 		material = ConfigDataUtil.getMaterial(config, "material", null);
 		blockData = ConfigDataUtil.getBlockData(config, "material", null);
 		dustOptions = ConfigDataUtil.getDustOptions(config, "color", "size", new DustOptions(Color.RED, 1));
 		dustTransition = ConfigDataUtil.getDustTransition(config, "color", "to-color", "size", new DustTransition(Color.RED, Color.BLACK, 1));
+		spellOptions = ConfigDataUtil.getSpellOptions(config, "spell.color", "spell.power", null);
 
 		vibrationOffset = ConfigDataUtil.getVector(config, "vibration-offset", new Vector());
 		vibrationOrigin = ConfigDataUtil.getEnum(config, "vibration-origin", ParticlePosition.class, ParticlePosition.POSITION);
@@ -91,12 +98,14 @@ public class ParticlesEffect extends SpellEffect {
 		arrivalTime = ConfigDataUtil.getInteger(config, "arrival-time", -1);
 		shriekDelay = ConfigDataUtil.getInteger(config, "shriek-delay", 0);
 
+		dragonBreathPower = ConfigDataUtil.getFloat(config, "dragon-breath-power", 1);
+		sculkChargeRotation = ConfigDataUtil.getFloat(config, "sculk-charge-rotation", 0);
+
 		speed = ConfigDataUtil.getFloat(config, "speed", 0.2f);
 
 		ConfigData<Float> horizSpread = ConfigDataUtil.getFloat(config, "horiz-spread", 0.2f);
 		xSpread = ConfigDataUtil.getFloat(config, "x-spread", horizSpread);
 		zSpread = ConfigDataUtil.getFloat(config, "z-spread", horizSpread);
-		sculkChargeRotation = ConfigDataUtil.getFloat(config, "sculk-charge-rotation", 0);
 
 		ConfigData<Float> vertSpread = ConfigDataUtil.getFloat(config, "vert-spread", 0.2f);
 		ySpread = ConfigDataUtil.getFloat(config, "y-spread", vertSpread);
@@ -148,6 +157,12 @@ public class ParticlesEffect extends SpellEffect {
 
 	protected Object getParticleData(@NotNull Particle particle, @Nullable Entity entity, @NotNull Location location, @NotNull SpellData data) {
 		Class<?> type = particle.getDataType();
+
+		if (type == Color.class) {
+			return particle == Particle.ENTITY_EFFECT ?
+				argbColor.get(data) :
+				rgbColor.get(data);
+		}
 
 		if (type == ItemStack.class) {
 			Material material = this.material.get(data);
@@ -209,12 +224,15 @@ public class ParticlesEffect extends SpellEffect {
 
 		if (type == BlockData.class) return blockData.get(data);
 		if (type == DustOptions.class) return dustOptions.get(data);
+		if (type == Particle.Spell.class) return spellOptions.get(data);
 		if (type == DustTransition.class) return dustTransition.get(data);
-		if (type == Float.class) return sculkChargeRotation.get(data);
-		if (type == Integer.class) return shriekDelay.get(data);
-		if (type == Color.class) return argbColor.get(data);
 
-		return null;
+		return switch (particle) {
+			case SHRIEK -> shriekDelay.get(data);
+			case DRAGON_BREATH -> dragonBreathPower.get(data);
+			case SCULK_CHARGE -> sculkChargeRotation.get(data);
+			default -> null;
+		};
 	}
 
 	protected Location getSpawnLocation(@NotNull Particle particle, @NotNull Location position, @NotNull SpellData data) {
