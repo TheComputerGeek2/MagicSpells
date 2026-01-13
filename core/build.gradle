@@ -6,7 +6,7 @@ plugins {
 dependencies {
     shadow("org.apache.commons:commons-math4-core:4.0-beta1")
     shadow("com.github.ben-manes.caffeine:caffeine:3.2.1")
-    shadow("com.github.Chronoken:EffectLib:753da6c")
+    shadow("com.github.Chronoken:EffectLib:4e37625")
     shadow("co.aikar:acf-paper:0.5.1-SNAPSHOT")
     shadow("org.bstats:bstats-bukkit:3.0.2")
     shadow("com.github.ezylang:EvalEx:0dcb042")
