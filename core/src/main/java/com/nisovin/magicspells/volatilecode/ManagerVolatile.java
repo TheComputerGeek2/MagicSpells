@@ -50,27 +50,31 @@ public class ManagerVolatile {
 	};
 
 	public static VolatileCodeHandle constructVolatileCodeHandler() {
-		VolatileCodeHandle handle;
-		try {
-			String mcVersion = Bukkit.getMinecraftVersion();
-			String convertedVersion = COMPATIBLE_VERSIONS.getOrDefault(mcVersion, mcVersion);
-			String version = "v" + convertedVersion.replace(".", "_");
-			Class<?> volatileCode = Class.forName("com.nisovin.magicspells.volatilecode." + version + ".VolatileCode_" + version);
+		String mcVersion = Bukkit.getMinecraftVersion();
+		String convertedVersion = COMPATIBLE_VERSIONS.getOrDefault(mcVersion, mcVersion);
+		String version = "v" + convertedVersion.replace(".", "_");
 
-			handle = (VolatileCodeHandle) volatileCode.getConstructor(VolatileCodeHelper.class).newInstance(helper);
-			MagicSpells.log("Found volatile code handler for " + mcVersion + ".");
+		try {
+			Class<?> volatileCode;
+			try {
+				volatileCode = Class.forName("com.nisovin.magicspells.volatilecode." + version + ".VolatileCode_" + version);
+			} catch (ClassNotFoundException _) {
+				VolatileCodeHandle handle = new VolatileCodeLatest(helper);
+				MagicSpells.log("Using latest volatile code handler.");
+
+				return handle;
+			}
+
+			VolatileCodeHandle handle = (VolatileCodeHandle) volatileCode.getConstructor(VolatileCodeHelper.class).newInstance(helper);
+			MagicSpells.log("Found volatile code handler for '" + mcVersion + "'.");
+
 			return handle;
-		} catch (Throwable ignored) {}
+		} catch (Throwable throwable) {
+			MagicSpells.error("Failed to initialize volatile code handler for '" + mcVersion + "'.");
+			throwable.printStackTrace();
 
-		try {
-			handle = new VolatileCodeLatest(helper);
-			MagicSpells.log("Using latest volatile code handler.");
-		} catch (Throwable ignored) {
-			handle = new VolatileCodeDisabled();
-			MagicSpells.error("Volatile code handler could not be initialized.");
+			return new VolatileCodeDisabled();
 		}
-
-		return handle;
 	}
 
 }
