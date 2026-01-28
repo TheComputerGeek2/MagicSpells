@@ -1,7 +1,14 @@
 package com.nisovin.magicspells.spells.command;
 
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
+import java.util.Collections;
 import java.util.regex.Pattern;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -14,6 +21,8 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Spellbook;
@@ -23,14 +32,15 @@ import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellLearnEvent;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
+import com.nisovin.magicspells.commands.parsers.OwnedSpellParser;
 import com.nisovin.magicspells.events.SpellLearnEvent.LearnSource;
 
 // TODO this should not be hardcoded to use a book
-public class TomeSpell extends CommandSpell {
+public class TomeSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private static final Pattern INT_PATTERN = Pattern.compile("^\\d+$");
 	private static final NamespacedKey KEY = new NamespacedKey(MagicSpells.getInstance(), "tome_data");
-	
+
 	private boolean consumeBook;
 	private boolean cancelReadOnLearn;
 
@@ -116,10 +126,15 @@ public class TomeSpell extends CommandSpell {
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (args.length == 1) return TxtUtil.tabCompleteSpellName(sender);
-		if (args.length == 2) return List.of("1");
-		return null;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (!(executor instanceof Player caster)) return Collections.emptyList();
+
+		return OwnedSpellParser.suggest(caster,
+			requireTeachPerm.get(new SpellData(caster)) ? MagicSpells.getSpellbook(caster)::canTeach : null
+		);
 	}
 
 	public ItemStack createTome(Spell spell, int uses, ItemStack item, SpellData data) {
@@ -136,7 +151,7 @@ public class TomeSpell extends CommandSpell {
 		item.editMeta(meta -> meta.getPersistentDataContainer().set(KEY, PersistentDataType.STRING, spell.getInternalName() + (finalUses > 0 ? "," + finalUses : "")));
 		return item;
 	}
-	
+
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
 		if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
@@ -147,7 +162,7 @@ public class TomeSpell extends CommandSpell {
 
 		String spellData = item.getItemMeta().getPersistentDataContainer().get(KEY, PersistentDataType.STRING);
 		if (spellData == null || spellData.isEmpty()) return;
-		
+
 		String[] data = spellData.split(",");
 		Spell spell = MagicSpells.getSpellByInternalName(data[0]);
 		int uses = -1;

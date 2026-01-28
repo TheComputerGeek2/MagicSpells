@@ -1,28 +1,42 @@
 package com.nisovin.magicspells.spells.command;
 
 import java.util.Set;
-import java.util.List;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Collection;
+
+import org.incendo.cloud.bukkit.parser.PlayerParser;
+import org.incendo.cloud.suggestion.SuggestionProvider;
+import org.incendo.cloud.parser.aggregate.AggregateParser;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.command.ConsoleCommandSender;
+
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
+import com.nisovin.magicspells.commands.parsers.SpellParser;
+import com.nisovin.magicspells.commands.parsers.VarargsParser;
 
 // NOTE: THIS DOES NOT PERFORM MANY SAFETY CHECKS, IT IS MEANT TO BE FAST FOR ADMINS
 // NOTE: THIS CURRENTLY ONLY CASTS FROM CONSOLE
 
 public class AdminTeachSpell extends CommandSpell {
-	
+
+	private static final SuggestionProvider<CommandSourceStack> SUGGESTIONS = AggregateParser
+		.<CommandSourceStack>builder()
+		.withComponent("player", PlayerParser.playerParser())
+		.withComponent("spells", VarargsParser.varargsParser(new SpellParser<>()))
+		.withDirectMapper(Object.class, ((commandContext, context) -> new Object()))
+		.build()
+		.suggestionProvider();
+
 	public AdminTeachSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 	}
@@ -51,13 +65,12 @@ public class AdminTeachSpell extends CommandSpell {
 		// Format should be <target> <node> <node> <...>
 		return true;
 	}
-	
+
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (!(sender instanceof ConsoleCommandSender) || args.length != 1) return null;
-		return TxtUtil.tabCompleteSpellName(sender);
+	public SuggestionProvider<CommandSourceStack> suggestionProvider() {
+		return SUGGESTIONS;
 	}
-	
+
 	private static class AdminTeachTask extends BukkitRunnable {
 		
 		private final CommandSender sender;

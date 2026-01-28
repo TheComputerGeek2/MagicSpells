@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.volatilecode;
 
+import org.bukkit.plugin.Plugin;
 import org.bukkit.event.Listener;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -14,5 +15,7 @@ public interface VolatileCodeHelper {
 	void registerEvents(Listener listener);
 
 	YamlConfiguration getMainConfig();
+
+	Plugin getPlugin();
 
 }

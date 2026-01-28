@@ -1,7 +1,6 @@
 package com.nisovin.magicspells.spells.command;
 
 import java.io.File;
-import java.util.List;
 import java.io.IOException;
 
 import org.bukkit.entity.Player;
@@ -83,11 +82,6 @@ public class ItemSerializeSpell extends CommandSpell {
 	@Override
 	public boolean castFromConsole(CommandSender sender, String[] args) {
 		return false;
-	}
-
-	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		return null;
 	}
 
 	public File getDataFolder() {

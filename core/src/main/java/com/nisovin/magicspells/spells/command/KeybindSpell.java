@@ -1,11 +1,20 @@
 package com.nisovin.magicspells.spells.command;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Objects;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
+
+import com.google.common.collect.Iterables;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,14 +27,17 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
+import com.nisovin.magicspells.commands.parsers.OwnedSpellParser;
 
-public class KeybindSpell extends CommandSpell {
+public class KeybindSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private final Map<String, Keybinds> playerKeybinds;
 
@@ -139,11 +151,13 @@ public class KeybindSpell extends CommandSpell {
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (!(sender instanceof Player) || args.length != 1) return null;
-		List<String> ret = new ArrayList<>(List.of("clear", "clearall"));
-		ret.addAll(TxtUtil.tabCompleteSpellName(sender));
-		return ret;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (!(executor instanceof Player caster)) return Collections.emptyList();
+
+		return Iterables.concat(OwnedSpellParser.suggest(caster), List.of("clear", "clearall"));
 	}
 
 	@EventHandler

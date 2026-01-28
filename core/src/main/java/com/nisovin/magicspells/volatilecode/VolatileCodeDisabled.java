@@ -71,4 +71,14 @@ public class VolatileCodeDisabled extends VolatileCodeHandle {
 		return null;
 	}
 
+	@Override
+	public long countGlobalRegionSchedulerTasks() {
+		return -1;
+	}
+
+	@Override
+	public long countEntitySchedulerTasks() {
+		return -1;
+	}
+
 }

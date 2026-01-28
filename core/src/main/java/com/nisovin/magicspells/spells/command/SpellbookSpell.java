@@ -1,12 +1,19 @@
 package com.nisovin.magicspells.spells.command;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.World;
 import org.bukkit.Bukkit;
@@ -21,8 +28,9 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.event.player.PlayerInteractEvent;
+
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Perm;
 import com.nisovin.magicspells.Spell;
@@ -34,12 +42,13 @@ import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellLearnEvent;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
+import com.nisovin.magicspells.commands.parsers.OwnedSpellParser;
 import com.nisovin.magicspells.events.SpellLearnEvent.LearnSource;
 
 // Advanced perm is for being able to destroy spellbooks
 // Op is currently required for using the reload
 
-public class SpellbookSpell extends CommandSpell {
+public class SpellbookSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private List<String> bookSpells;
 	private List<Integer> bookUses;
@@ -237,15 +246,19 @@ public class SpellbookSpell extends CommandSpell {
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		if (args.length == 1) {
-			List<String> ret = new ArrayList<>();
-			ret.add("reload");
-			if (sender instanceof Player) ret.addAll(TxtUtil.tabCompleteSpellName(sender));
-			return ret;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+
+		List<String> suggestions = new ArrayList<>();
+		if (executor.isOp()) suggestions.add("reload");
+
+		if (executor instanceof Player player) {
+			Spellbook spellbook = MagicSpells.getSpellbook(player);
+			suggestions.addAll(OwnedSpellParser.suggest(player, spellbook::canTeach));
 		}
-		if (args.length != 2 || args[0].equals("reload") || sender instanceof ConsoleCommandSender) return null;
-		return List.of("1");
+
+		return suggestions;
 	}
 
 	private void loadSpellbooks() {

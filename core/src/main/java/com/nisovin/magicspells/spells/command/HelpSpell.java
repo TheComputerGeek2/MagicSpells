@@ -1,9 +1,18 @@
 package com.nisovin.magicspells.spells.command;
 
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
+import java.util.Collections;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
+
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
@@ -11,8 +20,10 @@ import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
+import com.nisovin.magicspells.commands.parsers.SpellParser;
+import com.nisovin.magicspells.commands.parsers.OwnedSpellParser;
 
-public class HelpSpell extends CommandSpell {
+public class HelpSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private final ConfigData<Boolean> requireKnownSpell;
 
@@ -64,8 +75,13 @@ public class HelpSpell extends CommandSpell {
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		return sender instanceof Player && args.length == 1 ? TxtUtil.tabCompleteSpellName(sender) : null;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+
+		CommandSender executor = Objects.requireNonNullElse(stack.getExecutor(), stack.getSender());
+		if (!(executor instanceof Player caster)) return Collections.emptyList();
+
+		return requireKnownSpell.get(new SpellData(caster)) ? OwnedSpellParser.suggest(caster) : SpellParser.suggest();
 	}
 
 	public String getStrUsage() {

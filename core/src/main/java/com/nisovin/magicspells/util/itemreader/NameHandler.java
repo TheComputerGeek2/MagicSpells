@@ -15,7 +15,7 @@ public class NameHandler {
 
 	public static void process(ConfigurationSection config, ItemMeta meta, MagicItemData data) {
 		if (!config.isString(CONFIG_NAME)) return;
-		meta.displayName(Util.getMiniMessage(config.getString(CONFIG_NAME)));
+		meta.displayName(Util.getItemMiniMessage(config.getString(CONFIG_NAME)));
 		data.setAttribute(NAME, meta.displayName());
 	}
 

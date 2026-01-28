@@ -1,9 +1,15 @@
 package com.nisovin.magicspells.spells.targeted;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Map;
-import java.util.List;
 import java.util.UUID;
 import java.util.HashMap;
+import java.util.Objects;
+
+import org.incendo.cloud.context.CommandInput;
+import org.incendo.cloud.context.CommandContext;
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -14,8 +20,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventPriority;
 import org.bukkit.util.RayTraceResult;
-import org.bukkit.command.CommandSender;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.spells.TargetedSpell;
@@ -25,7 +32,7 @@ import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
 
-public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, TargetedEntityFromLocationSpell {
+public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, TargetedEntityFromLocationSpell, BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
 	private final Map<UUID, SummonData> pending;
 
@@ -165,8 +172,9 @@ public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, T
 	}
 
 	@Override
-	public List<String> tabComplete(CommandSender sender, String[] args) {
-		return args.length == 1 ? TxtUtil.tabCompletePlayerName(sender) : null;
+	public @NotNull Iterable<@NotNull String> stringSuggestions(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+		CommandSourceStack stack = context.sender();
+		return TxtUtil.tabCompletePlayerName(Objects.requireNonNullElse(stack.getExecutor(), stack.getSender()), false);
 	}
 
 	private record SummonData(Location location, long time, int maxAcceptDelay, SpellData spellData) {

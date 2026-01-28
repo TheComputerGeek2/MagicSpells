@@ -28,9 +28,9 @@ The project includes software developed by third parties. For their full license
   - Licensed by: **Slikey**
   - License: **MIT License** (See `3rd_party_licenses/LICENSE-MIT`)
 
-- Annotation Command Framework (ACF):
-  - Repository: `Chronoken/EffectLib`
-  - Licensed by: **Daniel Ennis and Contributors**
+- Cloud Command Framework:
+  - Repository: `Incendo/cloud`
+  - Licensed by: **Alexander Söderberg**
   - License: **MIT License** (See `3rd_party_licenses/LICENSE-MIT`)
 
 - bStats:

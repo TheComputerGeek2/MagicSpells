@@ -67,17 +67,20 @@ public class TxtUtil {
 	}
 
 	public static List<String> tabCompletePlayerName(CommandSender sender) {
-		List<String> matches = new ArrayList<>();
-		for (Player p : Bukkit.getOnlinePlayers()) {
-			if (!sender.isOp() && sender instanceof Player player && !player.canSee(p)) continue;
-			matches.add(p.getName());
-		}
-		return matches;
+		return tabCompletePlayerName(sender, true);
 	}
 
-	public static String getPossessiveName(String name) {
-		name = name.trim();
-		return name + "'" + (name.endsWith("s") ? "" : "s");
+	public static List<String> tabCompletePlayerName(CommandSender sender, boolean allowSelf) {
+		List<String> matches = new ArrayList<>();
+
+		for (Player p : Bukkit.getOnlinePlayers()) {
+			if (!sender.isOp() && sender instanceof Player player && !player.canSee(p)) continue;
+			if (!allowSelf && p.equals(sender)) continue;
+
+			matches.add(p.getName());
+		}
+
+		return matches;
 	}
 
 }
