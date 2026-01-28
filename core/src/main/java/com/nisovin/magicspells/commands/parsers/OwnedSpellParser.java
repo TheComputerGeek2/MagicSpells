@@ -41,30 +41,30 @@ public class OwnedSpellParser extends SpellParser<CommandSourceStack> {
 		CommandSender sender = stack.getExecutor();
 
 		Optional<Spell> parsedValue = result.parsedValue();
-		if (parsedValue.isPresent()) {
-			Spell spell = parsedValue.get();
+		if (parsedValue.isEmpty()) return result;
 
-			if (sender instanceof Player player) {
-				Spellbook spellbook = MagicSpells.getSpellbook(player);
-				if (spell.isHelperSpell() && !Perm.COMMAND_CAST_SELF_HELPER.has(player) || !spellbook.hasSpell(spell))
-					return ArgumentParseResult.failure(new GenericCommandException(MagicSpells.getUnknownSpellMessage()));
-			}
+		Spell spell = parsedValue.get();
 
-			if (!spell.canCastByCommand())
-				return ArgumentParseResult.failure(new GenericCommandException("You cannot cast this spell using commands."));
+		if (sender instanceof Player player) {
+			Spellbook spellbook = MagicSpells.getSpellbook(player);
+			if (spell.isHelperSpell() && !Perm.COMMAND_CAST_SELF_HELPER.has(player) || !spellbook.hasSpell(spell))
+				return ArgumentParseResult.failure(new GenericCommandException(MagicSpells.getUnknownSpellMessage()));
+		}
 
-			if (spell.isRequiringCastItemOnCommand()) {
-				if (!(sender instanceof LivingEntity entity))
-					return ArgumentParseResult.failure(new GenericCommandException(spell.getStrWrongCastItem()));
+		if (!spell.canCastByCommand())
+			return ArgumentParseResult.failure(new GenericCommandException("You cannot cast this spell using commands."));
 
-				EntityEquipment equipment = entity.getEquipment();
-				if (equipment == null)
-					return ArgumentParseResult.failure(new GenericCommandException(spell.getStrWrongCastItem()));
+		if (spell.isRequiringCastItemOnCommand()) {
+			if (!(sender instanceof LivingEntity entity))
+				return ArgumentParseResult.failure(new GenericCommandException(spell.getStrWrongCastItem()));
 
-				ItemStack item = equipment.getItemInMainHand();
-				if (!spell.isValidItemForCastCommand(item))
-					return ArgumentParseResult.failure(new GenericCommandException(spell.getStrWrongCastItem()));
-			}
+			EntityEquipment equipment = entity.getEquipment();
+			if (equipment == null)
+				return ArgumentParseResult.failure(new GenericCommandException(spell.getStrWrongCastItem()));
+
+			ItemStack item = equipment.getItemInMainHand();
+			if (!spell.isValidItemForCastCommand(item))
+				return ArgumentParseResult.failure(new GenericCommandException(spell.getStrWrongCastItem()));
 		}
 
 		return result;

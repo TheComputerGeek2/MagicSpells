@@ -18,7 +18,7 @@ import org.incendo.cloud.suggestion.BlockingSuggestionProvider;
 import com.nisovin.magicspells.util.Angle;
 
 /**
- * Parser that parsers a {@link Angle} from two floats.
+ * Parser that parses an {@link Angle} from a float.
  *
  * @param <C> Command sender type
  */
