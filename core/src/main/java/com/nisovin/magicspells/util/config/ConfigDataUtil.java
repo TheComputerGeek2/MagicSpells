@@ -1,6 +1,7 @@
 package com.nisovin.magicspells.util.config;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 import org.jetbrains.annotations.NotNull;
@@ -505,10 +506,16 @@ public class ConfigDataUtil {
 
 	@NotNull
 	public static <T extends Enum<T>> ConfigData<T> getEnum(@NotNull ConfigurationSection config,
-															@NotNull String path,
+	                                                        @NotNull String path,
+	                                                        @NotNull Class<T> type,
+	                                                        @Nullable T def) {
+		return ConfigDataUtil.getEnum(config.getString(path), type, def);
+	}
+
+	@NotNull
+	public static <T extends Enum<T>> ConfigData<T> getEnum(@Nullable String value,
 															@NotNull Class<T> type,
 															@Nullable T def) {
-		String value = config.getString(path);
 		if (value == null) return data -> def;
 
 		try {
@@ -780,7 +787,10 @@ public class ConfigDataUtil {
 	public static ConfigData<NamespacedKey> getNamespacedKey(@NotNull ConfigurationSection config, @NotNull String path, @Nullable NamespacedKey def) {
 		String value = config.getString(path);
 		if (value == null) return data -> def;
+		return getNamespacedKey(value, def);
+	}
 
+	public static ConfigData<NamespacedKey> getNamespacedKey(@NotNull String value, @Nullable NamespacedKey def) {
 		NamespacedKey val = NamespacedKey.fromString(value.toLowerCase());
 		if (val != null) return data -> val;
 
@@ -793,6 +803,22 @@ public class ConfigDataUtil {
 
 			NamespacedKey key = NamespacedKey.fromString(string.toLowerCase());
 			return key == null ? def : key;
+		};
+	}
+
+	public static ConfigData<UUID> getUniqueID(@NotNull ConfigurationSection config, @NotNull String path, @Nullable UUID def) {
+		ConfigData<String> supplier = getString(config, path, null);
+
+		return (VariableConfigData<UUID>) data -> {
+			String uuid = supplier.get(data);
+			if (uuid == null) return def;
+
+			try {
+				return UUID.fromString(uuid);
+			}
+			catch (IllegalArgumentException e) {
+				return def;
+			}
 		};
 	}
 
