@@ -1,6 +1,12 @@
 package com.nisovin.magicspells.spells.targeted;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.UUID;
 
 import com.google.common.collect.Multimap;
 
@@ -19,7 +25,7 @@ import org.bukkit.damage.DamageSource;
 import org.bukkit.event.EventPriority;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.inventory.EntityEquipment;
@@ -269,19 +275,15 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 
 	@Override
 	public CastResult cast(SpellData data) {
-		String spawnLocation = this.location.get(data).toLowerCase();
+		String spawnLocation = this.location.get(data).toLowerCase(Locale.ROOT);
 
 		if (spawnLocation.startsWith("casteroffset:")) {
-			String[] split = spawnLocation.split(":", 2);
-
-			float y;
-			try {
-				y = Float.parseFloat(split[1]);
-			} catch (NumberFormatException e) {
+			Vector offset = parseOffset(spawnLocation, "casteroffset:");
+			if (offset == null) {
 				return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 			}
 
-			Location location = data.caster().getLocation().add(0, y, 0);
+			Location location = data.caster().getLocation().add(offset);
 			location.setPitch(0);
 
 			SpellTargetLocationEvent targetEvent = new SpellTargetLocationEvent(this, data, location);
@@ -291,21 +293,6 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			switch (spawnLocation) {
 				case "caster" -> {
 					SpellTargetLocationEvent targetEvent = new SpellTargetLocationEvent(this, data, data.caster().getLocation());
-					if (!targetEvent.callEvent()) return noTarget(targetEvent);
-					data = targetEvent.getSpellData();
-				}
-				case "target" -> {
-					RayTraceResult result = rayTraceBlocks(data);
-					if (result == null) return noTarget(data);
-
-					Block block = result.getHitBlock();
-					if (!block.isPassable()) {
-						Block upper = block.getRelative(BlockFace.UP);
-						if (!upper.isPassable()) return noTarget(data);
-						block = upper;
-					}
-
-					SpellTargetLocationEvent targetEvent = new SpellTargetLocationEvent(this, data, block.getLocation());
 					if (!targetEvent.callEvent()) return noTarget(targetEvent);
 					data = targetEvent.getSpellData();
 				}
@@ -323,15 +310,27 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 					if (!targetEvent.callEvent()) return noTarget(targetEvent);
 					data = targetEvent.getSpellData();
 				}
+				case "target" -> {
+					TargetInfo<Location> info = getTargetedBlockLocation(data);
+					if (info.noTarget()) return noTarget(info);
+					data = info.spellData();
+				}
 				default -> {
-					return new CastResult(PostCastAction.ALREADY_HANDLED, data);
+					if (!spawnLocation.startsWith("offset:")) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
+
+					TargetInfo<Location> info = getTargetedBlockLocation(data);
+					if (info.noTarget()) return noTarget(info);
+					data = info.spellData();
 				}
 			}
 		}
 
 		if (!data.hasLocation()) return noTarget(data);
 
-		return spawnMob(data.caster().getLocation(), data);
+		Location source = data.hasCaster() ? data.caster().getLocation() : data.location();
+		return spawnLocation.startsWith("offset:") || spawnLocation.equals("target")
+			? castAtLocation(data)
+			: spawnMob(source, data);
 	}
 
 	@Override
@@ -347,17 +346,12 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 
 	private CastResult castAtSpawnLocation(SpellData data, String spawnLocation) {
 		if (spawnLocation.startsWith("offset:")) {
-			String[] split = spawnLocation.split(":", 2);
-
-			float y;
-			try {
-				y = Float.parseFloat(split[1]);
-			} catch (NumberFormatException e) {
+			Vector offset = parseOffset(spawnLocation, "offset:");
+			if (offset == null) {
 				return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 			}
 
-			Location location = data.location().add(0, y, 0);
-			location.setPitch(0);
+			Location location = data.location().clone().add(offset);
 
 			Location source = data.hasCaster() ? data.caster().getLocation() : data.location();
 			data = data.location(location);
@@ -389,6 +383,25 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 			}
 			default -> new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		};
+	}
+
+	private Vector parseOffset(String spawnLocation, String prefix) {
+		String value = spawnLocation.substring(prefix.length()).trim();
+		String[] split = value.split(",");
+
+		try {
+			if (split.length == 1) return new Vector(0, Double.parseDouble(split[0].trim()), 0);
+			if (split.length == 3) {
+				double x = Double.parseDouble(split[0].trim());
+				double y = Double.parseDouble(split[1].trim());
+				double z = Double.parseDouble(split[2].trim());
+				return new Vector(x, y, z);
+			}
+		} catch (NumberFormatException e) {
+			return null;
+		}
+
+		return null;
 	}
 
 	private Location getRandomLocationFrom(Location location, SpellData data, int range) {
@@ -439,10 +452,11 @@ public class SpawnEntitySpell extends TargetedSpell implements TargetedLocationS
 		}
 
 		SpellData finalData = data;
-		Entity entity = entityData.spawn(loc, data,
-			mob -> prepMob(mob, finalData),
-			mob -> mob.setPersistent(!removeMob)
-		);
+		Entity entity = entityData.spawn(loc, data, mob -> prepMob(mob, finalData), mob -> {
+			if (!removeMob) return;
+			mob.setPersistent(false);
+			Util.forEachPassenger(mob, e -> e.setPersistent(false));
+		});
 		if (entity == null) return noTarget(data);
 
 		UUID uuid = entity.getUniqueId();

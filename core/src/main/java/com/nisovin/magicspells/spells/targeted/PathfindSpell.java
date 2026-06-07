@@ -93,10 +93,8 @@ public class PathfindSpell extends TargetedSpell implements TargetedLocationSpel
     private CastResult castPath(Location from, Location to, SpellData data) {
         boolean throughBlocks = travelThroughBlocks.get(data);
 
-        // Snap caster and target locations to nearby walkable nodes so we don't try to
-        // path into solid blocks or inside walls.
-        Location start = findNearbyWalkable(from, throughBlocks);
-        Location goal = findNearbyWalkable(to, throughBlocks);
+        Location start = getPathNodeLocation(from, throughBlocks);
+        Location goal = getPathNodeLocation(to, throughBlocks);
 
         boolean diagonal = allowDiagonal.get(data);
         Integer maxStepValue = maxStepHeight.get(data);
@@ -107,7 +105,8 @@ public class PathfindSpell extends TargetedSpell implements TargetedLocationSpel
         if (path == null || path.isEmpty()) {
             // Play disabled effect at each attempted node
             for (Location loc : attempted) {
-                playSpellEffects(EffectPosition.DISABLED, loc.clone().add(0.5, 0.5, 0.5), data.location(loc.clone().add(0.5, 0.5, 0.5)));
+                Location effectLocation = getEffectLocation(loc, throughBlocks);
+                playSpellEffects(EffectPosition.DISABLED, effectLocation, data.location(effectLocation));
             }
             return noTarget(data);
         }
@@ -166,7 +165,7 @@ public class PathfindSpell extends TargetedSpell implements TargetedLocationSpel
             if (curr.x == goalNode.x && curr.y == goalNode.y && curr.z == goalNode.z && curr.world.equals(goalNode.world)) {
                 List<Location> path = new ArrayList<>();
                 for (Node n = curr; n != null; n = n.parent) {
-                    path.add(0, new Location(world, n.x + 0.5, n.y + 0.5, n.z + 0.5));
+                    path.add(0, getEffectLocation(new Location(world, n.x, n.y, n.z), throughBlocks));
                 }
                 return path;
             }
@@ -220,10 +219,7 @@ public class PathfindSpell extends TargetedSpell implements TargetedLocationSpel
 
     private boolean isWalkable(Block block, boolean throughBlocks) {
         if (throughBlocks) {
-            if (!block.isPassable()) return false;
-            if (!block.getRelative(0, 1, 0).isPassable()) return false;
-
-            return matchesTraversalFilters(block);
+            return matchesTraversalFilters(block, true);
         }
 
         // Use the shared BlockUtils definition of a safe standable space to avoid
@@ -232,10 +228,45 @@ public class PathfindSpell extends TargetedSpell implements TargetedLocationSpel
         if (!BlockUtils.isSafeToStand(feetLoc.clone())) return false;
 
         Block below = feetLoc.clone().subtract(0, 1, 0).getBlock();
-        return matchesTraversalFilters(below);
+        return matchesTraversalFilters(below, false);
     }
 
-    private Location findNearbyWalkable(Location loc, boolean throughBlocks) {
+    private Location getPathNodeLocation(Location loc, boolean throughBlocks) {
+        if (throughBlocks) {
+            Block block = loc.getBlock();
+            if (isWalkable(block, true)) {
+                return new Location(block.getWorld(), block.getX(), block.getY(), block.getZ());
+            }
+
+            org.bukkit.World world = block.getWorld();
+            int bx = block.getX();
+            int by = block.getY();
+            int bz = block.getZ();
+
+            for (int distance = 1; distance <= 2; distance++) {
+                for (int dx = -distance; dx <= distance; dx++) {
+                    for (int dy = -distance; dy <= distance; dy++) {
+                        for (int dz = -distance; dz <= distance; dz++) {
+                            int manhattan = Math.abs(dx) + Math.abs(dy) + Math.abs(dz);
+                            if (manhattan == 0 || manhattan > distance) continue;
+
+                            int x = bx + dx;
+                            int y = by + dy;
+                            int z = bz + dz;
+                            if (y < world.getMinHeight() || y > world.getMaxHeight()) continue;
+
+                            Block nearbyBlock = world.getBlockAt(x, y, z);
+                            if (!isWalkable(nearbyBlock, true)) continue;
+
+                            return new Location(world, x, y, z);
+                        }
+                    }
+                }
+            }
+
+            return new Location(block.getWorld(), block.getX(), block.getY(), block.getZ());
+        }
+
         org.bukkit.World world = loc.getWorld();
         int bx = loc.getBlockX();
         int by = loc.getBlockY();
@@ -248,7 +279,7 @@ public class PathfindSpell extends TargetedSpell implements TargetedLocationSpel
 
             Block feetBlock = world.getBlockAt(bx, y, bz);
             if (isWalkable(feetBlock, throughBlocks)) {
-                return new Location(world, feetBlock.getX() + 0.5, feetBlock.getY(), feetBlock.getZ() + 0.5);
+                return new Location(world, feetBlock.getX(), feetBlock.getY(), feetBlock.getZ());
             }
         }
 
@@ -256,11 +287,15 @@ public class PathfindSpell extends TargetedSpell implements TargetedLocationSpel
         return loc;
     }
 
+    private Location getEffectLocation(Location loc, boolean throughBlocks) {
+        return new Location(loc.getWorld(), loc.getBlockX() + 0.5, loc.getBlockY() + 0.5, loc.getBlockZ() + 0.5);
+    }
+
     private boolean shouldDisplayNode(Location loc, boolean throughBlocks) {
         Block feetBlock = loc.getBlock();
         Block traversedBlock = throughBlocks ? feetBlock : feetBlock.getRelative(0, -1, 0);
 
-        if (!matchesTraversalFilters(traversedBlock)) return false;
+        if (!matchesTraversalFilters(traversedBlock, throughBlocks)) return false;
 
         if (throughBlocks) return true;
 
@@ -271,7 +306,7 @@ public class PathfindSpell extends TargetedSpell implements TargetedLocationSpel
         return true;
     }
 
-    private boolean matchesTraversalFilters(Block block) {
+    private boolean matchesTraversalFilters(Block block, boolean throughBlocks) {
         BlockData blockData = block.getBlockData();
 
         if (deniedBlockData != null) {
@@ -286,6 +321,8 @@ public class PathfindSpell extends TargetedSpell implements TargetedLocationSpel
             }
             return false;
         }
+
+        if (throughBlocks) return !block.getType().isAir();
 
         return true;
     }
