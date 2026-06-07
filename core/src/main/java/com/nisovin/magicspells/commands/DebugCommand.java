@@ -15,8 +15,8 @@ import org.incendo.cloud.parser.standard.IntegerParser;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Perm;
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.Util;
+import com.nisovin.magicspells.MagicSpells;
 
 public class DebugCommand {
 

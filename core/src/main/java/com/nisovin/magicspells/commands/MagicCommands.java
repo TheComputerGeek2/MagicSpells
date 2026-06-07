@@ -2,7 +2,6 @@ package com.nisovin.magicspells.commands;
 
 import java.util.Map;
 
-import org.incendo.cloud.parser.standard.*;
 import org.jetbrains.annotations.NotNull;
 
 import io.leangen.geantyref.TypeToken;
@@ -13,6 +12,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 
+import org.incendo.cloud.parser.standard.*;
 import org.incendo.cloud.parser.ArgumentParser;
 import org.incendo.cloud.paper.PaperCommandManager;
 import org.incendo.cloud.caption.StandardCaptionKeys;
@@ -36,11 +36,11 @@ import org.bukkit.command.CommandSender;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.commands.parsers.*;
 import com.nisovin.magicspells.commands.exceptions.GenericCommandException;
 import com.nisovin.magicspells.commands.exceptions.InvalidCommandArgumentException;
-import com.nisovin.magicspells.util.Util;
 
 public class MagicCommands {
 

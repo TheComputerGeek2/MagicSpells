@@ -2,10 +2,10 @@ package com.nisovin.magicspells.commands;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.context.CommandContext;

@@ -216,6 +216,8 @@ public class ConditionManager {
 		addCondition(ClimbingCondition.class);
 		addCondition(EntityTypeTagCondition.class);
 		addCondition(LeashedCondition.class);
+		addCondition(LevitatedCondition.class);
+		addCondition(LevitatingCondition.class);
 		addCondition(SleepingCondition.class);
 		addCondition(UnderWaterCondition.class);
 		addCondition(FixedTimeCondition.class);

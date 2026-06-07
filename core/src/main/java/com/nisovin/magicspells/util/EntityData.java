@@ -4,10 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
@@ -18,30 +15,45 @@ import org.joml.Quaternionf;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
+import net.kyori.adventure.util.TriState;
 import net.kyori.adventure.text.Component;
+
+import com.destroystokyo.paper.SkinParts;
+import com.destroystokyo.paper.entity.ai.Goal;
+import com.destroystokyo.paper.entity.ai.GoalKey;
+import com.destroystokyo.paper.entity.ai.GoalType;
 
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.util.Vector;
+import org.bukkit.block.BlockFace;
 import org.bukkit.util.EulerAngle;
+import org.bukkit.inventory.MainHand;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Transformation;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.profile.PlayerTextures;
 import org.bukkit.attribute.Attributable;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.entity.minecart.CommandMinecart;
 import org.bukkit.configuration.ConfigurationSection;
 
+import io.papermc.paper.entity.Frictional;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.entity.CollarColorable;
 import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.world.WeatheringCopperState;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.ai.CustomGoal;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.config.FunctionData;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
@@ -50,6 +62,8 @@ import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.itemreader.AttributeHandler;
 
 public class EntityData {
+
+	public static final NamespacedKey MS_PASSENGER = new NamespacedKey(MagicSpells.getInstance(), "entity_passenger");
 
 	private final Multimap<EntityType, Transformer<?>> options = MultimapBuilder.enumKeys(EntityType.class).arrayListValues().build();
 	private final List<DelayedEntityData> delayedEntityData = new ArrayList<>();
@@ -116,6 +130,7 @@ public class EntityData {
 		this(config, false);
 	}
 
+	@SuppressWarnings("UnstableApiUsage")
 	public EntityData(ConfigurationSection config, boolean forceOptional) {
 		entityType = ConfigDataUtil.getEntityType(config, "entity", null);
 
@@ -129,13 +144,44 @@ public class EntityData {
 		addOptBoolean(transformers, config, "silent", Entity.class, Entity::setSilent);
 		addOptBoolean(transformers, config, "glowing", Entity.class, Entity::setGlowing);
 		addOptBoolean(transformers, config, "gravity", Entity.class, Entity::setGravity);
+		addOptBoolean(transformers, config, "no-physics", Entity.class, Entity::setNoPhysics);
+		addOptBoolean(transformers, config, "persistent", Entity.class, Entity::setPersistent);
+		addOptBoolean(transformers, config, "invulnerable", Entity.class, Entity::setInvulnerable);
 		addOptBoolean(transformers, config, "visible-by-default", Entity.class, Entity::setVisibleByDefault);
 		addOptBoolean(transformers, config, "custom-name-visible", Entity.class, Entity::setCustomNameVisible);
 
+		addOptEnum(transformers, config, "visual-fire", Entity.class, TriState.class, Entity::setVisualFire);
+
+		addOptInteger(transformers, config, "fire-ticks", Entity.class, Entity::setFireTicks);
+		addOptInteger(transformers, config, "freeze-ticks", Entity.class, Entity::setFreezeTicks);
+
 		addOptVector(transformers, config, "velocity", Entity.class, Entity::setVelocity);
 
-		for (String tagString : config.getStringList("scoreboard-tags")) {
-			ConfigData<String> tag = ConfigDataUtil.getString(tagString);
+		ConfigData<Pose> poseData = ConfigDataUtil.getEnum(config, "pose", Pose.class, null);
+		ConfigData<Boolean> poseFixed = ConfigDataUtil.getBoolean(config, "pose-fixed", false);
+		transformers.put(Entity.class, (Entity entity,  SpellData data) -> {
+			Pose pose = poseData.get(data);
+			if (pose == null) return;
+
+			try {
+				entity.setPose(pose, poseFixed.get(data));
+			} catch (IllegalArgumentException ignored) {} // debug
+		});
+
+		addOptBoolean(transformers, config, "scoreboard-tags.clear", Entity.class, (entity, clear) -> {
+			if (clear) entity.getScoreboardTags().clear();
+		});
+
+		for (String string : config.getStringList("scoreboard-tags.remove")) {
+			ConfigData<String> tag = ConfigDataUtil.getString(string);
+			transformers.put(Entity.class, (Entity entity, SpellData data) -> entity.removeScoreboardTag(tag.get(data)));
+		}
+
+		List<String> entityTagsAdd = new ArrayList<>();
+		entityTagsAdd.addAll(config.getStringList("scoreboard-tags"));
+		entityTagsAdd.addAll(config.getStringList("scoreboard-tags.add"));
+		for (String string : entityTagsAdd) {
+			ConfigData<String> tag = ConfigDataUtil.getString(string);
 			transformers.put(Entity.class, (Entity entity, SpellData data) -> entity.addScoreboardTag(tag.get(data)));
 		}
 
@@ -169,6 +215,10 @@ public class EntityData {
 
 		// LivingEntity
 		addOptBoolean(transformers, config, "ai", LivingEntity.class, LivingEntity::setAI);
+		addOptBoolean(transformers, config, "can-pickup-items", LivingEntity.class, LivingEntity::setCanPickupItems);
+
+		addOptDouble(transformers, config, "max-health", LivingEntity.class, Util::setMaxHealth);
+
 		addOptEquipment(transformers, config, "equipment.main-hand", EquipmentSlot.HAND);
 		addOptEquipment(transformers, config, "equipment.off-hand", EquipmentSlot.OFF_HAND);
 		addOptEquipment(transformers, config, "equipment.helmet", EquipmentSlot.HEAD);
@@ -185,6 +235,8 @@ public class EntityData {
 		}
 
 		// Mob
+		addOptBoolean(transformers, config, "aware", Mob.class, Mob::setAware);
+
 		addOptEquipmentDropChance(transformers, config, "equipment.main-hand-drop-chance", EquipmentSlot.HAND);
 		addOptEquipmentDropChance(transformers, config, "equipment.off-hand-drop-chance", EquipmentSlot.OFF_HAND);
 		addOptEquipmentDropChance(transformers, config, "equipment.helmet-drop-chance", EquipmentSlot.HEAD);
@@ -196,42 +248,140 @@ public class EntityData {
 		// Tameable
 		tamed = addBoolean(transformers, config, "tamed", false, Tameable.class, Tameable::setTamed, forceOptional);
 
-		// AbstractHorse
+		ConfigData<Boolean> tamedOwner = ConfigDataUtil.getBoolean(config, "tamed-owner", false);
+		transformers.put(Tameable.class, (Tameable tameable, SpellData data) -> {
+			if (!(data.recipient() instanceof AnimalTamer tamer) || !tamedOwner.get(data)) return;
+			tameable.setOwner(tamer);
+		});
+
+		// Abstract Horse
 		saddled = addBoolean(transformers, config, "saddled", false, AbstractHorse.class, (horse, saddled) -> {
 			if (saddled) horse.getInventory().setSaddle(new ItemStack(Material.SADDLE));
 		}, forceOptional);
 
-		// Armor Stand
-		addBoolean(transformers, config, "small", false, ArmorStand.class, ArmorStand::setSmall, forceOptional);
-		addBoolean(transformers, config, "marker", false, ArmorStand.class, ArmorStand::setMarker, forceOptional);
-		addBoolean(transformers, config, "visible", true, ArmorStand.class, ArmorStand::setVisible, forceOptional);
-		addBoolean(transformers, config, "has-arms", true, ArmorStand.class, ArmorStand::setArms, forceOptional);
-		addBoolean(transformers, config, "has-base-plate", true, ArmorStand.class, ArmorStand::setBasePlate, forceOptional);
+		// Abstract Skeleton
+		addOptBoolean(transformers, config, "skeleton.should-burn-in-day", AbstractSkeleton.class, AbstractSkeleton::setShouldBurnInDay);
 
-		addEulerAngle(transformers, config, "head-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setHeadPose, forceOptional);
-		addEulerAngle(transformers, config, "body-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setBodyPose, forceOptional);
-		addEulerAngle(transformers, config, "left-arm-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setLeftArmPose, forceOptional);
-		addEulerAngle(transformers, config, "right-arm-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setRightArmPose, forceOptional);
-		addEulerAngle(transformers, config, "left-leg-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setLeftLegPose, forceOptional);
-		addEulerAngle(transformers, config, "right-leg-angle", EulerAngle.ZERO, ArmorStand.class, ArmorStand::setRightLegPose, forceOptional);
+		// Armor Stand
+		fallback(
+			key -> addBoolean(transformers, config, key, false, ArmorStand.class, ArmorStand::setSmall, forceOptional),
+			"armor-stand.small", "small"
+		);
+		fallback(
+			key -> addBoolean(transformers, config, key, false, ArmorStand.class, ArmorStand::setMarker, forceOptional),
+			"armor-stand.marker", "marker"
+		);
+		fallback(
+			key -> addBoolean(transformers, config, key, true, ArmorStand.class, ArmorStand::setVisible, forceOptional),
+			"armor-stand.visible", "visible"
+		);
+		fallback(
+			key -> addBoolean(transformers, config, key, true, ArmorStand.class, ArmorStand::setArms, forceOptional),
+			"armor-stand.has-arms", "has-arms"
+		);
+		fallback(
+			key -> addBoolean(transformers, config, key, true, ArmorStand.class, ArmorStand::setBasePlate, forceOptional),
+			"armor-stand.has-base-plate", "has-base-plate"
+		);
+		addBoolean(transformers, config, "armor-stand.disable-slots", false, ArmorStand.class, (stand, disabled) -> {
+			if (disabled) stand.setDisabledSlots(EquipmentSlot.values());
+		}, forceOptional);
+
+		fallback(
+			key -> addEulerAngle(transformers, config, key, EulerAngle.ZERO, ArmorStand.class, ArmorStand::setHeadPose, forceOptional),
+			"armor-stand.head-angle", "head-angle"
+		);
+		fallback(
+			key -> addEulerAngle(transformers, config, key, EulerAngle.ZERO, ArmorStand.class, ArmorStand::setBodyPose, forceOptional),
+			"armor-stand.body-angle", "body-angle"
+		);
+		fallback(
+			key -> addEulerAngle(transformers, config, key, EulerAngle.ZERO, ArmorStand.class, ArmorStand::setLeftArmPose, forceOptional),
+			"armor-stand.left-arm-angle", "left-arm-angle"
+		);
+		fallback(
+			key -> addEulerAngle(transformers, config, key, EulerAngle.ZERO, ArmorStand.class, ArmorStand::setRightArmPose, forceOptional),
+			"armor-stand.right-arm-angle", "right-arm-angle"
+		);
+		fallback(
+			key -> addEulerAngle(transformers, config, key, EulerAngle.ZERO, ArmorStand.class, ArmorStand::setLeftLegPose, forceOptional),
+			"armor-stand.left-leg-angle", "left-leg-angle"
+		);
+		fallback(
+			key -> addEulerAngle(transformers, config, key, EulerAngle.ZERO, ArmorStand.class, ArmorStand::setRightLegPose, forceOptional),
+			"armor-stand.right-leg-angle", "right-leg-angle"
+		);
+
+		for (String slotName : config.getStringList("armor-stand.disable-slots")) {
+			ConfigData<EquipmentSlot> slotData = ConfigDataUtil.getEnum(slotName, EquipmentSlot.class, null);
+
+			transformers.put(ArmorStand.class, (ArmorStand stand, SpellData data) -> {
+				EquipmentSlot slot = slotData.get(data);
+				if (slot == null) return;
+
+				stand.addDisabledSlots(slot);
+			});
+		}
+
+		for (Object object : config.getList("armor-stand.equipment-locks", new ArrayList<>())) {
+			if (!(object instanceof Map<?,?> map)) continue;
+			ConfigurationSection section = ConfigReaderUtil.mapToSection(map);
+
+			ConfigData<EquipmentSlot> slotData = ConfigDataUtil.getEnum(section, "slot", EquipmentSlot.class, null);
+			ConfigData<ArmorStand.LockType> lockData = ConfigDataUtil.getEnum(section, "lock", ArmorStand.LockType.class, null);
+
+			transformers.put(ArmorStand.class, (ArmorStand stand, SpellData data) -> {
+				EquipmentSlot slot = slotData.get(data);
+				ArmorStand.LockType lock = lockData.get(data);
+				if (slot == null || lock == null) return;
+
+				stand.addEquipmentLock(slot, lock);
+			});
+		}
 
 		// Axolotl
 		fallback(
 			key -> addOptEnum(transformers, config, key, Axolotl.class, Axolotl.Variant.class, Axolotl::setVariant),
-			"axolotl-variant", "type"
+			"axolotl.variant", "axolotl-variant", "type"
 		);
 
 		// Cat
 		fallback(
 			key -> addOptRegistryEntry(transformers, config, key, Cat.class, RegistryKey.CAT_VARIANT, Cat::setCatType),
-			"cat-variant", "type"
+			"cat.variant", "cat-variant", "type"
 		);
+		addOptRegistryEntry(transformers, config, "cat.sound-variant", Cat.class, RegistryKey.CAT_SOUND_VARIANT, Cat::setSoundVariant);
+
+		// Chicken
+		addOptRegistryEntry(transformers, config, "chicken.variant", Chicken.class, RegistryKey.CHICKEN_VARIANT, Chicken::setVariant);
+		addOptRegistryEntry(transformers, config, "chicken.sound-variant", Chicken.class, RegistryKey.CHICKEN_SOUND_VARIANT, Chicken::setSoundVariant);
+
+		// Copper Golem
+		addOptEnum(transformers, config, "copper-golem.golem-state", CopperGolem.class, CopperGolem.State.class, CopperGolem::setGolemState);
+		addOptEnum(transformers, config, "copper-golem.weathering-state", CopperGolem.class, WeatheringCopperState.class, CopperGolem::setWeatheringState);
+		addOptLong(transformers, config, "copper-golem.oxidizing", CopperGolem.class, (golem, next) -> {
+			long time = golem.getWorld().getGameTime() + next;
+			golem.setOxidizing(CopperGolem.Oxidizing.atTime(time));
+		});
+		addOptString(transformers, config, "copper-golem.oxidizing", CopperGolem.class, (golem, value) -> {
+			switch (value) {
+				case "unset" -> golem.setOxidizing(CopperGolem.Oxidizing.unset());
+				case "waxed" -> golem.setOxidizing(CopperGolem.Oxidizing.waxed());
+			}
+		});
 
 		// CollarColorable
 		fallback(
 			key -> addOptEnum(transformers, config, key, CollarColorable.class, DyeColor.class, CollarColorable::setCollarColor),
 			"collar-color", "color"
 		);
+
+		// CommandMinecart
+		addOptString(transformers, config, "minecart.command", CommandMinecart.class, CommandMinecart::setCommand);
+
+		// Cow
+		addOptRegistryEntry(transformers, config, "cow.variant", Cow.class, RegistryKey.COW_VARIANT, Cow::setVariant);
+		addOptRegistryEntry(transformers, config, "cow.sound-variant", Cow.class, RegistryKey.COW_SOUND_VARIANT, Cow::setSoundVariant);
 
 		// ChestedHorse
 		chested = addBoolean(transformers, config, "chested", false, ChestedHorse.class, ChestedHorse::setCarryingChest, forceOptional);
@@ -248,8 +398,15 @@ public class EntityData {
 		// Falling Block
 		fallingBlockData = fallback(
 			key -> addOptBlockData(transformers, config, key, FallingBlock.class, FallingBlock::setBlockData),
-			"falling-block", "material"
+			"falling-block.block", "falling-block", "material"
 		);
+
+		addOptBoolean(transformers, config, "falling-block.cancel-drop", FallingBlock.class, FallingBlock::setCancelDrop);
+		addOptBoolean(transformers, config, "falling-block.hurt-entities", FallingBlock.class, FallingBlock::setHurtEntities);
+
+		addOptFloat(transformers, config, "falling-block.damage-per-block", FallingBlock.class, FallingBlock::setDamagePerBlock);
+
+		addOptInteger(transformers, config, "falling-block.max-damage", FallingBlock.class, FallingBlock::setMaxDamage);
 
 		// Fox
 		fallback(
@@ -257,48 +414,133 @@ public class EntityData {
 			"fox-type", "type"
 		);
 
+		// Frictional
+		addOptEnum(transformers, config, "friction-state", Frictional.class, TriState.class, Frictional::setFrictionState);
+
 		// Frog
 		fallback(
 			key -> addOptRegistryEntry(transformers, config, key, Frog.class, RegistryKey.FROG_VARIANT, Frog::setVariant),
-			"frog-variant", "type"
+			"frog.variant", "frog-variant", "type"
 		);
+
+		// Goat
+		addOptBoolean(transformers, config, "goat.has-left-horn", Goat.class, Goat::setLeftHorn);
+		addOptBoolean(transformers, config, "goat.has-right-horn", Goat.class, Goat::setRightHorn);
+		addOptBoolean(transformers, config, "goat.screaming", Goat.class, Goat::setScreaming);
+
+		// Hoglin
+		addOptBoolean(transformers, config, "hoglin.immune-to-zombification", Hoglin.class, Hoglin::setImmuneToZombification);
+		addOptBoolean(transformers, config, "hoglin.able-to-be-hunted", Hoglin.class, Hoglin::setIsAbleToBeHunted);
 
 		// Horse
 		horseColor = fallback(
 			key -> addOptEnum(transformers, config, key, Horse.class, Horse.Color.class, Horse::setColor),
-			"horse-color", "color"
+			"horse.color", "horse-color", "color"
 		);
 		horseStyle = fallback(
 			key -> addOptEnum(transformers, config, key, Horse.class, Horse.Style.class, Horse::setStyle),
-			"horse-style", "style"
+			"horse.style", "horse-style", "style"
 		);
 
 		// Item
 		dropItem = fallback(
 			key -> addOptItemStack(transformers, config, key, Item.class, Item::setItemStack),
-			"dropped-item", "material"
+			"item.dropped-item", "dropped-item", "material"
 		);
 
-		addOptInteger(transformers, config, "pickup-delay", Item.class, Item::setPickupDelay);
+		fallback(
+			key -> addOptInteger(transformers, config, key, Item.class, Item::setPickupDelay),
+			"item.pickup-delay", "pickup-delay"
+		);
 
-		addOptBoolean(transformers, config, "will-age", Item.class, Item::setWillAge);
-		addOptBoolean(transformers, config, "can-mob-pickup", Item.class, Item::setCanMobPickup);
-		addOptBoolean(transformers, config, "can-player-pickup", Item.class, Item::setCanPlayerPickup);
+		fallback(
+			key -> addOptBoolean(transformers, config, key, Item.class, Item::setWillAge),
+			"item.will-age", "will-age"
+		);
+		fallback(
+			key -> addOptBoolean(transformers, config, key, Item.class, Item::setCanMobPickup),
+			"item.can-mob-pickup", "can-mob-pickup"
+		);
+		fallback(
+			key -> addOptBoolean(transformers, config, key, Item.class, Item::setCanPlayerPickup),
+			"item.can-player-pickup", "can-player-pickup"
+		);
 
 		// Interaction
-		addOptFloat(transformers, config, "interaction-height", Interaction.class, Interaction::setInteractionHeight);
-		addOptFloat(transformers, config, "interaction-width", Interaction.class, Interaction::setInteractionWidth);
-		addOptBoolean(transformers, config, "responsive", Interaction.class, Interaction::setResponsive);
+		fallback(
+			key -> addOptFloat(transformers, config, key, Interaction.class, Interaction::setInteractionHeight),
+			"interaction.height", "interaction-height"
+		);
+		fallback(
+			key -> addOptFloat(transformers, config, key, Interaction.class, Interaction::setInteractionWidth),
+			"interaction.width", "interaction-width"
+		);
+
+		fallback(
+			key -> addOptBoolean(transformers, config, key, Interaction.class, Interaction::setResponsive),
+			"interaction.responsive", "responsive"
+		);
 
 		// Llama
 		llamaColor = fallback(
 			key -> addOptEnum(transformers, config, key, Llama.class, Llama.Color.class, Llama::setColor),
-			"llama-variant", "color"
+			"llama.variant", "llama-variant", "color"
 		);
 		fallback(
 			key -> addOptMaterial(transformers, config, key, Llama.class, (llama, material) -> llama.getInventory().setDecor(new ItemStack(material))),
-			"llama-decor", "material"
+			"llama.decor", "llama-decor", "material"
 		);
+
+		// Mannequin
+		addOptBoolean(transformers, config, "mannequin.immovable", Mannequin.class, Mannequin::setImmovable);
+
+		addOptSkinParts(transformers, config, "mannequin.skin-parts.cape", SkinParts.Mutable::setCapeEnabled);
+		addOptSkinParts(transformers, config, "mannequin.skin-parts.jacket", SkinParts.Mutable::setJacketEnabled);
+		addOptSkinParts(transformers, config, "mannequin.skin-parts.left-sleeve", SkinParts.Mutable::setLeftSleeveEnabled);
+		addOptSkinParts(transformers, config, "mannequin.skin-parts.right-sleeve", SkinParts.Mutable::setRightSleeveEnabled);
+		addOptSkinParts(transformers, config, "mannequin.skin-parts.left-pants", SkinParts.Mutable::setLeftPantsEnabled);
+		addOptSkinParts(transformers, config, "mannequin.skin-parts.right-pants", SkinParts.Mutable::setRightPantsEnabled);
+		addOptSkinParts(transformers, config, "mannequin.skin-parts.hats", SkinParts.Mutable::setHatsEnabled);
+
+		addComponent(transformers, config, "mannequin.description", Mannequin.class, Mannequin::setDescription, null, forceOptional);
+
+		addOptEnum(transformers, config, "mannequin.main-hand", Mannequin.class, MainHand.class, Mannequin::setMainHand);
+
+		// noinspection PatternValidation
+		ConfigData<String> mannequinName = ConfigDataUtil.getString(config, "mannequin.profile.name", null);
+		ConfigData<UUID> mannequinId = ConfigDataUtil.getUniqueID(config, "mannequin.profile.uuid", null);
+		ConfigData<NamespacedKey> mannequinBody = ConfigDataUtil.getNamespacedKey(config, "mannequin.profile.body", null);
+		ConfigData<NamespacedKey> mannequinCape = ConfigDataUtil.getNamespacedKey(config, "mannequin.profile.cape", null);
+		ConfigData<NamespacedKey> mannequinElytra = ConfigDataUtil.getNamespacedKey(config, "mannequin.profile.elytra", null);
+		ConfigData<PlayerTextures.SkinModel> mannequinModel = ConfigDataUtil.getEnum(config, "mannequin.profile.model", PlayerTextures.SkinModel.class, null);
+		ConfigData<ResolvableProfile> mannequinProfile = data -> {
+			try {
+				// noinspection PatternValidation
+				return ResolvableProfile.resolvableProfile()
+					.name(mannequinName.get(data))
+					.uuid(mannequinId.get(data))
+					.skinPatch(builder -> {
+						builder.body(mannequinBody.get(data));
+						builder.cape(mannequinCape.get(data));
+						builder.elytra(mannequinElytra.get(data));
+						builder.model(mannequinModel.get(data));
+					})
+					.build();
+			} catch (IllegalArgumentException e) {
+				return null;
+			}
+		};
+
+		transformers.put(Mannequin.class, new TransformerImpl<>(mannequinProfile, Mannequin::setProfile, true));
+
+		// Minecart
+		addOptDouble(transformers, config, "minecart.max-speed", Minecart.class, Minecart::setMaxSpeed);
+
+		addOptBoolean(transformers, config, "minecart.slow-when-empty", Minecart.class, Minecart::setSlowWhenEmpty);
+
+		addOptInteger(transformers, config, "minecart.display-block-offset", Minecart.class, Minecart::setDisplayBlockOffset);
+
+		addOptBlockData(transformers, config, "minecart.display-block", Minecart.class, Minecart::setDisplayBlockData);
 
 		// Mushroom Cow
 		fallback(
@@ -307,8 +549,14 @@ public class EntityData {
 		);
 
 		// Panda
-		addOptEnum(transformers, config, "main-gene", Panda.class, Panda.Gene.class, Panda::setMainGene);
-		addOptEnum(transformers, config, "hidden-gene", Panda.class, Panda.Gene.class, Panda::setHiddenGene);
+		fallback(
+			key -> addOptEnum(transformers, config, key, Panda.class, Panda.Gene.class, Panda::setMainGene),
+			"panda.main-gene", "main-gene"
+		);
+		fallback(
+			key -> addOptEnum(transformers, config, key, Panda.class, Panda.Gene.class, Panda::setHiddenGene),
+			"panda.hidden-gene", "hidden-gene"
+		);
 
 		// Parrot
 		parrotVariant = fallback(
@@ -317,36 +565,79 @@ public class EntityData {
 		);
 
 		// Phantom
-		addInteger(transformers, config, "size", 0, Phantom.class, Phantom::setSize, forceOptional);
-		addOptBoolean(transformers, config, "should-burn-in-day", Phantom.class, Phantom::setShouldBurnInDay);
+		fallback(
+			key -> addInteger(transformers, config, key, 0, Phantom.class, Phantom::setSize, forceOptional),
+			"phantom.size", "size"
+		);
+
+		fallback(
+			key -> addOptBoolean(transformers, config, key, Phantom.class, Phantom::setShouldBurnInDay),
+			"phantom.should-burn-in-day", "should-burn-in-day"
+		);
+
+		// Pig
+		addOptRegistryEntry(transformers, config, "pig.variant", Pig.class, RegistryKey.PIG_VARIANT, Pig::setVariant);
+		addOptRegistryEntry(transformers, config, "pig.sound-variant", Pig.class, RegistryKey.PIG_SOUND_VARIANT, Pig::setSoundVariant);
+
+		// Piglin
+		addOptBoolean(transformers, config, "piglin.can-hunt", Piglin.class, Piglin::setIsAbleToHunt);
+		addOptInteger(transformers, config, "piglin.dancing", Piglin.class, Piglin::setDancing);
+
+		// Piglin Abstract
+		addOptBoolean(transformers, config, "piglin.immune-to-zombification", PiglinAbstract.class, PiglinAbstract::setImmuneToZombification);
 
 		// Puffer Fish
-		size = addInteger(transformers, config, "size", 0, PufferFish.class, PufferFish::setPuffState, forceOptional);
+		size = fallback(
+			key -> addInteger(transformers, config, key, 0, PufferFish.class, PufferFish::setPuffState, forceOptional),
+			"pufferfish.puff-state", "size"
+		);
 
 		// Rabbit
 		fallback(
 			key -> addOptEnum(transformers, config, key, Rabbit.class, Rabbit.Type.class, Rabbit::setRabbitType),
-			"rabbit-type", "type"
+			"rabbit.type", "rabbit-type", "type"
 		);
 
+		// Raider
+		addOptBoolean(transformers, config, "raider.patrol-leader", Raider.class, Raider::setPatrolLeader);
+		addOptBoolean(transformers, config, "raider.can-join-raid", Raider.class, Raider::setCanJoinRaid);
+		addOptBoolean(transformers, config, "raider.celebrating", Raider.class, Raider::setCelebrating);
+
 		// Sheep
-		sheared = addBoolean(transformers, config, "sheared", false, Sheep.class, Sheep::setSheared, forceOptional);
+		sheared = fallback(
+			key -> addBoolean(transformers, config, key, false, Sheep.class, Sheep::setSheared, forceOptional),
+			"sheep.sheared", "sheared"
+		);
 		color = fallback(
 			key -> addOptEnum(transformers, config, key, Sheep.class, DyeColor.class, Sheep::setColor),
-			"sheep-color", "color"
+			"sheep.color", "sheep-color", "color"
 		);
 
 		// Shulker
+		addOptFloat(transformers, config, "shulker.peek", Shulker.class, (shulker, value) -> {
+			try {
+				shulker.setPeek(value);
+			} catch (IllegalArgumentException _) {} // debug
+		});
+
 		fallback(
 			key -> addOptEnum(transformers, config, key, Shulker.class, DyeColor.class, Shulker::setColor),
-			"shulker-color", "color"
+			"shulker.color", "shulker-color", "color"
 		);
+		addOptEnum(transformers, config, "shulker.attach-face", Shulker.class, BlockFace.class, (shulker, face) -> {
+			try {
+				shulker.setAttachedFace(face);
+			} catch (IllegalArgumentException _) {} // debug
+		});
 
-		// Skeleton
-		addOptBoolean(transformers, config, "should-burn-in-day", Skeleton.class, Skeleton::setShouldBurnInDay);
+		// Sittable
+		addOptBoolean(transformers, config, "sitting", Sittable.class, Sittable::setSitting);
 
 		// Slime
-		addInteger(transformers, config, "size", 0, Slime.class, Slime::setSize, forceOptional);
+		fallback(
+			key -> addInteger(transformers, config, key, 0, Slime.class, Slime::setSize, forceOptional),
+			"slime.size", "size"
+		);
 
 		// Steerable
 		addBoolean(transformers, config, "saddled", false, Steerable.class, Steerable::setSaddle, forceOptional);
@@ -365,19 +656,45 @@ public class EntityData {
 			"tropical-fish.pattern", "type"
 		);
 
+		// Salmon
+		addOptEnum(transformers, config, "salmon.variant", Salmon.class, Salmon.Variant.class, Salmon::setVariant);
+
 		// Villager
 		profession = fallback(
 			key -> addOptRegistryEntry(transformers, config, key, Villager.class, Registry.VILLAGER_PROFESSION, Villager::setProfession),
-			"villager-profession", "type"
+			"villager.profession", "villager-profession", "type"
 		);
-		addOptRegistryEntry(transformers, config, "villager-type", Villager.class, Registry.VILLAGER_TYPE, Villager::setVillagerType);
+		fallback(
+			key -> addOptRegistryEntry(transformers, config, key, Villager.class, Registry.VILLAGER_TYPE, Villager::setVillagerType),
+			"villager.type", "villager-type"
+		);
+
+		// Vindicator
+		addOptBoolean(transformers, config, "vindicator.johnny", Vindicator.class, Vindicator::setJohnny);
 
 		// Wolf
-		addBoolean(transformers, config, "angry", false, Wolf.class, Wolf::setAngry, forceOptional);
-		addOptRegistryEntry(transformers, config, "wolf-variant", Wolf.class, RegistryKey.WOLF_VARIANT, Wolf::setVariant);
+		fallback(
+			key -> addBoolean(transformers, config, key, false, Wolf.class, Wolf::setAngry, forceOptional),
+			"wolf.angry", "angry"
+		);
+
+		fallback(
+			key -> addOptRegistryEntry(transformers, config, key, Wolf.class, RegistryKey.WOLF_VARIANT, Wolf::setVariant),
+			"wolf.variant", "wolf-variant"
+		);
 
 		// Zombie
-		addOptBoolean(transformers, config, "should-burn-in-day", Zombie.class, Zombie::setShouldBurnInDay);
+		fallback(
+			key -> addOptBoolean(transformers, config, key, Zombie.class, Zombie::setShouldBurnInDay),
+			"zombie.should-burn-in-day", "should-burn-in-day"
+		);
+
+		// Zombie Nautilus
+		addOptRegistryEntry(transformers, config, "zombie-nautilus.variant", ZombieNautilus.class, RegistryKey.ZOMBIE_NAUTILUS_VARIANT, ZombieNautilus::setVariant);
+
+		// Zombie Villager
+		addOptRegistryEntry(transformers, config, "zombie-villager.profession", ZombieVillager.class, Registry.VILLAGER_PROFESSION, ZombieVillager::setVillagerProfession);
+		addOptRegistryEntry(transformers, config, "zombie-villager.type", ZombieVillager.class, Registry.VILLAGER_TYPE, ZombieVillager::setVillagerType);
 
 		// Display
 		ConfigData<Quaternionf> leftRotation = getQuaternion(config, "transformation.left-rotation");
@@ -469,6 +786,90 @@ public class EntityData {
 		addOptBoolean(transformers, config, "default-background", TextDisplay.class, TextDisplay::setDefaultBackground);
 		addOptEnum(transformers, config, "alignment", TextDisplay.class, TextDisplay.TextAlignment.class, TextDisplay::setAlignment);
 
+		// Passengers
+		for (Object object : config.getList("passengers", new ArrayList<>())) {
+			if (!(object instanceof Map<?, ?> map)) continue;
+			EntityData passengerData = new EntityData(ConfigReaderUtil.mapToSection(map));
+
+			transformers.put(Entity.class, (Entity entity, SpellData data) -> {
+				passengerData.spawn(entity.getLocation(), data, passenger -> {
+					entity.addPassenger(passenger);
+					passenger.getPersistentDataContainer().set(MS_PASSENGER, PersistentDataType.BOOLEAN, true);
+				});
+			});
+		}
+
+		// Mob Goals
+		ConfigurationSection mobGoals = config.getConfigurationSection("mob-goals");
+		if (mobGoals != null) {
+			if (mobGoals.getBoolean("remove-all"))
+				transformers.put(Mob.class, (Mob mob, SpellData data) -> Bukkit.getMobGoals().removeAllGoals(mob));
+
+			for (String string : mobGoals.getStringList("remove-types")) {
+				ConfigData<GoalType> typeData = ConfigDataUtil.getEnum(string, GoalType.class, null);
+
+				transformers.put(Mob.class, (Mob mob, SpellData data) -> {
+					GoalType type = typeData.get(data);
+					if (type == null) return;
+
+					Bukkit.getMobGoals().removeAllGoals(mob, type);
+				});
+			}
+
+			for (String string : mobGoals.getStringList("remove")) {
+				ConfigData<NamespacedKey> keyData = ConfigDataUtil.getNamespacedKey(string, null);
+
+				transformers.put(Mob.class, (Mob mob, SpellData data) -> {
+					NamespacedKey key = keyData.get(data);
+					if (key == null) return;
+
+					Bukkit.getMobGoals().removeGoal(mob, GoalKey.of(Mob.class, key));
+				});
+			}
+
+			for (String string : mobGoals.getStringList("remove-vanilla")) {
+				ConfigData<String> stringData = ConfigDataUtil.getString(string);
+
+				transformers.put(Mob.class, (Mob mob, SpellData data) -> {
+					String value = stringData.get(data);
+					if (value == null) return;
+
+					GoalKey<?> key = MagicSpells.getCustomGoalsManager().getVanillaGoal(value);
+					if (key == null) return;
+
+					// We have to loop through because casting to parameter types is tricky.
+					// It loops through on each MobGoals#removeGoal call anyway.
+					for (Goal<@NotNull Mob> goal : Bukkit.getMobGoals().getAllGoals(mob)) {
+						if (!goal.getKey().equals(key)) continue;
+						Bukkit.getMobGoals().removeGoal(mob, goal);
+					}
+				});
+			}
+
+			for (Object object : mobGoals.getList("add", new ArrayList<>())) {
+				if (!(object instanceof Map<?, ?> map)) continue;
+				ConfigurationSection section = ConfigReaderUtil.mapToSection(map);
+
+				ConfigData<Integer> priorityData = ConfigDataUtil.getInteger(section, "priority", 0);
+				ConfigData<String> goalNameData = ConfigDataUtil.getString(section, "goal", "");
+
+				ConfigurationSection goalSection = section.getConfigurationSection("data");
+				if (goalSection == null) continue;
+
+				transformers.put(Mob.class, (Mob mob, SpellData data) -> {
+					int priority = priorityData.get(data);
+					String goalName = goalNameData.get(data);
+
+					CustomGoal goal = MagicSpells.getCustomGoalsManager().getGoal(goalName, mob, data);
+					if (goal == null) return;
+
+					boolean success = goal.initialize(goalSection);
+					if (success) Bukkit.getMobGoals().addGoal(mob, priority, goal);
+				});
+			}
+		}
+
+		// Apply transformers
 		for (EntityType entityType : EntityType.values()) {
 			Class<? extends Entity> entityClass = entityType.getEntityClass();
 			if (entityClass == null) continue;
@@ -478,6 +879,7 @@ public class EntityData {
 					options.putAll(entityType, transformers.get(transformerType));
 		}
 
+		// Delayed Entity Data
 		List<?> delayedDataEntries = config.getList("delayed-entity-data");
 		if (delayedDataEntries == null || delayedDataEntries.isEmpty()) return;
 
@@ -646,19 +1048,24 @@ public class EntityData {
 		return supplier;
 	}
 
-	private <T> void addEulerAngle(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, EulerAngle def, Class<T> type, BiConsumer<T, EulerAngle> setter, boolean forceOptional) {
+	private <T> ConfigData<EulerAngle> addEulerAngle(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, EulerAngle def, Class<T> type, BiConsumer<T, EulerAngle> setter, boolean forceOptional) {
+		ConfigData<EulerAngle> supplier;
+
 		if (forceOptional) {
-			ConfigData<EulerAngle> supplier = ConfigDataUtil.getEulerAngle(config, name, null);
+			supplier = ConfigDataUtil.getEulerAngle(config, name, null);
 			transformers.put(type, new TransformerImpl<>(supplier, setter, true));
 		} else {
-			ConfigData<EulerAngle> supplier = ConfigDataUtil.getEulerAngle(config, name, def);
+			supplier = ConfigDataUtil.getEulerAngle(config, name, def);
 			transformers.put(type, new TransformerImpl<>(supplier, setter));
 		}
+
+		return supplier;
 	}
 
-	private <T> void addOptBoolean(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Boolean> setter) {
+	private <T> ConfigData<Boolean> addOptBoolean(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Boolean> setter) {
 		ConfigData<Boolean> supplier = ConfigDataUtil.getBoolean(config, name);
 		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
+		return supplier;
 	}
 
 	private <T> void addOptByte(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Byte> setter) {
@@ -666,18 +1073,30 @@ public class EntityData {
 		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
 	}
 
-	private <T> void addOptInteger(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Integer> setter) {
+	private <T> ConfigData<Integer> addOptInteger(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Integer> setter) {
 		ConfigData<Integer> supplier = ConfigDataUtil.getInteger(config, name);
+		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
+		return supplier;
+	}
+
+	private <T> void addOptLong(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Long> setter) {
+		ConfigData<Long> supplier = ConfigDataUtil.getLong(config, name);
 		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
 	}
 
-	private <T> void addOptFloat(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Float> setter) {
+	private <T> ConfigData<Float> addOptFloat(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Float> setter) {
 		ConfigData<Float> supplier = ConfigDataUtil.getFloat(config, name);
 		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
+		return supplier;
 	}
 
 	private <T> void addOptDouble(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Double> setter) {
 		ConfigData<Double> supplier = ConfigDataUtil.getDouble(config, name);
+		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
+	}
+
+	private <T> void addOptString(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, String> setter) {
+		ConfigData<String> supplier = ConfigDataUtil.getString(config, name, null);
 		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
 	}
 
@@ -708,6 +1127,18 @@ public class EntityData {
 	private <T> void addOptComponent(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Component> setter) {
 		ConfigData<Component> supplier = ConfigDataUtil.getComponent(config, name, null);
 		transformers.put(type, new TransformerImpl<>(supplier, setter, true));
+	}
+
+	private <T> void addComponent(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, Component> setter, Component def, boolean forceOptional) {
+		ConfigData<Component> supplier;
+
+		if (forceOptional) {
+			supplier = ConfigDataUtil.getComponent(config, name, null);
+			transformers.put(type, new TransformerImpl<>(supplier, setter, true));
+		} else {
+			supplier = ConfigDataUtil.getComponent(config, name, def);
+			transformers.put(type, new TransformerImpl<>(supplier, setter));
+		}
 	}
 
 	private <T> ConfigData<BlockData> addOptBlockData(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, Class<T> type, BiConsumer<T, BlockData> setter) {
@@ -758,10 +1189,18 @@ public class EntityData {
 		});
 	}
 
-	private <T> void addOptEquipmentDropChance(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, EquipmentSlot slot) {
+	private void addOptEquipmentDropChance(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, EquipmentSlot slot) {
 		addOptFloat(transformers, config, name, Mob.class, (entity, chance) -> {
 			EntityEquipment equipment = entity.getEquipment();
 			equipment.setDropChance(slot, chance);
+		});
+	}
+
+	private void addOptSkinParts(Multimap<Class<?>, Transformer<?>> transformers, ConfigurationSection config, String name, BiConsumer<SkinParts.Mutable, Boolean> setter) {
+		addOptBoolean(transformers, config, name, Mannequin.class, (mannequin, bool) -> {
+			SkinParts.Mutable parts = mannequin.getSkinParts();
+			setter.accept(parts, bool);
+			mannequin.setSkinParts(parts);
 		});
 	}
 

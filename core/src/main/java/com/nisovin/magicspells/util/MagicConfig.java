@@ -89,24 +89,32 @@ public class MagicConfig {
 				}
 			}
 
-			// Load spell folders
-			for (File directoryFile : folder.listFiles(DIRECTORY_FILTER)) {
-				if (!directoryFile.isDirectory()) continue;
-				for (File spellConfigFile : directoryFile.listFiles(FILENAME_FILTER)) {
-					loadSpellFiles(spellConfigFile);
-				}
-			}
-
-			// load spell configs
-			for (File spellConfigFile : folder.listFiles(FILENAME_FILTER)) {
-				loadSpellFiles(spellConfigFile);
-			}
+			// Load spells and folders
+			loadSpellDirectory(folder);
 
 			// Load mini configs
 			File spellConfigsFolder = new File(folder, "spellconfigs");
 			if (spellConfigsFolder.exists()) loadSpellConfigs(spellConfigsFolder);
 		} catch (Exception ex) {
 			MagicSpells.handleException(ex);
+		}
+	}
+
+	private void loadSpellDirectory(File directory) {
+		File[] files = directory.listFiles(FILENAME_FILTER);
+		if (files != null) {
+			for (File file : files) {
+				if (!file.isFile()) continue;
+				loadSpellFiles(file);
+			}
+		}
+
+		files = directory.listFiles(DIRECTORY_FILTER);
+		if (files != null) {
+			for (File file : files) {
+				if (!file.isDirectory()) continue;
+				loadSpellDirectory(file);
+			}
 		}
 	}
 

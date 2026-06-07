@@ -6,12 +6,17 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityRemoveEvent;
+import org.bukkit.event.entity.EntityDismountEvent;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 
 import com.nisovin.magicspells.Perm;
 import com.nisovin.magicspells.Spell;
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.EntityData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.spelleffects.effecttypes.*;
@@ -57,6 +62,26 @@ public class MagicSpellListener implements Listener {
 		Entity entity = event.getEntity();
 		if (!isMSEntity(entity)) return;
 		event.setCancelled(true);
+	}
+
+	@EventHandler
+	public void onEntityRemove(EntityRemoveEvent event) {
+		Util.forEachPassenger(event.getEntity(), passenger -> {
+			PersistentDataContainer container = passenger.getPersistentDataContainer();
+			if (!container.has(EntityData.MS_PASSENGER)) return;
+
+			if (passenger.isPersistent()) {
+				container.remove(EntityData.MS_PASSENGER);
+				return;
+			}
+
+			passenger.remove();
+		});
+	}
+
+	@EventHandler
+	public void onEntityDismount(EntityDismountEvent event) {
+		event.getEntity().getPersistentDataContainer().remove(EntityData.MS_PASSENGER);
 	}
 
 	private boolean isMSEntity(Entity entity) {

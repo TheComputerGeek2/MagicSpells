@@ -2,9 +2,9 @@ package com.nisovin.magicspells.commands;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 import net.kyori.adventure.text.Component;
@@ -24,9 +24,9 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Perm;
 import com.nisovin.magicspells.Spellbook;
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.events.SpellbookReloadEvent;
-import com.nisovin.magicspells.util.Util;
 
 public class ReloadCommands {
 

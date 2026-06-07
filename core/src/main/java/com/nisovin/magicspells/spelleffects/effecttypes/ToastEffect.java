@@ -34,10 +34,13 @@ public class ToastEffect extends SpellEffect {
 		text = config.getString("text", "");
 		frame = ConfigDataUtil.getEnum(config, "frame", Frame.class, Frame.TASK);
 
-		String magicItemString = config.getString("icon", "air");
+		String magicItemString = config.getString("icon", "paper");
 		MagicItem magicItem = MagicItems.getMagicItemFromString(magicItemString);
-		if (magicItem == null) MagicSpells.error("Invalid toast effect icon specified: '" + magicItemString + "'");
-		else icon = magicItem.getItemStack();
+		if (magicItem != null) {
+			ItemStack item = magicItem.getItemStack();
+			icon = item.isEmpty() ? null : item;
+		}
+		if (icon == null) MagicSpells.error("Invalid toast effect icon specified: '" + magicItemString + "'");
 
 		broadcast = ConfigDataUtil.getBoolean(config, "broadcast", false);
 		useViewerAsTarget = ConfigDataUtil.getBoolean(config, "use-viewer-as-target", false);
@@ -47,8 +50,10 @@ public class ToastEffect extends SpellEffect {
 	@Override
 	protected Runnable playEffectEntity(Entity entity, SpellData data) {
 		if (icon == null) return null;
+
 		if (broadcast.get(data)) Util.forEachPlayerOnline(player -> send(player, data));
 		else if (entity instanceof Player player) send(player, data);
+
 		return null;
 	}
 

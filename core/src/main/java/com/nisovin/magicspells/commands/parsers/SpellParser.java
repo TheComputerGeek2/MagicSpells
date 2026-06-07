@@ -68,7 +68,7 @@ public class SpellParser<C> implements ArgumentParser<C, Spell>, BlockingSuggest
 
 	private static boolean shouldQuote(char c) {
 		return switch (c) {
-			case ' ',  '"',  '\'',  '[',  ']',  '{',  '}' -> true;
+			case ' ', '"', '\'', '[', ']', '{', '}' -> true;
 			default -> false;
 		};
 	}

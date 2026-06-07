@@ -8,6 +8,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.Name;
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.EntityData;
@@ -45,7 +46,10 @@ public class EntityEffect extends SpellEffect {
 		return entityData.spawn(location, data, entity -> {
 			entity.addScoreboardTag(ENTITY_TAG);
 			entity.setGravity(gravity.get(data));
-		}, entity -> entity.setPersistent(false));
+		}, entity -> {
+			entity.setPersistent(false);
+			Util.forEachPassenger(entity, e -> e.setPersistent(false));
+		});
 	}
 
 	@Override

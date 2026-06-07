@@ -44,7 +44,7 @@ import com.nisovin.magicspells.util.glow.PacketBasedGlowManager;
 
 public class VolatileGlowManagerLatest extends PacketBasedGlowManager<Packet<?>, ClientboundSetEntityDataPacket, ClientboundSetPlayerTeamPacket> {
 
-	private static final EntityDataAccessor<@NotNull Byte> DATA_SHARED_FLAGS_ID = new EntityDataAccessor<>(0, EntityDataSerializers.BYTE);
+	private static final EntityDataAccessor<Byte> DATA_SHARED_FLAGS_ID = new EntityDataAccessor<>(0, EntityDataSerializers.BYTE);
 
 	private final Set<Packet<?>> handled = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 	private final MethodHandle teamPacketHandle;

@@ -265,12 +265,11 @@ drainlife:
     cast-item: blaze_rod
     cooldown: 5
     range: 15
-    take-type: health
+    take-type: health_points
     take-amt: 2
-    give-type: health
+    give-type: health_points
     give-amt: 2
     animation-speed: 2
-    ignore-armor: false
     instant: false
     can-target: players,monsters
     check-plugins: true
@@ -778,27 +777,9 @@ invisibility:
 
 invulnerability:
     spell-class: ".buff.InvulnerabilitySpell"
-    description: Makes you invulnerable to damage.
+    description: Makes you invulnerable to damage as if you were in the Creative gamemode.
     cast-item: book
-    damage-causes:
-        - block explosion
-        - contact
-        - custom
-        - drowning
-        - entity attack
-        - entity explosion
-        - fall
-        - fire
-        - fire tick
-        - lava
-        - lightning
-        - magic
-        - poison
-        - projectile
-        - starvation
-        - suffocation
-        - void
-        - wither
+    damage-types: "!#minecraft:bypasses_invulnerability"
     duration: 60
     cooldown: 300
     cost: [mana 30]
@@ -1112,7 +1093,7 @@ safefall:
     description: Allows you to fall without taking damage.
     cast-item: book
     cooldown: 60
-    damage-causes: [fall]
+    damage-types: [fall]
     duration: 300
     num-uses: 5
     cost: [mana 20]

@@ -27,7 +27,7 @@ public class StringData implements ConfigData<String> {
 		%(?:\
 		(?<var>(?<varOwner>var|castervar|targetvar):(?<varName>\\w+)(?::(?<varPrecision>\\d+))?)|\
 		(?<pVar>playervar:(?<pVarUser>[^:]+):(?<pVarName>\\w+)(?::(?<pVarPrecision>\\d+))?)|\
-		(?<arg>arg:(?<argValue>\\d+):(?<argDefault>[^%]+))|\
+		(?<arg>arg:(?<argValue>\\d+)(?::(?<argDefault>[^%]+))?)|\
 		(?<papi>(?<papiOwner>papi|casterpapi|targetpapi):(?<papiValue>[^%]+))|\
 		(?<playerPapi>playerpapi:(?<playerPapiUser>[^:]+):(?<playerPapiValue>[^%]+))\
 		)%|\
@@ -98,8 +98,6 @@ public class StringData implements ConfigData<String> {
 		}
 
 		if (matcher.group("arg") != null) {
-			String def = matcher.group("argDefault");
-
 			int index;
 			try {
 				index = Integer.parseInt(matcher.group("argValue"));
@@ -108,7 +106,8 @@ public class StringData implements ConfigData<String> {
 			}
 			if (index == 0) return null;
 
-			return new ArgumentData(index - 1, def);
+			String def = matcher.group("argDefault");
+			return new ArgumentData(index - 1, def == null ? "" : def);
 		}
 
 		if (matcher.group("papi") != null) {

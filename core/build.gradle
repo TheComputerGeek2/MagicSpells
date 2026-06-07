@@ -1,52 +1,38 @@
 plugins {
-    id("com.gradleup.shadow") version "9.2.2"
+    id("com.gradleup.shadow") version "9.4.1"
     id("antlr")
 }
 
 dependencies {
     shadow("org.apache.commons:commons-math4-core:4.0-beta1")
-    shadow("com.github.ben-manes.caffeine:caffeine:3.2.1")
+    shadow("com.github.ben-manes.caffeine:caffeine:3.2.2")
     shadow("com.github.Chronoken:EffectLib:4e37625")
     shadow("org.incendo:cloud-paper:2.0.0-beta.14")
-    shadow("org.incendo:cloud-minecraft-extras:2.0.0-beta.13")
+    shadow("org.incendo:cloud-minecraft-extras:2.0.0-beta.15")
     shadow("org.incendo:cloud-processors-requirements:1.0.0-rc.1")
-    shadow("org.bstats:bstats-bukkit:3.0.2")
-    shadow("com.github.ezylang:EvalEx:0dcb042")
+    shadow("org.bstats:bstats-bukkit:3.2.1")
+    shadow("com.github.ezylang:EvalEx:3.6.0")
 
     shadow("org.antlr:antlr4-runtime:4.13.2")
     antlr("org.antlr:antlr4:4.13.2")
 
     shadow(project(path: ":nms:shared", configuration: "apiElements"))
     shadow(project(path: ":nms:latest")) { transitive = false }
-    shadow(project(path: ":nms:v1_21_10")) { transitive = false }
 
-    implementation("com.github.retrooper:packetevents-spigot:2.10.1")
+    implementation("com.github.retrooper:packetevents-spigot:2.11.2")
     implementation("net.dmulloy2:ProtocolLib:5.4.0") { transitive = false }
-    implementation("me.libraryaddict.disguises:libsdisguises:10.0.44-SNAPSHOT") { transitive = false }
+    implementation("me.libraryaddict.disguises:libsdisguises:11.0.16-SNAPSHOT") { transitive = false }
     implementation("net.milkbowl.vault:VaultAPI:1.7") { transitive = false }
-    implementation("me.clip:placeholderapi:2.11.6") { transitive = false }
-    implementation("com.github.GriefPrevention:GriefPrevention:17.0.0") { transitive = false }
-    implementation("com.github.Xezard:XGlow:1.1.0") {
-        exclude(module: "XGlowPlugin")
-        exclude(module: "XGlowExample")
-    }
+    implementation("me.clip:placeholderapi:2.12.2") { transitive = false }
+    implementation("com.github.GriefPrevention:GriefPrevention:18.0.0") { transitive = false }
     implementation("com.sk89q.worldguard:worldguard-core:7.1.0-SNAPSHOT") { transitive = false }
     implementation("com.sk89q.worldguard:worldguard-bukkit:7.1.0-SNAPSHOT") { transitive = false }
     implementation("com.sk89q.worldedit:worldedit-core:7.4.0-SNAPSHOT") { transitive = false }
     implementation("com.sk89q.worldedit:worldedit-bukkit:7.4.0-SNAPSHOT") { transitive = false }
-
 }
 
 base {
     archivesName = "MagicSpells"
-}
-
-jar {
-    manifest {
-        attributes(
-            "paperweight-mappings-namespace": "mojang"
-        )
-    }
 }
 
 shadowJar {

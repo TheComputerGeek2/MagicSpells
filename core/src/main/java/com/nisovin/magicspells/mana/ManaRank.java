@@ -1,7 +1,5 @@
 package com.nisovin.magicspells.mana;
 
-import net.kyori.adventure.text.format.Style;
-
 public class ManaRank {
 	
 	private String name;

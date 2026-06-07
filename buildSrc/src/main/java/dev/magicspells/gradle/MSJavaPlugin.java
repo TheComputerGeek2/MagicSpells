@@ -10,36 +10,34 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
 
 public class MSJavaPlugin implements Plugin<Project> {
+
+    private static final String[] MAVEN_URLS = new String[]{
+        "https://mvn.lib.co.nz/public/",
+        "https://repo.papermc.io/repository/maven-public/",
+        "https://jitpack.io",
+        "https://repo.codemc.org/repository/maven-public",
+        "https://maven.enginehub.org/repo/",
+        "https://repo.glaremasters.me/repository/towny/",
+        "https://repo.extendedclip.com/releases/",
+    };
+
     @Override
     public void apply(Project target) {
         target.getPlugins().apply(JavaPlugin.class);
         target.getPlugins().apply(JavaLibraryPlugin.class);
         target.getPlugins().apply(MavenPublishPlugin.class);
-        target.getExtensions().configure(JavaPluginExtension.class, (JavaPluginExtension ext) -> {
-            ext.toolchain((javaToolchainSpec -> {
-                javaToolchainSpec.getLanguageVersion().set(JavaLanguageVersion.of(21));
-            }));
-        });
+
+        target.getExtensions()
+            .getByType(JavaPluginExtension.class)
+            .getToolchain()
+            .getLanguageVersion()
+            .set(JavaLanguageVersion.of(25));
+
         RepositoryHandler repositories = target.getRepositories();
         repositories.mavenCentral();
-
-        String[] mavenUrls = new String[] {
-            "https://repo.dmulloy2.net/nexus/repository/public/",
-            "https://repo.md-5.net/content/repositories/releases/",
-            "https://repo.papermc.io/repository/maven-public/",
-            "https://oss.sonatype.org/content/repositories/central",
-            "https://oss.sonatype.org/content/repositories/snapshots",
-            "https://hub.spigotmc.org/nexus/content/repositories/snapshots/",
-            "https://jitpack.io",
-            "https://repo.codemc.org/repository/maven-public",
-            "https://cdn.rawgit.com/Rayzr522/maven-repo/master/",
-            "https://maven.enginehub.org/repo/",
-            "https://repo.glaremasters.me/repository/towny/",
-            "https://repo.extendedclip.com/content/repositories/placeholderapi",
-            "https://repo.md-5.net/content/repositories/snapshots",
-        };
-        for (String url : mavenUrls) {
-            repositories.maven(mavenArtifactRepository -> mavenArtifactRepository.setUrl(url));
+	    for (String url : MAVEN_URLS) {
+            repositories.maven(repo -> repo.setUrl(url));
         }
     }
+
 }

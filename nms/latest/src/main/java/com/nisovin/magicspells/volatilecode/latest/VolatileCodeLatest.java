@@ -65,9 +65,9 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 
 	private final Identifier TOAST_KEY = Identifier.fromNamespaceAndPath("magicspells", "toast_effect");
 
-	private final EntityDataAccessor<@NotNull List<ParticleOptions>> DATA_EFFECT_PARTICLES;
-	private final EntityDataAccessor<@NotNull Boolean> DATA_EFFECT_AMBIENCE_ID;
-	private final EntityDataAccessor<@NotNull Byte> DATA_SHARED_FLAGS_ID;
+	private final EntityDataAccessor<List<ParticleOptions>> DATA_EFFECT_PARTICLES;
+	private final EntityDataAccessor<Boolean> DATA_EFFECT_AMBIENCE_ID;
+	private final EntityDataAccessor<Byte> DATA_SHARED_FLAGS_ID;
 	private final MethodHandle UPDATE_EFFECT_PARTICLES;
 
 	private final Long2ObjectOpenHashMap<List<ScheduledTask>> GLOBAL_REGION_TASKS;
@@ -202,7 +202,7 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 
 	@Override
 	public void sendToastEffect(Player receiver, ItemStack icon, AdvancementDisplay.Frame frameType, Component text) {
-		var iconNms = CraftItemStack.asNMSCopy(icon);
+		var iconNms = CraftItemStack.asNMSCopy(icon).getItem();
 		var textNms = PaperAdventure.asVanilla(text);
 		var description = PaperAdventure.asVanilla(Component.empty());
 		AdvancementType frame;

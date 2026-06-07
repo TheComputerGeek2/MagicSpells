@@ -1,7 +1,12 @@
 name: Wiki Alert
 
-on:
-  gollum
+# The alert is not sent for all wiki changes:
+#
+# The "gollum" event only fires whenever the wiki HEAD changes, only considering the
+# changes in the latest commit, and only if the pages were created or modified, not
+# deleted. But pushing multiple commits is limited to GitHub collaborators (or above).
+
+on: gollum
 
 jobs:
   notify:
@@ -13,53 +18,130 @@ jobs:
 
       - name: Checkout
         if: steps.secret.outputs.empty == 'false'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{github.repository}}.wiki
 
       - name: Send Webhook
         if: steps.secret.outputs.empty == 'false'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
-            const embedLimit = 10;
-            const fieldsLimit = 25;
+            // https://docs.discord.com/developers/resources/message#embed-object-embed-limits
+            const limits = {
+                message: 6000,
+                description: 4096,
+                embeds: 10,
+                fields: 25,
+            };
+            const messageConfig = {
+                username: "Wiki Updates",
+                avatar: "https://files.jasperlorelai.eu/magicspells/images/webhook_icon.png"
+            };
             
-            // Array of batched 10 embeds per element, each with up to 25 fields documenting a page edit.
-            const batches = [];
+            /**
+             * @typedef {Object} EmbedFooter
+             * @property {string=} text
+             */
             
-            for (const {title, html_url, sha} of context.payload.pages) {
-              const needsNewBatch = !batches.length || batches.at(-1).length >= embedLimit;
-              if (needsNewBatch) batches.push([]);
-              
-              const needsNewEmbed = !batches.at(-1).length || batches.at(-1).at(-1).fields.length >= fieldsLimit;
-              if (needsNewEmbed) batches.at(-1).push({
-                author: {
-                  name: "Edited by: " + context.payload.sender.login,
-                  url: context.payload.sender.html_url,
-                  icon_url: context.payload.sender.avatar_url,
-                },
-                fields: []
-              });
-              
-              const {stdout} = await exec.getExecOutput(`git log -1 --pretty=format:"%B"`);
-              batches.at(-1).at(-1).fields.push({
-                name: title,
-                value: stdout.trim().split("\n").map(l => "> " + l).join("\n") +
-                  `\n-# [View Page](${html_url}) • [View Changes](${html_url}/_compare/${sha})`
-              });
+            /**
+             * @typedef {Object} EmbedAuthor
+             * @property {string=} name
+             * @property {string=} url
+             * @property {string=} url_icon
+             */
+            
+            /**
+             * @typedef {Object} EmbedField
+             * @property {string} name
+             * @property {string} value
+             * @property {boolean=} inline
+             */
+            
+            /**
+             * @typedef {Object} Embed
+             * @property {string=} title
+             * @property {string=} url
+             * @property {string=} description
+             * @property {EmbedFooter=} footer
+             * @property {EmbedAuthor=} author
+             * @property {EmbedField[]=} fields
+             */
+            
+            if (!context.payload.pages?.length) {
+                core.info("No pages in payload.");
+                return;
             }
             
-            batches.forEach(embeds => {
-              const message = {
-                username: "Wiki Updates",
-                avatar_url: "https://files.jasperlorelai.eu/magicspells/images/webhook_icon.png",
-                embeds
-              };
-              fetch("${{secrets.WIKI_WEBHOOK}}", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(message)
-              }).then(response => console.log("Status: " + response.status))
-                .catch(error => core.setFailed(error.message));
-            });
+            // Commit sha/message will be shared across pages in a "gollum" event.
+            const {sha} = context.payload.pages[0];
+            const {stdout} = await exec.getExecOutput(`git log -1 --pretty=format:"%B" ${sha}`);
+            let description = "";
+            for (const line of stdout.trim().split("\n")) {
+                description += "\n> " + line;
+            }
+            if (description.length > limits.description) {
+                description = description.substring(0, limits.description - 3) + "...";
+            }
+            
+            // Array of batched 10 max embeds per element.
+            /** @type {Array<Embed[]>} */
+            const batches = [];
+            
+            for (const {title, html_url} of context.payload.pages) {
+                /** @type {EmbedField} */
+                const field = {
+                    inline: true,
+                    name: title,
+                    value: `-# [Page](${html_url}/${sha}) • [Changes](${html_url}/_compare/${sha})`
+                };
+            
+                let messageSize = field.name.length + field.value.length;
+                if (batches.length) {
+                    for (const embed of batches.at(-1)) {
+                        messageSize += (embed.title?.length || 0) +
+                            (embed.description?.length || 0) +
+                            (embed.footer?.text?.length || 0) +
+                            (embed.author?.name?.length || 0);
+
+                        if (!embed.fields?.length) continue;
+                        for (const field of embed.fields) {
+                            messageSize += field.name.length + field.value.length;
+                        }
+                    }
+                }
+            
+                const needsNewBatch = !batches.length ||
+                    batches.at(-1).length >= limits.embeds ||
+                    messageSize >= limits.message;
+            
+                if (needsNewBatch) batches.push([{
+                    title: "Pages Changed",
+                    url: `${html_url.substring(0, html_url.lastIndexOf("/"))}/_compare/${sha}`,
+                    description,
+                    author: {
+                        name: "Edited by: " + context.payload.sender.login,
+                        url: context.payload.sender.html_url,
+                        icon_url: context.payload.sender.avatar_url,
+                    },
+                    fields: []
+                }]);
+            
+                const needsNewEmbed = batches.at(-1).at(-1).fields.length >= limits.fields;
+                if (needsNewEmbed) batches.at(-1).push({fields: []});
+            
+                batches.at(-1).at(-1).fields.push(field);
+            }
+            
+            for (const embeds of batches) {
+                const message = {
+                    username: messageConfig.username,
+                    avatar_url: messageConfig.avatar,
+                    embeds
+                };
+                await fetch("${{secrets.WIKI_WEBHOOK}}", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(message)
+                }).catch(error => core.setFailed(error.message));
+            }

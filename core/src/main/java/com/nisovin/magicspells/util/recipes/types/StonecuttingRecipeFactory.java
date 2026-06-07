@@ -17,12 +17,7 @@ public class StonecuttingRecipeFactory extends CraftingRecipeFactory {
 		RecipeChoice ingredient = resolveRecipeChoice(config,"ingredient");
 		if (ingredient == null) return null;
 
-		StonecuttingRecipe recipe = new StonecuttingRecipe(key, result, ingredient);
-
-		String group = config.getString("group", "");
-		if (!group.isBlank()) recipe.setGroup(group);
-
-		return recipe;
+		return new StonecuttingRecipe(key, result, ingredient);
 	}
 
 }

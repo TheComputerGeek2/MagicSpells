@@ -32,11 +32,11 @@ import org.bukkit.command.CommandSender;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Perm;
+import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.mana.ManaHandler;
 import com.nisovin.magicspells.mana.ManaChangeReason;
 import com.nisovin.magicspells.commands.exceptions.InvalidCommandArgumentException;
-import com.nisovin.magicspells.util.Util;
 
 public class ManaCommands {
 

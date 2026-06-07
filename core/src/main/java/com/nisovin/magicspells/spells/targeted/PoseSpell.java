@@ -3,6 +3,7 @@ package com.nisovin.magicspells.spells.targeted;
 import org.bukkit.entity.Pose;
 import org.bukkit.entity.LivingEntity;
 
+import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.CastResult;
 import com.nisovin.magicspells.util.TargetInfo;
@@ -37,7 +38,12 @@ public class PoseSpell extends TargetedSpell implements TargetedEntitySpell {
 		Pose pose = this.pose.get(data);
 		if (pose == null) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 
-		data.target().setPose(pose, fixed.get(data));
+		try {
+			data.target().setPose(pose, fixed.get(data));
+		} catch (IllegalArgumentException e) {
+			MagicSpells.error("PoseSpell '" + internalName + "' failed to set pose: " + e.getMessage());
+			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
+		}
 
 		playSpellEffects(data);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);

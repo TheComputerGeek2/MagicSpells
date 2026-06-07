@@ -17,7 +17,6 @@ show-mana-on-experience-bar: true
 
 ranks:
     master:
-        prefix: "Mana:"
         symbol: '='
         size: 35
         max-mana: 200
@@ -26,7 +25,6 @@ ranks:
         regen-interval: 20
         bar-format: "<dark_aqua>Mana: {<dark_blue><full_segment></dark_blue><black><empty_segment></black>} [<mana>/<max_mana>]</dark_aqua>"
     adept:
-        prefix: "Mana:"
         symbol: '='
         size: 35
         max-mana: 150
@@ -35,7 +33,6 @@ ranks:
         regen-interval: 20
         bar-format: "<dark_aqua>Mana: {<blue><full_segment></blue><black><empty_segment></black>} [<mana>/<max_mana>]</dark_aqua>"
     novice:
-        prefix: "Mana:"
         symbol: '='
         size: 35
         max-mana: 100

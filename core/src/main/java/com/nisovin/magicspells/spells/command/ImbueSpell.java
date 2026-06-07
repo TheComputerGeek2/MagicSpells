@@ -109,7 +109,7 @@ public class ImbueSpell extends CommandSpell implements BlockingSuggestionProvid
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
 
-		if (!inHand.hasItemMeta() || inHand.getItemMeta().getPersistentDataContainer().has(KEY)) {
+		if (inHand.hasItemMeta() && inHand.getItemMeta().getPersistentDataContainer().has(KEY)) {
 			sendMessage(strCantImbueItem, caster, data);
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}

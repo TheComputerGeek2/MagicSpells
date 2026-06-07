@@ -33,9 +33,7 @@ public class TaskInfoCommand {
 			.count();
 
 		int effectLibTasks = MagicSpells.getEffectManager().getEffects().size();
-
 		VolatileCodeHandle handler = MagicSpells.getVolatileCodeHandler();
-		MagicSpells instance = MagicSpells.getInstance();
 
 		context.sender().getSender().sendMessage(Util.getMessageText(
 			Component.text()

@@ -91,7 +91,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 		TargetInfo<LivingEntity> info = getTargetedEntity(data);
 		if (info.noTarget()) return noTarget(info);
 
-		return castAtEntity(info.spellData());
+		return levitate(info.spellData());
 	}
 
 	@Override
@@ -103,6 +103,15 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 	public CastResult castAtEntity(SpellData data) {
 		if (!data.hasCaster()) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 
+		if (isLevitating(data.caster())) {
+			levitating.remove(data.caster().getUniqueId()).stop();
+			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
+		}
+
+		return levitate(data);
+	}
+
+	public CastResult levitate(SpellData data) {
 		LivingEntity caster = data.caster();
 		LivingEntity target = data.target();
 
@@ -118,6 +127,10 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 		playSpellEffects(data);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+	}
+
+	public Map<UUID, Levitator> getLevitating() {
+		return levitating;
 	}
 
 	public boolean isBeingLevitated(LivingEntity entity) {
@@ -140,7 +153,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 		toRemove.clear();
 	}
 
-	private boolean isLevitating(LivingEntity entity) {
+	public boolean isLevitating(LivingEntity entity) {
 		return levitating.containsKey(entity.getUniqueId());
 	}
 
@@ -186,7 +199,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 
 	}
 
-	private class Levitator implements Runnable {
+	public class Levitator implements Runnable {
 
 		private final SpellData data;
 
@@ -258,6 +271,10 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 		private void stop() {
 			stopped = true;
 			MagicSpells.cancelTask(taskId);
+		}
+
+		public SpellData getData() {
+			return data;
 		}
 
 	}

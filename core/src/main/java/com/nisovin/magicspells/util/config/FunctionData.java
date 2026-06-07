@@ -33,7 +33,7 @@ public class FunctionData<T extends Number> implements ConfigData<T> {
 	private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%(?:" +
 		"(?<var>(?<varOwner>var|castervar|targetvar):(?<varName>\\w+)(?::(?<varPrecision>\\d+))?)|" +
 		"(?<pVar>playervar:(?<pVarUser>[^:]+):(?<pVarName>\\w+)(?::(?<pVarPrecision>\\d+))?)|" +
-		"(?<arg>arg:(?<argValue>\\d+):(?<argDefault>" + RegexUtil.DOUBLE_PATTERN + "))|" +
+		"(?<arg>arg:(?<argValue>\\d+)(?::(?<argDefault>" + RegexUtil.DOUBLE_PATTERN + "))?)|" +
 		"(?<papi>(?<papiOwner>papi|casterpapi|targetpapi):(?<papiValue>[^%]+))|" +
 		"(?<playerPapi>playerpapi:(?<playerPapiUser>[^:]+):(?<playerPapiValue>[^%]+))" +
 		")%", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
@@ -187,7 +187,6 @@ public class FunctionData<T extends Number> implements ConfigData<T> {
 		}
 
 		if (matcher.group("arg") != null) {
-			String def = matcher.group("argDefault");
 
 			int index;
 			try {
@@ -197,7 +196,8 @@ public class FunctionData<T extends Number> implements ConfigData<T> {
 			}
 			if (index == 0) return data -> 0d;
 
-			return new ArgumentData(index - 1, def);
+			String def = matcher.group("argDefault");
+			return new ArgumentData(index - 1, def == null ? "" : def);
 		}
 
 		if (matcher.group("papi") != null) {
