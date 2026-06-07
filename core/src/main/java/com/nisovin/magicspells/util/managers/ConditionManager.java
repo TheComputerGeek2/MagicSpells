@@ -221,6 +221,7 @@ public class ConditionManager {
 		addCondition(FixedTimeCondition.class);
 		addCondition(UsingItemCondition.class);
 		addCondition(InputCondition.class);
+		addCondition(ScoreCondition.class);
 	}
 
 }
