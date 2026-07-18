@@ -29,7 +29,9 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 
 import io.papermc.paper.adventure.PaperAdventure;
@@ -42,10 +44,12 @@ import com.nisovin.magicspells.util.glow.GlowManager;
 import com.nisovin.magicspells.volatilecode.VolatileCodeHandle;
 import com.nisovin.magicspells.volatilecode.VolatileCodeHelper;
 
+import net.minecraft.nbt.Tag;
 import net.minecraft.util.ARGB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.advancements.*;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.EntityType;
@@ -289,6 +293,22 @@ public class VolatileCode_v26_1_2 extends VolatileCodeHandle {
 		}
 
 		return count;
+	}
+
+	@Override
+	public @Nullable String getCommandStorageString(Key containerId, String tagKey) {
+		Tag tag = getCommandStorage(containerId).get(tagKey);
+		return tag == null ? null : tag.asString().orElse(tag.toString());
+	}
+
+	@Override
+	public @Nullable Double getCommandStorageDouble(Key containerId, String tagKey) {
+		return getCommandStorage(containerId).getDouble(tagKey).orElse(null);
+	}
+
+	private CompoundTag getCommandStorage(Key id) {
+		MinecraftServer server = ((CraftServer) Bukkit.getServer()).getServer();
+		return server.getCommandStorage().get(PaperAdventure.asVanilla(id));
 	}
 
 }
