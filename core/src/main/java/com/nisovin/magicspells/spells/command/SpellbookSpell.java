@@ -38,7 +38,6 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellLearnEvent;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -209,8 +208,7 @@ public class SpellbookSpell extends CommandSpell implements BlockingSuggestionPr
 			return;
 		}
 		SpellLearnEvent learnEvent = new SpellLearnEvent(spell, player, LearnSource.SPELLBOOK, event.getClickedBlock());
-		EventUtil.call(learnEvent);
-		if (learnEvent.isCancelled()) {
+		if (!learnEvent.callEvent()) {
 			sendMessage(strCantLearn, player, MagicSpells.NULL_ARGS, "%s", spell.getName());
 			return;
 		}

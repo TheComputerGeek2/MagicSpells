@@ -11,6 +11,9 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.block.Action;
 import org.bukkit.util.RayTraceResult;
+import org.bukkit.block.data.Powerable;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.AnaloguePowerable;
 
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.spells.TargetedSpell;
@@ -61,9 +64,7 @@ public class TelekinesisSpell extends TargetedSpell implements TargetedLocationS
 	@Override
 	public CastResult castAtLocation(SpellData data) {
 		Block block = data.location().getBlock();
-
-		Material type = block.getType();
-		if (!checkType(type)) return noTarget(data);
+		if (!checkType(block.getType())) return noTarget(data);
 
 		return activate(block, data);
 	}
@@ -76,7 +77,15 @@ public class TelekinesisSpell extends TargetedSpell implements TargetedLocationS
 			if (event.useInteractedBlock() == Result.DENY) return noTarget(data);
 		}
 
-		BlockUtils.activatePowerable(block);
+		BlockData blockData = block.getBlockData();
+		if (blockData instanceof Powerable powerable) {
+			powerable.setPowered(true);
+			block.setBlockData(powerable);
+		} else if (blockData instanceof AnaloguePowerable powerable) {
+			powerable.setPower(powerable.getMaximumPower());
+			block.setBlockData(powerable);
+		}
+
 		playSpellEffects(data);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);

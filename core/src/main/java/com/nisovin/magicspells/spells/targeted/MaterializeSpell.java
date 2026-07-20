@@ -15,7 +15,6 @@ import org.bukkit.util.RayTraceResult;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
@@ -326,9 +325,9 @@ public class MaterializeSpell extends TargetedSpell implements TargetedLocationS
 		if (checkPlugins && player != null) {
 			block.setType(material, false);
 			MagicSpellsBlockPlaceEvent event = new MagicSpellsBlockPlaceEvent(block, blockState, against, player.getEquipment().getItemInMainHand(), player, true);
-			EventUtil.call(event);
+			boolean cancelled = !event.callEvent();
 			blockState.update(true);
-			if (event.isCancelled()) return false;
+			if (cancelled) return false;
 		}
 		if (falling) {
 			Location location = block.getLocation().add(0.5, fallHeight.get(data), 0.5);
@@ -352,8 +351,7 @@ public class MaterializeSpell extends TargetedSpell implements TargetedLocationS
 					playSpellEffects(EffectPosition.DELAYED, block.getLocation(), data);
 					if (checkPlugins && player != null) {
 						MagicSpellsBlockBreakEvent event = new MagicSpellsBlockBreakEvent(block, player);
-						EventUtil.call(event);
-						if (event.isCancelled()) return;
+						if (!event.callEvent()) return;
 					}
 					block.setType(Material.AIR);
 					playSpellEffects(EffectPosition.BLOCK_DESTRUCTION, block.getLocation(), data);

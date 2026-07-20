@@ -18,7 +18,6 @@ import io.papermc.paper.entity.LookAnchor;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.InstantSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -150,8 +149,7 @@ public class DowseSpell extends InstantSpell {
 
 						if (!validTargetList.canTarget(caster, le)) continue;
 						SpellTargetEvent event = new SpellTargetEvent(this, data, le);
-						EventUtil.call(event);
-						if (event.isCancelled()) continue;
+						if (!event.callEvent()) continue;
 						foundEntity = event.getTarget();
 						data = event.getSpellData();
 						break;

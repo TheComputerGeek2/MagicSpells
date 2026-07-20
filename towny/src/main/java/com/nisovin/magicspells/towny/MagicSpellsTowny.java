@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.event.Listener;
@@ -17,7 +18,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellCastEvent;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.util.compat.CompatBasics;
@@ -53,7 +53,7 @@ public class MagicSpellsTowny extends JavaPlugin implements Listener {
 		Plugin townyPlugin = CompatBasics.getPlugin("Towny");
 		if (townyPlugin != null) {
 			towny = (Towny) townyPlugin;
-			EventUtil.register(this, this);
+			Bukkit.getPluginManager().registerEvents(this, this);
 		} else {
 			getLogger().severe("Failed to find Towny.");
 			setEnabled(false);

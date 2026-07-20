@@ -60,6 +60,9 @@ import org.incendo.cloud.execution.ExecutionCoordinator;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.events.*;
 import com.nisovin.magicspells.handlers.*;
@@ -69,7 +72,6 @@ import com.nisovin.magicspells.mana.ManaSystem;
 import com.nisovin.magicspells.mana.ManaHandler;
 import com.nisovin.magicspells.variables.Variable;
 import com.nisovin.magicspells.spells.PassiveSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.commands.MagicCommands;
 import com.nisovin.magicspells.storage.StorageHandler;
 import com.nisovin.magicspells.util.prompt.PromptType;
@@ -461,7 +463,7 @@ public class MagicSpells extends JavaPlugin {
 		// Load xp system
 		if (config.getBoolean(path + "enable-magic-xp", false)) {
 			log("Loading xp system...");
-			magicXpHandler = new MagicXpHandler(this, config);
+			magicXpHandler = new MagicXpHandler(config);
 			log("...xp system loaded");
 		}
 
@@ -576,7 +578,7 @@ public class MagicSpells extends JavaPlugin {
 			return map;
 		}));
 		metrics.addCustomChart(new AdvancedPie("passive_listeners", () -> {
-			IntMap<String> map = new IntMap<>();
+			Object2IntMap<String> map = new Object2IntOpenHashMap<>();
 			if (spells == null) return map;
 
 			for (Spell spell : spells.values()) {
@@ -585,7 +587,7 @@ public class MagicSpells extends JavaPlugin {
 
 				for (PassiveListener listener : passiveSpell.getPassiveListeners()) {
 					String name = listener.getClass().getSimpleName();
-					map.increment(name.substring(0, name.lastIndexOf("Listener")));
+					map.mergeInt(name.substring(0, name.lastIndexOf("Listener")), 1, Integer::sum);
 				}
 			}
 			return map;
@@ -2164,8 +2166,7 @@ public class MagicSpells extends JavaPlugin {
 
 		// Call event
 		SpellLearnEvent event = new SpellLearnEvent(spell, player, LearnSource.OTHER, null);
-		EventUtil.call(event);
-		if (event.isCancelled()) return false;
+		if (!event.callEvent()) return false;
 
 		spellbook.addSpell(spell);
 		spellbook.save();

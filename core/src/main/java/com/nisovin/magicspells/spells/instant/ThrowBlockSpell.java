@@ -301,7 +301,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 				if (block.getVelocity().lengthSquared() < .01) {
 					if (!info.preventBlocks) {
 						Block b = block.getLocation().getBlock();
-						if (b.getType() == Material.AIR) BlockUtils.setBlockFromFallingBlock(b, block, true);
+						if (b.getType() == Material.AIR) b.setBlockData(block.getBlockData());
 					}
 
 					if (!info.spellActivated && spellOnLand != null) {

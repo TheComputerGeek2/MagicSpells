@@ -1,14 +1,15 @@
 package com.nisovin.magicspells.mana;
 
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.ManaChangeEvent;
 
 public class ManaBar {
 
-	private final String playerName;
+	private final UUID player;
 
 	private ManaRank rank;
 
@@ -18,7 +19,7 @@ public class ManaBar {
 	private String barFormat;
 
 	public ManaBar(Player player, ManaRank rank) {
-		playerName = player.getName().toLowerCase();
+		this.player = player.getUniqueId();
 		setRank(rank);
 	}
 
@@ -31,7 +32,7 @@ public class ManaBar {
 	}
 
 	public Player getPlayer() {
-		return Bukkit.getPlayerExact(playerName);
+		return Bukkit.getPlayer(player);
 	}
 
 	public ManaRank getManaRank() {
@@ -114,7 +115,7 @@ public class ManaBar {
 		Player player = getPlayer();
 		if (player == null || !player.isOnline()) return newAmt;
 		ManaChangeEvent event = new ManaChangeEvent(player, mana, newAmt, maxMana, reason);
-		EventUtil.call(event);
+		event.callEvent();
 		return event.getNewAmount();
 	}
 

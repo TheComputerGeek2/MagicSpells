@@ -28,7 +28,6 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellLearnEvent;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -179,8 +178,7 @@ public class TomeSpell extends CommandSpell implements BlockingSuggestionProvide
 			return;
 		}
 		SpellLearnEvent learnEvent = new SpellLearnEvent(spell, event.getPlayer(), LearnSource.TOME, event.getPlayer().getInventory().getItemInMainHand());
-		EventUtil.call(learnEvent);
-		if (learnEvent.isCancelled()) {
+		if (!learnEvent.callEvent()) {
 			sendMessage(strCantLearn, event.getPlayer(), MagicSpells.NULL_ARGS, "%s", spell.getName());
 			return;
 		}

@@ -3,7 +3,7 @@ package com.nisovin.magicspells.shop;
 import java.io.File;
 import java.util.regex.Pattern;
 
-import com.nisovin.magicspells.util.compat.EventUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -55,9 +55,7 @@ public class MagicSpellsShop extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		load();
-		
-		// Register events
-		EventUtil.register(this, this);
+		Bukkit.getPluginManager().registerEvents(this, this);
 	}
 	
 	public void load() {

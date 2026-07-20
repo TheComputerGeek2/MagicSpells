@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import com.nisovin.magicspells.util.compat.EventUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
@@ -79,8 +79,8 @@ public class MagicSpellsMemory extends JavaPlugin {
 				MagicSpells.debug("Memory requirement for '" + spell + "' spell set to " + mem);
 			}
 		}
-		
-		EventUtil.register(new MemorySpellListener(this), this);
+
+		Bukkit.getPluginManager().registerEvents(new MemorySpellListener(this), this);
 	}
 	
 	@Override
