@@ -23,6 +23,8 @@ public class DamageSpell extends TargetedSpell implements TargetedEntitySpell, T
 	private final ConfigData<DamageType> damageType;
 	private final ConfigData<Boolean> creditCaster;
 	private final ConfigData<Double> damage;
+	private final ConfigData<Integer> invulnerableTime;
+	private final ConfigData<Boolean> bypassInvulnerableTime;
 
 	public DamageSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -30,6 +32,8 @@ public class DamageSpell extends TargetedSpell implements TargetedEntitySpell, T
 		spellDamageType = getConfigDataString("spell-damage-type", "");
 		creditCaster = getConfigDataBoolean("credit-caster", true);
 		damage = getConfigDataDouble("damage", 4);
+		invulnerableTime = getConfigDataInt("invulnerable-time", _ -> null);
+		bypassInvulnerableTime = getConfigDataBoolean("bypass-invulnerable-time", false);
 
 		damageType = getConfigDataRegistryEntry("damage-type", RegistryKey.DAMAGE_TYPE, null)
 			.orDefault(data -> switch (data.caster()) {
@@ -60,7 +64,11 @@ public class DamageSpell extends TargetedSpell implements TargetedEntitySpell, T
 		if (data.hasCaster() && creditCaster.get(data))
 			builder.withCausingEntity(data.caster()).withDirectEntity(data.caster());
 
+		if (bypassInvulnerableTime.get(data)) data.target().setNoDamageTicks(0);
 		data.target().damage(damage, builder.build());
+
+		Integer invulnerableTime = this.invulnerableTime.get(data);
+		if (invulnerableTime != null) data.target().setNoDamageTicks(invulnerableTime);
 
 		playSpellEffects(data);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
