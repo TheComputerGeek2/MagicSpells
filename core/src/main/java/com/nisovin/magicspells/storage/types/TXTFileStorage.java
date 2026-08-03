@@ -46,19 +46,8 @@ public class TXTFileStorage extends StorageHandler {
 			if (MagicSpells.arePlayerSpellsSeparatedPerWorld()) {
 				File folder = new File(plugin.getDataFolder(), path + worldName);
 				if (!folder.exists()) folder.mkdir();
-
 				file = new File(plugin.getDataFolder(), path + worldName + File.separator + id + ".txt");
-				if (!file.exists()) {
-					File file2 = new File(plugin.getDataFolder(), path + worldName + File.separator + pl.getName().toLowerCase() + ".txt");
-					if (file2.exists()) file2.renameTo(file);
-				}
-			} else {
-				file = new File(plugin.getDataFolder(), path + id + ".txt");
-				if (!file.exists()) {
-					File file2 = new File(plugin.getDataFolder(), path + pl.getName().toLowerCase() + ".txt");
-					if (file2.exists()) file2.renameTo(file);
-				}
-			}
+			} else file = new File(plugin.getDataFolder(), path + id + ".txt");
 
 			if (!file.exists()) return;
 
@@ -115,14 +104,8 @@ public class TXTFileStorage extends StorageHandler {
 			if (MagicSpells.arePlayerSpellsSeparatedPerWorld()) {
 				File folder = new File(plugin.getDataFolder(), path + worldName);
 				if (!folder.exists()) folder.mkdirs();
-				File oldFile = new File(plugin.getDataFolder(), path + worldName + File.separator + pl.getName() + ".txt");
-				if (oldFile.exists()) oldFile.delete();
 				file = new File(plugin.getDataFolder(), path + worldName + File.separator + id + ".txt");
-			} else {
-				File oldFile = new File(plugin.getDataFolder(), path + pl.getName() + ".txt");
-				if (oldFile.exists()) oldFile.delete();
-				file = new File(plugin.getDataFolder(), path + id + ".txt");
-			}
+			} else file = new File(plugin.getDataFolder(), path + id + ".txt");
 
 			Set<CastItem> items;
 			StringBuilder builder;

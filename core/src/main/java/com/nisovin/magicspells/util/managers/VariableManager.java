@@ -527,10 +527,6 @@ public class VariableManager {
 		if (!folder.exists()) folder.mkdir();
 		File file = new File(folder, "PLAYER_" + uniqueId + ".txt");
 		if (!file.exists()) {
-			File file2 = new File(folder, "PLAYER_" + player + ".txt");
-			if (file2.exists()) file2.renameTo(file);
-		}
-		if (!file.exists()) {
 			dirtyPlayerVars.remove(player);
 			return;
 		}

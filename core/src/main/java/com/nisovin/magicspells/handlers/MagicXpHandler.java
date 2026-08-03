@@ -165,10 +165,6 @@ public class MagicXpHandler implements Listener {
 		}
 
 		File file = new File(folder, Util.getUniqueId(player) + ".txt");
-		if (!file.exists()) {
-			File file2 = new File(folder, player.getName().toLowerCase());
-			if (file2.exists()) file2.renameTo(file);
-		}
 		if (!file.exists()) return;
 
 		YamlConfiguration conf = new YamlConfiguration();
