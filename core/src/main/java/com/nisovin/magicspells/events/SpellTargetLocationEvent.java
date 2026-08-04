@@ -31,6 +31,11 @@ public class SpellTargetLocationEvent extends SpellEvent implements Cancellable 
 		spellData = new SpellData(caster, target, power, null);
 	}
 
+	@Override
+	public LivingEntity getCaster() {
+		return spellData.caster();
+	}
+
 	/**
 	 * Gets the location that is being targeted by the spell.
 	 * @return the targeted living entity

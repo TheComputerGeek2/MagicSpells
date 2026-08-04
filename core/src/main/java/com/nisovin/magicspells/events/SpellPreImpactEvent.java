@@ -31,6 +31,11 @@ public class SpellPreImpactEvent extends SpellEvent implements Cancellable {
 		if (DebugHandler.isSpellPreImpactEventCheckEnabled()) MagicSpells.plugin.getLogger().info(toString());
 	}
 
+	@Override
+	public LivingEntity getCaster() {
+		return spellData.caster();
+	}
+
 	public LivingEntity getTarget() {
 		return spellData.target();
 	}

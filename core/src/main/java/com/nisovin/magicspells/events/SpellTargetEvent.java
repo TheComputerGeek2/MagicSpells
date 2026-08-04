@@ -35,6 +35,11 @@ public class SpellTargetEvent extends SpellEvent implements Cancellable {
 		this.spellData = new SpellData(caster, target, power, null);
 	}
 
+	@Override
+	public LivingEntity getCaster() {
+		return spellData.caster();
+	}
+
 	/**
 	 * Gets the living entity that is being targeted by the spell.
 	 * @return the targeted living entity
