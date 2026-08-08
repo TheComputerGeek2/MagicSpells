@@ -206,7 +206,7 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 
 	@Override
 	public void sendToastEffect(Player receiver, ItemStack icon, AdvancementDisplay.Frame frameType, Component text) {
-		var iconNms = CraftItemStack.asNMSCopy(icon).getItem();
+		var iconNms = CraftItemStack.asTemplate(icon);
 		var textNms = PaperAdventure.asVanilla(text);
 		var description = PaperAdventure.asVanilla(Component.empty());
 		AdvancementType frame;
