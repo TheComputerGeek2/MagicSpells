@@ -75,7 +75,7 @@ generateGrammarSource {
 publishing {
     publications {
         maven(MavenPublication) {
-            from components.java
+            from components.shadow
         }
     }
 }
