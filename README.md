@@ -93,7 +93,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.TheComputerGeek2.MagicSpells:core:main-SNAPSHOT") {transitive = false}
+    compileOnly("com.github.TheComputerGeek2.MagicSpells:core:main-SNAPSHOT")
 }
 ```
 
