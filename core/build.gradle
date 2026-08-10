@@ -64,7 +64,11 @@ shadowJar {
 }
 
 jar {
-    enabled = false
+    destinationDirectory = layout.buildDirectory.dir("publication")
+}
+
+shadow {
+    addShadowVariantIntoJavaComponent = false
 }
 
 generateGrammarSource {
@@ -75,7 +79,7 @@ generateGrammarSource {
 publishing {
     publications {
         maven(MavenPublication) {
-            from components.shadow
+            from components.java
         }
     }
 }
