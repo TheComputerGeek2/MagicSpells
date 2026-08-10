@@ -1,7 +1,7 @@
 dependencies {
-    implementation project(":core")
-    implementation("org.incendo:cloud-paper:2.0.0-beta.16")
-    implementation("net.milkbowl.vault:VaultAPI:1.7") { transitive = false }
+    compileOnly project(":core")
+    compileOnly("org.incendo:cloud-paper:2.0.0-beta.16")
+    compileOnly("net.milkbowl.vault:VaultAPI:1.7")
 }
 
 jar {

@@ -20,16 +20,16 @@ dependencies {
     shadow(project(path: ":nms:latest")) { transitive = false }
     shadow(project(path: ":nms:v26_1_2")) { transitive = false }
 
-    implementation("com.github.retrooper:packetevents-spigot:2.11.2")
-    implementation("net.dmulloy2:ProtocolLib:5.4.0") { transitive = false }
-    implementation("me.libraryaddict.disguises:libsdisguises:11.0.16-SNAPSHOT") { transitive = false }
-    implementation("net.milkbowl.vault:VaultAPI:1.7") { transitive = false }
-    implementation("me.clip:placeholderapi:2.12.2") { transitive = false }
-    implementation("com.github.GriefPrevention:GriefPrevention:18.0.0") { transitive = false }
-    implementation("com.sk89q.worldguard:worldguard-core:7.1.0-SNAPSHOT") { transitive = false }
-    implementation("com.sk89q.worldguard:worldguard-bukkit:7.1.0-SNAPSHOT") { transitive = false }
-    implementation("com.sk89q.worldedit:worldedit-core:7.4.0-SNAPSHOT") { transitive = false }
-    implementation("com.sk89q.worldedit:worldedit-bukkit:7.4.0-SNAPSHOT") { transitive = false }
+    compileOnly("com.github.retrooper:packetevents-spigot:2.11.2")
+    compileOnly("net.dmulloy2:ProtocolLib:5.4.0")
+    compileOnly("me.libraryaddict.disguises:libsdisguises:11.0.16-SNAPSHOT")
+    compileOnly("net.milkbowl.vault:VaultAPI:1.7")
+    compileOnly("me.clip:placeholderapi:2.12.2")
+    compileOnly("com.github.GriefPrevention:GriefPrevention:18.0.0")
+    compileOnly("com.sk89q.worldguard:worldguard-core:7.1.0-SNAPSHOT")
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.1.0-SNAPSHOT")
+    compileOnly("com.sk89q.worldedit:worldedit-core:7.4.0-SNAPSHOT")
+    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.4.0-SNAPSHOT")
 }
 
 base {

@@ -1,6 +1,6 @@
 dependencies {
-    implementation project(":core")
-    implementation("com.palmergames.bukkit.towny:towny:0.100.1.0") { transitive = false }
+    compileOnly project(":core")
+    compileOnly("com.palmergames.bukkit.towny:towny:0.100.1.0")
 }
 
 jar {

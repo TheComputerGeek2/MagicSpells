@@ -4,5 +4,5 @@ plugins {
 
 dependencies {
     paperweight.paperDevBundle("26.1.2.build.+")
-    implementation project(":nms:shared")
+    compileOnly project(":nms:shared")
 }
