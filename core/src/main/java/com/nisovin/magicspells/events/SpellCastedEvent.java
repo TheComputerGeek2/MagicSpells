@@ -51,6 +51,11 @@ public class SpellCastedEvent extends SpellEvent {
 		this(castEvent.getSpell(), castEvent.getSpellCastState(), result.action(), result.data(), castEvent.getCooldown(), castEvent.getReagents());
 	}
 
+	@Override
+	public LivingEntity getCaster() {
+		return spellData.caster();
+	}
+
 	/**
 	 * Gets the current spell cast state.
 	 * @return the spell cast state

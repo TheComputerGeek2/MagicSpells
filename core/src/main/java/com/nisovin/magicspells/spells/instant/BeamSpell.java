@@ -19,6 +19,7 @@ import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
+import com.nisovin.magicspells.events.SpellPreImpactEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
@@ -268,7 +269,7 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 			//check entities in the beam range
 			for (LivingEntity e : loc.getNearbyLivingEntities(hitRadius, verticalHitRadius)) {
 				if (!e.isValid() || immune.contains(e)) continue;
-				if (!validTargetList.canTarget(data.caster(), e)) continue;
+				if (!validTargetList.canTarget(locData.caster(), e)) continue;
 
 				SpellTargetEvent event = new SpellTargetEvent(this, locData, e);
 				if (!event.callEvent()) continue;
@@ -276,19 +277,30 @@ public class BeamSpell extends InstantSpell implements TargetedLocationSpell, Ta
 				SpellData subData = event.getSpellData();
 				LivingEntity entity = event.getTarget();
 
-				if (hitSpell != null) hitSpell.subcast(subData.noLocation());
 				if (entityLocationSpell != null) entityLocationSpell.subcast(subData.noTarget());
+				if (hitSpell != null) {
+					SpellPreImpactEvent preImpact = new SpellPreImpactEvent(hitSpell.getSpell(), BeamSpell.this, subData);
+					if (preImpact.callEvent()) {
+						subData = preImpact.getSpellData();
+
+						if (preImpact.getRedirected()) {
+							step.multiply(-1);
+							locData = subData.caster(entity);
+							continue mainLoop;
+						} else hitSpell.subcast(subData.noLocation());
+					}
+				}
 
 				playSpellEffects(EffectPosition.TARGET, entity, subData);
-				playSpellEffectsTrail(data.caster().getLocation(), entity.getLocation(), subData);
-				immune.add(e);
+				playSpellEffectsTrail(subData.caster().getLocation(), entity.getLocation(), subData);
+				immune.add(entity);
 				if (stopOnHitEntity) break mainLoop;
 			}
 		}
 
 		//end of the beam
 		if (!zoneManager.willFizzle(loc, this) && d >= maxDistance) {
-			playSpellEffects(EffectPosition.DELAYED, loc, data.location(loc));
+			playSpellEffects(EffectPosition.DELAYED, loc, locData.location(loc));
 			if (endSpell != null) endSpell.subcast(locData);
 		}
 

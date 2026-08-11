@@ -1,7 +1,6 @@
 package com.nisovin.magicspells.spells.targeted;
 
 import java.util.List;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import org.apache.commons.math4.core.jdkmath.AccurateMath;
@@ -237,8 +236,6 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 		double hRadiusSquared = box.getHorizontalRadius() * box.getHorizontalRadius();
 		double vRadiusSquared = box.getVerticalRadius() * box.getVerticalRadius();
 
-		Iterator<ParticleProjectileTracker> iterator = new HashSet<>(ParticleProjectileSpell.getProjectileTrackers()).iterator();
-
 		int maxTargets = this.maxTargets.get(data);
 		int cone = this.cone.get(data);
 
@@ -252,11 +249,11 @@ public class ProjectileModifySpell extends TargetedSpell implements TargetedLoca
 		boolean affectOwnedProjectiles = this.affectOwnedProjectiles.get(data);
 		boolean affectEnemyProjectiles = this.affectEnemyProjectiles.get(data);
 
-		Location currentLoc;
+		Iterator<ParticleProjectileTracker> iterator = ParticleProjectileSpell.getProjectileTrackers().iterator();
 		while (iterator.hasNext()) {
 			ParticleProjectileTracker tracker = iterator.next();
 			if (tracker == null || tracker.isStopped()) continue;
-			currentLoc = tracker.getCurrentLocation();
+			Location currentLoc = tracker.getCurrentLocation();
 			if (currentLoc == null) continue;
 			if (!currentLoc.getWorld().equals(location.getWorld())) continue;
 			if (!box.contains(currentLoc)) continue;

@@ -35,6 +35,11 @@ public class SpellTargetEvent extends SpellEvent implements Cancellable {
 		this.spellData = new SpellData(caster, target, power, null);
 	}
 
+	@Override
+	public LivingEntity getCaster() {
+		return spellData.caster();
+	}
+
 	/**
 	 * Gets the living entity that is being targeted by the spell.
 	 * @return the targeted living entity
@@ -89,6 +94,14 @@ public class SpellTargetEvent extends SpellEvent implements Cancellable {
 	 */
 	public SpellData getSpellData() {
 		return spellData;
+	}
+
+	/**
+	 * Sets the spell's {@link SpellData} to the provided value.
+	 * @param data the new data
+	 */
+	public void setSpellData(SpellData data) {
+		spellData = data;
 	}
 
 	@Override

@@ -18,9 +18,9 @@ import com.nisovin.magicspells.events.SpellPreImpactEvent;
 // NO API CHANGES - NEEDS TOTAL REWORK
 public class ReflectSpell extends BuffSpell {
 
-	private final Map<UUID, ReflectData> reflectors;
-	private final Set<String> shieldBreakerNames;
-	private final Set<String> delayedReflectionSpells;
+	private final Map<UUID, ReflectData> reflectors = new HashMap<>();
+	private final Set<String> shieldBreakerNames = new HashSet<>();
+	private final Set<String> delayedReflectionSpells = new HashSet<>();
 
 	private final ConfigData<Float> reflectedSpellPowerMultiplier;
 
@@ -30,10 +30,6 @@ public class ReflectSpell extends BuffSpell {
 
 	public ReflectSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
-
-		reflectors = new HashMap<>();
-		shieldBreakerNames = new HashSet<>();
-		delayedReflectionSpells = new HashSet<>();
 
 		shieldBreakerNames.addAll(getConfigStringList("shield-breakers", new ArrayList<>()));
 		delayedReflectionSpells.addAll(getConfigStringList("delayed-reflection-spells", new ArrayList<>()));
@@ -93,17 +89,15 @@ public class ReflectSpell extends BuffSpell {
 		if (!target.isValid()) return;
 		if (!isActive(target)) return;
 
-		if (shieldBreakerNames != null && shieldBreakerNames.contains(event.getSpell().getInternalName())) {
+		if (shieldBreakerNames.contains(event.getSpell().getInternalName())) {
 			turnOff(target);
 			return;
 		}
-		if (delayedReflectionSpells != null && delayedReflectionSpells.contains(event.getSpell().getInternalName())) {
-			// Let the delayed reflection spells target the reflector so the animations run
-			// It will get reflected later
-			return;
-		}
 
-		event.setTarget(event.getCaster());
+		// Let the delayed reflection spells target the reflector so the reflection is handled on impact instead.
+		if (delayedReflectionSpells.contains(event.getSpell().getInternalName())) return;
+
+		event.setSpellData(event.getSpellData().invert());
 		ReflectData data = reflectors.get(target.getUniqueId());
 
 		addUseAndChargeCost(target);

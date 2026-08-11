@@ -19,12 +19,12 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.projectile.*;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.events.TrackerMoveEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
+import com.nisovin.magicspells.events.SpellPreImpactEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.instant.ProjectileSpell;
 import com.nisovin.magicspells.spelleffects.util.EffectlibSpellEffect;
@@ -191,8 +191,7 @@ public class ProjectileTracker implements Runnable, Tracker {
 		currentLocation.setDirection(projectile.getVelocity());
 
 		if (callEvents) {
-			TrackerMoveEvent trackerMoveEvent = new TrackerMoveEvent(this, previousLocation, currentLocation);
-			EventUtil.call(trackerMoveEvent);
+			new TrackerMoveEvent(this, previousLocation, currentLocation).callEvent();
 			if (stopped) return;
 		}
 
@@ -289,19 +288,37 @@ public class ProjectileTracker implements Runnable, Tracker {
 
 		SpellData data = this.data.location(location);
 
-		for (LivingEntity entity : location.getNearbyLivingEntities(hitRadius, verticalHitRadius, hitRadius)) {
-			if (!targetList.canTarget(data.caster(), entity)) continue;
+		for (LivingEntity entity : location.getNearbyLivingEntities(hitRadius, verticalHitRadius))
+			if (hitEntity(entity, data))
+				break;
+	}
 
-			SpellTargetEvent event = new SpellTargetEvent(spell, data, entity);
-			if (!event.callEvent()) continue;
+	public boolean hitEntity(LivingEntity entity, SpellData data) {
+		if (!targetList.canTarget(data.caster(), entity)) return false;
 
-			SpellData subData = event.getSpellData();
-			if (hitSpell != null) hitSpell.subcast(subData.noLocation());
-			if (entityLocationSpell != null) entityLocationSpell.subcast(subData.noTarget());
+		SpellTargetEvent event = new SpellTargetEvent(spell, data, entity);
+		if (!event.callEvent()) return false;
 
-			stop();
-			return;
+		SpellData subData = event.getSpellData();
+
+		if (entityLocationSpell != null) entityLocationSpell.subcast(subData.noTarget());
+		if (hitSpell != null) {
+			SpellPreImpactEvent preImpact = new SpellPreImpactEvent(hitSpell.getSpell(), spell, subData);
+			if (preImpact.callEvent()) {
+				subData = preImpact.getSpellData();
+
+				if (preImpact.getRedirected()) {
+					setCaster(subData.target());
+					projectile.setVelocity(projectile.getVelocity().multiply(-1));
+					return true;
+				} else hitSpell.subcast(subData.noLocation());
+			}
 		}
+
+		spell.playEffects(EffectPosition.TARGET, subData.target(), subData);
+
+		stop();
+		return true;
 	}
 
 	@Override

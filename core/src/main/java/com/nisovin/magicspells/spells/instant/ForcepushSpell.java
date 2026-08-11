@@ -63,7 +63,7 @@ public class ForcepushSpell extends InstantSpell {
 			else target.setVelocity(velocity);
 
 			playSpellEffects(EffectPosition.TARGET, target, subData);
-			playSpellEffectsTrail(data.caster().getLocation(), target.getLocation(), subData);
+			playSpellEffectsTrail(subData.caster().getLocation(), target.getLocation(), subData);
 		}
 
 		playSpellEffects(EffectPosition.CASTER, data.caster(), data);

@@ -37,16 +37,16 @@ public class RoarSpell extends InstantSpell {
 
 			SpellTargetEvent targetEvent = new SpellTargetEvent(this, data, mob);
 			if (!targetEvent.callEvent()) continue;
+			SpellData subData = targetEvent.getSpellData();
 
 			LivingEntity le = targetEvent.getTarget();
 			if (!(le instanceof Mob target)) continue;
 
-			target.setTarget(data.caster());
+			target.setTarget(subData.caster());
 			count++;
 
-			SpellData subData = targetEvent.getSpellData();
 			playSpellEffects(EffectPosition.TARGET, target, subData);
-			playSpellEffectsTrail(data.caster().getLocation(), target.getLocation(), subData);
+			playSpellEffectsTrail(subData.caster().getLocation(), target.getLocation(), subData);
 		}
 
 		if (cancelIfNoTargets.get(data) && count == 0) return noTarget(data);

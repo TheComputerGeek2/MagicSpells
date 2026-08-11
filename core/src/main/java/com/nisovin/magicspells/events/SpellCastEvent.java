@@ -53,6 +53,11 @@ public class SpellCastEvent extends SpellEvent implements Cancellable {
 		reagentsChanged = false;
 	}
 
+	@Override
+	public LivingEntity getCaster() {
+		return spellData.caster();
+	}
+
 	/**
 	 * Gets the current spell cast state.
 	 *
