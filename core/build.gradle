@@ -4,32 +4,45 @@ plugins {
 }
 
 dependencies {
-    shadow("org.apache.commons:commons-math4-core:4.0-beta1")
-    shadow("com.github.ben-manes.caffeine:caffeine:3.2.2")
-    shadow("com.github.Chronoken:EffectLib:1da888c")
-    shadow("org.incendo:cloud-paper:2.0.0-beta.16")
-    shadow("org.incendo:cloud-minecraft-extras:2.0.0-beta.16")
-    shadow("org.incendo:cloud-processors-requirements:1.0.0-rc.1")
-    shadow("org.bstats:bstats-bukkit:3.2.1")
-    shadow("com.github.ezylang:EvalEx:3.6.2")
+    implementation("org.apache.commons:commons-math4-core:4.0-beta1")
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
+    implementation("com.github.Chronoken:EffectLib:1da888c")
+    implementation("org.incendo:cloud-paper:2.0.0-beta.16")
+    implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.16")
+    implementation("org.incendo:cloud-processors-requirements:1.0.0-rc.1")
+    implementation("org.bstats:bstats-bukkit:3.2.1")
+    implementation("com.github.ezylang:EvalEx:3.6.2")
 
-    shadow("org.antlr:antlr4-runtime:4.13.2")
+    implementation("org.antlr:antlr4-runtime:4.13.2")
     antlr("org.antlr:antlr4:4.13.2")
 
-    shadow(project(path: ":nms:shared", configuration: "apiElements"))
-    shadow(project(path: ":nms:latest")) { transitive = false }
-    shadow(project(path: ":nms:v26_1_2")) { transitive = false }
+    implementation(project(path: ":nms:shared"))
+    implementation(project(path: ":nms:latest"))
+    implementation(project(path: ":nms:v26_1_2"))
 
-    implementation("com.github.retrooper:packetevents-spigot:2.11.2")
-    implementation("net.dmulloy2:ProtocolLib:5.4.0") { transitive = false }
-    implementation("me.libraryaddict.disguises:libsdisguises:11.0.16-SNAPSHOT") { transitive = false }
-    implementation("net.milkbowl.vault:VaultAPI:1.7") { transitive = false }
-    implementation("me.clip:placeholderapi:2.12.2") { transitive = false }
-    implementation("com.github.GriefPrevention:GriefPrevention:18.0.0") { transitive = false }
-    implementation("com.sk89q.worldguard:worldguard-core:7.1.0-SNAPSHOT") { transitive = false }
-    implementation("com.sk89q.worldguard:worldguard-bukkit:7.1.0-SNAPSHOT") { transitive = false }
-    implementation("com.sk89q.worldedit:worldedit-core:7.4.0-SNAPSHOT") { transitive = false }
-    implementation("com.sk89q.worldedit:worldedit-bukkit:7.4.0-SNAPSHOT") { transitive = false }
+    compileOnly("com.github.retrooper:packetevents-spigot:2.11.2")
+    compileOnly("net.dmulloy2:ProtocolLib:5.4.0")
+    compileOnly("me.libraryaddict.disguises:libsdisguises:11.0.16-SNAPSHOT")
+    compileOnly("net.milkbowl.vault:VaultAPI:1.7")
+    compileOnly("me.clip:placeholderapi:2.12.2")
+    compileOnly("com.github.GriefPrevention:GriefPrevention:18.0.0")
+    compileOnly("com.sk89q.worldguard:worldguard-core:7.1.0-SNAPSHOT")
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.1.0-SNAPSHOT")
+    compileOnly("com.sk89q.worldedit:worldedit-core:7.4.0-SNAPSHOT")
+    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.4.0-SNAPSHOT")
+}
+
+/*
+ * Undo extendsFrom relationship between the 'antlr' configuration and the 'api' configuration,
+ * causing Shadow to shade it. See:
+ * https://github.com/gradle/gradle/blob/fe863b559778fb57e926f55c2162bd17f153c637/platforms/jvm/antlr/src/main/java/org/gradle/api/plugins/antlr/AntlrPlugin.java#L70
+ *
+ * Workaround by: https://github.com/gradle/gradle/issues/820#issuecomment-3491381422
+ */
+configurations {
+    api {
+        extendsFrom = extendsFrom.findAll { it != configurations.antlr }
+    }
 }
 
 base {
@@ -37,8 +50,6 @@ base {
 }
 
 shadowJar {
-    configurations = [project.configurations.shadow]
-
     relocate("com.github.benmanes.caffeine", "com.nisovin.magicspells.shaded.com.github.benmanes.caffeine")
     relocate("org.apache.commons.math4", "com.nisovin.magicspells.shaded.org.apache.commons.math4")
     relocate("de.slikey.effectlib", "com.nisovin.magicspells.shaded.effectlib")
@@ -64,7 +75,11 @@ shadowJar {
 }
 
 jar {
-    enabled = false
+    destinationDirectory = layout.buildDirectory.dir("publication")
+}
+
+shadow {
+    addShadowVariantIntoJavaComponent = false
 }
 
 generateGrammarSource {
@@ -75,7 +90,7 @@ generateGrammarSource {
 publishing {
     publications {
         maven(MavenPublication) {
-            from components.shadow
+            from components.java
         }
     }
 }
