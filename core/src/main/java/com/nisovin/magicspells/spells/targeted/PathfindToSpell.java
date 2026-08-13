@@ -23,11 +23,12 @@ import com.nisovin.magicspells.util.MagicConfig;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
+import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
 import com.destroystokyo.paper.entity.Pathfinder;
 import com.destroystokyo.paper.event.entity.EntityPathfindEvent;
 
-public class PathfindToSpell extends TargetedSpell implements TargetedEntitySpell {
+public class PathfindToSpell extends TargetedSpell implements TargetedEntitySpell, TargetedLocationSpell {
 
 	private static Monitor monitor;
 
@@ -37,6 +38,7 @@ public class PathfindToSpell extends TargetedSpell implements TargetedEntitySpel
 	private final ConfigData<Double> distanceAllowed;
 
 	private final ConfigData<Boolean> allowInterrupt;
+	private final ConfigData<Boolean> forceCasterNavigator;
 
 	private Subspell arriveSpell;
 
@@ -49,6 +51,7 @@ public class PathfindToSpell extends TargetedSpell implements TargetedEntitySpel
 		distanceAllowed = getConfigDataDouble("distance-allowed", 1);
 
 		allowInterrupt = getConfigDataBoolean("allow-interrupt", true);
+		forceCasterNavigator = getConfigDataBoolean("force-caster-navigator", false);
 	}
 
 	@Override
@@ -78,19 +81,42 @@ public class PathfindToSpell extends TargetedSpell implements TargetedEntitySpel
 		TargetInfo<LivingEntity> info = getTargetedEntity(data);
 		if (info.noTarget()) return noTarget(info);
 
-		return setPath(info.spellData());
+		data = info.spellData();
+		if (!(data.target() instanceof Mob mob)) return noTarget(data);
+
+		return setPath(mob, position.get(data).toLocation(mob.getWorld()), data);
 	}
 
 	@Override
 	public CastResult castAtEntity(SpellData data) {
-		return setPath(data);
+		Mob navigator = null;
+		Location destination = null;
+
+		if (forceCasterNavigator.get(data)) {
+			if (data.caster() instanceof Mob mob) {
+				navigator = mob;
+				destination = data.target().getLocation();
+			}
+		} else {
+			if (data.target() instanceof Mob mob) {
+				navigator = mob;
+				destination = position.get(data).toLocation(mob.getWorld());
+			}
+		}
+		if (navigator == null) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
+
+		return setPath(navigator, destination, data);
 	}
 
-	private CastResult setPath(SpellData data) {
-		if (!(data.target() instanceof Mob mob)) return noTarget(data);
+	@Override
+	public CastResult castAtLocation(SpellData data) {
+		if (!(data.caster() instanceof Mob navigator))
+			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 
-		Location destination = position.get(data).toLocation(mob.getWorld());
+		return setPath(navigator, data.location(), data);
+	}
 
+	private CastResult setPath(Mob mob, Location destination, SpellData data) {
 		Pathfinder.PathResult path = mob.getPathfinder().findPath(destination);
 		if (path == null || !path.canReachFinalPoint()) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 
