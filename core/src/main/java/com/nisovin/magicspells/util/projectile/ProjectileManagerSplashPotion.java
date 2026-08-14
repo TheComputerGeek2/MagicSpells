@@ -7,12 +7,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class ProjectileManagerSplashPotion extends ProjectileManagerThrownPotion {
 
-	private static final ItemStack POTION = new ItemStack(Material.SPLASH_POTION);
-
 	@NotNull
 	@Override
-	public ItemStack getItem() {
-		return POTION;
+	protected ItemStack getItem() {
+		return new ItemStack(Material.SPLASH_POTION);
 	}
 
 }

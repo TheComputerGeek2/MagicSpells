@@ -25,7 +25,6 @@ import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
 import com.nisovin.magicspells.events.SpellPreImpactEvent;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
-import com.nisovin.magicspells.util.config.ConfigDataUtil;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.util.projectile.ProjectileManager;
 import com.nisovin.magicspells.util.projectile.ProjectileManagers;
@@ -63,6 +62,7 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 	private final ConfigData<Component> projectileName;
 
 	private final ConfigData<Color> arrowColor;
+	private final ConfigData<Color> potionColor;
 
 	private final String hitSpellName;
 	private final String airSpellName;
@@ -86,7 +86,8 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 
 		projectileType = getConfigDataString("projectile-type", "arrow");
 
-		arrowColor = ConfigDataUtil.getColor(config.getMainConfig(), internalKey + "arrow-color", null);
+		arrowColor = getConfigDataColor("arrow-color", null);
+		potionColor = getConfigDataColor("potion-color", null);
 
 		relativeOffset = getConfigDataVector("relative-offset", new Vector(0.5, 0.5, 0));
 		targetRelativeOffset = getConfigDataVector("target-relative-offset", new Vector(0, 0.5, 0));
@@ -279,7 +280,7 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 				if (proj instanceof WitherSkull witherSkull) witherSkull.setCharged(charged.get(finalData));
 				if (proj instanceof Explosive explosive) explosive.setIsIncendiary(incendiary.get(finalData));
 				if (proj instanceof ProjectileManagerThrownPotion potion) {
-					((ThrownPotion) proj).setItem(potion.getItem());
+					((ThrownPotion) proj).setItem(potion.getPotion(potionColor.get(finalData)));
 				}
 			});
 

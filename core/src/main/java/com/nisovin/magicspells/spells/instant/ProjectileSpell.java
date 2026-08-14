@@ -21,7 +21,6 @@ import com.nisovin.magicspells.spells.InstantSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
-import com.nisovin.magicspells.util.config.ConfigDataUtil;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.util.trackers.ProjectileTracker;
@@ -70,6 +69,7 @@ public class ProjectileSpell extends InstantSpell implements TargetedLocationSpe
 	private final ConfigData<Component> projectileName;
 
 	private final ConfigData<Color> arrowColor;
+	private final ConfigData<Color> potionColor;
 
 	private Subspell hitSpell;
 	private Subspell tickSpell;
@@ -122,7 +122,8 @@ public class ProjectileSpell extends InstantSpell implements TargetedLocationSpe
 
 		projectileName = getConfigDataComponent("projectile-name", null);
 
-		arrowColor = ConfigDataUtil.getColor(config.getMainConfig(), internalKey + "arrow-color", null);
+		arrowColor = getConfigDataColor("arrow-color", null);
+		potionColor = getConfigDataColor("potion-color", null);
 
 		projectileModifiersStrings = getConfigStringList("projectile-modifiers", null);
 	}
@@ -221,6 +222,7 @@ public class ProjectileSpell extends InstantSpell implements TargetedLocationSpe
 		tracker.setProjectileName(projectileName.get(data));
 
 		tracker.setArrowColor(arrowColor.get(data));
+		tracker.setPotionColor(potionColor.get(data));
 
 		tracker.setHitSpell(hitSpell);
 		tracker.setTickSpell(tickSpell);
