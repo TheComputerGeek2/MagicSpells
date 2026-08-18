@@ -1,6 +1,7 @@
 package com.nisovin.magicspells.spells.targeted;
 
 import java.io.File;
+import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
@@ -11,7 +12,9 @@ import org.bukkit.World;
 import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.util.Vector;
 import org.bukkit.block.BlockType;
+import org.bukkit.configuration.ConfigurationSection;
 
 import io.papermc.paper.registry.RegistryKey;
 
@@ -24,6 +27,7 @@ import com.sk89q.worldedit.session.ClipboardHolder;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.function.operation.Operation;
 import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
@@ -32,6 +36,7 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
+import com.nisovin.magicspells.util.config.ConfigDataUtil;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.events.SpellTargetLocationEvent;
 
@@ -53,6 +58,8 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 
 	private final Predicate<BlockType> preventOverwrite;
 
+	private final List<Transformation> transformations = new ArrayList<>();
+
 	public PasteSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
@@ -73,6 +80,45 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 		if (config.isBoolean(internalKey + "prevent-overwrite")) {
 			preventOverwrite = getConfigBoolean("prevent-overwrite", false) ? _ -> true : null;
 		} else preventOverwrite = getConfigRegistryEntryPredicate("prevent-overwrite", RegistryKey.BLOCK);
+
+		List<?> transformList = getConfigList("transformations", new ArrayList<>());
+		for (int i = 0; i < transformList.size(); i++) {
+			if (!(transformList.get(i) instanceof Map<?, ?> map)) continue;
+			ConfigurationSection section = ConfigReaderUtil.mapToSection(map);
+
+			String type = section.getString("type", "");
+			switch (type.toLowerCase()) {
+				case "translate" -> {
+					ConfigData<Vector> translationData = ConfigDataUtil.getVector(section, "translation", null);
+
+					transformations.add((data, transform) -> {
+						Vector translation = translationData.get(data);
+						if (translation == null) return transform;
+
+						return transform.translate(translation.getX(), translation.getY(), translation.getZ());
+					});
+				}
+				case "rotate" -> {
+					ConfigData<String> axisData = ConfigDataUtil.getString(section, "axis", null);
+					ConfigData<Double> angleData = ConfigDataUtil.getDouble(section, "angle", _ -> null);
+
+					transformations.add((data, transform) -> {
+						String axis = axisData.get(data);
+						Double angle = angleData.get(data);
+						if (axis == null || angle == null) return transform;
+
+						return switch (axis.toLowerCase()) {
+							case "x" -> transform.rotateX(angle);
+							case "y" -> transform.rotateY(angle);
+							case "z" -> transform.rotateZ(angle);
+							default -> transform;
+						};
+					});
+				}
+				case "inverse" -> transformations.add((_, transform) -> transform.inverse());
+				default -> MagicSpells.error("PasteSpell '" + internalName + "' has an invalid 'type' in 'transformations[" + i + "]': '" + type + "'");
+			}
+		}
 	}
 
 	@Override
@@ -126,6 +172,21 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 		World world = target.getWorld();
 		BlockVector3 pasteTo = BukkitAdapter.asBlockVector(target);
 
+		Clipboard clipboard = this.clipboard;
+		if (!transformations.isEmpty()) {
+			AffineTransform transform = new AffineTransform();
+			for (Transformation transformation : transformations) {
+				transform = transformation.transform(data, transform);
+			}
+
+			try {
+				clipboard = clipboard.transform(transform);
+			} catch (WorldEditException e) {
+				e.printStackTrace();
+				return noTarget(data);
+			}
+		}
+
 		boolean ignoreAir = !pasteAir.get(data);
 		boolean ignoreStructureVoid = !pasteStructureVoid.get(data);
 
@@ -173,6 +234,12 @@ public class PasteSpell extends TargetedSpell implements TargetedLocationSpell {
 
 		playSpellEffects(data);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+	}
+
+	private interface Transformation {
+
+		AffineTransform transform(SpellData data, AffineTransform transform);
+
 	}
 
 }
