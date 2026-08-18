@@ -7,11 +7,14 @@ import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.inventory.ItemStack;
 
+import org.jetbrains.annotations.Nullable;
+
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 
-import io.papermc.paper.advancement.AdvancementDisplay.Frame;
-
 import com.nisovin.magicspells.util.glow.GlowManager;
+
+import io.papermc.paper.advancement.AdvancementDisplay.Frame;
 
 public class VolatileCodeDisabled extends VolatileCodeHandle {
 
@@ -79,6 +82,16 @@ public class VolatileCodeDisabled extends VolatileCodeHandle {
 	@Override
 	public long countEntitySchedulerTasks() {
 		return -1;
+	}
+
+	@Override
+	public @Nullable String getCommandStorageString(Key containerId, String tagKey) {
+		return null;
+	}
+
+	@Override
+	public @Nullable Double getCommandStorageDouble(Key containerId, String tagKey) {
+		return null;
 	}
 
 }

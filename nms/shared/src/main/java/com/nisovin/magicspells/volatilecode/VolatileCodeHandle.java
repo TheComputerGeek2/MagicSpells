@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 
 import com.nisovin.magicspells.util.glow.GlowManager;
@@ -58,5 +59,11 @@ public abstract class VolatileCodeHandle {
 	) {
 		return null;
 	}
+
+	@Nullable
+	public abstract String getCommandStorageString(Key containerId, String tagKey);
+
+	@Nullable
+	public abstract Double getCommandStorageDouble(Key containerId, String tagKey);
 
 }
