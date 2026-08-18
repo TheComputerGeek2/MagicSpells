@@ -3,7 +3,6 @@ package com.nisovin.magicspells.spells.instant;
 import org.bukkit.World;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Vehicle;
 
 import com.nisovin.magicspells.util.*;
@@ -84,8 +83,8 @@ public class GateSpell extends InstantSpell {
 		}
 		MagicSpells.debug(3, "Gate location: " + location);
 
-		Block b = location.getBlock();
-		if (!b.isPassable() || !b.getRelative(0, 1, 0).isPassable()) {
+		location = BlockUtils.adjustToSafeLocation(data.caster(), location);
+		if (location == null) {
 			MagicSpells.error("GateSpell '" + internalName + "' has landing spot blocked!");
 			sendMessage(strGateFailed, data.caster(), data);
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);

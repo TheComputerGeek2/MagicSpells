@@ -353,14 +353,9 @@ public class PortalSpell extends InstantSpell {
 
 		private boolean checkTeleport(Player target, Portal portal) {
 			SpellTargetEvent event = new SpellTargetEvent(PortalSpell.this, data, target);
-			if (!event.callEvent()) return false;
+			if (!event.callEvent() || !(event.getTarget() instanceof Player player)) return false;
 
-			target = (Player) event.getTarget();
-
-			if (!checkCooldown(target)) return false;
-			if (!checkCost(target, portal)) return false;
-
-			return true;
+			return checkCooldown(player) && checkCost(player, portal);
 		}
 
 		private boolean checkCooldown(Player target) {

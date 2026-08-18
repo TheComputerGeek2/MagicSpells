@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.bukkit.Material;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.block.data.BlockData;
@@ -29,6 +30,8 @@ public class EntombSpell extends TargetedSpell implements TargetedEntitySpell {
 	private final ConfigData<Integer> duration;
 
 	private final boolean allowBreaking;
+
+	private final ConfigData<Boolean> centerTarget;
 	private final ConfigData<Boolean> closeTopAndBottom;
 	private final ConfigData<Boolean> powerAffectsDuration;
 
@@ -42,6 +45,8 @@ public class EntombSpell extends TargetedSpell implements TargetedEntitySpell {
 		duration = getConfigDataInt("duration", 20);
 
 		allowBreaking = getConfigBoolean("allow-breaking", true);
+
+		centerTarget = getConfigDataBoolean("center-target", true);
 		closeTopAndBottom = getConfigDataBoolean("close-top-and-bottom", true);
 		powerAffectsDuration = getConfigDataBoolean("power-affects-duration", true);
 
@@ -73,27 +78,44 @@ public class EntombSpell extends TargetedSpell implements TargetedEntitySpell {
 		List<Block> tombBlocks = new ArrayList<>();
 
 		LivingEntity target = data.target();
-		Block feet = target.getLocation().getBlock();
-		float pitch = target.getLocation().getPitch();
-		float yaw = target.getLocation().getYaw();
 
-		Location tpLoc = feet.getLocation().add(0.5, 0, 0.5);
-		tpLoc.setYaw(yaw);
-		tpLoc.setPitch(pitch);
-		target.teleportAsync(tpLoc);
+		if (centerTarget.get(data)) {
+			Location location = target.getLocation();
+			location.setX(location.getBlockX() + 0.5);
+			location.setZ(location.getBlockZ() + 0.5);
+			target.teleport(location);
+		}
 
-		tempBlocks.add(feet.getRelative(1, 0, 0));
-		tempBlocks.add(feet.getRelative(1, 1, 0));
-		tempBlocks.add(feet.getRelative(-1, 0, 0));
-		tempBlocks.add(feet.getRelative(-1, 1, 0));
-		tempBlocks.add(feet.getRelative(0, 0, 1));
-		tempBlocks.add(feet.getRelative(0, 1, 1));
-		tempBlocks.add(feet.getRelative(0, 0, -1));
-		tempBlocks.add(feet.getRelative(0, 1, -1));
+		BoundingBox box = target.getBoundingBox();
+		BoundingBox exp = box.clone().expand(1 - 1e-7);
 
-		if (closeTopAndBottom.get(data)) {
-			tempBlocks.add(feet.getRelative(0, -1, 0));
-			tempBlocks.add(feet.getRelative(0, 2, 0));
+		int minX = (int) Math.floor(exp.getMinX());
+		int minY = (int) Math.floor(exp.getMinY());
+		int minZ = (int) Math.floor(exp.getMinZ());
+
+		int maxX = (int) Math.ceil(exp.getMaxX());
+		int maxY = (int) Math.ceil(exp.getMaxY());
+		int maxZ = (int) Math.ceil(exp.getMaxZ());
+
+		boolean closeTopAndBottom = this.closeTopAndBottom.get(data);
+		for (int x = minX; x < maxX; x++) {
+			for (int y = minY; y < maxY; y++) {
+				for (int z = minZ; z < maxZ; z++) {
+					Block block = target.getWorld().getBlockAt(x, y, z);
+					if (box.overlaps(BoundingBox.of(block))) continue;
+
+					int boundary = 0;
+					if (x == minX || x == maxX - 1) boundary++;
+					if (y == minY || y == maxY - 1) {
+						if (!closeTopAndBottom) continue;
+						boundary++;
+					}
+					if (z == minZ || z == maxZ - 1) boundary++;
+					if (boundary > 1) continue;
+
+					tempBlocks.add(block);
+				}
+			}
 		}
 
 		BlockData blockType = this.blockType.get(data);

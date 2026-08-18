@@ -20,7 +20,6 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Spellbook;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.CommandSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellLearnEvent;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.commands.parsers.SpellParser;
@@ -29,7 +28,7 @@ import com.nisovin.magicspells.events.SpellLearnEvent.LearnSource;
 
 public class TeachSpell extends CommandSpell implements BlockingSuggestionProvider.Strings<CommandSourceStack> {
 
-	private ConfigData<Boolean> requireKnownSpell;
+	private final ConfigData<Boolean> requireKnownSpell;
 
 	private String strUsage;
 	private String strNoSpell;
@@ -99,8 +98,8 @@ public class TeachSpell extends CommandSpell implements BlockingSuggestionProvid
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
 
-		boolean cancelled = callEvent(spell, target, player);
-		if (cancelled) {
+		SpellLearnEvent event = new SpellLearnEvent(spell, target, LearnSource.TEACH, player);
+		if (!event.callEvent()) {
 			sendMessage(strCantLearn, player, data);
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
@@ -140,8 +139,8 @@ public class TeachSpell extends CommandSpell implements BlockingSuggestionProvid
 			sender.sendMessage(strAlreadyKnown);
 			return true;
 		}
-		boolean cancelled = callEvent(spell, players.get(0), sender);
-		if (cancelled) {
+		SpellLearnEvent event = new SpellLearnEvent(spell, players.get(0), LearnSource.TEACH, sender);
+		if (!event.callEvent()) {
 			sender.sendMessage(strCantLearn);
 			return true;
 		}
@@ -191,12 +190,6 @@ public class TeachSpell extends CommandSpell implements BlockingSuggestionProvid
 		}
 
 		return TxtUtil.tabCompletePlayerName(executor, true);
-	}
-
-	private boolean callEvent(Spell spell, Player learner, Object teacher) {
-		SpellLearnEvent event = new SpellLearnEvent(spell, learner, LearnSource.TEACH, teacher);
-		EventUtil.call(event);
-		return event.isCancelled();
 	}
 
 	public String getStrUsage() {

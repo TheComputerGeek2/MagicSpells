@@ -171,7 +171,7 @@ public class WallSpell extends TargetedSpell implements TargetedLocationSpell {
 			MagicSpellsBlockPlaceEvent event = new MagicSpellsBlockPlaceEvent(target, eventBlockState, target, caster.getInventory().getItemInMainHand(), caster, true);
 			if (!event.callEvent()) return noTarget(data);
 
-			BlockUtils.setTypeAndData(target, Material.AIR, Material.AIR.createBlockData(), false);
+			target.setType(Material.AIR, false);
 		}
 
 		int yOffset = this.yOffset.get(data);

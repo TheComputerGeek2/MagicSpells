@@ -12,7 +12,6 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import com.nisovin.magicspells.util.Name;
-import com.nisovin.magicspells.util.BlockUtils;
 import com.nisovin.magicspells.util.LocationUtil;
 import com.nisovin.magicspells.castmodifiers.Condition;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
@@ -57,9 +56,9 @@ public class ChestContainsCondition extends Condition {
 
 	private boolean checkChest() {
 		Block block = location.getBlock();
-		if (!BlockUtils.isChest(block)) return false;
+		if (!(block.getState() instanceof Chest chest)) return false;
 
-		for (ItemStack item : ((Chest) block.getState()).getInventory().getContents()) {
+		for (ItemStack item : chest.getInventory().getContents()) {
 			MagicItemData data = MagicItems.getMagicItemDataFromItemStack(item);
 			if (data == null) continue;
 			if (itemData.matches(data)) return true;

@@ -12,7 +12,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.MagicSpellsBlockPlaceEvent;
 
 public class TemporaryBlockSet implements Runnable {
@@ -64,8 +63,7 @@ public class TemporaryBlockSet implements Runnable {
 		block.setType(replaceMaterials.get(r), false);
 		MagicSpellsBlockPlaceEvent event = null;
 		if (livingEntity instanceof Player) event = new MagicSpellsBlockPlaceEvent(block, state, block, livingEntity.getEquipment().getItemInMainHand(), (Player) livingEntity, true);
-		if (event != null) EventUtil.call(event);
-		if (event != null && event.isCancelled()) BlockUtils.setTypeAndData(block, original, original.createBlockData(), false);
+		if (event != null && !event.callEvent()) block.setType(original, false);
 		else blocks.add(block);
 	}
 

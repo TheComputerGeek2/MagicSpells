@@ -16,7 +16,6 @@ import org.bukkit.block.data.BlockData;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
@@ -195,8 +194,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 							Block against = target.clone().add(target.getDirection()).getBlock();
 							if (block.equals(against)) against = block.getRelative(BlockFace.DOWN);
 							MagicSpellsBlockPlaceEvent event = new MagicSpellsBlockPlaceEvent(block, previousState, against, player.getInventory().getItemInMainHand(), player, true);
-							EventUtil.call(event);
-							if (event.isCancelled()) {
+							if (!event.callEvent()) {
 								previousState.update(true);
 								continue;
 							}
@@ -216,8 +214,7 @@ public class ReplaceSpell extends TargetedSpell implements TargetedLocationSpell
 								if (previous == null) return;
 								if (checkPlugins && data.caster() instanceof Player player) {
 									MagicSpellsBlockBreakEvent event = new MagicSpellsBlockBreakEvent(finalBlock, player);
-									EventUtil.call(event);
-									if (event.isCancelled()) return;
+									if (!event.callEvent()) return;
 								}
 								finalBlock.setBlockData(previous, applyPhysics);
 								playSpellEffects(EffectPosition.BLOCK_DESTRUCTION, finalBlock.getLocation(), subData);
