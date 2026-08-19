@@ -148,7 +148,12 @@ public class SpellUtil {
 	 * @param manaCost the mana to remove
 	 */
 	public static void removeReagents(LivingEntity livingEntity, SpellReagents.ReagentItem[] reagents, double healthCost, int manaCost, int hungerCost, int experienceCost, int levelsCost, int durabilityCost, float moneyCost, Map<String, Double> variables) {
-		if (Perm.NO_REAGENTS.has(livingEntity)) return;
+		boolean hasCosts = (reagents != null && reagents.length > 0)
+			|| healthCost != 0 || manaCost != 0 || hungerCost != 0
+			|| experienceCost != 0 || levelsCost != 0 || durabilityCost != 0
+			|| moneyCost != 0 || (variables != null && !variables.isEmpty());
+
+		if (!hasCosts || Perm.NO_REAGENTS.has(livingEntity)) return;
 
 		if (reagents != null) {
 			for (SpellReagents.ReagentItem item : reagents) {
