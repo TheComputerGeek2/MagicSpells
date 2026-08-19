@@ -63,9 +63,10 @@ public class SpellUtil {
 	 * @return true if the player has all the reagents, false otherwise
 	 */
 	public static boolean hasReagents(LivingEntity livingEntity, SpellReagents.ReagentItem[] reagents, double healthCost, int manaCost, int hungerCost, int experienceCost, int levelsCost, int durabilityCost, float moneyCost, Map<String, Double> variables) {
-		// Is the livingEntity exempt from reagent costs?
-		if (Perm.NO_REAGENTS.has(livingEntity)) return true;
+		return meetsCosts(livingEntity, reagents, healthCost, manaCost, hungerCost, experienceCost, levelsCost, durabilityCost, moneyCost, variables) || Perm.NO_REAGENTS.has(livingEntity);
+	}
 
+	private static boolean meetsCosts(LivingEntity livingEntity, SpellReagents.ReagentItem[] reagents, double healthCost, int manaCost, int hungerCost, int experienceCost, int levelsCost, int durabilityCost, float moneyCost, Map<String, Double> variables) {
 		// player reagents
 		if (livingEntity instanceof Player player) {
 			// Mana costs
