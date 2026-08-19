@@ -1078,14 +1078,17 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	}
 
 	protected SpellCastState getCastState(LivingEntity caster) {
-		if (caster instanceof Player player && !MagicSpells.getSpellbook(player).canCast(this))
+		if (caster instanceof Player player && !MagicSpells.getSpellbook(player).canCast(this)) {
 			return SpellCastState.CANT_CAST;
-		if (worldRestrictions != null && !worldRestrictions.contains(caster.getWorld().getName()))
+		}
+		if (worldRestrictions != null && !worldRestrictions.contains(caster.getWorld().getName())) {
 			return SpellCastState.WRONG_WORLD;
-		if (MagicSpells.getNoMagicZoneManager() != null && MagicSpells.getNoMagicZoneManager().willFizzle(caster, this))
-			return SpellCastState.NO_MAGIC_ZONE;
+		}
 		if (onCooldown(caster)) return SpellCastState.ON_COOLDOWN;
 		if (!hasReagents(caster)) return SpellCastState.MISSING_REAGENTS;
+		if (MagicSpells.getNoMagicZoneManager() != null && MagicSpells.getNoMagicZoneManager().willFizzle(caster, this)) {
+			return SpellCastState.NO_MAGIC_ZONE;
+		}
 		return SpellCastState.NORMAL;
 	}
 
