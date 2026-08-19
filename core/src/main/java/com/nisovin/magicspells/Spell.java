@@ -1145,7 +1145,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		}
 
 		if (castEvent.hasSpellCastStateChanged()) debug(2, "    Spell cast state changed: " + state);
-		if (Perm.NO_CAST_TIME.has(data.caster())) castEvent.setCastTime(0);
+		if (castEvent.getCastTime() > 0 && Perm.NO_CAST_TIME.has(data.caster())) castEvent.setCastTime(0);
 
 		return castEvent;
 	}
