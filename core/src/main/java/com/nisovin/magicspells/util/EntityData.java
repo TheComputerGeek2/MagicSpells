@@ -65,6 +65,7 @@ public class EntityData {
 
 	private final Multimap<EntityType, Transformer<?>> options = MultimapBuilder.enumKeys(EntityType.class).arrayListValues().build();
 	private final List<DelayedEntityData> delayedEntityData = new ArrayList<>();
+	private final List<EntityData> passengers = new ArrayList<>();
 
 	private ConfigData<EntityType> entityType;
 
@@ -797,14 +798,7 @@ public class EntityData {
 		// Passengers
 		for (Object object : config.getList("passengers", new ArrayList<>())) {
 			if (!(object instanceof Map<?, ?> map)) continue;
-			EntityData passengerData = new EntityData(ConfigReaderUtil.mapToSection(map));
-
-			transformers.put(Entity.class, (Entity entity, SpellData data) -> {
-				passengerData.spawn(entity.getLocation(), data, passenger -> {
-					entity.addPassenger(passenger);
-					passenger.getPersistentDataContainer().set(MS_PASSENGER, PersistentDataType.BOOLEAN, true);
-				});
-			});
+			passengers.add(new EntityData(ConfigReaderUtil.mapToSection(map)));
 		}
 
 		// Mob Goals
@@ -956,6 +950,13 @@ public class EntityData {
 		spawnLocation.setPitch(pitch.get(data).apply(spawnLocation.getPitch()));
 
 		return spawnLocation.getWorld().spawn(spawnLocation, entityClass, entity -> {
+			for (EntityData passengerData : passengers) {
+				passengerData.spawn(entity.getLocation(), data, passenger -> {
+					entity.addPassenger(passenger);
+					passenger.getPersistentDataContainer().set(MS_PASSENGER, PersistentDataType.BOOLEAN, true);
+				});
+			}
+
 			if (preConsumer != null) preConsumer.accept(entity);
 
 			apply(entity, data);
