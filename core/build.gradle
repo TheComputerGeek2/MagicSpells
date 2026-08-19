@@ -6,7 +6,7 @@ plugins {
 dependencies {
     implementation("org.apache.commons:commons-math4-core:4.0-beta1")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
-    implementation("com.github.Chronoken:EffectLib:1da888c")
+    implementation("com.github.Chronoken:EffectLib:071cc3c")
     implementation("org.incendo:cloud-paper:2.0.0-beta.16")
     implementation("org.incendo:cloud-minecraft-extras:2.0.0-beta.16")
     implementation("org.incendo:cloud-processors-requirements:1.0.0-rc.1")

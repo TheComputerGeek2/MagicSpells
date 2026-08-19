@@ -13,7 +13,11 @@ import java.util.stream.Collectors;
 import java.util.function.Predicate;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.annotation.Annotation;
 
 import java.net.URL;
@@ -1955,20 +1959,30 @@ public class MagicSpells extends JavaPlugin {
 		}
 
 		for (final Method method : methods) {
-			final EventHandler eh = method.getAnnotation(EventHandler.class);
-			if (eh == null) continue;
-			EventPriority priority = eh.priority();
+			final EventHandler handler = method.getAnnotation(EventHandler.class);
+			if (handler == null) continue;
+			EventPriority priority = handler.priority();
 
 			if (hasAnnotation(method, OverridePriority.class)) priority = customPriority;
 
-			final Class<?> checkClass = method.getParameterTypes()[0];
-			if (!Event.class.isAssignableFrom(checkClass) || method.getParameterTypes().length != 1) {
+			final Class<?>[] paramTypes = method.getParameterTypes();
+			if (paramTypes.length != 1 || !Event.class.isAssignableFrom(paramTypes[0])) {
 				plugin.getLogger().severe("Wrong method arguments used for event type registered");
 				continue;
 			}
 
-			final Class<? extends Event> eventClass = checkClass.asSubclass(Event.class);
+			final Class<? extends Event> eventClass = paramTypes[0].asSubclass(Event.class);
 			method.setAccessible(true);
+			final MethodHandle methodHandle;
+			try {
+				MethodHandle handle = MethodHandles.lookup().unreflect(method);
+				if (!Modifier.isStatic(method.getModifiers())) handle = handle.bindTo(listener);
+				methodHandle = handle.asType(MethodType.methodType(void.class, Event.class));
+			} catch (IllegalAccessException e) {
+				plugin.getLogger().severe("Failed to create method handle for " + method.getName() + ": " + e.getMessage());
+				continue;
+			}
+
 			EventExecutor executor = new EventExecutor() {
 				final String eventKey = plugin.enableProfiling ? "Event:" + listener.getClass().getName().replace("com.nisovin.magicspells.", "") + '.' + method.getName() + '(' + eventClass.getSimpleName() + ')' : null;
 
@@ -1977,23 +1991,24 @@ public class MagicSpells extends JavaPlugin {
 					try {
 						if (!eventClass.isAssignableFrom(event.getClass())) return;
 						long start = System.nanoTime();
-						method.invoke(listener, event);
+						methodHandle.invokeExact((Event) event);
 						if (plugin.enableProfiling) {
 							Long total = plugin.profilingTotalTime.get(eventKey);
-							if (total == null) total = (long) 0;
+							if (total == null) total = 0L;
 							total += System.nanoTime() - start;
 							plugin.profilingTotalTime.put(eventKey, total);
 							Integer runs = plugin.profilingRuns.get(eventKey);
 							if (runs == null) runs = 0;
-							runs += 1;
+							runs++;
 							plugin.profilingRuns.put(eventKey, runs);
 						}
-					} catch (Exception ex) {
-						handleException(ex);
+					} catch (Throwable ex) {
+						if (ex instanceof Error e) throw e;
+						handleException(ex instanceof Exception exception ? exception : new RuntimeException(ex));
 					}
 				}
 			};
-			Bukkit.getPluginManager().registerEvent(eventClass, listener, priority, executor, plugin, eh.ignoreCancelled());
+			Bukkit.getPluginManager().registerEvent(eventClass, listener, priority, executor, plugin, handler.ignoreCancelled());
 		}
 	}
 

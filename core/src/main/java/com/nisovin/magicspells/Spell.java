@@ -1078,14 +1078,17 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	}
 
 	protected SpellCastState getCastState(LivingEntity caster) {
-		if (caster instanceof Player player && !MagicSpells.getSpellbook(player).canCast(this))
+		if (caster instanceof Player player && !MagicSpells.getSpellbook(player).canCast(this)) {
 			return SpellCastState.CANT_CAST;
-		if (worldRestrictions != null && !worldRestrictions.contains(caster.getWorld().getName()))
+		}
+		if (worldRestrictions != null && !worldRestrictions.contains(caster.getWorld().getName())) {
 			return SpellCastState.WRONG_WORLD;
-		if (MagicSpells.getNoMagicZoneManager() != null && MagicSpells.getNoMagicZoneManager().willFizzle(caster, this))
-			return SpellCastState.NO_MAGIC_ZONE;
+		}
 		if (onCooldown(caster)) return SpellCastState.ON_COOLDOWN;
 		if (!hasReagents(caster)) return SpellCastState.MISSING_REAGENTS;
+		if (MagicSpells.getNoMagicZoneManager() != null && MagicSpells.getNoMagicZoneManager().willFizzle(caster, this)) {
+			return SpellCastState.NO_MAGIC_ZONE;
+		}
 		return SpellCastState.NORMAL;
 	}
 
@@ -1145,7 +1148,7 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		}
 
 		if (castEvent.hasSpellCastStateChanged()) debug(2, "    Spell cast state changed: " + state);
-		if (Perm.NO_CAST_TIME.has(data.caster())) castEvent.setCastTime(0);
+		if (castEvent.getCastTime() > 0 && Perm.NO_CAST_TIME.has(data.caster())) castEvent.setCastTime(0);
 
 		return castEvent;
 	}
@@ -1331,15 +1334,24 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 	 * @return whether the spell is on cooldown
 	 */
 	public boolean onCooldown(LivingEntity livingEntity) {
-		if (Perm.NO_COOLDOWN.has(livingEntity)) return false;
+		UUID uuid = livingEntity.getUniqueId();
+		long timeMillis = System.currentTimeMillis();
 
-		ChargeState state = chargeStates.get(livingEntity.getUniqueId());
-		if (state != null && state.isDepleted()) return true;
+		ChargeState state = chargeStates.get(uuid);
+		boolean depleted = state != null && state.isDepleted();
 
-		if (serverCooldown > 0 && nextCastServer > System.currentTimeMillis()) return true;
+		if (!depleted && serverCooldown > 0 && nextCastServer > timeMillis) {
+			depleted = true;
+		}
 
-		Long next = nextCast.get(livingEntity.getUniqueId());
-		return next != null && next > System.currentTimeMillis();
+		if (!depleted) {
+			Long next = nextCast.get(uuid);
+			if (next != null && next > timeMillis) {
+				depleted = true;
+			}
+		}
+
+		return depleted && !Perm.NO_COOLDOWN.has(livingEntity);
 	}
 
 	/**
