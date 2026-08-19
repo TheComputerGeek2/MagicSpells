@@ -14,7 +14,6 @@ import org.bukkit.util.EulerAngle;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -28,6 +27,7 @@ import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
+import com.nisovin.magicspells.events.SpellPreImpactEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 import com.nisovin.magicspells.spells.TargetedEntityFromLocationSpell;
@@ -298,7 +298,7 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 				stand.getPersistentDataContainer().set(MS_BLOCK_BEAM, PersistentDataType.BOOLEAN, true);
 
 				if (hpFix) {
-					stand.getAttribute(Attribute.MAX_HEALTH).setBaseValue(health);
+					Util.setMaxHealth(stand, health);
 					stand.setHealth(health);
 				}
 
@@ -310,7 +310,7 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 			//check entities in the beam range
 			for (LivingEntity e : loc.getNearbyLivingEntities(hitRadius, verticalHitRadius)) {
 				if (!e.isValid() || immune.contains(e)) continue;
-				if (!validTargetList.canTarget(data.caster(), e)) continue;
+				if (!validTargetList.canTarget(locData.caster(), e)) continue;
 
 				SpellTargetEvent event = new SpellTargetEvent(this, locData, e);
 				if (!event.callEvent()) continue;
@@ -318,10 +318,21 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 				SpellData subData = event.getSpellData();
 				LivingEntity subTarget = event.getTarget();
 
-				if (hitSpell != null) hitSpell.subcast(subData.noLocation());
+				if (hitSpell != null) {
+					SpellPreImpactEvent preImpact = new SpellPreImpactEvent(hitSpell.getSpell(), BlockBeamSpell.this, subData);
+					if (preImpact.callEvent()) {
+						subData = preImpact.getSpellData();
+
+						if (preImpact.getRedirected()) {
+							step.multiply(-1);
+							locData = subData.caster(e);
+							continue mainLoop;
+						} else hitSpell.subcast(subData.noLocation());
+					}
+				}
 
 				playSpellEffects(EffectPosition.TARGET, subTarget, subData);
-				playSpellEffectsTrail(data.caster().getLocation(), subTarget.getLocation(), subData);
+				playSpellEffectsTrail(subData.caster().getLocation(), subTarget.getLocation(), subData);
 				immune.add(e);
 
 				if (stopOnHitEntity) break mainLoop;
@@ -330,7 +341,7 @@ public class BlockBeamSpell extends InstantSpell implements TargetedLocationSpel
 
 		//end of the beam
 		if (!zoneManager.willFizzle(loc, this) && d >= maxDistance) {
-			playSpellEffects(EffectPosition.DELAYED, loc, data.location(loc));
+			playSpellEffects(EffectPosition.DELAYED, loc, locData.location(loc));
 			if (endSpell != null) endSpell.subcast(locData);
 		}
 

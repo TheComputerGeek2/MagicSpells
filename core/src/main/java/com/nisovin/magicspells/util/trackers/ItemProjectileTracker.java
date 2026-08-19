@@ -14,10 +14,10 @@ import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.ValidTargetList;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.events.TrackerMoveEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
+import com.nisovin.magicspells.events.SpellPreImpactEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.spells.instant.ItemProjectileSpell;
 
@@ -139,11 +139,8 @@ public class ItemProjectileTracker implements Runnable, Tracker {
 		currentLocation.setDirection(entity.getVelocity());
 
 		if (callEvents) {
-			TrackerMoveEvent trackerMoveEvent = new TrackerMoveEvent(this, previousLocation, currentLocation);
-			EventUtil.call(trackerMoveEvent);
-			if (stopped) {
-				return;
-			}
+			new TrackerMoveEvent(this, previousLocation, currentLocation).callEvent();
+			if (stopped) return;
 		}
 
 		data = data.location(currentLocation);
@@ -163,11 +160,23 @@ public class ItemProjectileTracker implements Runnable, Tracker {
 
 			SpellTargetEvent event = new SpellTargetEvent(spell, data, target);
 			if (!event.callEvent()) continue;
-
 			SpellData subData = event.getSpellData();
 
 			if (spell != null) spell.playEffects(EffectPosition.TARGET, subData.target(), subData);
-			if (spellOnHitEntity != null) spellOnHitEntity.subcast(subData.noLocation());
+
+			if (spellOnHitEntity != null) {
+				SpellPreImpactEvent preImpact = new SpellPreImpactEvent(spellOnHitEntity.getSpell(), spell, subData);
+				if (preImpact.callEvent()) {
+					subData = preImpact.getSpellData();
+
+					if (preImpact.getRedirected()) {
+						setCaster(subData.target());
+						entity.setVelocity(entity.getVelocity().multiply(-1));
+						return;
+					} else spellOnHitEntity.subcast(subData.noLocation());
+				}
+			}
+
 			if (stopOnHitEntity) stop();
 			return;
 		}

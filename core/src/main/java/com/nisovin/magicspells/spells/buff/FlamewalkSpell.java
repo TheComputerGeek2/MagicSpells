@@ -150,6 +150,7 @@ public class FlamewalkSpell extends BuffSpell {
 					if (!targetEvent.callEvent()) continue;
 
 					SpellData subData = targetEvent.getSpellData();
+					target = subData.target();
 
 					int fireTicks;
 					if (!data.constantFireTicks) {
@@ -161,7 +162,7 @@ public class FlamewalkSpell extends BuffSpell {
 					addUseAndChargeCost(caster);
 
 					playSpellEffects(EffectPosition.TARGET, target, subData);
-					playSpellEffectsTrail(caster.getLocation(), entity.getLocation(), subData);
+					playSpellEffectsTrail(subData.caster().getLocation(), target.getLocation(), subData);
 				}
 
 			}

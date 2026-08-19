@@ -24,12 +24,12 @@ import de.slikey.effectlib.effect.ModifiedEffect;
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.MagicSpells;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.events.TrackerMoveEvent;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
+import com.nisovin.magicspells.events.SpellPreImpactEvent;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.events.ParticleProjectileHitEvent;
 import com.nisovin.magicspells.spelleffects.util.EffectlibSpellEffect;
@@ -309,11 +309,8 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 		previousLocation = Util.makeFinite(previousLocation);
 
 		if (callEvents) {
-			TrackerMoveEvent trackerMoveEvent = new TrackerMoveEvent(this, previousLocation, currentLocation);
-			EventUtil.call(trackerMoveEvent);
-			if (stopped) {
-				return;
-			}
+			new TrackerMoveEvent(this, previousLocation, currentLocation).callEvent();
+			if (stopped) return;
 		}
 
 		if (hugSurface) {
@@ -418,9 +415,8 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 		if (stopped) return;
 
 		if (spell == null || interactions == null || interactions.isEmpty()) return;
-		Set<ParticleProjectileTracker> toRemove = new HashSet<>();
-		Set<ParticleProjectileTracker> trackers = new HashSet<>(ParticleProjectileSpell.getProjectileTrackers());
-		for (ParticleProjectileTracker collisionTracker : trackers) {
+
+		for (ParticleProjectileTracker collisionTracker : new HashSet<>(ParticleProjectileSpell.getProjectileTrackers())) {
 			boolean isCaster = Objects.equals(data.caster(), collisionTracker.data.caster());
 
 			for (Interaction interaction : interactions) {
@@ -436,21 +432,10 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 					interaction.collisionSpell().subcast(data.location(middleLoc));
 				}
 
-				if (interaction.stopCausing()) {
-					toRemove.add(collisionTracker);
-					collisionTracker.stop(false);
-				}
-
-				if (interaction.stopWith()) {
-					toRemove.add(this);
-					stop(false);
-				}
+				if (interaction.stopCausing()) collisionTracker.stop();
+				if (interaction.stopWith()) stop();
 			}
 		}
-
-		ParticleProjectileSpell.getProjectileTrackers().removeAll(toRemove);
-		toRemove.clear();
-		trackers.clear();
 	}
 
 	private boolean canInteractWith(ParticleProjectileTracker collisionTracker) {
@@ -558,8 +543,18 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 			target = targetEvent.getTarget();
 
 			if (casterSpell != null && target.equals(data.caster())) casterSpell.subcast(subData, false, false, HIT_ORDERING);
-			if (entitySpell != null && !target.equals(data.caster())) entitySpell.subcast(subData, false, false, HIT_ORDERING);
 			if (entityLocationSpell != null) entityLocationSpell.subcast(subData.noTarget());
+			if (entitySpell != null && !target.equals(data.caster())) {
+				SpellPreImpactEvent preImpact = new SpellPreImpactEvent(entitySpell.getSpell(), spell, subData);
+				if (preImpact.callEvent()) {
+					subData = preImpact.getSpellData();
+
+					if (preImpact.getRedirected()) {
+						setCaster(subData.target());
+						currentVelocity.multiply(-1);
+					} else entitySpell.subcast(subData, false, false, HIT_ORDERING);
+				}
+			}
 
 			if (spell != null) spell.playEffects(EffectPosition.TARGET, currentLoc, subData);
 

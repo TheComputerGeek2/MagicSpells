@@ -7,7 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Registry;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
 import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionType;
 import org.bukkit.event.EventHandler;
@@ -17,6 +16,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.event.EventPriority;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.event.entity.EntityRemoveEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
@@ -139,24 +139,35 @@ public class VolleySpell extends TargetedSpell implements TargetedLocationSpell,
 	private static class ArrowListener implements Listener {
 
 		@EventHandler
-		public void onArrowHit(EntityDamageByEntityEvent event) {
-			if (event.getCause() != DamageCause.PROJECTILE || !(event.getEntity() instanceof LivingEntity target)) return;
-
-			Entity damagerEntity = event.getDamager();
-			if (!(damagerEntity instanceof Arrow arrow)) return;
+		public void onArrowDamage(EntityDamageByEntityEvent event) {
+			if (event.getCause() != DamageCause.PROJECTILE) return;
+			if (!(event.getDamager() instanceof Arrow arrow)) return;
 
 			VolleyData data = ARROW_DATA.get(arrow.getUniqueId());
 			if (data == null) return;
 
 			event.setDamage(data.damage);
+		}
 
-			SpellPreImpactEvent preImpactEvent = new SpellPreImpactEvent(data.spell, data.spell, (LivingEntity) arrow.getShooter(), target, 1);
-			preImpactEvent.callEvent();
-			if (!preImpactEvent.getRedirected()) return;
+		@EventHandler
+		public void onArrowHit(ProjectileHitEvent event) {
+			if (!(event.getEntity() instanceof Arrow arrow)) return;
+			if (!(event.getHitEntity() instanceof LivingEntity target)) return;
+
+			VolleyData data = ARROW_DATA.get(arrow.getUniqueId());
+			if (data == null) return;
+
+			SpellPreImpactEvent preImpact = new SpellPreImpactEvent(data.spell, data.spell, new SpellData((LivingEntity) arrow.getShooter(), target));
+			if (!preImpact.callEvent()) {
+				event.setCancelled(true);
+				return;
+			}
+
+			if (!preImpact.getRedirected()) return;
 
 			event.setCancelled(true);
+			arrow.setShooter(target);
 			arrow.setVelocity(arrow.getVelocity().multiply(-1));
-			arrow.teleportAsync(arrow.getLocation().add(arrow.getVelocity()));
 		}
 
 		@EventHandler(priority = EventPriority.MONITOR)

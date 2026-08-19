@@ -1,5 +1,5 @@
 dependencies {
-    implementation project(":core")
+    compileOnly project(":core")
     //implementation ":MassiveCore"
     //implementation ":Factions"
 }

@@ -18,8 +18,8 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
-import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.util.config.ConfigData;
+import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
@@ -414,30 +414,35 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			counter++;
 
 			if (hitSpell == null) return;
-
 			hitBox.setCenter(currentLocation);
-			if (hitBox.contains(targetLoc)) {
-				SpellPreImpactEvent preImpact = new SpellPreImpactEvent(hitSpell.getSpell(), HomingMissileSpell.this, data.caster(), data.target(), data.power());
-				EventUtil.call(preImpact);
-				// Should we bounce the missile back?
-				if (!preImpact.getRedirected()) {
-					// Apparently didn't get redirected, carry out the plans
-					hitSpell.subcast(data.noLocation());
-					if (entityLocationSpell != null) entityLocationSpell.subcast(data.noTarget());
+			if (!hitBox.contains(targetLoc)) return;
 
-					playSpellEffects(EffectPosition.TARGET, data.target(), data);
-					if (stopOnHitTarget) stop();
-				} else {
-					if (!data.hasCaster()) {
-						stop();
-						return;
-					}
+			SpellTargetEvent targetEvent = new SpellTargetEvent(HomingMissileSpell.this, data);
+			if (!targetEvent.callEvent()) return;
+			SpellData subData = targetEvent.getSpellData();
 
-					currentVelocity.multiply(-1);
-					data = data.power(preImpact.getPower()).invert();
-				}
+			SpellPreImpactEvent preImpact = new SpellPreImpactEvent(hitSpell.getSpell(), HomingMissileSpell.this, subData);
+			if (!preImpact.callEvent()) {
+				if (stopOnHitTarget) stop();
+				return;
 			}
+			subData = preImpact.getSpellData();
 
+			if (preImpact.getRedirected()) {
+				if (!subData.hasCaster()) {
+					stop();
+					return;
+				}
+
+				currentVelocity.multiply(-1);
+				data = subData.invert();
+			} else {
+				hitSpell.subcast(subData.noLocation());
+				if (entityLocationSpell != null) entityLocationSpell.subcast(subData.noTarget());
+
+				playSpellEffects(EffectPosition.TARGET, subData.target(), subData);
+				if (stopOnHitTarget) stop();
+			}
 		}
 
 		private void playIntermediateEffectLocations(Location old, Vector movement) {

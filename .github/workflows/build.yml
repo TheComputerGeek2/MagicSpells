@@ -63,4 +63,4 @@ jobs:
         with:
           name: MagicSpells-${{steps.version.outputs.version}}-${{steps.hash.outputs.sha_short}}
           if-no-files-found: error
-          path: core/build/libs/MagicSpells*.jar
+          path: core/build/libs/MagicSpells-${{steps.version.outputs.version}}-${{steps.hash.outputs.sha_short}}.jar

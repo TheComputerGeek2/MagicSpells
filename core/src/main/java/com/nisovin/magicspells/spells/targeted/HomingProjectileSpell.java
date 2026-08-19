@@ -23,6 +23,7 @@ import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.castmodifiers.ModifierSet;
+import com.nisovin.magicspells.events.SpellPreImpactEvent;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
 import com.nisovin.magicspells.spelleffects.EffectPosition;
@@ -382,15 +383,33 @@ public class HomingProjectileSpell extends TargetedSpell implements TargetedEnti
 
 			counter++;
 
+			if (hitSpell == null) return;
 			hitBox.setCenter(currentLocation);
-			if (hitBox.contains(targetLoc)) {
-				SpellTargetEvent targetEvent = new SpellTargetEvent(HomingProjectileSpell.this, data);
-				if (!targetEvent.callEvent()) return;
-				data = targetEvent.getSpellData();
+			if (!hitBox.contains(targetLoc)) return;
 
-				if (hitSpell != null) hitSpell.subcast(data.noLocation());
-				playSpellEffects(EffectPosition.TARGET, data.target(), data);
+			SpellTargetEvent targetEvent = new SpellTargetEvent(HomingProjectileSpell.this, data);
+			if (!targetEvent.callEvent()) return;
+			SpellData subData = targetEvent.getSpellData();
 
+			SpellPreImpactEvent preImpact = new SpellPreImpactEvent(hitSpell.getSpell(), HomingProjectileSpell.this, subData);
+			if (!preImpact.callEvent()) {
+				stop();
+				return;
+			}
+			subData = preImpact.getSpellData();
+
+			if (preImpact.getRedirected()) {
+				if (!subData.hasCaster()) {
+					stop();
+					return;
+				}
+
+				currentVelocity.multiply(-1);
+				data = subData.invert();
+			} else {
+				hitSpell.subcast(subData.noLocation());
+
+				playSpellEffects(EffectPosition.TARGET, subData.target(), subData);
 				stop();
 			}
 		}

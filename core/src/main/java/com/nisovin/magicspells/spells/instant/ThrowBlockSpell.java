@@ -351,7 +351,7 @@ public class ThrowBlockSpell extends InstantSpell implements TargetedLocationSpe
 			}
 
 			double damage = event.getDamage();
-			if (info.powerAffectsDamage) damage *= info.data.power();
+			if (info.powerAffectsDamage) damage *= subData.power();
 
 			if (info.checkPlugins && info.data.hasCaster() && spell.checkFakeDamageEvent(info.data.caster(), info.data.target(), DamageCause.ENTITY_ATTACK, damage)) {
 				event.setCancelled(true);

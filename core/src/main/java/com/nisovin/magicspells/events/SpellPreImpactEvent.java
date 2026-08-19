@@ -7,46 +7,59 @@ import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.handlers.DebugHandler;
 
 public class SpellPreImpactEvent extends SpellEvent implements Cancellable {
 
-	private LivingEntity target;
-	private float power;
-	private Spell deliverySpell;
+	private final Spell deliverySpell;
+
+	private SpellData spellData;
+
 	private boolean redirect;
 	private boolean cancelled;
 
+	@Deprecated
 	public SpellPreImpactEvent(Spell spellPayload, Spell deliverySpell, LivingEntity caster, LivingEntity target, float power) {
-		super(spellPayload, caster);
-		this.target = target;
-		this.power = power;
+		this(spellPayload, deliverySpell, new SpellData(caster, target, power));
+	}
+
+	public SpellPreImpactEvent(Spell spellPayload, Spell deliverySpell, SpellData spellData) {
+		super(spellPayload, spellData.caster());
 		this.deliverySpell = deliverySpell;
-		redirect = false;
-		cancelled = false;
+		this.spellData = spellData;
 		if (DebugHandler.isSpellPreImpactEventCheckEnabled()) MagicSpells.plugin.getLogger().info(toString());
 	}
-	
+
+	@Override
+	public LivingEntity getCaster() {
+		return spellData.caster();
+	}
+
 	public LivingEntity getTarget() {
-		return target;
+		return spellData.target();
 	}
 	
 	public boolean getRedirected() {
 		return redirect;
 	}
-	
+
 	public void setRedirected(boolean redirect) {
 		this.redirect = redirect;
 	}
-	
+
 	public float getPower() {
-		return power;
+		return spellData.power();
 	}
-	
+
 	public void setPower(float power) {
-		this.power = power;
+		spellData = spellData.power(power);
 	}
-	
+
+	public SpellData getSpellData() {
+		return spellData;
+	}
+
 	public Spell getDeliverySpell() {
 		return deliverySpell;
 	}
@@ -60,14 +73,14 @@ public class SpellPreImpactEvent extends SpellEvent implements Cancellable {
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
 	}
-	
+
 	@Override
 	public String toString() {
-		String casterLabel = "Caster: " + (caster == null ? "null" : caster.toString());
-		String targetLabel = "Target: " + (target == null ? "null" : target.toString());
-		String spellLabel = "SpellPayload: " + (spell == null ? "null" : spell.toString());
-		String payloadSpellLabel = "Delivery Spell: " + (deliverySpell == null ? "null" : deliverySpell.toString());
+		String casterLabel = "Caster: " + caster;
+		String targetLabel = "Target: " + spellData.target();
+		String spellLabel = "SpellPayload: " + (spell == null ? "null" : spell.getInternalName());
+		String payloadSpellLabel = "Delivery Spell: " + (deliverySpell == null ? "null" : deliverySpell.getInternalName());
 		return Arrays.deepToString(new String[]{ casterLabel, targetLabel, spellLabel, payloadSpellLabel });
 	}
-	
+
 }

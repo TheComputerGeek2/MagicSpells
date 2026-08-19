@@ -6,7 +6,6 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.*;
 import org.bukkit.util.Vector;
-import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -286,40 +285,27 @@ public class ProjectileSpell extends InstantSpell implements TargetedLocationSpe
 	}
 
 	@EventHandler
-	public void onProjectileHit(ProjectileHitEvent e) {
-		Projectile projectile = e.getEntity();
-		Block block = e.getHitBlock();
-		Entity entity = e.getHitEntity();
+	public void onProjectileHit(ProjectileHitEvent event) {
+		Projectile projectile = event.getEntity();
 
-		Iterator<ProjectileTracker> iterator = trackerSet.iterator();
+		Set<ProjectileTracker> trackers = new HashSet<>(trackerSet);
+		for (ProjectileTracker tracker : trackers) {
+			if (!projectile.equals(tracker.getProjectile())) continue;
 
-		if (block != null) {
-			while (iterator.hasNext()) {
-				ProjectileTracker tracker = iterator.next();
-				if (tracker.getProjectile() == null) continue;
-				if (!tracker.getProjectile().equals(projectile)) continue;
+			SpellData subData = tracker.getSpellData();
 
-				SpellData subData = tracker.getSpellData().location(projectile.getLocation());
+			if (event.getHitBlock() != null) {
+				subData = subData.location(projectile.getLocation());
+
 				if (tracker.getGroundSpell() != null) tracker.getGroundSpell().subcast(subData);
-				tracker.stop(false);
-				iterator.remove();
+
+				tracker.stop();
 				break;
 			}
-		}
 
-		if (entity instanceof LivingEntity livingEntity) {
-			while (iterator.hasNext()) {
-				ProjectileTracker tracker = iterator.next();
-				if (tracker.getProjectile() == null) continue;
-				if (!tracker.getProjectile().equals(projectile)) continue;
-
-				SpellData subData = tracker.getSpellData().target(livingEntity);
-				if (tracker.getHitSpell() != null) tracker.getHitSpell().subcast(subData);
-
-				playSpellEffects(EffectPosition.TARGET, livingEntity, subData);
-				e.setCancelled(true);
-				tracker.stop(false);
-				iterator.remove();
+			if (event.getHitEntity() instanceof LivingEntity target) {
+				event.setCancelled(true);
+				tracker.hitEntity(target, subData.target(target));
 				break;
 			}
 		}
