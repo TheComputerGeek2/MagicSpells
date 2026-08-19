@@ -1,12 +1,14 @@
 package com.nisovin.magicspells.spells.targeted;
 
+import java.util.Map;
+import java.util.UUID;
 import java.util.List;
+import java.util.HashMap;
 
-import org.bukkit.Color;
-import org.bukkit.Material;
-import org.bukkit.Location;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.util.Vector;
+import org.bukkit.entity.Entity;
+import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -14,6 +16,7 @@ import org.bukkit.Particle.DustOptions;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.Particle.DustTransition;
+import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -23,11 +26,16 @@ import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
+import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
 import com.nisovin.magicspells.spells.TargetedLocationSpell;
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
+
 public class ParticleCloudSpell extends TargetedSpell implements TargetedLocationSpell, TargetedEntitySpell {
+
+	private final Map<UUID, SpellData> clouds = new HashMap<>();
 
 	private final ConfigData<Vector> relativeOffset;
 
@@ -66,6 +74,8 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	private final ConfigData<Boolean> useGravity;
 	private final ConfigData<Boolean> canTargetEntities;
 	private final ConfigData<Boolean> canTargetLocation;
+
+	private final boolean removeCloud;
 
 	private final List<ConfigData<PotionEffect>> potionEffects;
 
@@ -129,11 +139,24 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 		radiusOnUse = getConfigDataFloat("radius-on-use", 0F);
 		radiusPerTick = getConfigDataFloat("radius-per-tick", 0F);
 
+		removeCloud = getConfigBoolean("remove-cloud", false);
+
 		useGravity = getConfigDataBoolean("use-gravity", false);
 		canTargetEntities = getConfigDataBoolean("can-target-entities", true);
 		canTargetLocation = getConfigDataBoolean("can-target-location", true);
 
 		potionEffects = Util.getPotionEffects(getConfigList("potion-effects", null), internalName);
+	}
+
+	@Override
+	protected void turnOff() {
+		if (removeCloud) {
+			for (UUID uuid : clouds.keySet()) {
+				Entity cloud = Bukkit.getEntity(uuid);
+				if (cloud != null) cloud.remove();
+			}
+		}
+		clouds.clear();
 	}
 
 	@Override
@@ -203,10 +226,28 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 				cloud.customName(customName);
 				cloud.setCustomNameVisible(true);
 			}
+
+			clouds.put(cloud.getUniqueId(), finalData);
 		});
 
 		playSpellEffects(data);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+	}
+
+	@EventHandler(ignoreCancelled = true)
+	public void onEffectApply(AreaEffectCloudApplyEvent event) {
+		SpellData data = clouds.get(event.getEntity().getUniqueId());
+		if (data == null) return;
+
+		event.getAffectedEntities().removeIf(entity -> {
+			SpellTargetEvent targetEvent = new SpellTargetEvent(this, data.target(entity));
+			return !targetEvent.callEvent();
+		});
+	}
+
+	@EventHandler(ignoreCancelled = true)
+	public void onRemove(EntityRemoveFromWorldEvent event) {
+		clouds.remove(event.getEntity().getUniqueId());
 	}
 
 	private Object getParticleData(@NotNull Particle particle, @NotNull SpellData data) {

@@ -1,9 +1,6 @@
 package com.nisovin.magicspells.util.managers;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.HashMap;
+import java.util.*;
 import java.util.function.Consumer;
 
 import com.google.common.collect.SetMultimap;
@@ -83,18 +80,16 @@ public class BuffManager {
 		public void accept(ScheduledTask scheduledTask) {
 			NoMagicZoneManager zoneManager = MagicSpells.getNoMagicZoneManager();
 
-			activeBuffs.entries().removeIf(entry -> {
+			for (Map.Entry<UUID, BuffSpell> entry : new HashSet<>(activeBuffs.entries())) {
 				UUID uuid = entry.getKey();
 				LivingEntity entity = Bukkit.getEntity(uuid) instanceof LivingEntity le ? le : lastEntity.get(uuid);
 
 				BuffSpell buff = entry.getValue();
 				if ((entity instanceof Player || entity.isValid()) && !buff.isExpired(entity) && !zoneManager.willFizzle(entity, buff))
-					return false;
+					continue;
 
-				buff.turnOff(entity, false);
-				new BuffEndEvent(entity, buff).callEvent();
-				return true;
-			});
+				endBuff(entity, buff);
+			}
 		}
 
 		@EventHandler

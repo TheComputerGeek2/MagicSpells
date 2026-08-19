@@ -44,12 +44,16 @@ public class EntityEffect extends SpellEffect {
 	@Override
 	protected Entity playEntityEffectLocation(Location location, SpellData data) {
 		return entityData.spawn(location, data, entity -> {
-			entity.addScoreboardTag(ENTITY_TAG);
 			entity.setGravity(gravity.get(data));
 		}, entity -> {
-			entity.setPersistent(false);
-			Util.forEachPassenger(entity, e -> e.setPersistent(false));
+			postSpawn(entity);
+			Util.forEachPassenger(entity, this::postSpawn);
 		});
+	}
+
+	private void postSpawn(Entity entity) {
+		entity.setPersistent(false);
+		entity.addScoreboardTag(ENTITY_TAG);
 	}
 
 	@Override

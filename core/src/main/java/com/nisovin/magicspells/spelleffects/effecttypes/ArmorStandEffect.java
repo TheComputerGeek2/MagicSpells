@@ -1,6 +1,7 @@
 package com.nisovin.magicspells.spelleffects.effecttypes;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.EquipmentSlot;
@@ -54,7 +55,6 @@ public class ArmorStandEffect extends SpellEffect {
 	protected ArmorStand playArmorStandEffectLocation(Location location, SpellData data) {
 		return entityData.spawn(location, data, ArmorStand.class, stand -> {
 			stand.setSilent(true);
-			stand.addScoreboardTag(ENTITY_TAG);
 
 			stand.setGravity(gravity.get(data));
 			if (disableSlots.get(data)) stand.setDisabledSlots(EquipmentSlot.values());
@@ -63,9 +63,14 @@ public class ArmorStandEffect extends SpellEffect {
 			stand.setItem(EquipmentSlot.HAND, mainhandItem);
 			stand.setItem(EquipmentSlot.OFF_HAND, offhandItem);
 		}, stand -> {
-			stand.setPersistent(false);
-			Util.forEachPassenger(stand, e -> e.setPersistent(false));
+			postSpawn(stand);
+			Util.forEachPassenger(stand, this::postSpawn);
 		});
+	}
+
+	private void postSpawn(Entity entity) {
+		entity.setPersistent(false);
+		entity.addScoreboardTag(ENTITY_TAG);
 	}
 
 }

@@ -71,6 +71,7 @@ public class ProjectileTracker implements Runnable, Tracker {
 	private Component projectileName;
 
 	private Color arrowColor;
+	private Color potionColor;
 
 	private Subspell hitSpell;
 	private Subspell tickSpell;
@@ -138,7 +139,7 @@ public class ProjectileTracker implements Runnable, Tracker {
 			if (proj instanceof WitherSkull witherSkull) witherSkull.setCharged(charged);
 			if (proj instanceof Explosive explosive) explosive.setIsIncendiary(incendiary);
 			if (projectileManager instanceof ProjectileManagerThrownPotion potion) {
-				((ThrownPotion) proj).setItem(potion.getItem());
+				((ThrownPotion) proj).setItem(potion.getPotion(potionColor));
 			}
 		});
 
@@ -510,6 +511,14 @@ public class ProjectileTracker implements Runnable, Tracker {
 
 	public void setArrowColor(Color arrowColor) {
 		this.arrowColor = arrowColor;
+	}
+
+	public Color getPotionColor() {
+		return potionColor;
+	}
+
+	public void setPotionColor(Color potionColor) {
+		this.potionColor = potionColor;
 	}
 
 	public boolean shouldStopOnModifierFail() {
