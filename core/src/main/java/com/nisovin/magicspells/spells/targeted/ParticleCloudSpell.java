@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 import org.bukkit.*;
 import org.bukkit.util.Vector;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
@@ -74,6 +75,8 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	private final ConfigData<Boolean> canTargetEntities;
 	private final ConfigData<Boolean> canTargetLocation;
 
+	private final boolean removeCloud;
+
 	private final List<ConfigData<PotionEffect>> potionEffects;
 
 	public ParticleCloudSpell(MagicConfig config, String spellName) {
@@ -136,6 +139,8 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 		radiusOnUse = getConfigDataFloat("radius-on-use", 0F);
 		radiusPerTick = getConfigDataFloat("radius-per-tick", 0F);
 
+		removeCloud = getConfigBoolean("remove-cloud", false);
+
 		useGravity = getConfigDataBoolean("use-gravity", false);
 		canTargetEntities = getConfigDataBoolean("can-target-entities", true);
 		canTargetLocation = getConfigDataBoolean("can-target-location", true);
@@ -145,6 +150,12 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 
 	@Override
 	protected void turnOff() {
+		if (removeCloud) {
+			for (UUID uuid : clouds.keySet()) {
+				Entity cloud = Bukkit.getEntity(uuid);
+				if (cloud != null) cloud.remove();
+			}
+		}
 		clouds.clear();
 	}
 
