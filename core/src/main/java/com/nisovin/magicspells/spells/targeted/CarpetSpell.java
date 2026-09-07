@@ -105,22 +105,18 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 	private CastResult layCarpet(SpellData data) {
 		Location loc = data.location();
 
-		if (!loc.getBlock().getType().isOccluding()) {
+		if (!loc.getBlock().isSolid()) {
 			int c = 0;
-			while (!loc.getBlock().getRelative(0, -1, 0).getType().isOccluding() && c <= 2) {
+			while (!loc.getBlock().getRelative(0, -1, 0).isSolid() && c <= 2) {
 				loc.subtract(0, 1, 0);
 				c++;
 			}
-
-			data = data.location(loc);
 		} else {
 			int c = 0;
-			while (loc.getBlock().getType().isOccluding() && c <= 2) {
+			while (loc.getBlock().isSolid() && c <= 2) {
 				loc.add(0, 1, 0);
 				c++;
 			}
-
-			data = data.location(loc);
 		}
 
 		Block b;
@@ -141,8 +137,8 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 				b = loc.getWorld().getBlockAt(x, y, z);
 				if (circle && loc.getBlock().getLocation().distanceSquared(b.getLocation()) > rad * rad) continue;
 
-				if (b.getType().isOccluding()) b = b.getRelative(0, 1, 0);
-				else if (!b.getRelative(0, -1, 0).getType().isOccluding()) b = b.getRelative(0, -1, 0);
+				if (b.isSolid()) b = b.getRelative(0, 1, 0);
+				else if (!b.getRelative(0, -1, 0).isSolid()) b = b.getRelative(0, -1, 0);
 
 				if (!b.isEmpty() || !b.getRelative(0, -1, 0).isSolid()) continue;
 
