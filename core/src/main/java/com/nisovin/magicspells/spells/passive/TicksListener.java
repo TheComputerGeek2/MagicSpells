@@ -45,7 +45,7 @@ public class TicksListener extends PassiveListener {
 			int interval = Integer.parseInt(var);
 			ticker = new Ticker(passiveSpell, interval);
 		} catch (NumberFormatException e) {
-			// ignored
+			return;
 		}
 
 		for (World world : Bukkit.getWorlds()) {
