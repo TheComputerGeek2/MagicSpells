@@ -144,7 +144,7 @@ public class CarpetSpell extends TargetedSpell implements TargetedLocationSpell 
 				if (b.getType().isOccluding()) b = b.getRelative(0, 1, 0);
 				else if (!b.getRelative(0, -1, 0).getType().isOccluding()) b = b.getRelative(0, -1, 0);
 
-				if (!b.getType().isAir() && !b.getRelative(0, -1, 0).getType().isSolid()) continue;
+				if (!b.isEmpty() || !b.getRelative(0, -1, 0).isSolid()) continue;
 
 				blocks.put(b, new CarpetData(data, material, b.getType(), removeOnTouch));
 				b.setType(material, false);
