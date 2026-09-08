@@ -44,6 +44,7 @@ public class CleanserManager {
 		addCleanser(SilenceSpellCleanser.class);
 		addCleanser(StunSpellCleanser.class);
 		addCleanser(TotemSpellCleanser.class);
+		addCleanser(RewindSpellCleanser.class);
 	}
 
 }

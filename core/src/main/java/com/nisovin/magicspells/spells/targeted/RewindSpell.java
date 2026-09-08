@@ -101,6 +101,20 @@ public class RewindSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 	}
 
+	public boolean isRewinding(LivingEntity target) {
+		for (Rewinder rewinder : new HashSet<>(entities.values()))
+			if (rewinder.data.target().equals(target))
+				return true;
+
+		return false;
+	}
+
+	public void rewindAll(LivingEntity target) {
+		for (Rewinder rewinder : new HashSet<>(entities.values()))
+			if (rewinder.data.target().equals(target))
+				rewinder.rewind(true);
+	}
+
 	private class Rewinder implements Runnable {
 
 		private final SpellData data;
