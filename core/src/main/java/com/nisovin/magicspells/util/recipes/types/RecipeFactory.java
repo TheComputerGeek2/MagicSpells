@@ -158,7 +158,7 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 		String received = config.getString(path);
 		if (received == null) return null;
 
-		E value = Util.enumValueSafe(enumClass, received.toUpperCase());
+		E value = Util.enumValueSafe(enumClass, received);
 		if (value != null) return value;
 
 		MagicSpells.error("Invalid %s '%s' for option '%s' on custom recipe '%s'.".formatted(enumClass.getSimpleName(), received, path, config.getName()));

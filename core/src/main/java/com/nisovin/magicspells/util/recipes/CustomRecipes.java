@@ -26,7 +26,7 @@ public class CustomRecipes {
 			}
 
 			String typeName = config.getString("type", "none");
-			RecipeType type = Util.enumValueSafe(RecipeType.class, typeName.toUpperCase());
+			RecipeType type = Util.enumValueSafe(RecipeType.class, typeName);
 			if (type == null) {
 				MagicSpells.error("Recipe '%s' has an invalid 'type' defined: %s".formatted(recipeKey, typeName));
 				continue;

@@ -576,7 +576,7 @@ public class Util {
 
 	public static <E extends Enum<E>> E enumValueSafe(Class<E> clazz, String name) {
 		try {
-			return Enum.valueOf(clazz, name);
+			return Enum.valueOf(clazz, name.toUpperCase());
 		} catch (Exception e) {
 			return null;
 		}

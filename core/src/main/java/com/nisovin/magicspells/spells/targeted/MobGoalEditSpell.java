@@ -38,7 +38,7 @@ public class MobGoalEditSpell extends TargetedSpell implements TargetedEntitySpe
 		List<String> removeTypeStrings = getConfigStringList("remove-types", null);
 		if (removeTypeStrings != null) {
 			for (String string : removeTypeStrings) {
-				GoalType type = Util.enumValueSafe(GoalType.class, string.toUpperCase());
+				GoalType type = Util.enumValueSafe(GoalType.class, string);
 				if (type == null) {
 					MagicSpells.error("MobGoalEditSpell '" + internalName + "' lists an invalid value in 'remove-types': " + string);
 					continue;
