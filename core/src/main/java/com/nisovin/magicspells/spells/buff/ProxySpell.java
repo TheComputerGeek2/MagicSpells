@@ -9,11 +9,15 @@ import java.util.Collection;
 
 import org.jetbrains.annotations.NotNull;
 
+import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
+import com.nisovin.magicspells.util.Util;
+import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.spells.BuffSpell;
 import com.nisovin.magicspells.util.MagicConfig;
@@ -25,8 +29,34 @@ public class ProxySpell extends BuffSpell {
 	private final Set<UUID> redirecting = new HashSet<>();
 	private final Map<UUID, LivingEntity> proxies = new HashMap<>();
 
+	private SpellListener spellListener;
+	private DamageListener damageListener;
+
+	private RedirectDamage redirectDamage = RedirectDamage.ALL;
+
 	public ProxySpell(MagicConfig config, String spellName) {
 		super(config, spellName);
+
+		boolean redirectSpells = getConfigBoolean("redirect-spells", true);
+
+		String redirectDamageString = getConfigString("redirect-damage", null);
+		if (redirectDamageString != null) {
+			RedirectDamage redirect = Util.enumValueSafe(RedirectDamage.class, redirectDamageString);
+			if (redirect == null) MagicSpells.error("ProxySpell '" + internalName + "' has an invalid 'redirect-damage' value '" + redirectDamageString + "'.");
+			else redirectDamage = redirect;
+		}
+
+		if (redirectSpells) {
+			spellListener = new SpellListener();
+			registerEvents(spellListener);
+		}
+		if (redirectDamage != RedirectDamage.NONE) {
+			damageListener = new DamageListener();
+			registerEvents(damageListener);
+		}
+
+		if (redirectSpells || redirectDamage != RedirectDamage.NONE) return;
+		MagicSpells.error("ProxySpell '" + internalName + "' has no redirection enabled.");
 	}
 
 	@Override
@@ -58,38 +88,71 @@ public class ProxySpell extends BuffSpell {
 		return proxies.keySet();
 	}
 
-	@EventHandler(ignoreCancelled = true)
-	public void onSpellTarget(SpellTargetEvent event) {
-		LivingEntity target = event.getTarget();
-		if (target == null || !isActive(target)) return;
+	@Override
+	protected void turnOff() {
+		super.turnOff();
 
-		LivingEntity proxyTarget = getProxyTarget(target);
-		if (proxyTarget == null) return;
-
-		event.setTarget(proxyTarget);
-		playRedirectEffects(target, proxyTarget, event.getSpellData());
-
-		addUseAndChargeCost(target);
+		if (spellListener != null) {
+			unregisterEvents(spellListener);
+			spellListener = null;
+		}
+		if (damageListener != null) {
+			unregisterEvents(damageListener);
+			damageListener = null;
+		}
 	}
 
-	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-	public void onEntityDamage(EntityDamageByEntityEvent event) {
-		if (!(event.getEntity() instanceof LivingEntity target) || !isActive(target)) return;
+	private class SpellListener implements Listener {
 
-		LivingEntity proxyTarget = getProxyTarget(target);
-		if (proxyTarget == null) return;
-		if (!redirecting.add(proxyTarget.getUniqueId())) return;
+		@EventHandler(ignoreCancelled = true)
+		public void onSpellTarget(SpellTargetEvent event) {
+			LivingEntity target = event.getTarget();
+			if (target == null || !isActive(target)) return;
 
-		SpellData subData = new SpellData(event.getDamager() instanceof LivingEntity damager ? damager : null, proxyTarget);
-		playRedirectEffects(target, proxyTarget, subData);
+			LivingEntity proxyTarget = getProxyTarget(target);
+			if (proxyTarget == null) return;
 
-		event.setCancelled(true);
-		try {
-			proxyTarget.damage(event.getFinalDamage(), event.getDamageSource());
+			event.setTarget(proxyTarget);
+			playRedirectEffects(target, proxyTarget, event.getSpellData());
+
 			addUseAndChargeCost(target);
-		} finally {
-			redirecting.remove(proxyTarget.getUniqueId());
 		}
+
+	}
+
+	private class DamageListener implements Listener {
+
+		@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+		public void onEntityDamage(EntityDamageEvent event) {
+			if (!(event.getEntity() instanceof LivingEntity target) || !isActive(target)) return;
+
+			LivingEntity proxyTarget = getProxyTarget(target);
+			if (proxyTarget == null) return;
+			if (!redirecting.add(proxyTarget.getUniqueId())) return;
+
+			LivingEntity damager = null;
+			if (event instanceof EntityDamageByEntityEvent byEvent)
+				damager = byEvent.getDamager() instanceof LivingEntity e ? e : null;
+			else if (redirectDamage == RedirectDamage.ENTITIES) return;
+
+			SpellData subData = new SpellData(damager, proxyTarget);
+			playRedirectEffects(target, proxyTarget, subData);
+
+			event.setCancelled(true);
+			try {
+				proxyTarget.damage(event.getFinalDamage(), event.getDamageSource());
+				addUseAndChargeCost(target);
+			} finally {
+				redirecting.remove(proxyTarget.getUniqueId());
+			}
+		}
+
+	}
+
+	private enum RedirectDamage {
+		ALL,
+		ENTITIES,
+		NONE
 	}
 
 	private LivingEntity getProxyTarget(LivingEntity target) {
