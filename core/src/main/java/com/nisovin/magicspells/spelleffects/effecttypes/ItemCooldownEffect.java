@@ -1,5 +1,6 @@
 package com.nisovin.magicspells.spelleffects.effecttypes;
 
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -10,21 +11,19 @@ import com.nisovin.magicspells.util.TimeUtil;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
-import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
-import com.nisovin.magicspells.util.magicitems.MagicItems;
 
 @Name("itemcooldown")
 public class ItemCooldownEffect extends SpellEffect {
 
-	private ConfigData<String> item;
+	private ConfigData<Material> item;
 	private ConfigData<Integer> duration;
 	private ConfigData<NamespacedKey> key;
 
 	@Override
 	protected void loadFromConfig(ConfigurationSection config) {
-		item = ConfigDataUtil.getString(config, "item", "stone");
 		key = ConfigDataUtil.getNamespacedKey(config, "key", null);
+		item = ConfigDataUtil.getMaterial(config, "item", Material.STONE);
 		duration = ConfigDataUtil.getInteger(config, "duration", TimeUtil.TICKS_PER_SECOND);
 	}
 
@@ -35,10 +34,8 @@ public class ItemCooldownEffect extends SpellEffect {
 		int duration = this.duration.get(data);
 
 		NamespacedKey key = this.key.get(data);
-		if (key == null) {
-			MagicItem item = MagicItems.getMagicItemFromString(this.item.get(data));
-			if (item != null) player.setCooldown(item.getItemStack(), duration);
-		} else player.setCooldown(key, duration);
+		if (key == null) player.setCooldown(item.get(data), duration);
+		else player.setCooldown(key, duration);
 
 		return null;
 	}
