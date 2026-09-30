@@ -1,9 +1,7 @@
 package com.nisovin.magicspells.spells.targeted;
 
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 
 import com.nisovin.magicspells.util.*;
@@ -18,6 +16,10 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 
 	private final ConfigData<Double> distance;
 
+	private final ConfigData<Boolean> snapToGround;
+
+	private final ConfigData<Integer> requireGroundDistance;
+
 	private final ConfigData<Vector> relativeOffset;
 
 	private final String strNoLandingSpot;
@@ -29,6 +31,10 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 		pitch = getConfigDataFloat("pitch", 0);
 
 		distance = getConfigDataDouble("distance", -1);
+
+		snapToGround = getConfigDataBoolean("snap-to-ground", false);
+
+		requireGroundDistance = getConfigDataInt("require-ground-distance", 0);
 
 		relativeOffset = getConfigDataVector("relative-offset", new Vector(-1, 0, 0));
 
@@ -60,8 +66,8 @@ public class ShadowstepSpell extends TargetedSpell implements TargetedEntitySpel
 		targetLoc.setPitch(pitch.get(data));
 		targetLoc.setYaw(targetLoc.getYaw() + yaw.get(data));
 
-		Block b = targetLoc.getBlock();
-		if (!b.isPassable() || !b.getRelative(BlockFace.UP).isPassable()) return noTarget(strNoLandingSpot, data);
+		targetLoc = BlockUtils.adjustToSafeLocation(data.caster(), targetLoc, requireGroundDistance.get(data), snapToGround.get(data));
+		if (targetLoc == null) return noTarget(strNoLandingSpot, data);
 
 		playSpellEffects(data.caster(), targetLoc, data);
 		data.caster().teleportAsync(targetLoc);
