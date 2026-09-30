@@ -6,6 +6,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.persistence.PersistentDataContainer;
 
 import com.nisovin.magicspells.util.Name;
 import com.nisovin.magicspells.util.Util;
@@ -16,6 +17,7 @@ import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
+import com.nisovin.magicspells.listeners.MagicSpellListener;
 
 @Name("armorstand")
 public class ArmorStandEffect extends SpellEffect {
@@ -62,10 +64,19 @@ public class ArmorStandEffect extends SpellEffect {
 			stand.setItem(EquipmentSlot.HEAD, headItem);
 			stand.setItem(EquipmentSlot.HAND, mainhandItem);
 			stand.setItem(EquipmentSlot.OFF_HAND, offhandItem);
+
+			preSpawn(stand);
+			Util.forEachPassenger(stand, this::preSpawn);
 		}, stand -> {
 			postSpawn(stand);
 			Util.forEachPassenger(stand, this::postSpawn);
 		});
+	}
+
+	private void preSpawn(Entity entity) {
+		PersistentDataContainer pdc = entity.getPersistentDataContainer();
+		MagicSpellListener.PDC_TARGETABLE.set(pdc, false);
+		MagicSpellListener.PDC_TARGETABLE_BY_CASTER.set(pdc, false);
 	}
 
 	private void postSpawn(Entity entity) {
