@@ -1,4 +1,4 @@
-package com.nisovin.magicspells.volatilecode.latest;
+package com.nisovin.magicspells.volatilecode.v26_2;
 
 import java.util.*;
 import java.lang.invoke.VarHandle;
@@ -67,9 +67,8 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.advancements.triggers.ImpossibleTrigger;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket.PositionedAdvancement;
 
-public class VolatileCodeLatest extends VolatileCodeHandle {
+public class VolatileCode_v26_2 extends VolatileCodeHandle {
 
 	private final Identifier TOAST_KEY = Identifier.fromNamespaceAndPath("magicspells", "toast_effect");
 
@@ -84,7 +83,7 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 	private final VarHandle RUN_HANDLE;
 
 	@SuppressWarnings("unchecked")
-	public VolatileCodeLatest(VolatileCodeHelper helper) throws Exception {
+	public VolatileCode_v26_2(VolatileCodeHelper helper) throws Exception {
 		super(helper);
 
 		MethodHandles.Lookup lookup = MethodHandles.lookup();
@@ -221,10 +220,9 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 		}
 
 		AdvancementHolder advancement = Advancement.Builder.advancement()
-				.display(iconNms, textNms, description, frame, true, false, true)
+				.display(iconNms, textNms, description, null, frame, true, false, true)
 				.addCriterion("impossible", new Criterion<>(new ImpossibleTrigger(), new ImpossibleTrigger.TriggerInstance()))
 				.build(TOAST_KEY);
-
 		AdvancementProgress progress = new AdvancementProgress();
 		progress.update(new AdvancementRequirements(List.of(List.of("impossible"))));
 		progress.grantProgress("impossible");
@@ -232,14 +230,14 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 		ServerPlayer player = ((CraftPlayer) receiver).getHandle();
 		player.connection.send(new ClientboundUpdateAdvancementsPacket(
 				false,
-				List.of(new PositionedAdvancement(advancement, 0, 0)),
+				Collections.singleton(advancement),
 				Collections.emptySet(),
 				Collections.singletonMap(TOAST_KEY, progress),
 				true
 		));
 		player.connection.send(new ClientboundUpdateAdvancementsPacket(
 				false,
-				Collections.emptyList(),
+				Collections.emptySet(),
 				Collections.singleton(TOAST_KEY),
 				Collections.emptyMap(),
 				true
@@ -259,7 +257,7 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 
 	@Override
 	public GlowManager getGlowManager() {
-		return new VolatileGlowManagerLatest(helper);
+		return new VolatileGlowManager_v26_2(helper);
 	}
 
 	@Override

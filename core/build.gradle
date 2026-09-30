@@ -19,6 +19,7 @@ dependencies {
     implementation(project(path: ":nms:shared"))
     implementation(project(path: ":nms:latest"))
     implementation(project(path: ":nms:v26_1_2"))
+    implementation(project(path: ":nms:v26_2"))
 
     compileOnly("com.github.retrooper:packetevents-spigot:2.11.2")
     compileOnly("net.dmulloy2:ProtocolLib:5.4.0")

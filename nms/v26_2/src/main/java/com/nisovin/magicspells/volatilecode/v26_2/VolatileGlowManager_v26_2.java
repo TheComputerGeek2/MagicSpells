@@ -1,4 +1,4 @@
-package com.nisovin.magicspells.volatilecode.latest;
+package com.nisovin.magicspells.volatilecode.v26_2;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -42,7 +42,7 @@ import com.nisovin.magicspells.util.glow.LibsDisguiseHelper;
 import com.nisovin.magicspells.volatilecode.VolatileCodeHelper;
 import com.nisovin.magicspells.util.glow.PacketBasedGlowManager;
 
-public class VolatileGlowManagerLatest extends PacketBasedGlowManager<Packet<?>, ClientboundSetEntityDataPacket, ClientboundSetPlayerTeamPacket> {
+public class VolatileGlowManager_v26_2 extends PacketBasedGlowManager<Packet<?>, ClientboundSetEntityDataPacket, ClientboundSetPlayerTeamPacket> {
 
 	private static final EntityDataAccessor<Byte> DATA_SHARED_FLAGS_ID = new EntityDataAccessor<>(0, EntityDataSerializers.BYTE);
 
@@ -50,7 +50,7 @@ public class VolatileGlowManagerLatest extends PacketBasedGlowManager<Packet<?>,
 	private final MethodHandle teamPacketHandle;
 	private final VolatileCodeHelper helper;
 
-	public VolatileGlowManagerLatest(VolatileCodeHelper helper) {
+	public VolatileGlowManager_v26_2(VolatileCodeHelper helper) {
 		this.helper = helper;
 
 		try {
@@ -245,7 +245,7 @@ public class VolatileGlowManagerLatest extends PacketBasedGlowManager<Packet<?>,
 				return;
 			}
 
-			synchronized (VolatileGlowManagerLatest.this) {
+			synchronized (VolatileGlowManager_v26_2.this) {
 				if (glows.isEmpty() && perPlayerGlows.isEmpty()) {
 					super.write(ctx, msg, promise);
 					return;

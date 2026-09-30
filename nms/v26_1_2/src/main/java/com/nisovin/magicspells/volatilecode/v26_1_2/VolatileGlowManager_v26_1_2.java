@@ -61,7 +61,7 @@ public class VolatileGlowManager_v26_1_2 extends PacketBasedGlowManager<Packet<?
 					MethodType.methodType(void.class, String.class, int.class, Optional.class, Collection.class)
 				);
 		} catch (Exception e) {
-			throw new RuntimeException("Encountered an error while initializing VolatileGlowManagerLatest", e);
+			throw new RuntimeException("Encountered an error while initializing " + getClass().getSimpleName(), e);
 		}
 
 		helper.registerEvents(this);
