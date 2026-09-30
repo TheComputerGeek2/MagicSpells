@@ -58,6 +58,10 @@ public class Util {
 
 	private static final MiniMessage STRICT_SERIALIZER = MiniMessage.builder().strict(true).build();
 
+	/**
+	 * @deprecated This method just directly calls {@link Material#matchMaterial(String)}.
+	 */
+	@Deprecated
 	public static Material getMaterial(String name) {
 		return Material.matchMaterial(name);
 	}
