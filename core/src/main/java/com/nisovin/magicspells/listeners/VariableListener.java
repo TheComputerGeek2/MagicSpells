@@ -80,8 +80,10 @@ public class VariableListener implements Listener {
 	public void variableModsTarget(SpellTargetEvent event) {
 		Multimap<String, VariableMod> varMods = event.getSpell().getVariableModsTarget();
 		if (varMods == null || varMods.isEmpty()) return;
-		if (!(event.getCaster() instanceof Player caster)) return;
-		Player target = event.getTarget() instanceof Player ? (Player) event.getTarget() : null;
+
+		Player caster = event.getCaster() instanceof Player player ? player : null;
+		Player target = event.getTarget() instanceof Player player ? player : null;
+
 		for (Map.Entry<String, VariableMod> entry : varMods.entries()) {
 			VariableMod mod = entry.getValue();
 			if (mod == null) continue;
@@ -90,7 +92,10 @@ public class VariableListener implements Listener {
 			String variableName = entry.getKey();
 			String[] splits = variableName.split(":");
 			if (splits.length > 1) {
-				if (splits[0].equalsIgnoreCase("caster")) playerToMod = caster;
+				if (splits[0].equalsIgnoreCase("caster")) {
+					if (caster == null) continue;
+					playerToMod = caster;
+				}
 				variableName = splits[1];
 			}
 			// Target was expected, but they were not a player.
