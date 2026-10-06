@@ -6,6 +6,7 @@ import java.util.HashSet;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.persistence.PersistentDataContainer;
 
 import com.nisovin.magicspells.util.Name;
 import com.nisovin.magicspells.util.Util;
@@ -15,11 +16,12 @@ import com.nisovin.magicspells.util.EntityData;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
+import com.nisovin.magicspells.listeners.MagicSpellListener;
 
 @Name("entity")
 public class EntityEffect extends SpellEffect {
 
-	public static final Set<Entity> entities = new HashSet<>();
+	private static final Set<Entity> entities = new HashSet<>();
 
 	public static final String ENTITY_TAG = "MS_ENTITY";
 
@@ -45,10 +47,19 @@ public class EntityEffect extends SpellEffect {
 	protected Entity playEntityEffectLocation(Location location, SpellData data) {
 		return entityData.spawn(location, data, entity -> {
 			entity.setGravity(gravity.get(data));
+
+			preSpawn(entity);
+			Util.forEachPassenger(entity, this::preSpawn);
 		}, entity -> {
 			postSpawn(entity);
 			Util.forEachPassenger(entity, this::postSpawn);
 		});
+	}
+
+	private void preSpawn(Entity entity) {
+		PersistentDataContainer pdc = entity.getPersistentDataContainer();
+		MagicSpellListener.PDC_TARGETABLE.set(pdc, false);
+		MagicSpellListener.PDC_TARGETABLE_BY_CASTER.set(pdc, false);
 	}
 
 	private void postSpawn(Entity entity) {

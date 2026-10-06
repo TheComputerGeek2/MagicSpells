@@ -7,7 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
 import org.bukkit.util.Vector;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -21,11 +20,12 @@ import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
+import com.nisovin.magicspells.util.pdc.PersistentDataEntry;
 
 @Name("itemspray")
 public class ItemSprayEffect extends SpellEffect {
 
-	public static final NamespacedKey MS_ITEM_SPRAY = new NamespacedKey(MagicSpells.getInstance(), "ms_item_spray");
+	public static final PersistentDataEntry<Byte, Boolean> MS_ITEM_SPRAY = new PersistentDataEntry<>(PersistentDataType.BOOLEAN, "ms_item_spray");
 
 	private static final List<Item> items = new ArrayList<>();
 
@@ -80,7 +80,7 @@ public class ItemSprayEffect extends SpellEffect {
 		int amount = this.amount.get(data);
 		for (int i = 0; i < amount; i++) {
 			Item dropped = loc.getWorld().dropItem(loc, itemStack, item -> {
-				item.getPersistentDataContainer().set(MS_ITEM_SPRAY, PersistentDataType.BOOLEAN, true);
+				MS_ITEM_SPRAY.set(item.getPersistentDataContainer(), true);
 
 				Vector velocity = this.velocity.get(data);
 				if (velocity == null) velocity = new Vector(

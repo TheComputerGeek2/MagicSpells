@@ -7,16 +7,16 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.Name;
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
+import com.nisovin.magicspells.util.pdc.PersistentDataEntry;
 
 @Name("fireworks")
 public class FireworksEffect extends SpellEffect {
 
-	public static final NamespacedKey MS_FIREWORK = new NamespacedKey(MagicSpells.getInstance(), "fireworks_effect");
+	public static final PersistentDataEntry<Byte, Boolean> MS_FIREWORK = new PersistentDataEntry<>(PersistentDataType.BOOLEAN, "fireworks_effect");
 
 	private ConfigData<Integer> type;
 	private ConfigData<Integer> flightDuration;
@@ -95,7 +95,7 @@ public class FireworksEffect extends SpellEffect {
 			firework.setSilent(true);
 			firework.setTicksToDetonate(flightDuration.get(data));
 
-			firework.getPersistentDataContainer().set(MS_FIREWORK, PersistentDataType.BOOLEAN, true);
+			MS_FIREWORK.set(firework.getPersistentDataContainer(), true);
 		});
 
 		return null;

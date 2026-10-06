@@ -43,6 +43,7 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.entity.minecart.CommandMinecart;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.persistence.PersistentDataContainer;
 
 import io.papermc.paper.entity.Frictional;
 import io.papermc.paper.registry.RegistryKey;
@@ -52,16 +53,19 @@ import io.papermc.paper.world.WeatheringCopperState;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
+import com.nisovin.magicspells.Subspell;
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.util.ai.CustomGoal;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.config.FunctionData;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
+import com.nisovin.magicspells.util.pdc.PersistentDataEntry;
+import com.nisovin.magicspells.listeners.MagicSpellListener;
 import com.nisovin.magicspells.util.itemreader.AttributeHandler;
 
 public class EntityData {
 
-	public static final NamespacedKey MS_PASSENGER = new NamespacedKey(MagicSpells.getInstance(), "entity_passenger");
+	public static final PersistentDataEntry<Byte, Boolean> MS_PASSENGER = new PersistentDataEntry<>(PersistentDataType.BOOLEAN, "entity_passenger");
 
 	private final Multimap<EntityType, Transformer<?>> options = MultimapBuilder.enumKeys(EntityType.class).arrayListValues().build();
 	private final List<DelayedEntityData> delayedEntityData = new ArrayList<>();
@@ -72,6 +76,9 @@ public class EntityData {
 	private final ConfigData<Angle> yaw;
 	private final ConfigData<Angle> pitch;
 	private final ConfigData<Vector> relativeOffset;
+	private final ConfigData<Boolean> untargetableAfterSpawn;
+
+	private Subspell spellOnSpawn = null;
 
 	// Legacy support for DisguiseSpell section format
 
@@ -137,7 +144,15 @@ public class EntityData {
 		pitch = ConfigDataUtil.getAngle(config, "pitch", Angle.DEFAULT);
 		relativeOffset = ConfigDataUtil.getVector(config, "relative-offset", new Vector(0, 0, 0));
 
-		Multimap<@NotNull Class<?>, @NotNull Transformer<?>> transformers = MultimapBuilder.linkedHashKeys().arrayListValues().build();
+		String spellOnSpawnName = config.getString("spell-on-spawn");
+		if (spellOnSpawnName != null && !spellOnSpawnName.isEmpty()) {
+			Subspell subspell = new Subspell(spellOnSpawnName);
+
+			if (subspell.process()) spellOnSpawn = subspell;
+			else MagicSpells.error("Invalid 'spell-on-spawn' specified on EntityData: '" + spellOnSpawnName + "'");
+		}
+
+		Multimap<Class<?>, Transformer<?>> transformers = MultimapBuilder.linkedHashKeys().arrayListValues().build();
 
 		// Entity
 		addOptBoolean(transformers, config, "silent", Entity.class, Entity::setSilent);
@@ -148,6 +163,15 @@ public class EntityData {
 		addOptBoolean(transformers, config, "invulnerable", Entity.class, Entity::setInvulnerable);
 		addOptBoolean(transformers, config, "visible-by-default", Entity.class, Entity::setVisibleByDefault);
 		addOptBoolean(transformers, config, "custom-name-visible", Entity.class, Entity::setCustomNameVisible);
+
+		ConfigData<Boolean> visibleOnlyToRecipient = ConfigDataUtil.getBoolean(config, "visible-only-to-recipient", false);
+		transformers.put(Entity.class, (Entity entity, SpellData data) -> {
+			if (!(data.recipient() instanceof Player recipient)) return;
+			if (!visibleOnlyToRecipient.get(data)) return;
+
+			entity.setVisibleByDefault(false);
+			recipient.showEntity(MagicSpells.getInstance(), entity);
+		});
 
 		addOptEnum(transformers, config, "visual-fire", Entity.class, TriState.class, Entity::setVisualFire);
 
@@ -184,6 +208,25 @@ public class EntityData {
 			transformers.put(Entity.class, (Entity entity, SpellData data) -> entity.addScoreboardTag(tag.get(data)));
 		}
 
+		ConfigData<Boolean> targetable = addOptBoolean(transformers, config, "targetable", Entity.class, (entity, value) ->
+			MagicSpellListener.PDC_TARGETABLE.set(entity.getPersistentDataContainer(), value)
+		);
+
+		ConfigData<Boolean> targetableByCaster = ConfigDataUtil.getBoolean(config, "targetable-by-caster", targetable);
+		transformers.put(Entity.class, (Entity entity, SpellData data) -> {
+			Boolean value = targetableByCaster.get(data);
+			if (value == null) return;
+
+			MagicSpellListener.PDC_TARGETABLE_BY_CASTER.set(entity.getPersistentDataContainer(), value);
+		});
+
+		transformers.put(Entity.class, (Entity entity, SpellData data) -> {
+			if (!data.hasCaster()) return;
+			MagicSpellListener.PDC_CASTER.set(entity.getPersistentDataContainer(), data.caster().getUniqueId());
+		});
+
+		untargetableAfterSpawn = ConfigDataUtil.getBoolean(config, "untargetable-after-spawn", false);
+
 		// Ageable
 		baby = addBoolean(transformers, config, "baby", false, Ageable.class, (ageable, baby) -> {
 			if (baby) ageable.setBaby();
@@ -194,7 +237,7 @@ public class EntityData {
 
 		// Attributable
 		List<?> attributeModifierStrings = config.getList("attribute-modifiers", new ArrayList<>());
-		Multimap<@NotNull Attribute, @NotNull AttributeModifier> attributeModifiers = AttributeHandler.getAttributeModifiers(attributeModifierStrings, null);
+		Multimap<Attribute, AttributeModifier> attributeModifiers = AttributeHandler.getAttributeModifiers(attributeModifierStrings, null);
 		if (!attributeModifiers.isEmpty()) {
 			transformers.put(Attributable.class, (Attributable entity, SpellData data) -> {
 				attributeModifiers.asMap().forEach((attribute, modifiers) -> {
@@ -949,11 +992,11 @@ public class EntityData {
 		spawnLocation.setYaw(yaw.get(data).apply(spawnLocation.getYaw()));
 		spawnLocation.setPitch(pitch.get(data).apply(spawnLocation.getPitch()));
 
-		return spawnLocation.getWorld().spawn(spawnLocation, entityClass, entity -> {
+		T spawned = spawnLocation.getWorld().spawn(spawnLocation, entityClass, entity -> {
 			for (EntityData passengerData : passengers) {
 				passengerData.spawn(entity.getLocation(), data, passenger -> {
 					entity.addPassenger(passenger);
-					passenger.getPersistentDataContainer().set(MS_PASSENGER, PersistentDataType.BOOLEAN, true);
+					MS_PASSENGER.set(passenger.getPersistentDataContainer(), true);
 				});
 			}
 
@@ -963,6 +1006,19 @@ public class EntityData {
 
 			if (postConsumer != null) postConsumer.accept(entity);
 		});
+
+		if (spellOnSpawn != null) {
+			if (spawned instanceof LivingEntity le) spellOnSpawn.subcast(data.retarget(le, null));
+			else spellOnSpawn.subcast(data.retarget(null, spawned.getLocation()));
+		}
+
+		if (untargetableAfterSpawn.get(data)) {
+			PersistentDataContainer pdc = spawned.getPersistentDataContainer();
+			MagicSpellListener.PDC_TARGETABLE.set(pdc, false);
+			MagicSpellListener.PDC_TARGETABLE_BY_CASTER.set(pdc, false);
+		}
+
+		return spawned;
 	}
 
 	public void apply(@NotNull Entity entity, @NotNull SpellData data) {
