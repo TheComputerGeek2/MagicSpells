@@ -2007,29 +2007,20 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 		return values;
 	}
 
-	@Deprecated
+	/**
+	 * @deprecated {@code armorstand} spell effect now extends {@code entity} effect and is spawned in with {@link Spell#playSpellEntityEffects(EffectPosition, Location, SpellData)}.
+	 */
+	@Deprecated(forRemoval = true)
 	protected Set<ArmorStand> playSpellArmorStandEffects(EffectPosition pos, Location location) {
-		Set<DelayableEntity<ArmorStand>> values = playSpellArmorStandEffects(pos, location, SpellData.NULL);
-		if (values == null) return null;
-
-		Set<ArmorStand> set = new HashSet<>();
-		values.forEach(stand -> stand.ifPresent(set::add));
-
-		return set;
+		return null;
 	}
 
+	/**
+	 * @deprecated {@code armorstand} spell effect now extends {@code entity} effect and is spawned in with {@link Spell#playSpellEntityEffects(EffectPosition, Location, SpellData)}.
+	 */
+	@Deprecated(forRemoval = true)
 	protected Set<DelayableEntity<ArmorStand>> playSpellArmorStandEffects(EffectPosition pos, Location location, SpellData data) {
-		if (effects == null) return null;
-		List<SpellEffect> effectsList = effects.get(pos);
-		if (effectsList == null) return null;
-		Set<DelayableEntity<ArmorStand>> armorStands = new HashSet<>();
-		for (SpellEffect effect : effectsList) {
-			if (!(effect instanceof ArmorStandEffect)) continue;
-			DelayableEntity<ArmorStand> stand = effect.playArmorStandEffect(location, data);
-			if (stand == null) continue;
-			armorStands.add(stand);
-		}
-		return armorStands;
+		return null;
 	}
 
 	@Deprecated

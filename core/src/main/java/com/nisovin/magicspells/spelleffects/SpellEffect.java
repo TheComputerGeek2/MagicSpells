@@ -345,23 +345,20 @@ public abstract class SpellEffect {
 		return new DelayableEntity<>(loc -> playEntityEffectLocationReal(loc, finalData), location, delay.get(finalData));
 	}
 
-	@Nullable
-	@Deprecated
+	/**
+	 * @deprecated {@code armorstand} spell effect now extends {@code entity} effect and is spawned in with {@link SpellEffect#playEntityEffect(Location, SpellData)}.
+	 */
+	@Deprecated(forRemoval = true)
 	public final ArmorStand playArmorStandEffect(final Location location) {
-		DelayableEntity<ArmorStand> armorStand = playArmorStandEffect(location, SpellData.NULL);
-		return armorStand == null ? null : armorStand.now();
+		return null;
 	}
 
-	@Nullable
+	/**
+	 * @deprecated {@code armorstand} spell effect now extends {@code entity} effect and is spawned in with {@link SpellEffect#playEntityEffect(Location, SpellData)}.
+	 */
+	@Deprecated(forRemoval = true)
 	public final DelayableEntity<ArmorStand> playArmorStandEffect(final Location location, SpellData data) {
-		double chance = this.chance.get(data);
-		if (chance > 0 && chance < 1 && random.nextDouble() > chance) return null;
-
-		ModifierResult result = checkModifiers(data, location);
-		if (!result.check()) return null;
-
-		SpellData finalData = result.data();
-		return new DelayableEntity<>(loc -> playArmorStandEffectLocationReal(loc, finalData), location, delay.get(finalData));
+		return null;
 	}
 
 	private Runnable playEffectLocationReal(Location location, SpellData data) {
@@ -383,13 +380,6 @@ public abstract class SpellEffect {
 		Location loc = location.clone();
 		applyOffsets(loc, data);
 		return playEntityEffectLocation(loc, data);
-	}
-
-	private ArmorStand playArmorStandEffectLocationReal(Location location, SpellData data) {
-		if (location == null) return playArmorStandEffectLocation(null, data);
-		Location loc = location.clone();
-		applyOffsets(loc, data);
-		return playArmorStandEffectLocation(loc, data);
 	}
 
 	@Deprecated
@@ -423,17 +413,6 @@ public abstract class SpellEffect {
 	protected Entity playEntityEffectLocation(Location location, SpellData data) {
 		//expect to be overridden
 		return playEntityEffectLocation(location);
-	}
-
-	@Deprecated
-	protected ArmorStand playArmorStandEffectLocation(Location location) {
-		//expect to be overridden
-		return null;
-	}
-
-	protected ArmorStand playArmorStandEffectLocation(Location location, SpellData data) {
-		//expect to be overridden
-		return playArmorStandEffectLocation(location);
 	}
 
 	@Deprecated

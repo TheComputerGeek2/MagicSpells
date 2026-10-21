@@ -13,7 +13,6 @@ import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.BoundingBox;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
 
 import de.slikey.effectlib.Effect;
@@ -217,10 +216,9 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 		private final Vector perpendicular;
 
 		private final Object2IntMap<UUID> immune;
-		private final Set<DelayableEntity<ArmorStand>> armorStandSet;
 		private final Predicate<Location> transparent;
-		private final Map<SpellEffect, DelayableEntity<Entity>> entityMap;
 		private final Set<EffectlibSpellEffect> effectSet;
+		private final Map<SpellEffect, DelayableEntity<Entity>> entityMap;
 
 		private final boolean followYaw;
 		private final boolean followPitch;
@@ -318,7 +316,6 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 
 			entityMap = playSpellEntityEffects(EffectPosition.PROJECTILE, center, data);
 			effectSet = playSpellEffectLibEffects(EffectPosition.PROJECTILE, center, data);
-			armorStandSet = playSpellArmorStandEffects(EffectPosition.PROJECTILE, center, data);
 
 			if (data.hasTarget()) playSpellEffects(data.caster(), data.target(), data);
 			else playSpellEffects(data.caster(), center, data);
@@ -364,12 +361,6 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 						Effect modifiedEffect = ((ModifiedEffect) effect).getInnerEffect();
 						if (modifiedEffect != null) modifiedEffect.setLocation(effectLoc);
 					}
-				}
-			}
-
-			if (armorStandSet != null) {
-				for (DelayableEntity<ArmorStand> armorStand : armorStandSet) {
-					armorStand.teleport(currentLocation);
 				}
 			}
 
@@ -511,11 +502,6 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 					spellEffect.getEffect().cancel();
 				}
 				effectSet.clear();
-			}
-
-			if (armorStandSet != null) {
-				armorStandSet.forEach(DelayableEntity::remove);
-				armorStandSet.clear();
 			}
 
 			if (entityMap != null) {

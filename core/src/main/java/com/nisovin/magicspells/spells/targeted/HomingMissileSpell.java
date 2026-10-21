@@ -8,7 +8,6 @@ import java.util.HashSet;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
 
 import de.slikey.effectlib.Effect;
@@ -202,7 +201,6 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 
 		private final Set<EffectlibSpellEffect> effectSet;
 		private final Map<SpellEffect, DelayableEntity<Entity>> entityMap;
-		private final Set<DelayableEntity<ArmorStand>> armorStandSet;
 
 		private final BoundingBox hitBox;
 		private final long startTime;
@@ -294,7 +292,6 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 
 			effectSet = playSpellEffectLibEffects(EffectPosition.PROJECTILE, currentLocation, data);
 			entityMap = playSpellEntityEffects(EffectPosition.PROJECTILE, currentLocation, data);
-			armorStandSet = playSpellArmorStandEffects(EffectPosition.PROJECTILE, currentLocation, data);
 
 			if (data.hasCaster()) playSpellEffects(EffectPosition.CASTER, data.caster(), data);
 
@@ -355,7 +352,7 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 			if (!force.isZero()) currentVelocity.add(force.normalize());
 			currentVelocity.normalize().multiply(velocityPerTick);
 
-			if (armorStandSet != null || entityMap != null) {
+			if (entityMap != null) {
 				// Changing the effect location
 				Vector dir = currentLocation.getDirection().normalize();
 				Vector offset = new Vector(-dir.getZ(), 0.0, dir.getX()).normalize();
@@ -365,17 +362,9 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 				effectLoc.setY(effectLoc.getY() + effectOffset.getY());
 				effectLoc = Util.makeFinite(effectLoc);
 
-				if (armorStandSet != null) {
-					for (DelayableEntity<ArmorStand> armorStand : armorStandSet) {
-						armorStand.teleport(effectLoc);
-					}
-				}
-
-				if (entityMap != null) {
-					for (var entry : entityMap.entrySet()) {
-						entry.getValue().teleport(entry.getKey().applyOffsets(effectLoc.clone(), data));
-					}
-				}
+                for (var entry : entityMap.entrySet()) {
+                    entry.getValue().teleport(entry.getKey().applyOffsets(effectLoc.clone(), data));
+                }
 			}
 
 			if (stopOnHitGround && !currentLocation.getBlock().isPassable()) {
@@ -474,10 +463,6 @@ public class HomingMissileSpell extends TargetedSpell implements TargetedEntityS
 					spellEffect.getEffect().cancel();
 				}
 				effectSet.clear();
-			}
-			if (armorStandSet != null) {
-				armorStandSet.forEach(DelayableEntity::remove);
-				armorStandSet.clear();
 			}
 			if (entityMap != null) {
 				entityMap.values().forEach(DelayableEntity::remove);
