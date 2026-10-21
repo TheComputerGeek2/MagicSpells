@@ -47,7 +47,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 
 	private Set<EffectlibSpellEffect> effectSet;
 	private Map<SpellEffect, DelayableEntity<Entity>> entityMap;
-	private Set<DelayableEntity<ArmorStand>> armorStandSet;
+	private Map<SpellEffect, DelayableEntity<ArmorStand>> armorStandSet;
 
 	private SpellData data;
 	private long startTime;
@@ -356,11 +356,14 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 			Util.applyRelativeOffset(effectLoc, effectOffset.clone().setY(0));
 			effectLoc.add(0, effectOffset.getY(), 0);
 
-			EulerAngle angle = EulerAngle.ZERO.setX(AccurateMath.toRadians(effectLoc.getPitch()));
-
 			if (armorStandSet != null) {
-				for (DelayableEntity<ArmorStand> armorStand : armorStandSet) {
-					armorStand.teleport(effectLoc);
+				for (var entry : armorStandSet.entrySet()) {
+					DelayableEntity<ArmorStand> armorStand = entry.getValue();
+
+					Location loc = entry.getKey().applyOffsets(effectLoc.clone(), data);
+					EulerAngle angle = EulerAngle.ZERO.setX(AccurateMath.toRadians(loc.getPitch()));
+
+					armorStand.teleport(loc);
 					armorStand.accept(stand -> {
 						stand.setHeadPose(angle);
 						stand.setLeftArmPose(angle);
@@ -641,7 +644,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 			effectSet.clear();
 		}
 		if (armorStandSet != null) {
-			armorStandSet.forEach(DelayableEntity::remove);
+			armorStandSet.values().forEach(DelayableEntity::remove);
 			armorStandSet.clear();
 		}
 		if (entityMap != null) {

@@ -2009,27 +2009,29 @@ public abstract class Spell implements Comparable<Spell>, Listener {
 
 	@Deprecated
 	protected Set<ArmorStand> playSpellArmorStandEffects(EffectPosition pos, Location location) {
-		Set<DelayableEntity<ArmorStand>> values = playSpellArmorStandEffects(pos, location, SpellData.NULL);
+		Map<SpellEffect, DelayableEntity<ArmorStand>> values = playSpellArmorStandEffects(pos, location, SpellData.NULL);
 		if (values == null) return null;
 
 		Set<ArmorStand> set = new HashSet<>();
-		values.forEach(stand -> stand.ifPresent(set::add));
+		values.values().forEach(stand -> stand.ifPresent(set::add));
 
 		return set;
 	}
 
-	protected Set<DelayableEntity<ArmorStand>> playSpellArmorStandEffects(EffectPosition pos, Location location, SpellData data) {
+	protected Map<SpellEffect, DelayableEntity<ArmorStand>> playSpellArmorStandEffects(EffectPosition pos, Location location, SpellData data) {
 		if (effects == null) return null;
 		List<SpellEffect> effectsList = effects.get(pos);
 		if (effectsList == null) return null;
-		Set<DelayableEntity<ArmorStand>> armorStands = new HashSet<>();
+
+		Map<SpellEffect, DelayableEntity<ArmorStand>> values = new HashMap<>();
 		for (SpellEffect effect : effectsList) {
 			if (!(effect instanceof ArmorStandEffect)) continue;
 			DelayableEntity<ArmorStand> stand = effect.playArmorStandEffect(location, data);
 			if (stand == null) continue;
-			armorStands.add(stand);
+			values.put(effect, stand);
 		}
-		return armorStands;
+
+		return values;
 	}
 
 	@Deprecated

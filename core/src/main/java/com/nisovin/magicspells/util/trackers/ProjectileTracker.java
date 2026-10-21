@@ -35,7 +35,7 @@ public class ProjectileTracker implements Runnable, Tracker {
 
 	private Set<EffectlibSpellEffect> effectSet;
 	private Map<SpellEffect, DelayableEntity<Entity>> entityMap;
-	private Set<DelayableEntity<ArmorStand>> armorStandSet;
+	private Map<SpellEffect, DelayableEntity<ArmorStand>> armorStandSet;
 
 	private ProjectileSpell spell;
 
@@ -234,7 +234,9 @@ public class ProjectileTracker implements Runnable, Tracker {
 			}
 
 			if (armorStandSet != null) {
-				armorStandSet.forEach(stand -> stand.teleport(effectLoc));
+				for (var entry : armorStandSet.entrySet()) {
+					entry.getValue().teleport(entry.getKey().applyOffsets(effectLoc.clone(), data));
+				}
 			}
 		}
 
@@ -344,7 +346,7 @@ public class ProjectileTracker implements Runnable, Tracker {
 			entityMap.clear();
 		}
 		if (armorStandSet != null) {
-			armorStandSet.forEach(DelayableEntity::remove);
+			armorStandSet.values().forEach(DelayableEntity::remove);
 			armorStandSet.clear();
 		}
 		currentLocation = null;

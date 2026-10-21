@@ -217,10 +217,10 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 		private final Vector perpendicular;
 
 		private final Object2IntMap<UUID> immune;
-		private final Set<DelayableEntity<ArmorStand>> armorStandSet;
 		private final Predicate<Location> transparent;
-		private final Map<SpellEffect, DelayableEntity<Entity>> entityMap;
 		private final Set<EffectlibSpellEffect> effectSet;
+		private final Map<SpellEffect, DelayableEntity<Entity>> entityMap;
+		private final Map<SpellEffect, DelayableEntity<ArmorStand>> armorStandSet;
 
 		private final boolean followYaw;
 		private final boolean followPitch;
@@ -368,8 +368,8 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			}
 
 			if (armorStandSet != null) {
-				for (DelayableEntity<ArmorStand> armorStand : armorStandSet) {
-					armorStand.teleport(currentLocation);
+				for (var entry : armorStandSet.entrySet()) {
+					entry.getValue().teleport(entry.getKey().applyOffsets(currentLocation.clone(), data));
 				}
 			}
 
@@ -514,7 +514,7 @@ public class OrbitSpell extends TargetedSpell implements TargetedEntitySpell, Ta
 			}
 
 			if (armorStandSet != null) {
-				armorStandSet.forEach(DelayableEntity::remove);
+				armorStandSet.values().forEach(DelayableEntity::remove);
 				armorStandSet.clear();
 			}
 
