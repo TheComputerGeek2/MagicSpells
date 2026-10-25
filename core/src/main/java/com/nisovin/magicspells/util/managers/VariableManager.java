@@ -134,6 +134,7 @@ public class VariableManager {
 		addMetaVariableType("max_health", new MaxHealthVariable());
 		addMetaVariableType("current_health", new CurrentHealthVariable());
 		addMetaVariableType("health_scale", new HealthScaleVariable());
+		addMetaVariableType("held_item_slot", new HeldItemSlotVariable());
 		addMetaVariableType("compass_target_x", new CompassTargetXVariable());
 		addMetaVariableType("compass_target_y", new CompassTargetYVariable());
 		addMetaVariableType("compass_target_z", new CompassTargetZVariable());

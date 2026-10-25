@@ -32,6 +32,8 @@ public class VelocitySpell extends InstantSpell implements TargetedEntitySpell, 
 
 	private final ConfigData<Double> speed;
 
+	private final ConfigData<Vector> velocity;
+
 	private final ConfigData<Boolean> cancelDamage;
 	private final ConfigData<Boolean> powerAffectsSpeed;
 	private final ConfigData<Boolean> addVelocityInstead;
@@ -40,6 +42,8 @@ public class VelocitySpell extends InstantSpell implements TargetedEntitySpell, 
 		super(config, spellName);
 
 		speed = getConfigDataDouble("speed", 40);
+
+		velocity = getConfigDataVector("velocity", null);
 
 		cancelDamage = getConfigDataBoolean("cancel-damage", true);
 		powerAffectsSpeed = getConfigDataBoolean("power-affects-speed", true);
@@ -60,33 +64,31 @@ public class VelocitySpell extends InstantSpell implements TargetedEntitySpell, 
 
 	@Override
 	public CastResult castAtEntity(SpellData data) {
-		double speed = this.speed.get(data) / 10;
-		if (powerAffectsSpeed.get(data)) speed *= data.power();
-
-		Vector velocity = data.target().getLocation().getDirection().normalize().multiply(speed);
-
-		if (addVelocityInstead.get(data)) data.target().setVelocity(data.target().getVelocity().add(velocity));
-		else data.target().setVelocity(velocity);
-
-		velocityMonitor.add(new VelocityData(this, data, cancelDamage.get(data)));
-		playSpellEffects(data);
-
-		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
+		return applyVelocity(data, data.target().getLocation().getDirection().normalize());
 	}
 
 	@Override
 	public CastResult castAtEntityFromLocation(SpellData data) {
-		double speed = this.speed.get(data) / 10;
-		if (powerAffectsSpeed.get(data)) speed *= data.power();
+		return applyVelocity(data, data.location().getDirection().normalize());
+	}
 
-		Vector velocity = data.location().getDirection().normalize().multiply(speed);
+	private CastResult applyVelocity(SpellData data, Vector direction) {
+		Vector velocity = this.velocity.get(data);
 
-		if (addVelocityInstead.get(data)) data.target().setVelocity(data.target().getVelocity().add(velocity));
-		else data.target().setVelocity(velocity);
+		if (velocity == null) {
+			double speed = this.speed.get(data) / 10;
+			if (powerAffectsSpeed.get(data)) speed *= data.power();
+
+			velocity = direction.multiply(speed);
+		}
+
+		if (addVelocityInstead.get(data)) velocity = data.target().getVelocity().add(velocity);
+
+		data.target().setVelocity(velocity);
 
 		velocityMonitor.add(new VelocityData(this, data, cancelDamage.get(data)));
-		playSpellEffects(data);
 
+		playSpellEffects(data);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}
 
