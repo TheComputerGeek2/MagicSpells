@@ -2,6 +2,7 @@ package com.nisovin.magicspells.spells.targeted;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.util.RayTraceResult;
 
 import com.nisovin.magicspells.util.*;
@@ -12,15 +13,21 @@ import com.nisovin.magicspells.events.SpellTargetLocationEvent;
 
 public class BlinkSpell extends TargetedSpell implements TargetedLocationSpell {
 
-	private final ConfigData<Boolean> passThroughCeiling;
-
 	private final String strCantBlink;
+
+	private final ConfigData<Integer> requireGroundDistance;
+
+	private final ConfigData<Boolean> snapToGround;
+	private final ConfigData<Boolean> passThroughCeiling;
 
 	public BlinkSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
 		strCantBlink = getConfigString("str-cant-blink", "You can't blink there.");
 
+		requireGroundDistance = getConfigDataInt("require-ground-distance", 0);
+
+		snapToGround = getConfigDataBoolean("snap-to-ground", false);
 		passThroughCeiling = getConfigDataBoolean("pass-through-ceiling", false);
 	}
 
@@ -30,21 +37,25 @@ public class BlinkSpell extends TargetedSpell implements TargetedLocationSpell {
 		if (result == null) return noTarget(strCantBlink, data);
 
 		Block found = result.getHitBlock();
-		Block prev = found.getRelative(result.getHitBlockFace());
+		BlockFace face = result.getHitBlockFace();
+		Block prev = found.getRelative(face);
 
 		Location loc = null;
-		if (!passThroughCeiling.get(data) && found.getRelative(0, -1, 0).equals(prev) && prev.isPassable()) {
-			Block under = prev.getRelative(0, -1, 0);
-			if (under.isPassable()) loc = under.getLocation().add(0.5, 0, 0.5);
-		} else if (found.getRelative(0, 1, 0).isPassable() && found.getRelative(0, 2, 0).isPassable()) {
-			loc = found.getLocation().add(0.5, 1, 0.5);
-		} else if (prev.isPassable() && prev.getRelative(0, 1, 0).isPassable()) {
-			loc = prev.getLocation().add(0.5, 0, 0.5);
-		}
-		if (loc == null) return noTarget(strCantBlink, data);
 
-		loc.setPitch(data.caster().getPitch());
-		loc.setYaw(data.caster().getYaw());
+		boolean snapToGround = this.snapToGround.get(data);
+		int requireGroundDistance = this.requireGroundDistance.get(data);
+
+		// Under
+		if (face == BlockFace.DOWN && !passThroughCeiling.get(data)) {
+			Location target = prev.getLocation().add(0.5, -1, 0.5);
+			loc = BlockUtils.adjustToSafeLocation(data.caster(), target, requireGroundDistance, snapToGround);
+		}
+		// Above
+		if (loc == null) loc = BlockUtils.adjustToSafeLocation(data.caster(), found.getLocation().add(0.5, 0, 0.5));
+		// Side
+		if (loc == null) loc = BlockUtils.adjustToSafeLocation(data.caster(), prev.getLocation().add(0.5, 0, 0.5), requireGroundDistance, snapToGround);
+
+		if (loc == null) return noTarget(strCantBlink, data);
 
 		SpellTargetLocationEvent targetEvent = new SpellTargetLocationEvent(this, data, loc);
 		if (!targetEvent.callEvent()) return noTarget(strCantBlink, targetEvent);
