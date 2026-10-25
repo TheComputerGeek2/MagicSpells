@@ -158,6 +158,29 @@ public abstract class PacketBasedGlowManager<TPacket, TEntityDataPacket extends 
 	}
 
 	@Override
+	public void removeGlow(@NotNull Entity entity) {
+		UUID uuid = entity.getUniqueId();
+
+		if (!glows.containsKey(uuid)) return;
+
+		GlowData prev, curr;
+		synchronized (this) {
+			prev = getGlowData(null, uuid);
+
+			glows.remove(uuid);
+
+			curr = getGlowData(null, uuid);
+		}
+
+		if (curr == null) {
+			resetGlow(null, entity, prev);
+			return;
+		}
+
+		updateGlow(null, entity, prev, curr);
+	}
+
+	@Override
 	public void removeGlow(@NotNull Entity entity, @NotNull NamespacedKey key) {
 		UUID uuid = entity.getUniqueId();
 
@@ -180,6 +203,29 @@ public abstract class PacketBasedGlowManager<TPacket, TEntityDataPacket extends 
 		}
 
 		updateGlow(null, entity, prev, curr);
+	}
+
+	@Override
+	public void removeGlow(@NotNull Player player, @NotNull Entity entity) {
+		Pair<UUID, UUID> pair = Pair.of(player.getUniqueId(), entity.getUniqueId());
+
+		if (!perPlayerGlows.containsKey(pair)) return;
+
+		GlowData prev, curr;
+		synchronized (this) {
+			prev = getGlowData(pair);
+
+			perPlayerGlows.remove(pair);
+
+			curr = getGlowData(pair);
+		}
+
+		if (curr == null) {
+			resetGlow(player, entity, prev);
+			return;
+		}
+
+		updateGlow(player, entity, prev, curr);
 	}
 
 	@Override

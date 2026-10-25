@@ -2,7 +2,6 @@ package com.nisovin.magicspells.spells.targeted;
 
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
@@ -18,11 +17,8 @@ import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.util.glow.GlowManager;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
-import com.nisovin.magicspells.util.glow.impl.PacketEventsGlowManager;
 
 public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
-
-	private static GlowManager glowManager;
 
 	private final ConfigData<Boolean> global;
 	private final ConfigData<Boolean> remove;
@@ -40,13 +36,6 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 		remove = getConfigDataBoolean("remove", false);
 		duration = getConfigDataInt("duration", 0);
 		priority = getConfigDataInt("priority", 0);
-
-		if (glowManager == null) {
-			if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) glowManager = new PacketEventsGlowManager();
-			else glowManager = MagicSpells.getVolatileCodeHandler().getGlowManager();
-
-			glowManager.load();
-		}
 	}
 
 	@Override
@@ -59,13 +48,14 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	@Override
 	public CastResult castAtEntity(SpellData data) {
+		GlowManager glowManager = MagicSpells.getGlowManager();
+
 		if (global.get(data)) {
 			NamespacedKey key = this.key.get(data);
 
 			if (remove.get(data)) {
-				if (key == null) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
-
-				glowManager.removeGlow(data.target(), key);
+				if (key == null) glowManager.removeGlow(data.target());
+				else glowManager.removeGlow(data.target(), key);
 			} else {
 				glowManager.applyGlow(
 					data.target(),
@@ -85,9 +75,8 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 		NamespacedKey key = this.key.get(data);
 
 		if (remove.get(data)) {
-			if (key == null) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
-
-			glowManager.removeGlow(caster, data.target(), key);
+			if (key == null) glowManager.removeGlow(caster, data.target());
+			else glowManager.removeGlow(caster, data.target(), key);
 		} else {
 			glowManager.applyGlow(
 				caster,
@@ -101,14 +90,6 @@ public class GlowSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		playSpellEffects(data);
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
-	}
-
-	@Override
-	protected void turnOff() {
-		if (glowManager == null) return;
-
-		glowManager.unload();
-		glowManager = null;
 	}
 
 }
