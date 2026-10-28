@@ -7,16 +7,15 @@ import java.util.concurrent.ThreadLocalRandom;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleArraySet;
 
-import org.apache.commons.math4.core.jdkmath.AccurateMath;
-
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
-import org.bukkit.util.EulerAngle;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
+
+import io.papermc.paper.math.Rotations;
 
 import de.slikey.effectlib.Effect;
 import de.slikey.effectlib.effect.ModifiedEffect;
@@ -361,13 +360,12 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 					DelayableEntity<ArmorStand> armorStand = entry.getValue();
 
 					Location loc = entry.getKey().applyOffsets(effectLoc.clone(), data);
-					EulerAngle angle = EulerAngle.ZERO.setX(AccurateMath.toRadians(loc.getPitch()));
+					Rotations angle = Rotations.ZERO.withX(loc.getPitch());
 
 					armorStand.teleport(loc);
 					armorStand.accept(stand -> {
-						stand.setHeadPose(angle);
-						stand.setLeftArmPose(angle);
-						stand.setRightArmPose(angle);
+						stand.setLeftArmRotations(angle);
+						stand.setRightArmRotations(angle);
 					});
 				}
 			}
