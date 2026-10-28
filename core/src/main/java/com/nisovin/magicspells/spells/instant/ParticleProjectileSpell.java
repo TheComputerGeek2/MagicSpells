@@ -391,7 +391,7 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 		return playSpellEntityEffects(position, location, data);
 	}
 
-	public Set<DelayableEntity<ArmorStand>> playArmorStandEffectsProjectile(EffectPosition position, Location location, SpellData data) {
+	public Map<SpellEffect, DelayableEntity<ArmorStand>> playArmorStandEffectsProjectile(EffectPosition position, Location location, SpellData data) {
 		return playSpellArmorStandEffects(position, location, data);
 	}
 

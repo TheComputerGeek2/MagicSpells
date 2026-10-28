@@ -7,16 +7,15 @@ import java.util.concurrent.ThreadLocalRandom;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleArraySet;
 
-import org.apache.commons.math4.core.jdkmath.AccurateMath;
-
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
-import org.bukkit.util.EulerAngle;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
+
+import io.papermc.paper.math.Rotations;
 
 import de.slikey.effectlib.Effect;
 import de.slikey.effectlib.effect.ModifiedEffect;
@@ -47,7 +46,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 
 	private Set<EffectlibSpellEffect> effectSet;
 	private Map<SpellEffect, DelayableEntity<Entity>> entityMap;
-	private Set<DelayableEntity<ArmorStand>> armorStandSet;
+	private Map<SpellEffect, DelayableEntity<ArmorStand>> armorStandSet;
 
 	private SpellData data;
 	private long startTime;
@@ -356,15 +355,17 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 			Util.applyRelativeOffset(effectLoc, effectOffset.clone().setY(0));
 			effectLoc.add(0, effectOffset.getY(), 0);
 
-			EulerAngle angle = EulerAngle.ZERO.setX(AccurateMath.toRadians(effectLoc.getPitch()));
-
 			if (armorStandSet != null) {
-				for (DelayableEntity<ArmorStand> armorStand : armorStandSet) {
-					armorStand.teleport(effectLoc);
+				for (var entry : armorStandSet.entrySet()) {
+					DelayableEntity<ArmorStand> armorStand = entry.getValue();
+
+					Location loc = entry.getKey().applyOffsets(effectLoc.clone(), data);
+					Rotations angle = Rotations.ZERO.withX(loc.getPitch());
+
+					armorStand.teleport(loc);
 					armorStand.accept(stand -> {
-						stand.setHeadPose(angle);
-						stand.setLeftArmPose(angle);
-						stand.setRightArmPose(angle);
+						stand.setLeftArmRotations(angle);
+						stand.setRightArmRotations(angle);
 					});
 				}
 			}
@@ -641,7 +642,7 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 			effectSet.clear();
 		}
 		if (armorStandSet != null) {
-			armorStandSet.forEach(DelayableEntity::remove);
+			armorStandSet.values().forEach(DelayableEntity::remove);
 			armorStandSet.clear();
 		}
 		if (entityMap != null) {
