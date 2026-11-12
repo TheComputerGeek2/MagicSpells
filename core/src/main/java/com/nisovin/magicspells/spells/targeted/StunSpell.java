@@ -1,12 +1,9 @@
 package com.nisovin.magicspells.spells.targeted;
 
-import java.util.Set;
-import java.util.Map;
-import java.util.UUID;
-import java.util.HashSet;
-import java.util.HashMap;
+import java.util.*;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
@@ -22,9 +19,11 @@ import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.spells.TargetedEntitySpell;
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
+
 public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private final Map<UUID, StunnedInfo> stunnedLivingEntities;
+	private final Map<UUID, StunnedInfo> stunned = new HashMap<>();
 
 	private final int interval;
 	private final ConfigData<Integer> duration;
@@ -34,7 +33,7 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 	private final ConfigData<Boolean> useTargetLocation;
 	private final ConfigData<Boolean> powerAffectsDuration;
 
-	private final StunListener listener;
+	private final StunListener listener = new StunListener();
 
 	public StunSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
@@ -46,9 +45,6 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 		stunMonitor = getConfigDataBoolean("stun-monitor", true);
 		useTargetLocation = getConfigDataBoolean("use-target-location", true);
 		powerAffectsDuration = getConfigDataBoolean("power-affects-duration", true);
-
-		listener = new StunListener();
-		stunnedLivingEntities = new HashMap<>();
 	}
 
 	@Override
@@ -77,38 +73,46 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 		long duration = this.duration.get(data) * TimeUtil.MILLISECONDS_PER_SECOND / 20;
 		if (powerAffectsDuration.get(data)) duration = Math.round(duration * data.power());
 
-		boolean stunBody = this.stunBody.get(data);
-		boolean stunMonitor = this.stunMonitor.get(data);
-		boolean useTargetLocation = this.useTargetLocation.get(data);
-		Location targetLocation = useTargetLocation ? data.target().getLocation() : null;
-
-		StunnedInfo info = new StunnedInfo(data.caster(), data.target(), System.currentTimeMillis() + duration, stunBody, stunMonitor, useTargetLocation, targetLocation);
-		stunnedLivingEntities.put(data.target().getUniqueId(), info);
+		StunnedInfo info = new StunnedInfo(
+			data.caster(),
+			data.target(),
+			System.currentTimeMillis() + duration,
+			stunBody.get(data),
+			stunMonitor.get(data),
+			useTargetLocation.get(data) ? data.target().getLocation() : null
+		);
+		stunned.put(data.target().getUniqueId(), info);
 
 		playSpellEffects(data);
-		playSpellEffectsBuff(data.target(), e -> stunnedLivingEntities.containsKey(e.getUniqueId()), data);
+		playSpellEffectsBuff(data.target(), this::isStunned, data);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);
 	}
 
-	public boolean isStunned(LivingEntity entity) {
-		return stunnedLivingEntities.containsKey(entity.getUniqueId());
+	public boolean isStunned(Entity entity) {
+		return stunned.containsKey(entity.getUniqueId());
 	}
 
-	public void removeStun(LivingEntity entity) {
-		stunnedLivingEntities.remove(entity.getUniqueId());
+	public void removeStun(Entity entity) {
+		stunned.remove(entity.getUniqueId());
 	}
 
-	private record StunnedInfo(LivingEntity caster, LivingEntity target, long until, boolean stunBody, boolean stunMonitor, boolean useTargetLocation, Location targetLocation) {
-	}
+	private record StunnedInfo(
+		LivingEntity caster,
+		LivingEntity target,
+		long until,
+		boolean stunBody,
+		boolean stunMonitor,
+		Location targetLocation
+	) {}
 
 	private class StunListener implements Listener {
 
-		@EventHandler
+		@EventHandler(ignoreCancelled = true)
 		private void onMove(PlayerMoveEvent event) {
 			Player player = event.getPlayer();
-			if (!isStunned(player)) return;
-			StunnedInfo info = stunnedLivingEntities.get(player.getUniqueId());
+
+			StunnedInfo info = stunned.get(player.getUniqueId());
 			if (info == null) return;
 
 			if (System.currentTimeMillis() >= info.until) {
@@ -119,7 +123,8 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 			boolean stunBody = info.stunBody && event.hasExplicitlyChangedPosition();
 			boolean stunMonitor = info.stunMonitor && event.hasChangedOrientation();
 			if (!stunBody && !stunMonitor) return;
-			player.teleport(info.useTargetLocation ? info.targetLocation : event.getFrom());
+
+			player.teleport(Objects.requireNonNullElse(info.targetLocation, event.getFrom()));
 		}
 
 		@EventHandler
@@ -130,16 +135,17 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		@EventHandler
 		private void onQuit(PlayerQuitEvent event) {
-			Player player = event.getPlayer();
-			if (!isStunned(player)) return;
-			removeStun(player);
+			removeStun(event.getPlayer());
+		}
+
+		@EventHandler(ignoreCancelled = true)
+		private void onDeath(PlayerDeathEvent event) {
+			removeStun(event.getEntity());
 		}
 
 		@EventHandler
-		private void onDeath(PlayerDeathEvent event) {
-			Player player = event.getEntity();
-			if (!isStunned(player)) return;
-			removeStun(player);
+		private void onRemove(EntityRemoveFromWorldEvent event) {
+			removeStun(event.getEntity());
 		}
 
 	}
@@ -150,13 +156,11 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 
 		@Override
 		public void run() {
-			for (UUID id : stunnedLivingEntities.keySet()) {
-				StunnedInfo info = stunnedLivingEntities.get(id);
+			for (StunnedInfo info : stunned.values()) {
 				LivingEntity entity = info.target;
-				long until = info.until;
 				if (entity instanceof Player) continue;
 
-				if (entity.isValid() && until > System.currentTimeMillis()) {
+				if (entity.isValid() && info.until > System.currentTimeMillis()) {
 					entity.teleport(info.targetLocation);
 					continue;
 				}
