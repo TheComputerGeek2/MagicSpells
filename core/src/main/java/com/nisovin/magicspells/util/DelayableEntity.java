@@ -4,6 +4,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.ApiStatus;
 
+import io.papermc.paper.math.Rotations;
+
 import java.util.function.Function;
 import java.util.function.Consumer;
 import java.util.concurrent.CompletableFuture;
@@ -12,6 +14,7 @@ import java.util.concurrent.CancellationException;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.ArmorStand;
 
 import com.nisovin.magicspells.MagicSpells;
 
@@ -71,8 +74,16 @@ public class DelayableEntity<E extends Entity> {
 	 */
 	public void teleport(@NotNull Location location) {
 		E entity = now();
-		if (entity == null) spawnLocation = location;
-		else entity.teleportAsync(location);
+
+		if (entity == null) {
+			spawnLocation = location;
+			return;
+		}
+
+		entity.teleportAsync(location);
+
+		if (!(entity instanceof ArmorStand stand)) return;
+		stand.setHeadRotations(Rotations.ZERO.withX(entity.getPitch()));
 	}
 
 	/**
@@ -107,7 +118,7 @@ public class DelayableEntity<E extends Entity> {
 		else taskId = MagicSpells.scheduleDelayedTask(spawnEntity, delay);
 
 		int id = taskId;
-		future.whenComplete((result, throwable) -> {
+		future.whenComplete((_, throwable) -> {
 			if (future.isCancelled() && id != -1) MagicSpells.cancelTask(id);
 			if (throwable == null) return;
 			MagicSpells.handleException(new Exception("Delayed entity failed to spawn", throwable));

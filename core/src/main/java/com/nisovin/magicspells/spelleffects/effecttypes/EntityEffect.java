@@ -25,7 +25,7 @@ public class EntityEffect extends SpellEffect {
 
 	private EntityData entityData;
 
-	private ConfigData<Integer> duration;
+	protected ConfigData<Integer> duration;
 
 	private ConfigData<Boolean> gravity;
 
