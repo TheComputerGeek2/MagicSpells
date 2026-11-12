@@ -126,13 +126,14 @@ public class DodgeSpell extends BuffSpell {
 		Vector v = RandomUtils.getRandomCircleVector().multiply(distance);
 		targetLoc.add(v);
 		targetLoc.setDirection(caster.getLocation().getDirection());
+		targetLoc = BlockUtils.adjustToSafeLocation(caster, targetLoc);
 
 		if (spellBeforeDodge != null) {
 			SpellData castData = subData.builder().caster(caster).target(null).location(casterLoc).recipient(null).build();
 			spellBeforeDodge.subcast(castData);
 		}
 
-		if (!targetLoc.getBlock().isPassable() || !targetLoc.getBlock().getRelative(BlockFace.UP).isPassable()) return;
+		if (targetLoc == null) return;
 		caster.teleportAsync(targetLoc);
 		addUseAndChargeCost(caster);
 

@@ -37,6 +37,7 @@ public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, T
 	private final Map<UUID, SummonData> pending;
 
 	private final ConfigData<Integer> maxAcceptDelay;
+	private final ConfigData<Integer> requireGroundDistance;
 
 	private final ConfigData<Boolean> requireExactName;
 	private final ConfigData<Boolean> requireAcceptance;
@@ -51,6 +52,7 @@ public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, T
 		super(config, spellName);
 
 		maxAcceptDelay = getConfigDataInt("max-accept-delay", 90);
+		requireGroundDistance = getConfigDataInt("require-ground-distance", 2);
 
 		requireExactName = getConfigDataBoolean("require-exact-name", false);
 		requireAcceptance = getConfigDataBoolean("require-acceptance", true);
@@ -91,12 +93,6 @@ public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, T
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
 
-		// Check location
-		if (!BlockUtils.isSafeToStand(landLoc.clone())) {
-			sendMessage(strUsage, caster, data);
-			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
-		}
-
 		// Get player
 		LivingEntity target = requireExactName.get(data) ? Bukkit.getPlayerExact(targetName) : Bukkit.getPlayer(targetName);
 		if (target == null || !validTargetList.canTarget(caster, target)) return noTarget(data);
@@ -106,6 +102,12 @@ public class SummonSpell extends TargetedSpell implements TargetedEntitySpell, T
 
 		data = targetEvent.getSpellData();
 		target = data.target();
+
+		landLoc = BlockUtils.adjustToSafeLocation(target, landLoc, requireGroundDistance.get(data), false);
+		if (landLoc == null) {
+			sendMessage(strUsage, caster, data);
+			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
+		}
 
 		// Teleport player
 		if (requireAcceptance.get(data)) {
