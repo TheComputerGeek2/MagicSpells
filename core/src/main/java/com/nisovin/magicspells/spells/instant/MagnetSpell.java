@@ -70,7 +70,7 @@ public class MagnetSpell extends InstantSpell implements TargetedLocationSpell {
 
 		Collection<Item> items = location.getNearbyEntitiesByType(Item.class, radius, item -> {
 			if (!item.isValid() || item.getItemStack().isEmpty()) return false;
-			if (item.getPersistentDataContainer().has(ItemSprayEffect.MS_ITEM_SPRAY)) return false;
+			if (ItemSprayEffect.MS_ITEM_SPRAY.has(item.getPersistentDataContainer())) return false;
 
 			if (data.hasCaster()) {
 				LivingEntity caster = data.caster();

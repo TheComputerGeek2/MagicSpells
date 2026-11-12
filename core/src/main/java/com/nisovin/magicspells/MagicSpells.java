@@ -73,6 +73,7 @@ import com.nisovin.magicspells.mana.ManaSystem;
 import com.nisovin.magicspells.mana.ManaHandler;
 import com.nisovin.magicspells.variables.Variable;
 import com.nisovin.magicspells.spells.PassiveSpell;
+import com.nisovin.magicspells.util.glow.GlowManager;
 import com.nisovin.magicspells.util.compat.EventUtil;
 import com.nisovin.magicspells.commands.MagicCommands;
 import com.nisovin.magicspells.storage.StorageHandler;
@@ -93,6 +94,7 @@ import com.nisovin.magicspells.volatilecode.VolatileCodeHandle;
 import com.nisovin.magicspells.events.SpellLearnEvent.LearnSource;
 import com.nisovin.magicspells.spelleffects.trackers.EffectTracker;
 import com.nisovin.magicspells.spells.passive.util.PassiveListener;
+import com.nisovin.magicspells.util.glow.impl.PacketEventsGlowManager;
 import com.nisovin.magicspells.variables.variabletypes.GlobalVariable;
 import com.nisovin.magicspells.spelleffects.trackers.AsyncEffectTracker;
 import com.nisovin.magicspells.spelleffects.effecttypes.EffectLibEffect;
@@ -139,6 +141,7 @@ public class MagicSpells extends JavaPlugin {
 	private DeprecationHandler deprecationHandler;
 	private VolatileCodeHandle volatileCodeHandle;
 
+	private GlowManager glowManager;
 	private BuffManager buffManager;
 	private EffectManager effectManager;
 	private BossBarManager bossBarManager;
@@ -407,6 +410,10 @@ public class MagicSpells extends JavaPlugin {
 		if (CompatBasics.pluginEnabled("Vault")) moneyHandler = new MoneyHandler();
 		lifeLengthTracker = new LifeLengthTracker();
 		expressionDictionary = new ExpressionDictionary();
+
+		if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) glowManager = new PacketEventsGlowManager();
+		else glowManager = MagicSpells.getVolatileCodeHandler().getGlowManager();
+		glowManager.load();
 
 		// Call loading event
 		Bukkit.getPluginManager().callEvent(new MagicSpellsLoadingEvent(this));
@@ -1442,6 +1449,10 @@ public class MagicSpells extends JavaPlugin {
 		return plugin.customGoalsManager;
 	}
 
+	public static GlowManager getGlowManager() {
+		return plugin.glowManager;
+	}
+
 	public static BuffManager getBuffManager() {
 		return plugin.buffManager;
 	}
@@ -2267,6 +2278,12 @@ public class MagicSpells extends JavaPlugin {
 		if (buffManager != null) {
 			buffManager.turnOff();
 			buffManager = null;
+		}
+
+		// Turn off glow manager
+		if (glowManager != null) {
+			glowManager.unload();
+			glowManager = null;
 		}
 
 		// Clear memory

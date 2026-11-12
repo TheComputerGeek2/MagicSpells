@@ -19,7 +19,11 @@ public interface GlowManager {
 
 	void applyGlow(@NotNull Player player, @NotNull Entity entity, @NotNull NamespacedKey key, @NotNull NamedTextColor color, int priority, @Range(from = 0, to = Integer.MAX_VALUE) int duration);
 
+	void removeGlow(@NotNull Entity entity);
+
 	void removeGlow(@NotNull Entity entity, @NotNull NamespacedKey key);
+
+	void removeGlow(@NotNull Player player, @NotNull Entity entity);
 
 	void removeGlow(@NotNull Player player, @NotNull Entity entity, @NotNull NamespacedKey key);
 
