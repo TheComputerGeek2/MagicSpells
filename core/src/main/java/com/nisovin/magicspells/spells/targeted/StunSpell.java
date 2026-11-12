@@ -1,10 +1,11 @@
 package com.nisovin.magicspells.spells.targeted;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
@@ -12,6 +13,8 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+
+import io.papermc.paper.event.entity.EntityMoveEvent;
 
 import com.nisovin.magicspells.util.*;
 import com.nisovin.magicspells.MagicSpells;
@@ -25,7 +28,6 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 
 	private final Map<UUID, StunnedInfo> stunned = new HashMap<>();
 
-	private final int interval;
 	private final ConfigData<Integer> duration;
 
 	private final ConfigData<Boolean> stunBody;
@@ -38,7 +40,6 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 	public StunSpell(MagicConfig config, String spellName) {
 		super(config, spellName);
 
-		interval = getConfigInt("interval", 5);
 		duration = getConfigDataInt("duration", 200);
 
 		stunBody = getConfigDataBoolean("stun-body", true);
@@ -57,7 +58,6 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 		}
 
 		registerEvents(listener);
-		MagicSpells.scheduleRepeatingTask(new StunMonitor(), interval, interval);
 	}
 
 	@Override
@@ -82,6 +82,16 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 			useTargetLocation.get(data) ? data.target().getLocation() : null
 		);
 		stunned.put(data.target().getUniqueId(), info);
+
+		Bukkit.getAsyncScheduler().runDelayed(
+			MagicSpells.getInstance(),
+			_ -> {
+				if (info.until > System.currentTimeMillis()) return;
+				MagicSpells.scheduleDelayedTask(() -> removeStun(data.target()), 0);
+			},
+			duration,
+			TimeUnit.MILLISECONDS
+		);
 
 		playSpellEffects(data);
 		playSpellEffectsBuff(data.target(), this::isStunned, data);
@@ -109,22 +119,29 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 	private class StunListener implements Listener {
 
 		@EventHandler(ignoreCancelled = true)
-		private void onMove(PlayerMoveEvent event) {
-			Player player = event.getPlayer();
+		private void onMove(EntityMoveEvent event) {
+			onMove(event.getEntity(), event.hasExplicitlyChangedPosition(), event.hasChangedOrientation(), event.getFrom());
+		}
 
-			StunnedInfo info = stunned.get(player.getUniqueId());
+		@EventHandler(ignoreCancelled = true)
+		private void onMove(PlayerMoveEvent event) {
+			onMove(event.getPlayer(), event.hasExplicitlyChangedPosition(), event.hasChangedOrientation(), event.getFrom());
+		}
+
+		private void onMove(LivingEntity entity, boolean hasExplicitlyChangedPosition, boolean hasChangedOrientation, Location from) {
+			StunnedInfo info = stunned.get(entity.getUniqueId());
 			if (info == null) return;
 
 			if (System.currentTimeMillis() >= info.until) {
-				removeStun(player);
+				removeStun(entity);
 				return;
 			}
 
-			boolean stunBody = info.stunBody && event.hasExplicitlyChangedPosition();
-			boolean stunMonitor = info.stunMonitor && event.hasChangedOrientation();
+			boolean stunBody = info.stunBody && hasExplicitlyChangedPosition;
+			boolean stunMonitor = info.stunMonitor && hasChangedOrientation;
 			if (!stunBody && !stunMonitor) return;
 
-			player.teleport(Objects.requireNonNullElse(info.targetLocation, event.getFrom()));
+			entity.teleport(Objects.requireNonNullElse(info.targetLocation, from));
 		}
 
 		@EventHandler
@@ -146,33 +163,6 @@ public class StunSpell extends TargetedSpell implements TargetedEntitySpell {
 		@EventHandler
 		private void onRemove(EntityRemoveFromWorldEvent event) {
 			removeStun(event.getEntity());
-		}
-
-	}
-
-	private class StunMonitor implements Runnable {
-
-		private final Set<LivingEntity> toRemove = new HashSet<>();
-
-		@Override
-		public void run() {
-			for (StunnedInfo info : stunned.values()) {
-				LivingEntity entity = info.target;
-				if (entity instanceof Player) continue;
-
-				if (entity.isValid() && info.until > System.currentTimeMillis()) {
-					entity.teleport(info.targetLocation);
-					continue;
-				}
-
-				toRemove.add(entity);
-			}
-
-			for (LivingEntity entity : toRemove) {
-				removeStun(entity);
-			}
-
-			toRemove.clear();
 		}
 
 	}
