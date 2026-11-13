@@ -252,6 +252,13 @@ public class EntityData {
 			tameable.setOwner(tamer);
 		});
 
+		// Abstract Cube Mob
+		fallback(
+			transformers, key -> ConfigDataUtil.getInteger(config, key), 0, forceOptional,
+			AbstractCubeMob.class, AbstractCubeMob::setSize,
+			"cube.size", "slime.size", "size"
+		);
+
 		// Abstract Horse
 		saddled = addBoolean(transformers, config, "saddled", false, AbstractHorse.class, (horse, saddled) -> {
 			if (saddled) horse.getInventory().setSaddle(ItemStack.of(Material.SADDLE));
@@ -640,15 +647,17 @@ public class EntityData {
 		// Sittable
 		addOptBoolean(transformers, config, "sitting", Sittable.class, Sittable::setSitting);
 
-		// Slime
-		fallback(
-			transformers, key -> ConfigDataUtil.getInteger(config, key), 0, forceOptional,
-			Slime.class, Slime::setSize,
-			"slime.size", "size"
-		);
-
 		// Steerable
 		addBoolean(transformers, config, "saddled", false, Steerable.class, Steerable::setSaddle, forceOptional);
+
+		// Sulfur Cube
+		addOptItemStack(transformers, config, "sulfur-cube.swallow", SulfurCube.class, SulfurCube::swallow);
+
+		addOptInteger(transformers, config, "sulfur-cube.fuse-ticks", SulfurCube.class, (cube, ticks) -> {
+			try {
+				cube.setFuseTicks(ticks);
+			} catch (IllegalArgumentException _) {} // debug
+		});
 
 		// Tropical Fish
 		fallback(
