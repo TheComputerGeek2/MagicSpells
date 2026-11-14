@@ -1,11 +1,14 @@
 package com.nisovin.magicspells.util.recipes;
 
+import java.util.Map;
 import java.util.List;
+import java.util.HashMap;
 import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.configuration.ConfigurationSection;
 
 import com.nisovin.magicspells.util.Util;
@@ -14,7 +17,7 @@ import com.nisovin.magicspells.util.recipes.wrapper.*;
 
 public class CustomRecipes {
 
-	private static final List<CustomRecipe> RECIPES = new ArrayList<>();
+	private static final Map<NamespacedKey, Recipe> RECIPES = new HashMap<>();
 	private static final List<NamespacedKey> AUTO_DISCOVER = new ArrayList<>();
 
 	public static void load(ConfigurationSection recipesSection) {
@@ -41,15 +44,14 @@ public class CustomRecipes {
 			}
 			if (recipe == null) continue;
 
-			RECIPES.add(recipe);
-			recipe.add();
+			RECIPES.put(recipe.key(), recipe.recipe());
 
-			if (!(recipe instanceof CraftingRecipe crafting) || !crafting.isAutoDiscover()) continue;
-			AUTO_DISCOVER.add(crafting.getKey());
+			if (!recipe.autoDiscover()) continue;
+			AUTO_DISCOVER.add(recipe.key());
 		}
 
 		if (RECIPES.isEmpty()) return;
-		Bukkit.updateRecipes();
+		Bukkit.addRecipes(RECIPES.values());
 
 		if (AUTO_DISCOVER.isEmpty()) return;
 		RecipeDiscoverListener.suppressToastWhile(() -> {
@@ -59,18 +61,17 @@ public class CustomRecipes {
 	}
 
 	public static void clearRecipes() {
-		RECIPES.forEach(CustomRecipe::remove);
-
 		if (!AUTO_DISCOVER.isEmpty())
 			for (Player player : Bukkit.getOnlinePlayers())
 				player.undiscoverRecipes(AUTO_DISCOVER);
 
+		Bukkit.removeRecipes(RECIPES.keySet());
+
 		RECIPES.clear();
 		AUTO_DISCOVER.clear();
-		Bukkit.updateRecipes();
 	}
 
-	public static List<CustomRecipe> getRecipes() {
+	public static Map<NamespacedKey, Recipe> getRecipes() {
 		return RECIPES;
 	}
 

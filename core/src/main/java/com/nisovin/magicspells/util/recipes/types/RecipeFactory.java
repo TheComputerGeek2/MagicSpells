@@ -12,6 +12,7 @@ import org.bukkit.Tag;
 import org.bukkit.Material;
 import org.bukkit.Registry;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
@@ -33,7 +34,7 @@ import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.recipes.wrapper.CustomRecipe;
 
 @SuppressWarnings("UnstableApiUsage")
-public abstract class RecipeFactory<R extends CustomRecipe> {
+public abstract class RecipeFactory {
 
 	private static final Map<String, Tag<Material>> MATERIAL_TAGS = new HashMap<>();
 	static {
@@ -63,11 +64,16 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 		ItemStack result = magicItem.getItemStack().clone();
 		result.setAmount(Math.max(1, config.getInt("quantity", 1)));
 
-		return createRecipe(config, key, result);
+		boolean autoDiscover = config.getBoolean("auto-discover", true);
+
+		Recipe recipe = createRecipe(config, key, result);
+		if (recipe == null) return null;
+
+		return new CustomRecipe(recipe, key, autoDiscover);
 	}
 
 	@Nullable
-	protected abstract R createRecipe(ConfigurationSection config, NamespacedKey key, ItemStack result);
+	protected abstract Recipe createRecipe(ConfigurationSection config, NamespacedKey key, ItemStack result);
 
 	protected final RecipeChoice resolveRecipeChoice(ConfigurationSection config, String path) {
 		if (!config.isList(path)) {
