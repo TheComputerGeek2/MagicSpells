@@ -51,9 +51,11 @@ public class CustomRecipes {
 		if (RECIPES.isEmpty()) return;
 		Bukkit.updateRecipes();
 
-		if (!AUTO_DISCOVER.isEmpty())
+		if (AUTO_DISCOVER.isEmpty()) return;
+		RecipeDiscoverListener.suppressToastWhile(() -> {
 			for (Player player : Bukkit.getOnlinePlayers())
 				player.discoverRecipes(AUTO_DISCOVER);
+		});
 	}
 
 	public static void clearRecipes() {

@@ -92,6 +92,7 @@ import com.nisovin.magicspells.volatilecode.VolatileCodeHandle;
 import com.nisovin.magicspells.events.SpellLearnEvent.LearnSource;
 import com.nisovin.magicspells.spelleffects.trackers.EffectTracker;
 import com.nisovin.magicspells.spells.passive.util.PassiveListener;
+import com.nisovin.magicspells.util.recipes.RecipeDiscoverListener;
 import com.nisovin.magicspells.variables.variabletypes.GlobalVariable;
 import com.nisovin.magicspells.spelleffects.trackers.AsyncEffectTracker;
 import com.nisovin.magicspells.spelleffects.effecttypes.EffectLibEffect;
@@ -446,6 +447,8 @@ public class MagicSpells extends JavaPlugin {
 		}
 		log("..." + MagicItems.getMagicItems().size() + " magic items loaded");
 
+		// Load custom recipes
+		registerEvents(new RecipeDiscoverListener());
 		if (config.isSection(path + "recipes")) {
 			log("Loading recipes...");
 			CustomRecipes.load(config.getSection(path + "recipes"));
