@@ -28,7 +28,7 @@ import com.nisovin.magicspells.spelleffects.EffectPosition;
 
 public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell {
 
-	private final Map<UUID, Levitator> levitating;
+	private final Map<UUID, Levitator> levitating = new HashMap<>();
 
 	private final ConfigData<Integer> tickRate;
 	private final ConfigData<Integer> duration;
@@ -37,10 +37,12 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 	private final ConfigData<Double> minDistance;
 	private final ConfigData<Double> maxDistance;
 	private final ConfigData<Double> distanceChange;
+	private final ConfigData<Double> maxChangeDistance;
 
 	private final boolean cancelOnSpellCast;
 	private final boolean cancelOnItemSwitch;
 	private final boolean cancelOnTakeDamage;
+	private final boolean controlOnItemSwitch;
 
 	private SpellFilter filter;
 
@@ -54,12 +56,12 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 		minDistance = getConfigDataDouble("min-distance", 1F);
 		maxDistance = getConfigDataDouble("max-distance", 200);
 		distanceChange = getConfigDataDouble("distance-change", 0F);
+		maxChangeDistance = getConfigDataDouble("max-change-distance", 0);
 
 		cancelOnSpellCast = getConfigBoolean("cancel-on-spell-cast", false);
 		cancelOnItemSwitch = getConfigBoolean("cancel-on-item-switch", true);
 		cancelOnTakeDamage = getConfigBoolean("cancel-on-take-damage", true);
-
-		levitating = new HashMap<>();
+		controlOnItemSwitch = getConfigBoolean("control-on-item-switch", false);
 	}
 
 	@Override
@@ -68,9 +70,9 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 
 		filter = getConfigSpellFilter();
 
-		if (cancelOnItemSwitch) registerEvents(new ItemSwitchListener());
 		if (cancelOnSpellCast) registerEvents(new SpellCastListener());
 		if (cancelOnTakeDamage) registerEvents(new DamageListener());
+		if (cancelOnItemSwitch || controlOnItemSwitch) registerEvents(new ItemSwitchListener());
 	}
 
 	@Override
@@ -166,11 +168,28 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 
 	public class ItemSwitchListener implements Listener {
 
-		@EventHandler
+		@EventHandler(ignoreCancelled = true)
 		public void onItemSwitch(PlayerItemHeldEvent event) {
 			Player pl = event.getPlayer();
 			if (!isLevitating(pl)) return;
-			levitating.remove(pl.getUniqueId()).stop();
+
+			if (cancelOnItemSwitch) {
+				levitating.remove(pl.getUniqueId()).stop();
+				return;
+			}
+
+			if (!controlOnItemSwitch) return;
+
+			int direction = event.getPreviousSlot() - event.getNewSlot();
+
+			if (direction > 4) direction -= 9;
+			else if (direction < -4) direction += 9;
+			if (direction == 0) return;
+
+			Levitator levitator = levitating.get(pl.getUniqueId());
+			levitator.distance += Integer.signum(direction) * levitator.distanceChange;
+
+			event.setCancelled(true);
 		}
 
 	}
@@ -207,6 +226,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 		private final double maxDistanceSq;
 		private final double minDistance;
 		private final double yOffset;
+		private final double maxChangeDistance;
 		private final int duration;
 		private final int tickRate;
 		private final int taskId;
@@ -230,6 +250,7 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 			distanceChange = LevitateSpell.this.distanceChange.get(data);
 			minDistance = LevitateSpell.this.minDistance.get(data);
 			yOffset = LevitateSpell.this.yOffset.get(data);
+			maxChangeDistance = LevitateSpell.this.maxChangeDistance.get(data);
 
 			taskId = MagicSpells.scheduleRepeatingTask(this, 0, tickRate);
 		}
@@ -240,22 +261,19 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 
 			counter++;
 
-			if (duration > 0 && counter >= duration) {
+			if (shouldStop()) {
 				stop();
 				levitating.remove(data.caster().getUniqueId());
-			}
-
-			if (!data.caster().getWorld().equals(data.target().getWorld())) return;
-			if (data.caster().getLocation().distanceSquared(data.target().getLocation()) > maxDistanceSq) return;
-			if (!data.caster().isValid()) {
-				stop();
 				return;
 			}
 
-			if (distanceChange != 0 && distance > minDistance) {
+			if (controlOnItemSwitch) {
+				if (maxChangeDistance > minDistance) distance = Math.min(distance, maxChangeDistance);
+			} else if (distanceChange != 0 && distance > minDistance) {
 				distance -= distanceChange;
-				if (distance < minDistance) distance = minDistance;
 			}
+
+			distance = Math.max(distance, minDistance);
 
 			data.target().setFallDistance(0);
 
@@ -266,6 +284,13 @@ public class LevitateSpell extends TargetedSpell implements TargetedEntitySpell 
 
 			Vector velocity = targetLoc.subtract(data.target().getLocation()).multiply(tickRate / 25f + 0.1).toVector();
 			data.target().setVelocity(velocity);
+		}
+
+		private boolean shouldStop() {
+			return (duration > 0 && counter >= duration) ||
+				!data.caster().getWorld().equals(data.target().getWorld()) ||
+				!data.caster().isValid() || !data.target().isValid() ||
+				data.caster().getLocation().distanceSquared(data.target().getLocation()) > maxDistanceSq;
 		}
 
 		private void stop() {
