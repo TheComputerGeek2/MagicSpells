@@ -335,10 +335,6 @@ public class ProjectileSpell extends InstantSpell implements TargetedLocationSpe
 		return playSpellEntityEffects(position, location, data);
 	}
 
-	public Set<DelayableEntity<ArmorStand>> playArmorStandEffectsProjectile(EffectPosition position, Location location, SpellData data) {
-		return playSpellArmorStandEffects(position, location, data);
-	}
-
 	public static Set<ProjectileTracker> getProjectileTrackers() {
 		return trackerSet;
 	}

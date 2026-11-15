@@ -7,16 +7,15 @@ import java.util.concurrent.ThreadLocalRandom;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.doubles.DoubleArraySet;
 
-import org.apache.commons.math4.core.jdkmath.AccurateMath;
-
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
-import org.bukkit.util.EulerAngle;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
+
+import io.papermc.paper.math.Rotations;
 
 import de.slikey.effectlib.Effect;
 import de.slikey.effectlib.effect.ModifiedEffect;
@@ -34,6 +33,7 @@ import com.nisovin.magicspells.spelleffects.EffectPosition;
 import com.nisovin.magicspells.events.ParticleProjectileHitEvent;
 import com.nisovin.magicspells.spelleffects.util.EffectlibSpellEffect;
 import com.nisovin.magicspells.spells.instant.ParticleProjectileSpell;
+import com.nisovin.magicspells.spelleffects.effecttypes.ArmorStandEffect;
 
 public class ParticleProjectileTracker implements Runnable, Tracker {
 
@@ -47,7 +47,6 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 
 	private Set<EffectlibSpellEffect> effectSet;
 	private Map<SpellEffect, DelayableEntity<Entity>> entityMap;
-	private Set<DelayableEntity<ArmorStand>> armorStandSet;
 
 	private SpellData data;
 	private long startTime;
@@ -246,7 +245,6 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 		if (spell != null) {
 			effectSet = spell.playEffectsProjectile(EffectPosition.PROJECTILE, currentLocation, data);
 			entityMap = spell.playEntityEffectsProjectile(EffectPosition.PROJECTILE, currentLocation, data);
-			armorStandSet = spell.playArmorStandEffectsProjectile(EffectPosition.PROJECTILE, currentLocation, data);
 			ParticleProjectileSpell.getProjectileTrackers().add(this);
 		}
 
@@ -350,29 +348,27 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 			}
 		}
 
-		if (armorStandSet != null || entityMap != null) {
+		if (entityMap != null) {
 			// Changing the effect location
 			Location effectLoc = currentLocation.clone();
 			Util.applyRelativeOffset(effectLoc, effectOffset.clone().setY(0));
 			effectLoc.add(0, effectOffset.getY(), 0);
 
-			EulerAngle angle = EulerAngle.ZERO.setX(AccurateMath.toRadians(effectLoc.getPitch()));
+			for (var entry : entityMap.entrySet()) {
+				SpellEffect effect = entry.getKey();
+				DelayableEntity<Entity> entity = entry.getValue();
 
-			if (armorStandSet != null) {
-				for (DelayableEntity<ArmorStand> armorStand : armorStandSet) {
-					armorStand.teleport(effectLoc);
-					armorStand.accept(stand -> {
-						stand.setHeadPose(angle);
-						stand.setLeftArmPose(angle);
-						stand.setRightArmPose(angle);
-					});
-				}
-			}
+				Location loc = effect.applyOffsets(effectLoc.clone(), data);
+				entity.teleport(loc);
 
-			if (entityMap != null) {
-				for (var entry : entityMap.entrySet()) {
-					entry.getValue().teleport(entry.getKey().applyOffsets(effectLoc.clone(), data));
-				}
+				entity.accept(e -> {
+					if (!(e instanceof ArmorStand stand) || !(effect instanceof ArmorStandEffect)) return;
+
+					Rotations angle = Rotations.ZERO.withX(loc.getPitch());
+
+					stand.setLeftArmRotations(angle);
+					stand.setRightArmRotations(angle);
+				});
 			}
 		}
 
@@ -639,10 +635,6 @@ public class ParticleProjectileTracker implements Runnable, Tracker {
 				spellEffect.getEffect().cancel();
 			}
 			effectSet.clear();
-		}
-		if (armorStandSet != null) {
-			armorStandSet.forEach(DelayableEntity::remove);
-			armorStandSet.clear();
 		}
 		if (entityMap != null) {
 			entityMap.values().forEach(DelayableEntity::remove);

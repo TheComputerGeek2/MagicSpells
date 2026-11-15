@@ -9,7 +9,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.FluidCollisionMode;
 
 import com.nisovin.magicspells.util.*;
@@ -389,10 +388,6 @@ public class ParticleProjectileSpell extends InstantSpell implements TargetedLoc
 
 	public Map<SpellEffect, DelayableEntity<Entity>> playEntityEffectsProjectile(EffectPosition position, Location location, SpellData data) {
 		return playSpellEntityEffects(position, location, data);
-	}
-
-	public Set<DelayableEntity<ArmorStand>> playArmorStandEffectsProjectile(EffectPosition position, Location location, SpellData data) {
-		return playSpellArmorStandEffects(position, location, data);
 	}
 
 	private void setupTracker(ParticleProjectileTracker tracker, SpellData data) {

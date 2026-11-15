@@ -12,13 +12,12 @@ import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.EntityData;
 import com.nisovin.magicspells.util.config.ConfigData;
-import com.nisovin.magicspells.spelleffects.SpellEffect;
 import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.config.ConfigDataUtil;
 
 @Name("armorstand")
-public class ArmorStandEffect extends SpellEffect {
+public class ArmorStandEffect extends EntityEffect {
 
 	public static final String ENTITY_TAG = "MS_ARMOR_STAND";
 
@@ -38,6 +37,8 @@ public class ArmorStandEffect extends SpellEffect {
 
 		entityData = new EntityData(section);
 
+		duration = ConfigDataUtil.getInteger(section, "duration", 0);
+
 		gravity = ConfigDataUtil.getBoolean(section, "gravity", false);
 		disableSlots = ConfigDataUtil.getBoolean(section, "disable-slots", true);
 
@@ -52,7 +53,7 @@ public class ArmorStandEffect extends SpellEffect {
 	}
 
 	@Override
-	protected ArmorStand playArmorStandEffectLocation(Location location, SpellData data) {
+	protected Entity playEntityEffectLocation(Location location, SpellData data) {
 		return entityData.spawn(location, data, ArmorStand.class, stand -> {
 			stand.setSilent(true);
 
