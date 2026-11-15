@@ -21,7 +21,6 @@ public class StartUsingItemEffect extends SpellEffect {
 		hand = ConfigDataUtil.getEnum(config, "hand", HandType.class, HandType.MAINHAND);
 	}
 
-	@SuppressWarnings("UnstableApiUsage")
 	@Override
 	protected Runnable playEffectEntity(Entity entity, SpellData data) {
 		if (entity instanceof LivingEntity livingEntity)

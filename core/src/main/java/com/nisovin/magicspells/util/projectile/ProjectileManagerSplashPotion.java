@@ -10,7 +10,7 @@ public class ProjectileManagerSplashPotion extends ProjectileManagerThrownPotion
 	@NotNull
 	@Override
 	protected ItemStack getItem() {
-		return new ItemStack(Material.SPLASH_POTION);
+		return ItemStack.of(Material.SPLASH_POTION);
 	}
 
 }

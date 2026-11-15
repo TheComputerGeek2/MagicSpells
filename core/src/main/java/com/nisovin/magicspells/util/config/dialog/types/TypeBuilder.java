@@ -10,7 +10,6 @@ import com.nisovin.magicspells.util.config.dialog.Debugger;
 import com.nisovin.magicspells.util.config.dialog.BuildContext;
 import com.nisovin.magicspells.util.config.dialog.NullConfigData;
 
-@SuppressWarnings("UnstableApiUsage")
 public class TypeBuilder extends BuildContext<DialogType> {
 
 	private static final String PATH = "dialog-type";

@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.Predicate;
 
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.format.NamedTextColor;
 
@@ -33,6 +34,7 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 
 import io.papermc.paper.block.fluid.FluidData;
+import io.papermc.paper.potion.SuspiciousEffectEntry;
 
 import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.handlers.DebugHandler;
@@ -100,11 +102,11 @@ public class Util {
 	}
 
 	// - <potionEffectType> (duration)
-	public static PotionEffect buildSuspiciousStewPotionEffect(String effectString) {
+	public static SuspiciousEffectEntry buildSuspiciousStewPotionEffect(String effectString) {
 		String[] data = effectString.split(" ");
-		PotionEffectType t = PotionEffectHandler.getPotionEffectType(data[0]);
+		PotionEffectType type = PotionEffectHandler.getPotionEffectType(data[0]);
 
-		if (t == null) {
+		if (type == null) {
 			MagicSpells.error('\'' + data[0] + "' could not be connected to a potion effect type");
 			return null;
 		}
@@ -117,7 +119,8 @@ public class Util {
 				DebugHandler.debugNumberFormat(ex);
 			}
 		}
-		return new PotionEffect(t, duration, 0, true);
+
+		return SuspiciousEffectEntry.create(type, duration);
 	}
 
 	public static Color[] getColorsFromString(String str) {
@@ -257,7 +260,11 @@ public class Util {
 		}
 
 		receiver.playHurtAnimation(angle);
-		MagicSpells.getVolatileCodeHandler().playHurtSound(receiver);
+
+		var sound = receiver.getHurtSound();
+		if (sound == null) return;
+
+		receiver.getWorld().playSound(Sound.sound(sound, receiver.soundSource(), receiver.getSoundVolume(), receiver.getSoundPitch()), receiver);
 	}
 
 	public static String arrayJoin(String[] array, char with) {

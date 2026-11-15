@@ -172,6 +172,7 @@ public class VariableManager {
 		addMetaVariableType("unsaturated_regen_rate", new UnsaturatedRegenRateVariable());
 		addMetaVariableType("attack_cooldown", new AttackCooldownVariable());
 		addMetaVariableType("current_tick", new CurrentTickVariable());
+		addMetaVariableType("invulnerable_time", new InvulnerableTimeVariable());
 
 		// meta variable attribute types
 		for (Attribute attribute : Registry.ATTRIBUTE) {
@@ -500,9 +501,7 @@ public class VariableManager {
 			return;
 		}
 
-		BufferedWriter writer = null;
-		try {
-			writer = new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8, false));
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8, false))) {
 			for (String line : lines) {
 				writer.write(line);
 				writer.newLine();
@@ -511,14 +510,6 @@ public class VariableManager {
 		} catch (Exception e) {
 			MagicSpells.error("ERROR SAVING GLOBAL VARIABLES");
 			MagicSpells.handleException(e);
-		} finally {
-			if (writer != null) {
-				try {
-					writer.close();
-				} catch (Exception e) {
-					// No op
-				}
-			}
 		}
 
 		dirtyGlobalVars = false;
@@ -576,9 +567,7 @@ public class VariableManager {
 			return;
 		}
 
-		BufferedWriter writer = null;
-		try {
-			writer = new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8, false));
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8, false))) {
 			for (String line : lines) {
 				writer.write(line);
 				writer.newLine();
@@ -587,14 +576,6 @@ public class VariableManager {
 		} catch (Exception e) {
 			MagicSpells.error("ERROR SAVING PLAYER VARIABLES FOR " + player);
 			MagicSpells.handleException(e);
-		} finally {
-			if (writer != null) {
-				try {
-					writer.close();
-				} catch (Exception e) {
-					DebugHandler.debugGeneral(e);
-				}
-			}
 		}
 
 		dirtyPlayerVars.remove(player);

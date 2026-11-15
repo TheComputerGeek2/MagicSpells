@@ -19,9 +19,9 @@ public enum RecipeType {
 
 	;
 
-	private final RecipeFactory<? extends CustomRecipe> factory;
+	private final RecipeFactory factory;
 
-	RecipeType(RecipeFactory<? extends CustomRecipe> factory) {
+	RecipeType(RecipeFactory factory) {
 		this.factory = factory;
 	}
 

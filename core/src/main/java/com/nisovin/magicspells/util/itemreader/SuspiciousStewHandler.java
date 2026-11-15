@@ -8,6 +8,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SuspiciousStewMeta;
 import org.bukkit.configuration.ConfigurationSection;
 
+import io.papermc.paper.potion.SuspiciousEffectEntry;
+
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.util.magicitems.MagicItemData;
 import static com.nisovin.magicspells.util.magicitems.MagicItemData.MagicItemAttribute.POTION_EFFECTS;
@@ -25,11 +27,11 @@ public class SuspiciousStewHandler {
 		List<String> effects = config.getStringList(CONFIG_NAME);
 		List<PotionEffect> potionEffects = new ArrayList<>();
 		for (String str : effects) {
-			PotionEffect potionEffect = Util.buildSuspiciousStewPotionEffect(str);
-			if (potionEffect == null) continue;
+			SuspiciousEffectEntry stewEffect = Util.buildSuspiciousStewPotionEffect(str);
+			if (stewEffect == null) continue;
 
-			stewMeta.addCustomEffect(potionEffect, true);
-			potionEffects.add(potionEffect);
+			stewMeta.addCustomEffect(stewEffect, true);
+			potionEffects.add(new PotionEffect(stewEffect.effect(), stewEffect.duration(), 0));
 		}
 		if (!potionEffects.isEmpty()) data.setAttribute(POTION_EFFECTS, potionEffects);
 	}
@@ -38,7 +40,9 @@ public class SuspiciousStewHandler {
 		if (!(meta instanceof SuspiciousStewMeta stewMeta)) return;
 		if (!data.hasAttribute(POTION_EFFECTS)) return;
 		stewMeta.clearCustomEffects();
-		((List<PotionEffect>) data.getAttribute(POTION_EFFECTS)).forEach(potionEffect -> stewMeta.addCustomEffect(potionEffect, true));
+		((List<PotionEffect>) data.getAttribute(POTION_EFFECTS)).forEach(effect ->
+			stewMeta.addCustomEffect(SuspiciousEffectEntry.create(effect.getType(), effect.getDuration()), true)
+		);
 	}
 
 	public static void processMagicItemData(ItemMeta meta, MagicItemData data) {

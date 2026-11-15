@@ -23,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import net.kyori.adventure.text.Component;
 
 import com.nisovin.magicspells.util.*;
-import com.nisovin.magicspells.MagicSpells;
 import com.nisovin.magicspells.spells.TargetedSpell;
 import com.nisovin.magicspells.util.config.ConfigData;
 import com.nisovin.magicspells.events.SpellTargetEvent;
@@ -112,12 +111,12 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 		if (material.isConstant()) {
 			Material mat = material.get();
 
-			ItemStack stack = mat != null && mat.isItem() ? new ItemStack(mat) : null;
+			ItemStack stack = mat != null && mat.isItem() ? ItemStack.of(mat) : null;
 			item = data -> stack;
 		} else {
 			item = data -> {
 				Material mat = material.get(data);
-				return mat != null && mat.isItem() ? new ItemStack(mat) : null;
+				return mat != null && mat.isItem() ? ItemStack.of(mat) : null;
 			};
 		}
 
@@ -251,12 +250,10 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 	}
 
 	private Object getParticleData(@NotNull Particle particle, @NotNull SpellData data) {
-		Object nmsData = MagicSpells.getVolatileCodeHandler().getVolatileParticleData(
-			particle,
-			() -> geyserWaterBlocks.get(data),
-			() -> geyserBurstImpulse.get(data)
-		);
-		if (nmsData != null) return nmsData;
+//		Object nmsData = MagicSpells.getVolatileCodeHandler().getVolatileParticleData(
+//			particle,
+//		);
+//		if (nmsData != null) return nmsData;
 
 		Class<?> type = particle.getDataType();
 
@@ -270,6 +267,21 @@ public class ParticleCloudSpell extends TargetedSpell implements TargetedLocatio
 			return particle == Particle.ENTITY_EFFECT ?
 				argbColor.get(data) :
 				rgbColor.get(data);
+		}
+
+		if (type == Particle.Geyser.class) {
+			Integer waterBlocks = geyserWaterBlocks.get(data);
+			if (waterBlocks == null) return null;
+
+			return new Particle.Geyser(waterBlocks);
+		}
+
+		if (type == Particle.GeyserBase.class) {
+			Integer waterBlocks = geyserWaterBlocks.get(data);
+			Float burstImpulse = geyserBurstImpulse.get(data);
+			if (waterBlocks == null || burstImpulse == null) return null;
+
+			return new Particle.GeyserBase(waterBlocks, burstImpulse);
 		}
 
 		if (type == Particle.Trail.class) {

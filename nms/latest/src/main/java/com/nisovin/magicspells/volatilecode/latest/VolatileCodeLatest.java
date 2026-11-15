@@ -4,7 +4,6 @@ import java.util.*;
 import java.lang.invoke.VarHandle;
 import java.util.function.Consumer;
 import java.lang.invoke.MethodType;
-import java.util.function.Supplier;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 
@@ -12,7 +11,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import org.bukkit.World;
 import org.bukkit.Bukkit;
-import org.bukkit.Particle;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.Entity;
@@ -149,6 +147,7 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 	}
 
 	@Override
+	@SuppressWarnings("UnstableApiUsage")
 	public boolean simulateTnt(Location target, LivingEntity source, float explosionSize, boolean fire) {
 		ServerLevel world = ((CraftWorld) target.getWorld()).getHandle();
 		var igniter = ((CraftLivingEntity) source).getHandle();
@@ -190,22 +189,6 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 		Vec3 pos = new Vec3(velocity.getX(), velocity.getY(), velocity.getZ());
 		ClientboundSetEntityMotionPacket packet = new ClientboundSetEntityMotionPacket(player.getEntityId(), pos);
 		((CraftPlayer) player).getHandle().connection.send(packet);
-	}
-
-	@Override
-	public void playHurtSound(LivingEntity entity) {
-		var nmsEntity = ((CraftLivingEntity) entity).getHandle();
-		var sound = nmsEntity.getHurtSound(nmsEntity.damageSources().generic());
-
-		if (sound == null || nmsEntity.isSilent()) return;
-		nmsEntity.level().playSound(
-				null,
-				nmsEntity.blockPosition(),
-				sound,
-				nmsEntity.getSoundSource(),
-				nmsEntity.getSoundVolume(),
-				nmsEntity.getVoicePitch()
-		);
 	}
 
 	@Override
@@ -298,32 +281,6 @@ public class VolatileCodeLatest extends VolatileCodeHandle {
 		}
 
 		return count;
-	}
-
-	@Override
-	public @Nullable Object getVolatileParticleData(
-		Particle particle,
-		Supplier<Integer> geyserWaterBlocks,
-		Supplier<Float> geyserBurstImpulse
-	) {
-		Class<?> type = particle.getDataType();
-
-		if (type == Particle.Geyser.class) {
-			Integer waterBlocks = geyserWaterBlocks.get();
-			if (waterBlocks == null) return null;
-
-			return new Particle.Geyser(waterBlocks);
-		}
-
-		if (type == Particle.GeyserBase.class) {
-			Integer waterBlocks = geyserWaterBlocks.get();
-			Float burstImpulse = geyserBurstImpulse.get();
-			if (waterBlocks == null || burstImpulse == null) return null;
-
-			return new Particle.GeyserBase(waterBlocks, burstImpulse);
-		}
-
-		return null;
 	}
 
 	@Override

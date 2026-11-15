@@ -20,7 +20,6 @@ import com.nisovin.magicspells.util.config.dialog.Debugger;
 import com.nisovin.magicspells.util.config.dialog.BuildContext;
 import com.nisovin.magicspells.util.config.dialog.NullConfigData;
 
-@SuppressWarnings("UnstableApiUsage")
 public class StaticAction extends BuildContext<DialogAction> {
 
 	private final ConfigurationSection config;
@@ -45,7 +44,7 @@ public class StaticAction extends BuildContext<DialogAction> {
 
 	@Override
 	protected @NotNull NullConfigData<DialogAction> build() {
-		ConfigData<ClickEvent> eventData = switch (config.getString("type")) {
+		ConfigData<ClickEvent<?>> eventData = switch (config.getString("type")) {
 			case "open_url" -> clickEventString(ClickEvent::openUrl, config, path, "url");
 			case "run_command" -> clickEventString(ClickEvent::runCommand, config, path, "command");
 			case "suggest_command" -> clickEventString(ClickEvent::suggestCommand, config, path, "command");
@@ -60,7 +59,7 @@ public class StaticAction extends BuildContext<DialogAction> {
 		};
 
 		return data -> {
-			ClickEvent event = eventData.get(data);
+			ClickEvent<?> event = eventData.get(data);
 			if (event == null) return null;
 
 			return DialogAction.staticAction(event);
@@ -71,8 +70,8 @@ public class StaticAction extends BuildContext<DialogAction> {
 		return ConfigDataUtil.getRegistryEntry(config, path, RegistryKey.DIALOG, def);
 	}
 
-	private NullConfigData<ClickEvent> clickEventString(
-		Function<String, ClickEvent> clickEventFun,
+	private NullConfigData<ClickEvent<?>> clickEventString(
+		Function<String, ClickEvent<?>> clickEventFun,
 		ConfigurationSection config,
 		String basePath,
 		String subPath
@@ -80,9 +79,9 @@ public class StaticAction extends BuildContext<DialogAction> {
 		return clickEvent(ConfigDataUtil::getString, clickEventFun, config, basePath, subPath);
 	}
 
-	private <T> NullConfigData<ClickEvent> clickEvent(
+	private <T> NullConfigData<ClickEvent<?>> clickEvent(
 		TriFunction<ConfigurationSection, String, T, ConfigData<T>> configDataFun,
-		Function<T, ClickEvent> clickEventFun,
+		Function<T, ClickEvent<?>> clickEventFun,
 		ConfigurationSection config,
 		String basePath,
 		String subPath

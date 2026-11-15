@@ -1,6 +1,6 @@
 dependencies {
     compileOnly project(":core")
-    compileOnly("org.incendo:cloud-paper:2.0.0-beta.16")
+    compileOnly("org.incendo:cloud-paper:2.0.1")
     compileOnly("net.milkbowl.vault:VaultAPI:1.7")
 }
 

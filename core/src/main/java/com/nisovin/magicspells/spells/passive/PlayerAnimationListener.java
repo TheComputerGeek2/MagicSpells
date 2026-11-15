@@ -8,8 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.event.player.PlayerAnimationEvent;
+
+import io.papermc.paper.event.player.PlayerArmSwingEvent;
 
 import com.nisovin.magicspells.util.Name;
 import com.nisovin.magicspells.MagicSpells;
@@ -43,18 +43,14 @@ public class PlayerAnimationListener extends PassiveListener {
 
 	@OverridePriority
 	@EventHandler
-	public void onAnimate(PlayerAnimationEvent event) {
+	public void onArmSwing(PlayerArmSwingEvent event) {
 		if (!isCancelStateOk(event.isCancelled())) return;
 
 		Player caster = event.getPlayer();
 		if (!canTrigger(caster)) return;
 
 		if (!items.isEmpty()) {
-			ItemStack item = caster.getInventory().getItem(switch (event.getAnimationType()) {
-				case ARM_SWING -> EquipmentSlot.HAND;
-				case OFF_ARM_SWING -> EquipmentSlot.OFF_HAND;
-			});
-
+			ItemStack item = caster.getInventory().getItem(event.getHand());
 			MagicItemData itemData = MagicItems.getMagicItemDataFromItemStack(item);
 			if (itemData == null || !contains(itemData)) return;
 		}

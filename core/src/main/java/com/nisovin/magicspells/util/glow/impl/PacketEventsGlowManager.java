@@ -170,7 +170,7 @@ public class PacketEventsGlowManager extends PacketBasedGlowManager<PacketWrappe
 		}
 
 		@Override
-		public void onPacketSend(PacketSendEvent event) {
+		public void onPacketSend(@NotNull PacketSendEvent event) {
 			synchronized (PacketEventsGlowManager.this) {
 				if (glows.isEmpty() && perPlayerGlows.isEmpty())
 					return;

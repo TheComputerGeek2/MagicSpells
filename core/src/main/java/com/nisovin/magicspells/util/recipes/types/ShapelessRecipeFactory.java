@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 import org.jetbrains.annotations.Nullable;
 
+import org.jspecify.annotations.NullMarked;
+
 import com.nisovin.magicspells.MagicSpells;
 
 import org.bukkit.NamespacedKey;
@@ -15,11 +17,12 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 
-public class ShapelessRecipeFactory extends CraftingRecipeFactory {
+@NullMarked
+public class ShapelessRecipeFactory extends RecipeFactory {
 
 	@Override
 	@Nullable
-	protected Recipe createCrafting(ConfigurationSection config, NamespacedKey key, ItemStack result) {
+	protected Recipe createRecipe(ConfigurationSection config, NamespacedKey key, ItemStack result) {
 		ShapelessRecipe recipe = new ShapelessRecipe(key, result);
 
 		String path = "ingredients";

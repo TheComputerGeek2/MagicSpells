@@ -1,5 +1,5 @@
 plugins {
-    id("com.gradleup.shadow") version "9.4.1"
+    id("com.gradleup.shadow") version "9.6.1"
     id("antlr")
 }
 
@@ -11,26 +11,24 @@ dependencies {
     implementation("org.incendo:cloud-minecraft-extras:2.0.1")
     implementation("org.incendo:cloud-processors-requirements:1.0.0-rc.1")
     implementation("org.bstats:bstats-bukkit:3.2.1")
-    implementation("com.github.ezylang:EvalEx:3.6.2")
+    implementation("com.ezylang:EvalEx:3.8.0")
 
     implementation("org.antlr:antlr4-runtime:4.13.2")
     antlr("org.antlr:antlr4:4.13.2")
 
     implementation(project(path: ":nms:shared"))
     implementation(project(path: ":nms:latest"))
-    implementation(project(path: ":nms:v26_1_2"))
-    implementation(project(path: ":nms:v26_2"))
 
-    compileOnly("com.github.retrooper:packetevents-spigot:2.11.2")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.14.0")
     compileOnly("net.dmulloy2:ProtocolLib:5.4.0")
-    compileOnly("me.libraryaddict.disguises:libsdisguises:11.0.16-SNAPSHOT")
+    compileOnly("me.libraryaddict.disguises:libsdisguises:26.11.10-SNAPSHOT")
     compileOnly("net.milkbowl.vault:VaultAPI:1.7")
     compileOnly("me.clip:placeholderapi:2.12.2")
     compileOnly("com.github.GriefPrevention:GriefPrevention:18.0.0")
     compileOnly("com.sk89q.worldguard:worldguard-core:7.1.0-SNAPSHOT")
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.1.0-SNAPSHOT")
-    compileOnly("com.sk89q.worldedit:worldedit-core:7.4.0-SNAPSHOT")
-    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.4.0-SNAPSHOT")
+    compileOnly("com.sk89q.worldedit:worldedit-core:7.4.6-SNAPSHOT")
+    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.4.6-SNAPSHOT")
 }
 
 /*

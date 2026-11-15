@@ -291,7 +291,6 @@ public class ConjureSpell extends InstantSpell implements TargetedEntitySpell, T
 		playSpellEffects(data);
 	}
 
-	@SuppressWarnings("UnstableApiUsage")
 	private void conjureItems(Player player, SpellData data) {
 		List<ItemStack> items = new ArrayList<>();
 		if (calculateDropsIndividually.get(data)) individual(items, data);

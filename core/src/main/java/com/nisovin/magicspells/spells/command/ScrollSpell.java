@@ -212,20 +212,20 @@ public class ScrollSpell extends CommandSpell implements BlockingSuggestionProvi
 			}
 		}
 
-		if (slot != -1) players.get(0).getInventory().setItem(slot, createScroll(spell, uses, new ItemStack(itemType, 1)));
+		if (slot != -1) players.get(0).getInventory().setItem(slot, createScroll(spell, uses, ItemStack.of(itemType)));
 
 		return true;
 	}
 	
 	public ItemStack createScroll(Spell spell, int uses, ItemStack item) {
-		if (item == null) item = new ItemStack(itemType);
+		if (item == null) item = ItemStack.of(itemType);
 
 		ItemMeta meta = item.getItemMeta();
 		if (meta instanceof Damageable damageable) damageable.setDamage(0);
 
 		String usageCount = uses >= 0 ? String.valueOf(uses) : "many";
 		String displayName = strScrollName.replace("%s", spell.getName()).replace("%u", usageCount);
-		meta.displayName(Util.getItemMiniMessage(displayName));
+		meta.customName(Util.getItemMiniMessage(displayName));
 
 		if (strScrollSubtext != null && !strScrollSubtext.isEmpty()) {
 			Component lore = Util.getItemMiniMessage(strScrollSubtext.replace("%s", spell.getName()).replace("%u", usageCount));
@@ -318,7 +318,7 @@ public class ScrollSpell extends CommandSpell implements BlockingSuggestionProvi
 				if (removeScrollWhenDepleted) {
 					player.getInventory().setItemInMainHand(null);
 					event.setCancelled(true);
-				} else player.getInventory().setItemInMainHand(new ItemStack(itemType));
+				} else player.getInventory().setItemInMainHand(ItemStack.of(itemType));
 			}
 		}
 

@@ -1,9 +1,6 @@
 package com.nisovin.magicspells.util.recipes.types;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.*;
 import java.lang.reflect.Field;
 
 import org.jetbrains.annotations.Nullable;
@@ -12,12 +9,19 @@ import com.destroystokyo.paper.MaterialTags;
 import com.destroystokyo.paper.MaterialSetTag;
 
 import org.bukkit.Tag;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Registry;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.configuration.ConfigurationSection;
+
+import io.papermc.paper.registry.tag.TagKey;
+import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.set.RegistrySet;
+import io.papermc.paper.registry.set.RegistryKeySet;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -29,7 +33,8 @@ import com.nisovin.magicspells.util.magicitems.MagicItem;
 import com.nisovin.magicspells.util.magicitems.MagicItems;
 import com.nisovin.magicspells.util.recipes.wrapper.CustomRecipe;
 
-public abstract class RecipeFactory<R extends CustomRecipe> {
+@SuppressWarnings("UnstableApiUsage")
+public abstract class RecipeFactory {
 
 	private static final Map<String, Tag<Material>> MATERIAL_TAGS = new HashMap<>();
 	static {
@@ -59,18 +64,23 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 		ItemStack result = magicItem.getItemStack().clone();
 		result.setAmount(Math.max(1, config.getInt("quantity", 1)));
 
-		return createRecipe(config, key, result);
+		boolean autoDiscover = config.getBoolean("auto-discover", true);
+
+		Recipe recipe = createRecipe(config, key, result);
+		if (recipe == null) return null;
+
+		return new CustomRecipe(recipe, key, autoDiscover);
 	}
 
 	@Nullable
-	protected abstract R createRecipe(ConfigurationSection config, NamespacedKey key, ItemStack result);
+	protected abstract Recipe createRecipe(ConfigurationSection config, NamespacedKey key, ItemStack result);
 
 	protected final RecipeChoice resolveRecipeChoice(ConfigurationSection config, String path) {
 		if (!config.isList(path)) {
 			Object object = config.get(path);
 			if (object instanceof String tagName && (tagName.startsWith("tag:") || tagName.startsWith("#"))) {
-				Tag<Material> tag = resolveMaterialTag(config, path, tagName);
-				return tag == null ? null : new RecipeChoice.MaterialChoice(tag);
+				RegistryKeySet<ItemType> set = resolveMaterialTag(config, path, tagName);
+				return set == null ? null : RecipeChoice.itemType(set);
 			}
 
 			MagicItem magicItem = getMagicItem(object);
@@ -78,23 +88,23 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 				MagicSpells.error("Invalid magic item defined for '%s' on custom recipe '%s'.".formatted(path, config.getName()));
 				return null;
 			}
-			return new RecipeChoice.ExactChoice(getItalicVariants(magicItem.getItemStack()));
+			return RecipeChoice.exactChoice(getItalicVariants(magicItem.getItemStack()));
 		}
 
 		List<ItemStack> items = new ArrayList<>();
-		List<Material> materials = new ArrayList<>();
+		List<ItemType> itemTypes = new ArrayList<>();
 		List<?> list = config.getList(path, new ArrayList<>());
 		for (int i = 0; i < list.size(); i++) {
 			Object object = list.get(i);
 
 			if (object instanceof String tagName && (tagName.startsWith("tag:") || tagName.startsWith("#"))) {
-				Tag<Material> tag = resolveMaterialTag(config, path, tagName);
-				if (tag == null) return null;
-				materials.addAll(tag.getValues());
+				RegistryKeySet<ItemType> set = resolveMaterialTag(config, path, tagName);
+				if (set == null) return null;
+				itemTypes.addAll(set.resolve(Registry.ITEM));
 				continue;
 			}
 
-			if (!materials.isEmpty()) {
+			if (!itemTypes.isEmpty()) {
 				MagicSpells.error("Invalid entry on custom recipe '%s' at index %d of '%s' - you cannot mix material tags and item-based recipe choices together.".formatted(config.getName(), i, path));
 				return null;
 			}
@@ -107,9 +117,9 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 			items.addAll(getItalicVariants(magicItem.getItemStack()));
 		}
 
-		return materials.isEmpty() ?
-			new RecipeChoice.ExactChoice(items) :
-			new RecipeChoice.MaterialChoice(materials);
+		return itemTypes.isEmpty() ?
+			RecipeChoice.exactChoice(items) :
+			RecipeChoice.itemType(RegistrySet.keySetFromValues(RegistryKey.ITEM, itemTypes));
 	}
 
 	/*
@@ -119,12 +129,12 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 		ItemStack clone = original.clone();
 		if (!original.hasItemMeta()) return List.of(clone);
 
-		Component displayName = original.getItemMeta().displayName();
-		if (displayName == null || !displayName.hasDecoration(TextDecoration.ITALIC))
+		Component customName = original.getItemMeta().customName();
+		if (customName == null || !customName.hasDecoration(TextDecoration.ITALIC))
 			return List.of(clone);
 
 		ItemStack item = original.clone();
-		item.editMeta(meta -> meta.displayName(displayName.decoration(TextDecoration.ITALIC, TextDecoration.State.NOT_SET)));
+		item.editMeta(meta -> meta.customName(customName.decoration(TextDecoration.ITALIC, TextDecoration.State.NOT_SET)));
 		return List.of(clone, item);
 	}
 
@@ -136,18 +146,31 @@ public abstract class RecipeFactory<R extends CustomRecipe> {
 		};
 	}
 
-	private Tag<Material> resolveMaterialTag(ConfigurationSection config, String path, String tagName) {
+	private RegistryKeySet<ItemType> resolveMaterialTag(ConfigurationSection config, String path, String tagName) {
 		String tagString = tagName.replaceFirst("tag:|#", "");
-		Tag<Material> tag = MATERIAL_TAGS.get(tagString.toUpperCase());
-		if (tag != null) return tag;
+		Tag<Material> matTag = MATERIAL_TAGS.get(tagString.toUpperCase());
+		if (matTag != null) {
+			Set<ItemType> items = new HashSet<>();
+
+			for (Material material : matTag.getValues()) {
+				ItemType itemType = material.asItemType();
+
+				if (itemType == null) {
+					MagicSpells.error("Invalid material tag '%s' on option '%s' of custom recipe '%s' - cannot use non-item entry '%s'.".formatted(tagName, path, config.getName(), material));
+					return null;
+				}
+
+				items.add(itemType);
+			}
+
+			return RegistrySet.keySetFromValues(RegistryKey.ITEM, items);
+		}
 
 		NamespacedKey key = NamespacedKey.fromString(tagString);
 		if (key != null) {
-			tag = Bukkit.getTag(Tag.REGISTRY_ITEMS, key, Material.class);
-			if (tag != null) return tag;
-
-			tag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class);
-			if (tag != null) return tag;
+			try {
+				return Registry.ITEM.getTag(TagKey.create(RegistryKey.ITEM, key));
+			} catch (NoSuchElementException _) {}
 		}
 
 		MagicSpells.error("Invalid material tag '%s' on option '%s' of custom recipe '%s'.".formatted(tagName, path, config.getName()));

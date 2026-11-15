@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
+import org.jspecify.annotations.NullMarked;
+
 import com.nisovin.magicspells.MagicSpells;
 
 import org.bukkit.NamespacedKey;
@@ -14,11 +16,12 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 
-public class ShapedRecipeFactory extends CraftingRecipeFactory {
+@NullMarked
+public class ShapedRecipeFactory extends RecipeFactory {
 
 	@Override
 	@Nullable
-	protected Recipe createCrafting(ConfigurationSection config, NamespacedKey key, ItemStack result) {
+	protected Recipe createRecipe(ConfigurationSection config, NamespacedKey key, ItemStack result) {
 		ShapedRecipe recipe = new ShapedRecipe(key, result);
 
 		List<String> shape = config.getStringList("shape");

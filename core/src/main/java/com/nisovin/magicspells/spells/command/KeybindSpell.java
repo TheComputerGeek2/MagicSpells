@@ -24,9 +24,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import io.papermc.paper.event.player.PlayerArmSwingEvent;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import com.nisovin.magicspells.Spell;
@@ -127,13 +127,13 @@ public class KeybindSpell extends CommandSpell implements BlockingSuggestionProv
 		}
 
 		if (!item.getType().isAir()) {
-			caster.sendMessage("Not empty.");
+			caster.sendPlainMessage("Not empty.");
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
 
 		Spell spell = MagicSpells.getSpellByName(data.args()[0]);
 		if (spell == null || !MagicSpells.getSpellbook(caster).hasSpell(spell)) {
-			caster.sendMessage("No spell.");
+			caster.sendPlainMessage("No spell.");
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
 
@@ -169,7 +169,7 @@ public class KeybindSpell extends CommandSpell implements BlockingSuggestionProv
 	}
 
 	@EventHandler
-	public void onAnimate(PlayerAnimationEvent event) {
+	public void onArmSwing(PlayerArmSwingEvent event) {
 		Keybinds keybinds = playerKeybinds.get(event.getPlayer().getName());
 		if (keybinds == null) return;
 		boolean casted = keybinds.castKeybind(event.getPlayer().getInventory().getHeldItemSlot());

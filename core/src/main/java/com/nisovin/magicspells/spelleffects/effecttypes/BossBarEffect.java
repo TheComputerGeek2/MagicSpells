@@ -141,7 +141,7 @@ public class BossBarEffect extends SpellEffect {
 			else progress = this.progress.get(data);
 		} else progress = this.progress.get(data);
 
-		progress = Math.min(Math.max(progress, 0), 1);
+		progress = Math.clamp(progress, 0, 1);
 
 		String title = Util.getLegacyFromComponent(Util.getMiniMessage(this.title, player, data));
 		bar.set(title, progress, barStyle.get(data), barColor.get(data), visible.get(data));

@@ -29,7 +29,6 @@ import com.nisovin.magicspells.util.config.dialog.NullConfigData;
 import com.nisovin.magicspells.variables.variabletypes.GlobalStringVariable;
 import com.nisovin.magicspells.variables.variabletypes.PlayerStringVariable;
 
-@SuppressWarnings("UnstableApiUsage")
 public class CustomClickAction extends BuildContext<DialogAction> {
 
 	private static final ClickCallback.Options CLICK_OPTIONS = ClickCallback.Options.builder()

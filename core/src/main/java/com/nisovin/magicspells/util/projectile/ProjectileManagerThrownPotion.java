@@ -19,7 +19,7 @@ public class ProjectileManagerThrownPotion extends ProjectileManager {
 
 	@NotNull
 	protected ItemStack getItem() {
-		return new ItemStack(Material.POTION);
+		return ItemStack.of(Material.POTION);
 	}
 
 	@NotNull

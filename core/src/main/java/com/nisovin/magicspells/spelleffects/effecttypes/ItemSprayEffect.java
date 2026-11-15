@@ -64,7 +64,7 @@ public class ItemSprayEffect extends SpellEffect {
 	public Runnable playEffectLocation(Location location, SpellData data) {
 		Material material = this.material.get(data);
 		if (material == null) return null;
-		ItemStack itemStack = new ItemStack(material);
+		ItemStack itemStack = ItemStack.of(material);
 
 		Location loc = location.clone().add(0, 1, 0);
 

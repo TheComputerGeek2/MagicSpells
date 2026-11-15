@@ -5,7 +5,6 @@ import java.util.HashSet;
 
 import org.jetbrains.annotations.NotNull;
 
-import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.Inventory;
@@ -108,7 +107,7 @@ public class GrindstoneListener extends PassiveListener {
 	}
 
 	private boolean contains(Set<MagicItemData> items, ItemStack item) {
-		if (item == null) item = new ItemStack(Material.AIR);
+		if (item == null) item = ItemStack.empty();
 
 		MagicItemData itemData = MagicItems.getMagicItemDataFromItemStack(item);
 		if (itemData == null) return false;

@@ -21,7 +21,6 @@ import com.nisovin.magicspells.util.config.ConfigDataUtil;
 import com.nisovin.magicspells.util.config.dialog.base.BaseBuilder;
 import com.nisovin.magicspells.util.config.dialog.types.TypeBuilder;
 
-@SuppressWarnings("UnstableApiUsage")
 public class DialogBuilder extends BuildContext<Dialog> {
 
 	private final ConfigurationSection config;

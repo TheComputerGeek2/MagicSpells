@@ -17,7 +17,6 @@ import com.nisovin.magicspells.util.config.dialog.NullConfigData;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput;
 
-@SuppressWarnings("UnstableApiUsage")
 public class SingleOptionInput extends BuildContext<DialogInput> {
 
 	private final ConfigurationSection config;

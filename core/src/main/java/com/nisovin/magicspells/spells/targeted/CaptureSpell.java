@@ -54,7 +54,7 @@ public class CaptureSpell extends TargetedSpell implements TargetedEntitySpell {
 		Material material = Bukkit.getItemFactory().getSpawnEgg(target.getType());
 		if (material == null) return noTarget(data);
 
-		ItemStack item = new ItemStack(material);
+		ItemStack item = ItemStack.of(material);
 
 		if (powerAffectsQuantity.get(data)) {
 			int q = Math.round(data.power());
@@ -65,7 +65,7 @@ public class CaptureSpell extends TargetedSpell implements TargetedEntitySpell {
 			String[] replacements = {"%name%", getTargetName(target)};
 
 			item.editMeta(meta -> {
-				if (itemName != null) meta.displayName(Util.getItemMiniMessage(itemName, data, replacements));
+				if (itemName != null) meta.customName(Util.getItemMiniMessage(itemName, data, replacements));
 
 				if (itemLore != null) {
 					List<Component> lore = new ArrayList<>();

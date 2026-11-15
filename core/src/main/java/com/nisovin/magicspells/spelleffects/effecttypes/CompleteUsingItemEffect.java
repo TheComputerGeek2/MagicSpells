@@ -17,7 +17,6 @@ public class CompleteUsingItemEffect extends SpellEffect {
 
 	}
 
-	@SuppressWarnings("UnstableApiUsage")
 	@Override
 	protected Runnable playEffectEntity(Entity entity, SpellData data) {
 		if (entity instanceof LivingEntity livingEntity)

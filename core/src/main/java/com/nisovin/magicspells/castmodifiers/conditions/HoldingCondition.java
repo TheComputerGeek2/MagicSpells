@@ -97,7 +97,7 @@ public class HoldingCondition extends Condition {
 		Component name = null;
 
 		try {
-			if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) name = item.getItemMeta().displayName();
+			if (item.hasItemMeta() && item.getItemMeta().hasCustomName()) name = item.getItemMeta().customName();
 		} catch (Exception e) {
 			DebugHandler.debugGeneral(e);
 		}

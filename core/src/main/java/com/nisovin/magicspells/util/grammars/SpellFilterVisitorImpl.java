@@ -1,8 +1,6 @@
 package com.nisovin.magicspells.util.grammars;
 
 import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.function.Predicate;
 
 import com.nisovin.magicspells.Spell;

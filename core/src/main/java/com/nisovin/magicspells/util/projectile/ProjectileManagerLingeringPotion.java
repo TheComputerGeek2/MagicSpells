@@ -10,7 +10,7 @@ public class ProjectileManagerLingeringPotion extends ProjectileManagerThrownPot
 	@NotNull
 	@Override
 	protected ItemStack getItem() {
-		return new ItemStack(Material.LINGERING_POTION);
+		return ItemStack.of(Material.LINGERING_POTION);
 	}
 
 }

@@ -15,7 +15,6 @@ import com.nisovin.magicspells.util.config.dialog.Debugger;
 import com.nisovin.magicspells.util.config.dialog.BuildContext;
 import com.nisovin.magicspells.util.config.dialog.NullConfigData;
 
-@SuppressWarnings("UnstableApiUsage")
 public class ActionButtonBuilder extends BuildContext<ActionButton> {
 
 	private final ConfigurationSection config;

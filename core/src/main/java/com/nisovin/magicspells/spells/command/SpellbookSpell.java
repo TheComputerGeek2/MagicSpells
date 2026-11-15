@@ -117,7 +117,7 @@ public class SpellbookSpell extends CommandSpell implements BlockingSuggestionPr
 			bookSpells = new ArrayList<>();
 			bookUses = new ArrayList<>();
 			loadSpellbooks();
-			player.sendMessage("Spellbook file reloaded.");
+			player.sendPlainMessage("Spellbook file reloaded.");
 			return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 		}
 

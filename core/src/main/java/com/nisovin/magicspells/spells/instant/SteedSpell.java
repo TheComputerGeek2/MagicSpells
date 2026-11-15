@@ -125,7 +125,7 @@ public class SteedSpell extends InstantSpell {
 				abstractHorse.setTamed(true);
 				if (data.caster() instanceof AnimalTamer tamer) abstractHorse.setOwner(tamer);
 				abstractHorse.setJumpStrength(jumpStrength.get(data));
-				abstractHorse.getInventory().setSaddle(new ItemStack(Material.SADDLE));
+				abstractHorse.getInventory().setSaddle(ItemStack.of(Material.SADDLE));
 
 				if (abstractHorse instanceof Horse horse) {
 					Horse.Color color = this.color.get(data);

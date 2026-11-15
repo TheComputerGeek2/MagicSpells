@@ -73,7 +73,7 @@ public class SmokeTrailEffect extends SpellEffect {
 			}
 			Location loc = locationsForProjection.get(i);
 			for (int j = 0; j <= 8; j += 2) {
-				world.playEffect(loc, Effect.SMOKE, j);
+				world.playEffect(loc, Effect.SMOKE_SHOOT, j);
 			}
 			i++;
 		}

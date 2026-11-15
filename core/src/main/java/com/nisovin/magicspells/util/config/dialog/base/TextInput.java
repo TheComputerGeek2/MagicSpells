@@ -15,7 +15,6 @@ import com.nisovin.magicspells.util.config.dialog.NullConfigData;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.input.TextDialogInput.MultilineOptions;
 
-@SuppressWarnings("UnstableApiUsage")
 public class TextInput extends BuildContext<DialogInput> {
 
 	private final ConfigurationSection config;

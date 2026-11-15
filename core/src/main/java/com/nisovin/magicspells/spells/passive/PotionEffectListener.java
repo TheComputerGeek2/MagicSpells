@@ -68,10 +68,10 @@ public class PotionEffectListener extends PassiveListener {
 
 	@EventHandler
 	public void onPotionEffect(EntityPotionEffectEvent event) {
-		if (!(event.getEntity() instanceof LivingEntity entity)) return;
 		if (!isCancelStateOk(event.isCancelled())) return;
-
 		if (!actions.contains(event.getAction()) || !causes.contains(event.getCause())) return;
+
+		LivingEntity entity = event.getEntity();
 		if (!canTrigger(entity)) return;
 
 		if (!isAnyType) {

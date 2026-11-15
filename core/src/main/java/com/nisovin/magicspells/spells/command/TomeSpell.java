@@ -143,7 +143,7 @@ public class TomeSpell extends CommandSpell implements BlockingSuggestionProvide
 		else if (uses < 0) uses = defaultUses.get(data);
 
 		if (item == null) {
-			item = new ItemStack(Material.WRITTEN_BOOK);
+			item = ItemStack.of(Material.WRITTEN_BOOK);
 			item.editMeta(BookMeta.class, meta -> meta.setTitle(getName() + ": " + spell.getName()));
 		}
 

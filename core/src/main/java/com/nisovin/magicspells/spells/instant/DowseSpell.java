@@ -212,15 +212,7 @@ public class DowseSpell extends InstantSpell {
 		this.strNotFound = strNotFound;
 	}
 
-	private static class NearbyEntity implements Comparable<NearbyEntity> {
-
-		private final Entity entity;
-		private final double distanceSquared;
-
-		private NearbyEntity(Entity entity, double distanceSquared) {
-			this.entity = entity;
-			this.distanceSquared = distanceSquared;
-		}
+	private record NearbyEntity(Entity entity, double distanceSquared) implements Comparable<NearbyEntity> {
 
 		@Override
 		public int compareTo(NearbyEntity e) {

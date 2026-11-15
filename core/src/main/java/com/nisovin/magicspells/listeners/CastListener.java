@@ -21,8 +21,8 @@ import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerAnimationEvent;
 
+import io.papermc.paper.event.player.PlayerArmSwingEvent;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 
 import com.nisovin.magicspells.Spell;
@@ -96,7 +96,7 @@ public class CastListener implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPlayerAnimation(PlayerAnimationEvent event) {
+	public void onPlayerArmSwing(PlayerArmSwingEvent event) {
 		if (!MagicSpells.isCastingOnAnimate()) return;
 
 		Player player = event.getPlayer();

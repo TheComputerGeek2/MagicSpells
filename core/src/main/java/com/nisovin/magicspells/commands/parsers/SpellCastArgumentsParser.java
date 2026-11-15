@@ -3,7 +3,6 @@ package com.nisovin.magicspells.commands.parsers;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.concurrent.CompletableFuture;
 
@@ -115,7 +114,7 @@ public class SpellCastArgumentsParser implements ArgumentParser.FutureArgumentPa
 	}
 
 	@Override
-	public @NotNull CompletableFuture<@NotNull ? extends Iterable<@NotNull ? extends Suggestion>> suggestionsFuture(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
+	public @NotNull CompletableFuture<? extends @NotNull Iterable<? extends @NotNull Suggestion>> suggestionsFuture(@NotNull CommandContext<CommandSourceStack> context, @NotNull CommandInput input) {
 		if (context.contains(PARSE_SUGGESTIONS))
 			return CompletableFuture.completedFuture(context.get(PARSE_SUGGESTIONS));
 

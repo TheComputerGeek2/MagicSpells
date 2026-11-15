@@ -18,7 +18,6 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.annotation.Annotation;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -93,6 +92,7 @@ import com.nisovin.magicspells.volatilecode.VolatileCodeHandle;
 import com.nisovin.magicspells.events.SpellLearnEvent.LearnSource;
 import com.nisovin.magicspells.spelleffects.trackers.EffectTracker;
 import com.nisovin.magicspells.spells.passive.util.PassiveListener;
+import com.nisovin.magicspells.util.recipes.RecipeDiscoverListener;
 import com.nisovin.magicspells.variables.variabletypes.GlobalVariable;
 import com.nisovin.magicspells.spelleffects.trackers.AsyncEffectTracker;
 import com.nisovin.magicspells.spelleffects.effecttypes.EffectLibEffect;
@@ -447,6 +447,8 @@ public class MagicSpells extends JavaPlugin {
 		}
 		log("..." + MagicItems.getMagicItems().size() + " magic items loaded");
 
+		// Load custom recipes
+		registerEvents(new RecipeDiscoverListener());
 		if (config.isSection(path + "recipes")) {
 			log("Loading recipes...");
 			CustomRecipes.load(config.getSection(path + "recipes"));
@@ -2093,9 +2095,7 @@ public class MagicSpells extends JavaPlugin {
 		if (plugin.profilingTotalTime == null) return;
 		if (plugin.profilingRuns == null) return;
 
-		PrintWriter writer = null;
-		try {
-			writer = new PrintWriter(new File(plugin.getDataFolder(), "profiling_report_" + System.currentTimeMillis() + ".txt"));
+		try (PrintWriter writer = new PrintWriter(new File(plugin.getDataFolder(), "profiling_report_" + System.currentTimeMillis() + ".txt"))) {
 			long totalTime = 0;
 			writer.println("Key\tRuns\tAvg\tTotal");
 			for (String key : plugin.profilingTotalTime.keySet()) {
@@ -2109,8 +2109,6 @@ public class MagicSpells extends JavaPlugin {
 		} catch (Exception ex) {
 			error("Failed to save profiling report");
 			handleException(ex);
-		} finally {
-			if (writer != null) writer.close();
 		}
 		plugin.profilingTotalTime.clear();
 		plugin.profilingRuns.clear();
@@ -2249,11 +2247,11 @@ public class MagicSpells extends JavaPlugin {
 						cooldown = cooldowns.get(id);
 						if (cooldown <= System.currentTimeMillis()) continue;
 						writer.append(spell.getInternalName())
-								.append(String.valueOf(':'))
+								.append(':')
 								.append(id.toString())
-								.append(String.valueOf(':'))
+								.append(':')
 								.append(String.valueOf(cooldown))
-								.append(String.valueOf('\n'));
+								.append('\n');
 					}
 				}
 				writer.close();

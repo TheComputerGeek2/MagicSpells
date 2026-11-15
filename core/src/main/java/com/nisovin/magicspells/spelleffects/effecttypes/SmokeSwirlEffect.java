@@ -79,7 +79,7 @@ public class SmokeSwirlEffect extends SpellEffect {
 			if (location != null) loc = location;
 			else loc = entity.getLocation();
 
-			loc.getWorld().playEffect(loc.clone().add(X[i], 0, Z[i]), Effect.SMOKE, V[i]);
+			loc.getWorld().playEffect(loc.clone().add(X[i], 0, Z[i]), Effect.SMOKE_SHOOT, V[i]);
 			iteration++;
 		}
 

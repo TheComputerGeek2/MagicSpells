@@ -8,8 +8,8 @@ import java.util.NoSuchElementException;
 import net.kyori.adventure.key.InvalidKeyException;
 
 import org.bukkit.Keyed;
-import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
+import org.bukkit.NamespacedKey;
 
 import io.papermc.paper.registry.tag.Tag;
 import io.papermc.paper.registry.TypedKey;

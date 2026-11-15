@@ -62,9 +62,9 @@ public class CastItem {
 		if (isTypeValid()) {
 			if (!MagicSpells.ignoreCastItemNames()) {
 				if (MagicSpells.ignoreCastItemNameColors())
-					name = PlainTextComponentSerializer.plainText().serializeOrNull(meta.displayName());
+					name = PlainTextComponentSerializer.plainText().serializeOrNull(meta.customName());
 				else
-					name = LegacyComponentSerializer.legacySection().serializeOrNull(meta.displayName());
+					name = LegacyComponentSerializer.legacySection().serializeOrNull(meta.customName());
 			}
 			if (!MagicSpells.ignoreCastItemAmount()) amount = item.getAmount();
 			if (!MagicSpells.ignoreCastItemDurability(type) && type.getMaxDurability() > 0) durability = DurabilityHandler.getDurability(meta);

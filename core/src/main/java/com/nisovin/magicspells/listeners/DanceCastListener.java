@@ -38,11 +38,11 @@ public class DanceCastListener implements Listener {
 	private Map<String, Integer> playerTasks = new HashMap<>();
 	private Map<String, Location> playerLocations = new HashMap<>();
 
-	private boolean dynamicCasting = false;
+	private boolean dynamicCasting;
 	private boolean enableMovement = false;
 	private boolean enableDoubleJump = false;
 
-	private String startSound = null;
+	private String startSound;
 	private float startSoundVolume = 1;
 	private float startSoundPitch = 1;
 

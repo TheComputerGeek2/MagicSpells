@@ -102,7 +102,7 @@ public class PainSpell extends TargetedSpell implements TargetedEntitySpell {
 			double maxHealth = Util.getMaxHealth(data.target());
 
 			double health = Math.min(data.target().getHealth(), maxHealth);
-			health = Math.max(Math.min(health - damage, maxHealth), 0);
+			health = Math.clamp(health - damage, 0, maxHealth);
 
 			if (health == 0 && data.caster() instanceof Player player) data.target().setKiller(player);
 			data.target().setHealth(health);

@@ -23,7 +23,6 @@ import io.papermc.paper.registry.data.dialog.body.ItemDialogBody;
 import io.papermc.paper.registry.data.dialog.body.PlainMessageDialogBody;
 import io.papermc.paper.registry.data.dialog.DialogBase.DialogAfterAction;
 
-@SuppressWarnings("UnstableApiUsage")
 public class BaseBuilder extends BuildContext<DialogBase> {
 
 	private static final String PATH = "base";

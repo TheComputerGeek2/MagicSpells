@@ -1,10 +1,15 @@
 package com.nisovin.magicspells.spelleffects.effecttypes;
 
+import java.util.List;
+
 import org.bukkit.*;
 import org.bukkit.entity.Firework;
-import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.configuration.ConfigurationSection;
+
+import io.papermc.paper.datacomponent.item.Fireworks;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 
 import com.nisovin.magicspells.util.Name;
 import com.nisovin.magicspells.MagicSpells;
@@ -87,10 +92,9 @@ public class FireworksEffect extends SpellEffect {
 				.build();
 
 		location.getWorld().spawn(location, Firework.class, firework -> {
-			FireworkMeta meta = firework.getFireworkMeta();
-			meta.addEffect(effect);
-			meta.setPower(0);
-			firework.setFireworkMeta(meta);
+			ItemStack rocket = firework.getItem();
+			rocket.setData(DataComponentTypes.FIREWORKS, Fireworks.fireworks(List.of(effect), 0));
+			firework.setItem(rocket);
 
 			firework.setSilent(true);
 			firework.setTicksToDetonate(flightDuration.get(data));

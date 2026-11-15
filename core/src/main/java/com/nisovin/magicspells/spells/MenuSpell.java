@@ -344,7 +344,7 @@ public class MenuSpell extends TargetedSpell implements TargetedEntitySpell, Tar
 		ItemStack newItem = item.clone();
 
 		newItem.editMeta(meta -> {
-			meta.displayName(translateRawComponent(meta.displayName(), opener, data));
+			meta.customName(translateRawComponent(meta.customName(), opener, data));
 
 			List<Component> lore = meta.lore();
 			if (lore != null) {

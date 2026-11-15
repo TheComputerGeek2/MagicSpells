@@ -225,7 +225,7 @@ public class BowSpell extends Spell {
 		float maximumForce = this.maximumForce.get(data);
 		if (maximumForce > 0 && force > maximumForce) return;
 
-		Component name = bow.getItemMeta().displayName();
+		Component name = bow.getItemMeta().customName();
 		if (bowNames != null && !bowNames.contains(name)) return;
 		if (disallowedBowNames != null && disallowedBowNames.contains(name)) return;
 		if (bowName != null && !bowName.equals(name)) return;

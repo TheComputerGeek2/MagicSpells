@@ -102,7 +102,7 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 
 					if (cropType instanceof Ageable ageable) {
 						if (resolveGrowthPerCrop) growth = this.growth.get(data);
-						if (growth > 1) ageable.setAge(Math.max(Math.min(growth - 1, ageable.getMaximumAge()), 0));
+						if (growth > 1) ageable.setAge(Math.clamp(growth - 1, 0, ageable.getMaximumAge()));
 
 						b.setBlockData(ageable);
 						count++;
@@ -137,7 +137,7 @@ public class FarmSpell extends TargetedSpell implements TargetedLocationSpell {
 				if (ageable.getAge() == ageable.getMaximumAge()) continue;
 
 				if (resolveGrowthPerCrop) growth = this.growth.get(data);
-				ageable.setAge(Math.max(Math.min(ageable.getAge() + growth, ageable.getMaximumAge()), 0));
+				ageable.setAge(Math.clamp(ageable.getAge() + growth, 0, ageable.getMaximumAge()));
 				b.setBlockData(ageable);
 				count++;
 			}

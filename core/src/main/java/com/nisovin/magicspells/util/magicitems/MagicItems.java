@@ -182,7 +182,7 @@ public class MagicItems {
 		Material type = (Material) data.getAttribute(TYPE);
 		if (type == null) return null;
 
-		ItemStack item = new ItemStack(type);
+		ItemStack item = ItemStack.of(type);
 
 		if (type.isAir()) return new MagicItem(item, data);
 
@@ -342,7 +342,7 @@ public class MagicItems {
 				return null;
 			}
 
-			item = new ItemStack(type);
+			item = ItemStack.of(type);
 			itemData.setAttribute(TYPE, type);
 
 			if (type.isAir()) return new MagicItem(item, itemData);

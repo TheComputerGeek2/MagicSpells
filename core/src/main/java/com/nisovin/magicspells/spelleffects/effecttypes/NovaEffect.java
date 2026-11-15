@@ -86,7 +86,7 @@ public class NovaEffect extends SpellEffect {
 		if (blockData == null) return null;
 
 		double range = this.range.get(data);
-		range = Math.max(Math.min(range, MagicSpells.getGlobalRadius()), 1);
+		range = Math.clamp(range, 1, MagicSpells.getGlobalRadius());
 
 		Collection<Player> nearbyPlayers = location.getWorld().getNearbyPlayers(location, range, range, range);
 

@@ -101,7 +101,7 @@ public class GillsSpell extends BuffSpell {
 		Material headMaterial = this.headMaterial.get(data);
 		if (headMaterial.getEquipmentSlot() != EquipmentSlot.HEAD && !headMaterial.isBlock()) return null;
 
-		ItemStack helmet = new ItemStack(headMaterial);
+		ItemStack helmet = ItemStack.of(headMaterial);
 		helmet.editMeta(meta -> meta.getPersistentDataContainer().set(MARKER, PersistentDataType.BOOLEAN, true));
 
 		return helmet;

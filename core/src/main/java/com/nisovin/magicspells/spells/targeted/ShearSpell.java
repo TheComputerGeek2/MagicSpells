@@ -87,7 +87,7 @@ public class ShearSpell extends TargetedSpell implements TargetedEntitySpell {
 			}
 
 			sheep.setSheared(true);
-			sheep.getWorld().dropItemNaturally(sheep.getLocation().add(0, dropOffset.get(data), 0), new ItemStack(wool, count));
+			sheep.getWorld().dropItemNaturally(sheep.getLocation().add(0, dropOffset.get(data), 0), ItemStack.of(wool, count));
 		} else shearable.shear();
 
 		playSpellEffects(data);

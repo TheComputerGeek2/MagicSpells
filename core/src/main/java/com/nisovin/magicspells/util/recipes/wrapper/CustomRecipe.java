@@ -1,25 +1,10 @@
 package com.nisovin.magicspells.util.recipes.wrapper;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.Recipe;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
-public abstract class CustomRecipe {
-
-	@NotNull
-	private final NamespacedKey key;
-
-	public CustomRecipe(@NotNull NamespacedKey key) {
-		this.key = key;
-	}
-
-	@NotNull
-	public NamespacedKey getKey() {
-		return key;
-	}
-
-	public abstract void add();
-
-	public abstract void remove();
-
+@NullMarked
+public record CustomRecipe(Recipe recipe, NamespacedKey key, boolean autoDiscover) {
 }

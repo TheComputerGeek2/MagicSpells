@@ -84,11 +84,11 @@ public class ZapSpell extends TargetedSpell implements TargetedLocationSpell {
 			if (!event.callEvent()) return noTarget(strCantZap, data);
 		}
 
-		if (playBreakEffect.get(data)) target.getWorld().playEffect(target.getLocation(), Effect.STEP_SOUND, target.getBlockData());
+		if (playBreakEffect.get(data)) target.getWorld().playEffect(target.getLocation(), Effect.DESTROY_BLOCK, target.getBlockData());
 
 		if (dropBlock.get(data)) {
 			if (dropNormal.get(data)) target.breakNaturally();
-			else location.getWorld().dropItemNaturally(location, new ItemStack(target.getBlockData().getPlacementMaterial()));
+			else location.getWorld().dropItemNaturally(location, ItemStack.of(target.getBlockData().getPlacementMaterial()));
 		}
 
 		target.setType(Material.AIR);

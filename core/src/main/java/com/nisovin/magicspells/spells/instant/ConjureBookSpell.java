@@ -149,8 +149,8 @@ public class ConjureBookSpell extends InstantSpell implements TargetedLocationSp
 			loreRaw.add(createComponent(line, player, playerDisplayName, data));
 		}
 
-		ItemStack item = new ItemStack(Material.WRITTEN_BOOK);
-		BookMeta meta = (BookMeta) ((BookMeta) item.getItemMeta())
+		ItemStack item = ItemStack.of(Material.WRITTEN_BOOK);
+		BookMeta meta = ((BookMeta) item.getItemMeta())
 			.title(createComponent(title, player, playerDisplayName, data))
 			.author(createComponent(author, player, playerDisplayName, data))
 			.pages(pagesRaw);

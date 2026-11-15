@@ -1,7 +1,5 @@
 package com.nisovin.magicspells.volatilecode;
 
-import java.util.function.Supplier;
-
 import org.bukkit.World;
 import org.bukkit.Particle;
 import org.bukkit.entity.*;
@@ -37,8 +35,6 @@ public abstract class VolatileCodeHandle {
 
 	public abstract void setClientVelocity(Player player, Vector velocity);
 
-	public abstract void playHurtSound(LivingEntity entity);
-
 	public abstract void sendToastEffect(Player receiver, ItemStack icon, Frame frameType, Component text);
 
 	public abstract byte getEntityMetadata(Entity entity);
@@ -53,9 +49,8 @@ public abstract class VolatileCodeHandle {
 
 	@Nullable
 	public Object getVolatileParticleData(
-		Particle particle,
-		Supplier<Integer> geyserWaterBlocks,
-		Supplier<Float> geyserBurstImpulse
+		Particle particle
+		// Supplier<Object> supplier
 	) {
 		return null;
 	}

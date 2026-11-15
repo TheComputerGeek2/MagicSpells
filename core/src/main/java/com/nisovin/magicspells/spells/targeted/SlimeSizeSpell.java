@@ -55,7 +55,7 @@ public class SlimeSizeSpell extends TargetedSpell implements TargetedEntitySpell
 		if (maxSize < minSize) maxSize = minSize;
 
 		double rawOutputValue = variableMod.getValue(data, target.getSize());
-		int finalSize = Math.min(Math.max((int) rawOutputValue, minSize), maxSize);
+		int finalSize = Math.clamp((int) rawOutputValue, minSize, maxSize);
 		target.setSize(finalSize);
 
 		playSpellEffects(data);

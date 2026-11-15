@@ -12,9 +12,19 @@ public class PotionEffectHandler {
 
 	static {
 		// Add bukkit and minecraft potion effect names
-		for (PotionEffectType potionEffect : Registry.EFFECT) {
-			//noinspection deprecation
-			potionEffects.put(potionEffect.getName().toLowerCase(), potionEffect);
+
+		// Add legacy values
+		potionEffects.put("slow", PotionEffectType.SLOWNESS);
+		potionEffects.put("fast_digging", PotionEffectType.HASTE);
+		potionEffects.put("slow_digging", PotionEffectType.MINING_FATIGUE);
+		potionEffects.put("increase_damage", PotionEffectType.STRENGTH);
+		potionEffects.put("heal", PotionEffectType.INSTANT_HEALTH);
+		potionEffects.put("harm", PotionEffectType.INSTANT_DAMAGE);
+		potionEffects.put("jump", PotionEffectType.JUMP_BOOST);
+		potionEffects.put("confusion", PotionEffectType.NAUSEA);
+		potionEffects.put("damage_resistance", PotionEffectType.RESISTANCE);
+
+		for (PotionEffectType potionEffect : Registry.MOB_EFFECT) {
 			potionEffects.put(potionEffect.key().value(), potionEffect);
 		}
 	}

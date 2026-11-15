@@ -2,7 +2,6 @@ package com.nisovin.magicspells;
 
 import java.util.*;
 
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.inventory.ItemStack;
@@ -273,7 +272,7 @@ public class Spellbook {
 	protected CastItem getCastItemForCycling(ItemStack item) {
 		CastItem castItem;
 		if (item != null) castItem = new CastItem(item);
-		else castItem = new CastItem(new ItemStack(Material.AIR));
+		else castItem = new CastItem(ItemStack.empty());
 
 		List<Spell> spells = itemSpells.get(castItem);
 		if (spells != null && (spells.size() > 1 || (spells.size() == 1 && MagicSpells.canCycleToNoSpell()))) return castItem;

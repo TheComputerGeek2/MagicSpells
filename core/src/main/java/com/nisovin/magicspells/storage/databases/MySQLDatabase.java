@@ -19,7 +19,7 @@ public class MySQLDatabase extends Database {
 
 	@Override
 	public Connection openConnection() {
-		File folder = plugin.getInstance().getDataFolder();
+		File folder = MagicSpells.getInstance().getDataFolder();
 		if (!folder.exists()) folder.mkdirs();
 
 		File file = new File(folder, dbLocation);

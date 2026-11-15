@@ -90,7 +90,7 @@ public class HasItemCondition extends Condition {
 				if (item == null) continue;
 				Component itemName = null;
 				try {
-					if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) itemName = item.getItemMeta().displayName();
+					if (item.hasItemMeta() && item.getItemMeta().hasCustomName()) itemName = item.getItemMeta().customName();
 				} catch (Exception e) {
 					DebugHandler.debugGeneral(e);
 				}
@@ -112,7 +112,7 @@ public class HasItemCondition extends Condition {
 				if (item == null) continue;
 				Component itemName = null;
 				try {
-					if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) itemName = item.getItemMeta().displayName();
+					if (item.hasItemMeta() && item.getItemMeta().hasCustomName()) itemName = item.getItemMeta().customName();
 				} catch (Exception e) {
 					DebugHandler.debugGeneral(e);
 				}

@@ -54,12 +54,12 @@ public class CloudEffect extends SpellEffect {
 	private void smoke(World w, Block b, int r) {
 		Location loc = b.getLocation();
 		if (r <= 5) {
-			for (int i = 0; i <= 8; i += 2) w.playEffect(loc, Effect.SMOKE, i);
+			for (int i = 0; i <= 8; i += 2) w.playEffect(loc, Effect.SMOKE_SHOOT, i);
 		} else if (r <= 8) {
-			w.playEffect(loc, Effect.SMOKE, random.nextInt(9));
-			w.playEffect(loc, Effect.SMOKE, random.nextInt(9));
+			w.playEffect(loc, Effect.SMOKE_SHOOT, random.nextInt(9));
+			w.playEffect(loc, Effect.SMOKE_SHOOT, random.nextInt(9));
 		} else {
-			w.playEffect(loc, Effect.SMOKE, random.nextInt(9));
+			w.playEffect(loc, Effect.SMOKE_SHOOT, random.nextInt(9));
 		}
 	}
 	

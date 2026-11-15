@@ -12,7 +12,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.*;
@@ -109,7 +109,7 @@ public class RitualSpell extends InstantSpell {
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	public void onPlayerInteract(PlayerInteractEntityEvent event) {
+	public void onPlayerInteract(PlayerInteractAtEntityEvent event) {
 		if (!(event.getRightClicked() instanceof Player player)) return;
 		if (event.getHand().equals(EquipmentSlot.OFF_HAND)) return;
 

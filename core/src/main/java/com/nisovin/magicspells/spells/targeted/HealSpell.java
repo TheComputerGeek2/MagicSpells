@@ -66,7 +66,7 @@ public class HealSpell extends TargetedSpell implements TargetedEntitySpell {
 			healAmount = event.getAmount();
 		}
 
-		data.target().setHealth(Math.max(Math.min(health + healAmount, maxHealth), 0));
+		data.target().setHealth(Math.clamp(health + healAmount, 0, maxHealth));
 		playSpellEffects(data);
 
 		return new CastResult(PostCastAction.HANDLE_NORMALLY, data);

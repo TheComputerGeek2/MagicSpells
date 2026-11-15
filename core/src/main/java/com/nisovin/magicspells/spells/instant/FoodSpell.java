@@ -27,11 +27,11 @@ public class FoodSpell extends InstantSpell {
 	public CastResult cast(SpellData data) {
 		if (!(data.caster() instanceof HumanEntity caster)) return new CastResult(PostCastAction.ALREADY_HANDLED, data);
 
-		int food = Math.max(Math.min(caster.getFoodLevel() + this.food.get(data), 20), 0);
+		int food = Math.clamp(caster.getFoodLevel() + this.food.get(data), 0, 20);
 		caster.setFoodLevel(food);
 
 		float maxSaturation = this.maxSaturation.get(data);
-		float saturation = Math.max(Math.min(this.saturation.get(data), maxSaturation), 0);
+		float saturation = Math.clamp(this.saturation.get(data), 0, maxSaturation);
 		caster.setSaturation(saturation);
 
 		playSpellEffects(data);

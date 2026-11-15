@@ -15,18 +15,18 @@ public class NameHandler {
 
 	public static void process(ConfigurationSection config, ItemMeta meta, MagicItemData data) {
 		if (!config.isString(CONFIG_NAME)) return;
-		meta.displayName(Util.getItemMiniMessage(config.getString(CONFIG_NAME)));
-		data.setAttribute(NAME, meta.displayName());
+		meta.customName(Util.getItemMiniMessage(config.getString(CONFIG_NAME)));
+		data.setAttribute(NAME, meta.customName());
 	}
 
 	public static void processItemMeta(ItemMeta meta, MagicItemData data) {
 		if (!data.hasAttribute(NAME)) return;
-		meta.displayName((Component) data.getAttribute(NAME));
+		meta.customName((Component) data.getAttribute(NAME));
 	}
 
 	public static void processMagicItemData(ItemMeta meta, MagicItemData data) {
-		if (!meta.hasDisplayName()) return;
-		data.setAttribute(NAME, meta.displayName());
+		if (!meta.hasCustomName()) return;
+		data.setAttribute(NAME, meta.customName());
 	}
 	
 }
