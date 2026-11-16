@@ -17,6 +17,8 @@ public class TeleportSpell extends TargetedSpell implements TargetedEntitySpell 
 
 	private final ConfigData<Vector> relativeOffset;
 
+	private final ConfigData<Integer> requireGroundDistance;
+
 	private final String strCantTeleport;
 
 	public TeleportSpell(MagicConfig config, String spellName) {
@@ -25,7 +27,9 @@ public class TeleportSpell extends TargetedSpell implements TargetedEntitySpell 
 		yaw = getConfigDataFloat("yaw", 0);
 		pitch = getConfigDataFloat("pitch", 0);
 
-		relativeOffset = getConfigDataVector("relative-offset", new Vector(0, 0.1, 0));
+		requireGroundDistance = getConfigDataInt("require-ground-distance", 0);
+
+		relativeOffset = getConfigDataVector("relative-offset", new Vector());
 
 		strCantTeleport = getConfigString("str-cant-teleport", "");
 	}
@@ -52,7 +56,8 @@ public class TeleportSpell extends TargetedSpell implements TargetedEntitySpell 
 		targetLoc.setPitch(startLoc.getPitch() - pitch.get(data));
 		targetLoc.setYaw(startLoc.getYaw() + yaw.get(data));
 
-		if (!targetLoc.getBlock().isPassable()) return noTarget(strCantTeleport, data);
+		targetLoc = BlockUtils.adjustToSafeLocation(data.caster(), targetLoc, requireGroundDistance.get(data), false);
+		if (targetLoc == null) return noTarget(strCantTeleport, data);
 
 		playSpellEffects(EffectPosition.CASTER, data.caster(), data);
 		playSpellEffects(EffectPosition.TARGET, data.target(), data);
