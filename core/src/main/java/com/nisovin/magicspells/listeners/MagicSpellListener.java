@@ -1,10 +1,13 @@
 package com.nisovin.magicspells.listeners;
 
+import java.util.UUID;
+
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRemoveEvent;
 import org.bukkit.event.entity.EntityDismountEvent;
@@ -16,37 +19,59 @@ import com.nisovin.magicspells.Perm;
 import com.nisovin.magicspells.Spell;
 import com.nisovin.magicspells.util.Util;
 import com.nisovin.magicspells.MagicSpells;
+import com.nisovin.magicspells.util.SpellData;
 import com.nisovin.magicspells.util.EntityData;
+import com.nisovin.magicspells.util.pdc.UUIDTagType;
 import com.nisovin.magicspells.events.SpellTargetEvent;
 import com.nisovin.magicspells.zones.NoMagicZoneManager;
 import com.nisovin.magicspells.spelleffects.effecttypes.*;
+import com.nisovin.magicspells.util.pdc.PersistentDataEntry;
 import com.nisovin.magicspells.events.ParticleProjectileHitEvent;
 
 public class MagicSpellListener implements Listener {
 
-	private final NoMagicZoneManager noMagicZoneManager = MagicSpells.getNoMagicZoneManager();
+	public static final PersistentDataEntry<byte[], UUID> PDC_CASTER = new PersistentDataEntry<>(UUIDTagType.INSTANCE, "caster");
+	public static final PersistentDataEntry<Byte, Boolean> PDC_TARGETABLE = new PersistentDataEntry<>(PersistentDataType.BOOLEAN, "targetable");
+	public static final PersistentDataEntry<Byte, Boolean> PDC_TARGETABLE_BY_CASTER = new PersistentDataEntry<>(PersistentDataType.BOOLEAN, "targetable_by_caster");
 
 	@EventHandler
 	public void onSpellTarget(SpellTargetEvent event) {
-		// Check if target has noTarget permission / is in noMagicZone / is an invisible marker armorstand
-		LivingEntity target = event.getTarget();
 		Spell spell = event.getSpell();
+		SpellData data = event.getSpellData();
+		if (!data.hasTarget()) return;
 
-		if (target == null)
-			return;
-
-		if (isMSEntity(target)) {
+		if (!isTargetable(data.target(), data.caster())) {
 			event.setCancelled(true);
 			return;
 		}
 
-		if (Perm.NO_TARGET.has(target))  {
+		if (Perm.NO_TARGET.has(data.target()))  {
 			event.setCancelled(true);
 			return;
 		}
 
-		if (spell != null && noMagicZoneManager != null && noMagicZoneManager.willFizzle(target, spell))
+		NoMagicZoneManager zoneManager = MagicSpells.getNoMagicZoneManager();
+		if (spell != null && zoneManager != null && zoneManager.willFizzle(data.target(), spell))
 			event.setCancelled(true);
+	}
+
+	private boolean isTargetable(Entity target, Entity caster) {
+		PersistentDataContainer pdc = target.getPersistentDataContainer();
+
+		if (caster != null && caster.getUniqueId().equals(PDC_CASTER.get(pdc))) {
+			Boolean targetableByCaster = PDC_TARGETABLE_BY_CASTER.get(pdc);
+			if (targetableByCaster != null) return targetableByCaster;
+		}
+
+		Boolean targetable = PDC_TARGETABLE.get(pdc);
+		if (targetable != null) return targetable;
+
+		return !isMSEntity(target);
+	}
+
+	private boolean isMSEntity(Entity entity) {
+		return entity.getScoreboardTags().contains(ArmorStandEffect.ENTITY_TAG)
+			|| entity.getScoreboardTags().contains(EntityEffect.ENTITY_TAG);
 	}
 
 	@EventHandler
@@ -78,11 +103,11 @@ public class MagicSpellListener implements Listener {
 	@EventHandler
 	public void onEntityRemove(EntityRemoveEvent event) {
 		Util.forEachPassenger(event.getEntity(), passenger -> {
-			PersistentDataContainer container = passenger.getPersistentDataContainer();
-			if (!container.has(EntityData.MS_PASSENGER)) return;
+			PersistentDataContainer pdc = passenger.getPersistentDataContainer();
+			if (!EntityData.MS_PASSENGER.has(pdc)) return;
 
 			if (passenger.isPersistent()) {
-				container.remove(EntityData.MS_PASSENGER);
+				EntityData.MS_PASSENGER.remove(pdc);
 				return;
 			}
 
@@ -92,22 +117,18 @@ public class MagicSpellListener implements Listener {
 
 	@EventHandler
 	public void onEntityDismount(EntityDismountEvent event) {
-		event.getEntity().getPersistentDataContainer().remove(EntityData.MS_PASSENGER);
-	}
-
-	private boolean isMSEntity(Entity entity) {
-		return entity.getScoreboardTags().contains(ArmorStandEffect.ENTITY_TAG) || entity.getScoreboardTags().contains(EntityEffect.ENTITY_TAG);
+		EntityData.MS_PASSENGER.remove(event.getEntity().getPersistentDataContainer());
 	}
 
 	@EventHandler
 	public void onFireworkDamage(EntityDamageByEntityEvent event) {
-		if (!event.getDamager().getPersistentDataContainer().has(FireworksEffect.MS_FIREWORK)) return;
+		if (!FireworksEffect.MS_FIREWORK.has(event.getDamager().getPersistentDataContainer())) return;
 		event.setCancelled(true);
 	}
 
 	@EventHandler
 	public void onInvPickup(InventoryPickupItemEvent event) {
-		if (!event.getItem().getPersistentDataContainer().has(ItemSprayEffect.MS_ITEM_SPRAY)) return;
+		if (!ItemSprayEffect.MS_ITEM_SPRAY.has(event.getItem().getPersistentDataContainer())) return;
 		event.setCancelled(true);
 	}
 
